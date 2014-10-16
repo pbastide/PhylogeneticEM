@@ -299,7 +299,7 @@ simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
 
 ## Parallelized estimations
-time_alpha_known <- system.time(simestimations <- foreach(i = simlist[56], .packages = reqpckg) %dopar%
+time_alpha_known <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
 {
   estimationfunction_alpha_known(i)
 }

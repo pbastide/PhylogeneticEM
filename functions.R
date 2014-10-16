@@ -1179,9 +1179,9 @@ estimateEM <- function(phylo,
                  params_old = params_old, 
                  params_init = params_init,
                  params_history = params_history,
-                 number_new_shifts = number_new_shifts,
+                 number_new_shifts = number_new_shifts)
 #                  CLL_history = CLL_history
-                 )
+
   attr(result, "Nbr_It") <- Nbr_It
   attr(result, "Divergence") <- !is.in.ranges.params(result$params, min=min_params, max=max_params) # TRUE if has diverged
   if (Nbr_It == Nbr_It_Max) warning(paste("The maximum number of iterations (Nbr_It_Max = ",Nbr_It_Max,") was reached.",sep=""))
