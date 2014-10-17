@@ -1606,7 +1606,7 @@ init.alpha.gamma.default <- function(init.selection.strength, known.selection.st
               gamma_0 = init.var.root))
 }
 
-init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, ...){
+init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, alpha_known, ...){
   ## Initialize a vector with the group of each tip
   tips_groups <- rep(0, length(phylo$tip.label))
   names(tips_groups) <- phylo$tip.label
@@ -1641,15 +1641,20 @@ init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_
     }
   }
   gamma_0 <- mean(hat_gam, na.rm=TRUE)
-  df <- data.frame(square_diff=square_diff, dists=dists)
-  fit.rob <- try(nlrob(square_diff ~ gam*(1-exp(-alpha*dists)), data=df, start=list(gam = gamma_0, alpha=1)))
-  if (inherits(fit.rob, "try-error")) {
-    warning("Robust estimation of alpha failed")
-    return(list(alpha_0 = init.alpha.gamma.default(...)$alpha_0,
+  if (alpha_known) {
+    return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
                 gamma_0 = gamma_0))
-  } else { 
-    return(list(alpha_0 = unname(coef(fit.rob)["alpha"]), 
-                gamma_0 = gamma_0))
+  } else {
+    df <- data.frame(square_diff=square_diff, dists=dists)
+    fit.rob <- try(nlrob(square_diff ~ gam*(1-exp(-alpha*dists)), data=df, start=list(gam = gamma_0, alpha=1)))
+    if (inherits(fit.rob, "try-error")) {
+      warning("Robust estimation of alpha failed")
+      return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
+                  gamma_0 = gamma_0))
+    } else { 
+      return(list(alpha_0 = unname(coef(fit.rob)["alpha"]), 
+                  gamma_0 = gamma_0))
+    }
   }
 }
 
