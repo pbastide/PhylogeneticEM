@@ -1285,14 +1285,34 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   excl <- NULL
   if (intercept.penalty) excl <- c(1)
   ## fit
-  fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, nlambda = 50000, dfmax = K + 1, exclude = excl)
+  fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, exclude = excl)
   ## Find the lambda that gives the right number of ruptures
-  K_2 <- K
-  ## Check that lambda goes far enought
-  if (K_2 > max(fit$df)) {
-    fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, dfmax = K + 1, exclude = excl)
+  # Check that lambda goes far enought
+  if (K > max(fit$df)) {
+    fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda.min.ratio = 0, exclude = excl)
+  }
+  if (K > max(fit$df)) {
+    stop("Lasso regression failed. There are too many variables.")
+  }
+  ## If the right lambda does not exists, find it.
+  count <- 0
+  while (sum(fit$df == K) == 0 && count < 500) {
+    count <- count + 1
+    K_inf <- K-1
+    while ((sum(K_inf == fit$df) == 0) && (K_inf >= 0)) {
+      K_inf <- K_inf - 1
+    }
+    lambda_inf <- fit$lambda[tail(which(K_inf == fit$df), n=1)]
+    K_sup <- K + 1
+    while ((sum(K_sup == fit$df) == 0) && (K_sup <= max(fit$df))) {
+      K_sup <- K_sup + 1
+    }
+    lambda_sup <- fit$lambda[head(which(K_sup == fit$df), n=1)]
+    lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+    fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda = lambda, exclude = excl)
   }
   ## If the right lambda does not exists, raise the number of shifts
+  K_2 <- K
   while (sum(fit$df == K_2) == 0 && K_2 < 500) {
     warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
     K_2 <- K_2 + 1
