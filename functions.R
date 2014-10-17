@@ -1331,6 +1331,8 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
     delta.gauss <- rep(0, dim(Xp)[2])
     E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
     delta.gauss[projection] <- coef(fit.gauss)[-1]
+    # If lm fails to find some coeeficients, put them to 0
+    delta.gauss[is.na(delta.gauss)] <- 0.1
     ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
     edges <- order(-abs(delta.gauss))[1:K]
     delta.gauss.final <- rep(0, length(delta.gauss))
