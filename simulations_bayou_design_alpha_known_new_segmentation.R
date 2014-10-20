@@ -1,6 +1,6 @@
 rm(list = ls())
 
-WD <- "/home/bastide/Dropbox/These/Code/R"
+WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
 setwd(WD)
 
 reqpckg <- c("ape", "glmnet", "robustbase")

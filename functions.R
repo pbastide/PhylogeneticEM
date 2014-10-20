@@ -1353,7 +1353,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K > max(df)) {
-    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, min.ratio = 0, penscale = penscale)
+    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, min.ratio = 0.0001, penscale = penscale)
     df <- rowSums(fit@active.set)
   }
   if (K > max(df)) {
@@ -1374,7 +1374,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
     }
     lambda_sup <- fit@lambda1[head(which(K_sup == df), n=1)]
     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
-    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, lambda1 = lambda, penscale = penscale)
+    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda1 = lambda, lambda2 = 0, penscale = penscale)
     df <- rowSums(fit@active.set)
   }
   ## If the right lambda does not exists, raise the number of shifts

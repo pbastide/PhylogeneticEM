@@ -1349,7 +1349,7 @@ estimationfunction_alpha_known <- function(X, alphaKN, seg) {
   X$edge.quality <- edge.quality
   X$history <- results_estim_EM$params_history
   X$beta_0_estim <- params$root.state$exp.root
-  X$CLL_history <- results_estim_EM$CLL_history
+  #X$CLL_history <- results_estim_EM$CLL_history
   return(X)
 }
 
@@ -1389,16 +1389,16 @@ simest <- estimationfunction(datasim, seg = seg)
 simest$history[["true"]] <- datasim$params
 history <- list_to_table.history(simest$history)
 history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, datasim$params)
-CLL_history <- cbind(simest$CLL_history, c(NA, NA))
-history <- rbind(history, CLL_history)
+#CLL_history <- cbind(simest$CLL_history, c(NA, NA))
+#history <- rbind(history, CLL_history)
 write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown", name, ".csv"))
 
 simest_true_alpha <- estimationfunction_alpha_known(datasim, alphaKN = alpha, seg = seg)
 simest_true_alpha$history[["true"]] <- datasim$params
 history_true_alpha <- list_to_table.history(simest_true_alpha$history)
 history_true_alpha[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, datasim$params)
-CLL_history_true_alpha <- cbind(simest_true_alpha$CLL_history, c(NA, NA))
-history_true_alpha <- rbind(history_true_alpha, CLL_history_true_alpha)
+#CLL_history_true_alpha <- cbind(simest_true_alpha$CLL_history, c(NA, NA))
+#history_true_alpha <- rbind(history_true_alpha, CLL_history_true_alpha)
 write.csv2(history_true_alpha, paste0(PATH, "boite_noire_alpha_known", name, ".csv"))
 
 plot(tree); edgelabels(text = round(datasim$shifts$values, 2), edge = datasim$shifts$edges)
