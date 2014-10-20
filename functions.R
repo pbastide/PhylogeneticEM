@@ -1280,7 +1280,7 @@ init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.roo
 #'
 #'06/10/14 - Initial release
 } ##
-lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
+lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
   excl <- NULL
   if (intercept.penalty) excl <- c(1)
@@ -1340,6 +1340,77 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
     shifts.gauss <- shifts.vector_to_list(delta.gauss.final);
     return(list(E0.gauss = E0.gauss, shifts.gauss = shifts.gauss))
   }
+}
+
+lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
+  ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
+  penscale <- rep(1, dim(Xp)[2])
+  # If there is a penalty on the intercept, means first coordinate is intercept and should therefore be excluded from fit.
+  if (intercept.penalty) penscale[1] <- 10^10
+  ## fit
+  fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, penscale = penscale)
+  df <- rowSums(fit@active.set)
+  ## Find the lambda that gives the right number of ruptures
+  # Check that lambda goes far enought
+  if (K > max(df)) {
+    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, min.ratio = 0, penscale = penscale)
+    df <- rowSums(fit@active.set)
+  }
+  if (K > max(df)) {
+    stop("Lasso regression failed. There are too many variables.")
+  }
+  ## If the right lambda does not exists, find it.
+  count <- 0
+  while (sum(df == K) == 0 && count < 500) {
+    count <- count + 1
+    K_inf <- K-1
+    while ((sum(K_inf == df) == 0) && (K_inf >= 0)) {
+      K_inf <- K_inf - 1
+    }
+    lambda_inf <- fit@lambda1[tail(which(K_inf == df), n=1)]
+    K_sup <- K + 1
+    while ((sum(K_sup == df) == 0) && (K_sup <= max(df))) {
+      K_sup <- K_sup + 1
+    }
+    lambda_sup <- fit@lambda1[head(which(K_sup == df), n=1)]
+    lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, lambda1 = lambda, penscale = penscale)
+    df <- rowSums(fit@active.set)
+  }
+  ## If the right lambda does not exists, raise the number of shifts
+  K_2 <- K
+  while (sum(df == K_2) == 0 && K_2 < 500) {
+    warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+    K_2 <- K_2 + 1
+  }
+  ## If could not find the right lambda, do a default initialization
+  if (sum(df == K_2) == 0) {
+    stop("Lasso Initialisation failed : could not find a satisfying number of shifts.")
+  }
+  ## Select the row with the right number of coefficients
+  index <- min(which(df == K_2))
+  # Check that the matrix is of full rank
+  Xproj <- Xp[,fit@active.set[index,]]
+  if (dim(Xproj)[2] != qr(Xproj)$rank) {
+    stop("The selected variables do not produce a full rank regression matrix !")
+  }
+  delta <- fit@coefficients[index,]
+  E0 <- fit@mu[index] # Intercept
+  ## Gauss lasso
+  projection <- which(delta != 0)
+  Xproj <- 0 + Xp[, projection]
+  fit.gauss <- lm(Yp ~ Xproj)
+  delta.gauss <- rep(0, dim(Xp)[2])
+  E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
+  delta.gauss[projection] <- coef(fit.gauss)[-1]
+  # If lm fails to find some coeeficients, put them to 0 (this should not happen)
+  delta.gauss[is.na(delta.gauss)] <- 0.1
+  ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
+  edges <- order(-abs(delta.gauss))[1:K]
+  delta.gauss.final <- rep(0, length(delta.gauss))
+  delta.gauss.final[edges] <- delta.gauss[edges]
+  shifts.gauss <- shifts.vector_to_list(delta.gauss.final);
+  return(list(E0.gauss = E0.gauss, shifts.gauss = shifts.gauss))
 }
 
 { ##
