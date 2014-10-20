@@ -1346,7 +1346,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
   penscale <- rep(1, dim(Xp)[2])
   # If there is a penalty on the intercept, means first coordinate is intercept and should therefore be excluded from fit.
-  if (intercept.penalty) penscale[1] <- 10^10
+  if (intercept.penalty) penscale[length(penscale)] <- 10^10
   ## fit
   fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, penscale = penscale)
   df <- rowSums(fit@active.set)
@@ -1404,7 +1404,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
   delta.gauss[projection] <- coef(fit.gauss)[-1]
   # If lm fails to find some coeeficients, put them to 0 (this should not happen)
-  delta.gauss[is.na(delta.gauss)] <- 0.1
+  delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
   edges <- order(-abs(delta.gauss))[1:K]
   delta.gauss.final <- rep(0, length(delta.gauss))
@@ -2592,26 +2592,28 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 } ##
 segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, conditional_law_X, selection.strength, ...){
   ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
   ## Computation of answer matrix D
   diff_exp <- compute_diff_exp.OU(phylo = phylo, 
                                   conditional_law_X = conditional_law_X, 
                                   selection.strength = selection.strength)
-  parents <- phylo$edge[,1]
+  daughters <- phylo$edge[,2]
   ee <- exp(- selection.strength * phylo$edge.length )
   D <- (1 - ee^2)^(-1/2) * diff_exp
-  D <- c(conditional_law_X$expectations[ntaxa+1], D)
+  D <- D[match(1:(ntaxa + nNodes), phylo$edge[,2])]
+  D[ntaxa + 1] <- conditional_law_X$expectations[ntaxa+1]
   ## Regression matrix : modified incidence matrix
   U <- incidence.matrix.full(phylo)
-  U <- cbind(rep(1, dim(U)[1]), U)
-  A <- diag(c(1,sqrt((1-ee)/(1+ee))))
-  Xp <- A%*%U
+  U <- cbind(U, rep(1, dim(U)[1]))
+  A <- diag(c(sqrt((1-ee)/(1+ee)),1))
+  Xp <- U%*%A
   ## Segmentation per se
   if (nbr_of_shifts > 0) {
     # Lasso regression
     fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, intercept.penalty = TRUE)
     # Define shifts
     shifts <- fit$shifts.gauss
-    shifts$edges <- shifts$edges - 1
+    shifts$edges <- shifts$edges
     # Define mu = beta_0
     beta_0 <- fit$E0.gauss
     # Compute new costs
