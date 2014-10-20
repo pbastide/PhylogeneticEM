@@ -276,6 +276,7 @@ save.image(paste0(savedatafile_mammal, "-", datestamp, ".RData"))
 savedatafile_sim <- paste0(savedatafile, "_simulated_tree")
 
 ## simulate tree
+set.seed(1792)
 ntaxa <- 64
 lambda <- 0.1
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
@@ -286,6 +287,7 @@ cl <- makeCluster(Ncores)
 registerDoParallel(cl)
 
 ## Parallelized simulations
+set.seed(1804)
 simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
   alpha <- simparams[i, "alpha"]
   gamma <- simparams[i, "gamma"]
