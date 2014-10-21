@@ -1367,12 +1367,12 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
     while ((sum(K_inf == df) == 0) && (K_inf >= 0)) {
       K_inf <- K_inf - 1
     }
-    lambda_inf <- fit@lambda1[tail(which(K_inf == df), n=1)]
+    lambda_inf <- fit@lambda1[tail(which(K_inf == df), n = 1)]
     K_sup <- K + 1
     while ((sum(K_sup == df) == 0) && (K_sup <= max(df))) {
       K_sup <- K_sup + 1
     }
-    lambda_sup <- fit@lambda1[head(which(K_sup == df), n=1)]
+    lambda_sup <- fit@lambda1[head(which(K_sup == df), n = 1)]
     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
     fit <- elastic.net(x = 0 + Xp, y = Yp, lambda1 = lambda, lambda2 = 0, penscale = penscale)
     df <- rowSums(fit@active.set)

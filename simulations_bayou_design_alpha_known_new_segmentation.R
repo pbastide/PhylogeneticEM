@@ -10,6 +10,7 @@ require(doParallel)
 require(foreach)
 require(ape)
 require(glmnet) # For Lasso initialization
+require(quadrupen) # For Lasso initialization
 require(robustbase) # For robust fitting of alpha
 library(TreeSim) # For simulation of the tree
 #require(ggplot2) # Plot
