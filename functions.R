@@ -1395,8 +1395,12 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   delta <- fit@coefficients[index,]
   E0 <- fit@mu[index] # Intercept
+  ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
+  edges <- order(-abs(delta))[1:K]
+  delta.bis <- rep(0, length(delta))
+  delta.bis[edges] <- delta[edges]
   ## Gauss lasso
-  projection <- which(delta != 0)
+  projection <- which(delta.bis != 0)
   if (is.null(root)) { # If no one is excluded, "real" intercept
     Xproj <- 0 + Xp[, projection]
     fit.gauss <- lm(Yp ~ Xproj)
@@ -1412,12 +1416,11 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   # If lm fails to find some coeeficients, put them to 0 (this should not happen)
   delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
-  ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
-  edges <- order(-abs(delta.gauss))[1:K]
-  delta.gauss.final <- rep(0, length(delta.gauss))
-  delta.gauss.final[edges] <- delta.gauss[edges]
-  shifts.gauss <- shifts.vector_to_list(delta.gauss.final);
-  return(list(E0.gauss = E0.gauss, shifts.gauss = shifts.gauss))
+  # Result
+  shifts.gauss <- shifts.vector_to_list(delta.gauss);
+  return(list(E0.gauss = E0.gauss, 
+              shifts.gauss = shifts.gauss,
+              residuals = residuals(fit.gauss)))
 }
 
 { ##
@@ -2628,15 +2631,15 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, conditional_
     # Define mu = beta_0
     beta_0 <- fit$E0.gauss
     # Compute new costs
-    Delta <- shifts.list_to_vector(phylo, shifts)
-    Delta <- c(Delta, beta_0)
-    #Delta <- c(beta_0, Delta)
-    costs <- (D - Xp%*%Delta)^2
+    #Delta <- shifts.list_to_vector(phylo, shifts)
+    #Delta <- c(Delta, beta_0)
+    #costs <- (D - Xp%*%Delta)^2
+    costs <- fit$residuals^2
     return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
   } else {
    #edges_max <- length(costs0) + 1
     beta_0 <- conditional_law_X$expectations[ntaxa+1]
-    Delta <- c(beta_0, rep(0, length(phylo$edge)))
+    Delta <- c(rep(0, length(phylo$edge)), beta_0)
     costs <- (D - Xp%*%Delta)^2
     return(list(beta_0 = beta_0, shifts = NULL, costs = costs))
   }

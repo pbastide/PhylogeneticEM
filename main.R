@@ -1393,7 +1393,7 @@ history <- list_to_table.history(simest$history)
 history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, datasim$params)
 #CLL_history <- cbind(simest$CLL_history, c(NA, NA))
 #history <- rbind(history, CLL_history)
-write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown", name, ".csv"))
+write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown_bis", name, ".csv"))
 
 simest_true_alpha <- estimationfunction_alpha_known(datasim, alphaKN = alpha, seg = seg)
 simest_true_alpha$history[["true"]] <- datasim$params
