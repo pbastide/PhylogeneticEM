@@ -1452,6 +1452,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
 #'06/10/14 - Externalization of function lasso
 } ##
 init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, ...) {
+  ntaxa <- length(phylo$tip.label)
   init.EM.default <- init.EM.default(process)
   ## Choose the norm :
   if (use_sigma) {
@@ -1468,15 +1469,17 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo,
     Sig_chol_inv <- t(solve(Sig_chol)) # Sigma_YY_inv = t(Sig_chol_inv)%*%Sig_chol_inv
     # Transform Y_data and T
     Tr <- incidence.matrix(phylo)
+    Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
     Tp <- Sig_chol_inv%*%Tr
     Yp <- Sig_chol_inv%*%Y_data
+    fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts, root = ntaxa + 1))
   } else {
     # Return untransformed Y_data and T
     Tp <- incidence.matrix(phylo)
     Yp <- Y_data
+    fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
   }
   ## Fit
-  fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
   if (inherits(fit, "try-error")) {
     warning("Lasso Initialisation fail : could not find a satisfying number of shifts. Proceeding to a default initialization.")
     return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, ...))
