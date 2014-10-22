@@ -1205,6 +1205,7 @@ setwd(WD)
 PATH <- paste(WD, "/Results/Miscellaneous_Evals/", sep="")
 library(ape)
 library(glmnet) # For Lasso initialization
+library(quadrupen)
 #library(nlme) # For second derivative computation
 #library(combinat) # For alpha prior robust estimation
 library(robustbase) # For robust fitting of alpha
@@ -1368,9 +1369,10 @@ shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
 #shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
 
 #seg <- "max_costs_0"
-seg <- "lasso"
+#seg <- "lasso"
 #seg <- "best_single_move"
 #seg <- c("same_shifts", "same_shifts_same_values", "max_costs_0", "lasso")
+seg <- c("lasso", "same_shifts")
 
 name <- paste0("_", paste0(seg, collapse="_"), "_alpha=", alpha, "_gamma=", gamma, "_K=", K, "_edges=", paste0(shifts$edges, collapse="-"), "_values=", paste0(shifts$values, collapse="-"))
 

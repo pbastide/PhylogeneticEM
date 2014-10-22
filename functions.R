@@ -1342,11 +1342,10 @@ lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALS
   }
 }
 
-lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
-  ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
+lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
+  ## Root is the intercept, should be excluded from varaiable selection
   penscale <- rep(1, dim(Xp)[2])
-  # If there is a penalty on the intercept, means first coordinate is intercept and should therefore be excluded from fit.
-  if (intercept.penalty) penscale[length(penscale)] <- 10^10
+  penscale[root] <- 10^10 # if root is NULL, no one is excluded.
   ## fit
   fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, penscale = penscale)
   df <- rowSums(fit@active.set)
@@ -1398,11 +1397,19 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   E0 <- fit@mu[index] # Intercept
   ## Gauss lasso
   projection <- which(delta != 0)
-  Xproj <- 0 + Xp[, projection]
-  fit.gauss <- lm(Yp ~ Xproj)
-  delta.gauss <- rep(0, dim(Xp)[2])
-  E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
-  delta.gauss[projection] <- coef(fit.gauss)[-1]
+  if (is.null(root)) { # If no one is excluded, "real" intercept
+    Xproj <- 0 + Xp[, projection]
+    fit.gauss <- lm(Yp ~ Xproj)
+    delta.gauss <- rep(0, dim(Xp)[2])
+    E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coef(fit.gauss)[-1]
+  } else { # take intercept (root) into consideration
+    Xproj <- 0 + Xp[, c(root, projection)]
+    fit.gauss <- lm.fit(x = Xproj, y = Yp)
+    delta.gauss <- rep(0, dim(Xp)[2])
+    E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coef(fit.gauss)[-1]
+  }
   # If lm fails to find some coeeficients, put them to 0 (this should not happen)
   delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
@@ -2605,12 +2612,16 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, conditional_
   ## Regression matrix : modified incidence matrix
   U <- incidence.matrix.full(phylo)
   U <- cbind(U, rep(1, dim(U)[1]))
-  A <- diag(c(sqrt((1-ee)/(1+ee)),1))
-  Xp <- U%*%A
+  #A <- diag(c(sqrt((1-ee)/(1+ee)),1))
+  A <- sqrt((1-ee)/(1+ee))
+  A <- A[match(1:(ntaxa + nNodes), phylo$edge[,2])]
+  A[ntaxa + 1] <- 1
+  A <- diag(A)
+  Xp <- A%*%U
   ## Segmentation per se
   if (nbr_of_shifts > 0) {
     # Lasso regression
-    fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, intercept.penalty = TRUE)
+    fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes)
     # Define shifts
     shifts <- fit$shifts.gauss
     shifts$edges <- shifts$edges
@@ -2618,7 +2629,8 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, conditional_
     beta_0 <- fit$E0.gauss
     # Compute new costs
     Delta <- shifts.list_to_vector(phylo, shifts)
-    Delta <- c(beta_0, Delta)
+    Delta <- c(Delta, beta_0)
+    #Delta <- c(beta_0, Delta)
     costs <- (D - Xp%*%Delta)^2
     return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
   } else {
