@@ -1372,7 +1372,7 @@ shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,
 #seg <- "lasso"
 #seg <- "best_single_move"
 #seg <- c("same_shifts", "same_shifts_same_values", "max_costs_0", "lasso")
-seg <- c("lasso", "same_shifts", "best_single_move")
+seg <- c("lasso", "same_shifts")#, "best_single_move")
 
 name <- paste0("_", paste0(seg, collapse="_"), "_alpha=", alpha, "_gamma=", gamma, "_K=", K, "_edges=", paste0(shifts$edges, collapse="-"), "_values=", paste0(shifts$values, collapse="-"))
 

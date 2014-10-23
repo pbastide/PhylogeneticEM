@@ -1408,13 +1408,42 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
     stop("The selected variables do not produce a full rank regression matrix !")
   }
   delta <- fit@coefficients[index,]
-  E0 <- fit@mu[index] # Intercept
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
   edges <- order(-abs(delta))[1:K]
   delta.bis <- rep(0, length(delta))
   delta.bis[edges] <- delta[edges]
   ## Gauss lasso
-  projection <- which(delta.bis != 0)
+  return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+}
+
+{ ##
+#' @title Do a lm on top of a lasso regression.
+#'
+#' @description
+#' \code{compute_gauss_lasso} takes the variables selected by a lasso procedure, and
+#' uses them to do a simple linear least square regression. Function used is
+#' \code{lm} for non-transformed data (root = NULL), and \code{lm.fit} for
+#' transformed data (root = an integer).
+#'
+#' @details
+#' Depending on the value of root, the behaviour is different. If root is null, then
+#' we fit a linear regression with an intercept. If root is equal to an integer,
+#' then the "intercept" column of the matrix Xp (that has possibly been trough a 
+#' multiplication with a cholesky decomposition of the variance) is included, rather
+#' than the intercept.
+#'
+#' @param Yp (transformed) data
+#' @param Xp (transformed) matrix of regression
+#' @param delta regression coefficients obtained with a lasso regression
+#' @param root the position of the root (intercept) in delta
+#' 
+#' @return E0.gauss the intercept (value at the root)
+#' @return shifts.gauss the list of shifts found on the branches
+#' @return residuals the residuals of the regression
+#'
+} ##
+compute_gauss_lasso <- function (Yp, Xp, delta, root) {
+  projection <- which(delta != 0)
   if (is.null(root)) { # If no one is excluded, "real" intercept
     Xproj <- 0 + Xp[, projection]
     fit.gauss <- lm(Yp ~ Xproj)
@@ -1428,8 +1457,11 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
     E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
     delta.gauss[projection] <- coef(fit.gauss)[-1]
   }
-  # If lm fails to find some coeeficients, put them to 0 (this should not happen)
-  delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
+  # If lm fails to find some coeficients
+  if (anyNA(delta.gauss)) {
+    warning("There were some NA in the lm fit for the Gauss Lasso. These were replaced with the values obtained from the Lasso. This is not the optimal solution.")
+    delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
+  }
   # Result
   shifts.gauss <- shifts.vector_to_list(delta.gauss);
   return(list(E0.gauss = E0.gauss, 
