@@ -1022,8 +1022,8 @@ estimateEM <- function(phylo,
                               BM = is.finite.params.BM,
                               OU = is.finite.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
   is.in.ranges.params  <- switch(process, 
-                              BM = is.in.ranges.params.BM,
-                              OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                                 BM = is.in.ranges.params.BM,
+                                 OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
   compute_MaxCompleteLogLik <- switch(process, 
                                       BM = compute_MaxCompleteLogLik.BM,
                                       OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
@@ -1061,14 +1061,14 @@ estimateEM <- function(phylo,
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
-                            Y_data = Y_data,
-                            nbr_of_shifts = nbr_of_shifts,
-                            distances_phylo = distances_phylo,
-                            init.selection.strength = init.selection.strength,
-                            max_triplet_number = max_triplet_number,
-                            known.selection.strength = known.selection.strength,
-                            alpha_known = alpha_known,
-                            init.var.root = var.init.root)
+                                                  Y_data = Y_data,
+                                                  nbr_of_shifts = nbr_of_shifts,
+                                                  distances_phylo = distances_phylo,
+                                                  init.selection.strength = init.selection.strength,
+                                                  max_triplet_number = max_triplet_number,
+                                                  known.selection.strength = known.selection.strength,
+                                                  alpha_known = alpha_known,
+                                                  init.var.root = var.init.root)
   init.var.root <- init.a.g$gamma_0
   if (!alpha_known) {
     init.selection.strength <- init.a.g$alpha_0
@@ -1090,21 +1090,21 @@ estimateEM <- function(phylo,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state=params$root.state, 
-                                  process=process, 
-                                  optimal.value=params$optimal.value,
-                                  variance=params$variance, 
-                                  selection.strength=params$selection.strength)
+                                       process=process, 
+                                       optimal.value=params$optimal.value,
+                                       variance=params$variance, 
+                                       selection.strength=params$selection.strength)
   attr(params, "ntaxa")  <- ntaxa
   params_old <- NULL
   ## Iteration
   Nbr_It <- 0
   params_history <- vector("list")#, Nbr_It_Max)
-#   CLL_history <- NULL
+  #   CLL_history <- NULL
   number_new_shifts <- NULL
   while ( Nbr_It == 0 || # Initialisation
             ( !shutoff.EM(params_old,params,tol) && # Shutoff
-              is.in.ranges.params(params, min=min_params, max=max_params) && # Divergence ?
-              Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
+                is.in.ranges.params(params, min=min_params, max=max_params) && # Divergence ?
+                Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
@@ -1126,16 +1126,16 @@ estimateEM <- function(phylo,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
                                    Sigma_YY_inv = moments$Sigma_YY_inv)
-    ## Log likelihood as the sum of conditional + entropy
-#     H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
-#     CLL <- conditional_expectation_log_likelihood(phylo = phylo,
-#                                           conditional_law_X = conditional_law_X, 
-#                                           sigma2 = params_old$variance,
-#                                           mu = params_old$root.state$exp.root,
-#                                           shifts = params_old$shifts,
-#                                           alpha = params_old$selection.strength)
-#     log_likelihood_bis <- compute_log_likelihood_with_entropy.simple(CLL, H)
-#     attr(params_old, "log_likelihood_bis") <- log_likelihood_bis
+#   ## Log likelihood as the sum of conditional + entropy
+#         H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
+#         CLL <- conditional_expectation_log_likelihood(phylo = phylo,
+#                                               conditional_law_X = conditional_law_X, 
+#                                               sigma2 = params_old$variance,
+#                                               mu = params_old$root.state$exp.root,
+#                                               shifts = params_old$shifts,
+#                                               alpha = params_old$selection.strength)
+#         log_likelihood_bis <- compute_log_likelihood_with_entropy.simple(CLL, H)
+#         attr(params_old, "log_likelihood_bis") <- log_likelihood_bis
     ## Store params for history
     params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
     ## M step
@@ -1155,33 +1155,47 @@ estimateEM <- function(phylo,
     ## Number of shifts that changed position ?
     number_new_shifts <- c(number_new_shifts,
                            sum(!(params$shifts$edges %in% params_old$shifts$edges)))
-    ## Check that the M step rised the conditional expectation of the completed likelihood
-#     CLL_old <- conditional_expectation_log_likelihood(phylo = phylo,
-#                                     conditional_law_X = conditional_law_X, 
-#                                     sigma2 = params_old$variance,
-#                                     mu = params_old$root.state$exp.root,
-#                                     shifts = params_old$shifts,
-#                                     alpha = params_old$selection.strength)
-#     names(CLL_old) <- "CCL_old"
-#     CLL_new <- conditional_expectation_log_likelihood(phylo = phylo,
-#                                     conditional_law_X = conditional_law_X, 
-#                                     sigma2 = params$variance,
-#                                     mu = params$root.state$exp.root,
-#                                     shifts = params$shifts,
-#                                     alpha = params$selection.strength)
-#     names(CLL_new) <- "CCL_new"
-#     if (CLL_old > CLL_new) { warning("The conditional expectation of the completed log likelihood decreased after step M !")}
-#     CLL_history <- cbind(CLL_history, c(CLL_old, CLL_new))
-#     attr(params, "MaxCompleteLogLik") <- CLL_new
+#   ## Check that the M step rised the conditional expectation of the completed likelihood
+#         CLL_old <- conditional_expectation_log_likelihood(phylo = phylo,
+#                                         conditional_law_X = conditional_law_X, 
+#                                         sigma2 = params_old$variance,
+#                                         mu = params_old$root.state$exp.root,
+#                                         shifts = params_old$shifts,
+#                                         alpha = params_old$selection.strength)
+#         names(CLL_old) <- "CCL_old"
+#         CLL_new <- conditional_expectation_log_likelihood(phylo = phylo,
+#                                         conditional_law_X = conditional_law_X, 
+#                                         sigma2 = params$variance,
+#                                         mu = params$root.state$exp.root,
+#                                         shifts = params$shifts,
+#                                         alpha = params$selection.strength)
+#         names(CLL_new) <- "CCL_new"
+#         if (CLL_old > CLL_new) { warning("The conditional expectation of the completed log likelihood decreased after step M !")}
+#         CLL_history <- cbind(CLL_history, c(CLL_old, CLL_new))
+#         attr(params, "MaxCompleteLogLik") <- CLL_new
   }
+  ## Compute log-likelihood for final parameters
+  moments <- compute_mean_variance(phylo = phylo,
+                                   times_shared = times_shared,
+                                   distances_phylo = distances_phylo,
+                                   process = process,
+                                   params_old = params)
+  log_likelihood <- compute_log_likelihood(phylo = phylo,
+                                           Y_data = Y_data,
+                                           sim = moments$sim,
+                                           Sigma = moments$Sigma,
+                                           Sigma_YY_inv = moments$Sigma_YY_inv)
+  attr(params, "log_likelihood") <- log_likelihood
+  params_history[[paste(Nbr_It, sep="")]] <- params
+  ## Result
   result <- list(params = params, 
                  ReconstructedNodesStates = conditional_law_X$expectations[(ntaxa+1):length(conditional_law_X$expectations)], 
                  params_old = params_old, 
                  params_init = params_init,
                  params_history = params_history,
                  number_new_shifts = number_new_shifts)
-#                  CLL_history = CLL_history
-
+  #                  CLL_history = CLL_history
+  
   attr(result, "Nbr_It") <- Nbr_It
   attr(result, "Divergence") <- !is.in.ranges.params(result$params, min=min_params, max=max_params) # TRUE if has diverged
   if (Nbr_It == Nbr_It_Max) warning(paste("The maximum number of iterations (Nbr_It_Max = ",Nbr_It_Max,") was reached.",sep=""))
@@ -1347,12 +1361,12 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   penscale <- rep(1, dim(Xp)[2])
   penscale[root] <- 10^10 # if root is NULL, no one is excluded.
   ## fit
-  fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, penscale = penscale)
+  fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, nlambda1 = 500, penscale = penscale)
   df <- rowSums(fit@active.set)
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K > max(df)) {
-    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, min.ratio = 0.0001, penscale = penscale)
+    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, nlambda1 = 500, min.ratio = 0.0001, penscale = penscale)
     df <- rowSums(fit@active.set)
   }
   if (K > max(df)) {

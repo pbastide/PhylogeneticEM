@@ -36,7 +36,7 @@ sigma_base <- 3
 gamma_base <- sigma_base/(2*alpha_base)
 K_base <- 9
 sigma_delta_base <- 18
-seg <- "best_single_move"
+seg <- "lasso" #"best_single_move"
 
 ## alpha grid
 alpha <- log(2)*1/c(0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1, 2, 10)
@@ -218,7 +218,7 @@ estimationfunction_alpha_known <- function(X) {
   X$start <- results_estim_EM$params_history["0"]
   X$beta_0_estim <- params$root.state$exp.root
   X$log_likelihood <- attr(params, "log_likelihood")[1]
-  X$mean_number_new_shifts <- mean(results_estim_EM$number_new_shifts)
+  X$number_new_shifts <- results_estim_EM$number_new_shifts
   return(X)
 }
 
