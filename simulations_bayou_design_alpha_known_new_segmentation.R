@@ -21,8 +21,9 @@ library(TreeSim) # For simulation of the tree
 source("functions.R")
 
 ## Set seed
-## set.seed(1121983)
-set.seed(21031989)
+#set.seed(1121983)
+#set.seed(21031989)
+set.seed(18051804)
 savedatafile = "../Results/Simulation_Estimation_Bayou_Design_new_seg/simulation_ou_on_tree_bayou_design"
 
 ## Set number of parallel cores
@@ -242,12 +243,8 @@ scale.tree <- function(phylo){
 
 tree <- scale.tree(tree)
 
-## Register parallel backend for computing
-cl <- makeCluster(Ncores)
-registerDoParallel(cl)
-
-## Parallelized simulations
-simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
+## Sequencial simulations (for reproductibility)
+simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
   alpha <- simparams[i, "alpha"]
   gamma <- simparams[i, "gamma"]
   K <- simparams[i, "K"]
@@ -258,6 +255,10 @@ simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
 }
 
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
+
+## Register parallel backend for computing
+cl <- makeCluster(Ncores)
+registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
@@ -277,19 +278,13 @@ save.image(paste0(savedatafile_mammal, "-", datestamp, ".RData"))
 savedatafile_sim <- paste0(savedatafile, "_simulated_tree")
 
 ## simulate tree
-set.seed(1792)
 ntaxa <- 64
 lambda <- 0.1
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
 plot(tree)
 
-## Register parallel backend for computing
-cl <- makeCluster(Ncores)
-registerDoParallel(cl)
-
-## Parallelized simulations
-set.seed(1804)
-simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
+## Sequencial simulations (for reproductability)
+simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
   alpha <- simparams[i, "alpha"]
   gamma <- simparams[i, "gamma"]
   K <- simparams[i, "K"]
@@ -300,6 +295,10 @@ simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
 }
 
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
+
+## Register parallel backend for computing
+cl <- makeCluster(Ncores)
+registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%

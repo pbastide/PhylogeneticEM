@@ -1358,15 +1358,23 @@ lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALS
 
 lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   ## Root is the intercept, should be excluded from varaiable selection
-  penscale <- rep(1, dim(Xp)[2])
-  penscale[root] <- 10^10 # if root is NULL, no one is excluded.
+  # In that case, project Yp on the orthogonal of the root
+  if (!is.null(root)){
+    Xp_noroot <- Xp[ , -root]
+    Yp_orth <- Yp - crossprod(Yp, Xp[,root])/(crossprod(Xp[,root]))*Xp[,root]
+    intercept <- FALSE
+  } else {
+    Xp_noroot <- Xp
+    Yp_orth <- Yp
+    intercept <- TRUE
+  }
   ## fit
-  fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, nlambda1 = 500, penscale = penscale)
+  fit <- elastic.net(x = 0 + Xp_noroot, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept)
   df <- rowSums(fit@active.set)
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K > max(df)) {
-    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda2 = 0, nlambda1 = 500, min.ratio = 0.0001, penscale = penscale)
+    fit <- elastic.net(x = 0 + Xp_noroot, y = Yp_orth, lambda2 = 0, nlambda1 = 500, min.ratio = 0.0001, intercept = intercept)
     df <- rowSums(fit@active.set)
   }
   if (K > max(df)) {
@@ -1387,7 +1395,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
     }
     lambda_sup <- fit@lambda1[head(which(K_sup == df), n = 1)]
     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
-    fit <- elastic.net(x = 0 + Xp, y = Yp, lambda1 = lambda, lambda2 = 0, penscale = penscale)
+    fit <- elastic.net(x = 0 + Xp_noroot, y = Yp_orth, lambda1 = lambda, lambda2 = 0, intercept = intercept)
     df <- rowSums(fit@active.set)
   }
   ## If the right lambda does not exists, raise the number of shifts
@@ -1402,12 +1410,17 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   ## Select the row with the right number of coefficients
   index <- min(which(df == K_2))
+  delta <- fit@coefficients[index,]
+  # If we put aside the root, replace it in the coefficients
+  if (!is.null(root)){
+    delta <- c(delta[1:(root - 1)], 0, delta[root:length(delta)])
+  }
   # Check that the matrix is of full rank
+  projection <- which(delta != 0)
   Xproj <- Xp[,fit@active.set[index,]]
   if (dim(Xproj)[2] != qr(Xproj)$rank) {
     stop("The selected variables do not produce a full rank regression matrix !")
   }
-  delta <- fit@coefficients[index,]
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
   edges <- order(-abs(delta))[1:K]
   delta.bis <- rep(0, length(delta))
