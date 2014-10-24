@@ -1360,7 +1360,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   ## Root is the intercept, should be excluded from varaiable selection
   # In that case, project Yp on the orthogonal of the root
   if (!is.null(root)){
-    Xp_noroot <- Xp[ , -root]
+    Xp_noroot <- Xp[ , -root, drop = FALSE]
     Yp_orth <- Yp - crossprod(Yp, Xp[,root])/(crossprod(Xp[,root]))*Xp[,root]
     intercept <- FALSE
   } else {
@@ -1418,7 +1418,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   # Check that the matrix is of full rank
   projection <- which(delta != 0)
-  Xproj <- Xp[,projection]
+  Xproj <- Xp[ , projection, drop = FALSE]
   if (dim(Xproj)[2] != qr(Xproj)$rank) {
     stop("The selected variables do not produce a full rank regression matrix !")
   }
@@ -1459,7 +1459,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
 compute_gauss_lasso <- function (Yp, Xp, delta, root) {
   projection <- which(delta != 0)
   if (is.null(root)) { # If no one is excluded, "real" intercept
-    Xproj <- 0 + Xp[, projection]
+    Xproj <- 0 + Xp[, projection, drop = FALSE]
     fit.gauss <- lm(Yp ~ Xproj)
     delta.gauss <- rep(0, dim(Xp)[2])
     E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
