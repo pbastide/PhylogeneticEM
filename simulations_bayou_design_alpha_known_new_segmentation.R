@@ -1,15 +1,16 @@
 rm(list = ls())
 
-WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
+#WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
+WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
 setwd(WD)
 
-reqpckg <- c("ape", "glmnet", "robustbase")
+reqpckg <- c("ape", "quadrupen", "robustbase")
 
 
 require(doParallel)
 require(foreach)
 require(ape)
-require(glmnet) # For Lasso initialization
+#require(glmnet) # For Lasso initialization
 require(quadrupen) # For Lasso initialization
 require(robustbase) # For robust fitting of alpha
 library(TreeSim) # For simulation of the tree

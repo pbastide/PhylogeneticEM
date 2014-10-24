@@ -1413,11 +1413,12 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   delta <- fit@coefficients[index,]
   # If we put aside the root, replace it in the coefficients
   if (!is.null(root)){
-    delta <- c(delta[1:(root - 1)], 0, delta[root:length(delta)])
+    #deltabis <- unname(c(delta[1:(root - 1)], 0, tail(delta, n = max(0, length(delta) - root + 1))))
+    delta <- append(delta, 0, after = root - 1)
   }
   # Check that the matrix is of full rank
   projection <- which(delta != 0)
-  Xproj <- Xp[,fit@active.set[index,]]
+  Xproj <- Xp[,projection]
   if (dim(Xproj)[2] != qr(Xproj)$rank) {
     stop("The selected variables do not produce a full rank regression matrix !")
   }
