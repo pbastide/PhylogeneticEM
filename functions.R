@@ -1360,21 +1360,24 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   ## Root is the intercept, should be excluded from varaiable selection
   # In that case, project Yp on the orthogonal of the root
   if (!is.null(root)){
+    L <- Xp[,root]
+    norme_L <- drop(crossprod(L))
     Xp_noroot <- Xp[ , -root, drop = FALSE]
-    Yp_orth <- Yp - crossprod(Yp, Xp[,root])/(crossprod(Xp[,root]))*Xp[,root]
+    Xp_orth <- Xp_noroot - (tcrossprod(L)%*%Xp_noroot)/norme_L
+    Yp_orth <- Yp - crossprod(Yp, L)/(norme_L)*L
     intercept <- FALSE
   } else {
-    Xp_noroot <- Xp
+    Xp_orth <- Xp
     Yp_orth <- Yp
     intercept <- TRUE
   }
   ## fit
-  fit <- elastic.net(x = 0 + Xp_noroot, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept)
+  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept)
   df <- rowSums(fit@active.set)
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K > max(df)) {
-    fit <- elastic.net(x = 0 + Xp_noroot, y = Yp_orth, lambda2 = 0, nlambda1 = 500, min.ratio = 0.0001, intercept = intercept)
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, min.ratio = 0.0001, intercept = intercept)
     df <- rowSums(fit@active.set)
   }
   if (K > max(df)) {
@@ -1395,7 +1398,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
     }
     lambda_sup <- fit@lambda1[head(which(K_sup == df), n = 1)]
     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
-    fit <- elastic.net(x = 0 + Xp_noroot, y = Yp_orth, lambda1 = lambda, lambda2 = 0, intercept = intercept)
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda1 = lambda, lambda2 = 0, intercept = intercept)
     df <- rowSums(fit@active.set)
   }
   ## If the right lambda does not exists, raise the number of shifts

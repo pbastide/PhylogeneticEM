@@ -1199,8 +1199,8 @@ plot(tree); edgelabels(); edgelabels(edge = datasim$shifts$edges, col="red")
 ## Test of Divergence - 2 - simple
 #######################################
 rm(list=ls())
-WD <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
-#WD <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
+#WD <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
+WD <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
 setwd(WD)
 PATH <- paste(WD, "/Results/Miscellaneous_Evals/", sep="")
 library(ape)
@@ -1360,13 +1360,13 @@ process <- "OU"
 beta_0 <- 0
 alpha <- 3
 gamma <- 0.1
-K <- 2
+K <- 9
 # haut placées
 shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
 # dans les feuilles
 #shifts <- list(edges=c(17, 118),values=c(10, -10),relativeTimes=c(0,0))
 #shifts <- list(edges=c(17, 118, 23, 85, 53, 110, 56, 96, 7),values=c(0.5,1,1.5,-0.5,-1,-1.5,2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
-#shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
+shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
 
 #seg <- "max_costs_0"
 #seg <- "lasso"
@@ -1393,7 +1393,7 @@ history <- list_to_table.history(simest$history)
 history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, datasim$params)
 #CLL_history <- cbind(simest$CLL_history, c(NA, NA))
 #history <- rbind(history, CLL_history)
-write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown_bis", name, ".csv"))
+write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown", name, ".csv"))
 
 simest_true_alpha <- estimationfunction_alpha_known(datasim, alphaKN = alpha, seg = seg)
 simest_true_alpha$history[["true"]] <- datasim$params
