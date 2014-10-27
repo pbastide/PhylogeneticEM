@@ -1,7 +1,7 @@
 rm(list = ls())
 
-#WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
-WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
+WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
+#WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
 setwd(WD)
 
 reqpckg <- c("ape", "quadrupen", "robustbase")
@@ -25,7 +25,7 @@ source("functions.R")
 #set.seed(1121983)
 #set.seed(21031989)
 set.seed(18051804)
-savedatafile = "../Results/Simulation_Estimation_Bayou_Design_new_seg/simulation_ou_on_tree_bayou_design"
+savedatafile = "../Results/Simulation_Estimation_Bayou_Design_new_seg/simulation_ou_on_tree_bayou_design_alpha_known"
 
 ## Set number of parallel cores
 Ncores <- 3
@@ -302,7 +302,7 @@ cl <- makeCluster(Ncores)
 registerDoParallel(cl)
 
 ## Parallelized estimations
-time_alpha_known <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
+time_alpha_known <- system.time(simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
 {
   estimationfunction_alpha_known(i)
 }

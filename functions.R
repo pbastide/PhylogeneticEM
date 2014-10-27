@@ -1532,7 +1532,7 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo,
     Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
     Tp <- Sig_chol_inv%*%Tr
     Yp <- Sig_chol_inv%*%Y_data
-    fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts, root = ntaxa + 1))
+    fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts, root = dim(Tr)[2]))
   } else {
     # Return untransformed Y_data and T
     Tp <- incidence.matrix(phylo)
