@@ -1,17 +1,15 @@
 rm(list = ls())
 
-WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
-#WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
+WD <- "/home/bastide/Dropbox/These/Code/R"
 setwd(WD)
 
-reqpckg <- c("ape", "quadrupen", "robustbase")
+reqpckg <- c("ape", "glmnet", "robustbase")
 
 
 require(doParallel)
 require(foreach)
 require(ape)
-#require(glmnet) # For Lasso initialization
-require(quadrupen) # For Lasso initialization
+require(glmnet) # For Lasso initialization
 require(robustbase) # For robust fitting of alpha
 library(TreeSim) # For simulation of the tree
 #require(ggplot2) # Plot
@@ -22,10 +20,9 @@ library(TreeSim) # For simulation of the tree
 source("functions.R")
 
 ## Set seed
-#set.seed(1121983)
-#set.seed(21031989)
-set.seed(18051804)
-savedatafile = "../Results/Simulation_Estimation_Bayou_Design_new_seg/simulation_ou_on_tree_bayou_design_alpha_known"
+## set.seed(1121983)
+set.seed(21031989)
+savedatafile = "../Results/Simulation_Estimation_Bayou_Design_new_seg/simulation_ou_on_tree_bayou_design"
 
 ## Set number of parallel cores
 Ncores <- 3
@@ -38,7 +35,7 @@ sigma_base <- 3
 gamma_base <- sigma_base/(2*alpha_base)
 K_base <- 9
 sigma_delta_base <- 18
-seg <- "lasso" #"best_single_move"
+seg <- "best_single_move"
 
 ## alpha grid
 alpha <- log(2)*1/c(0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1, 2, 10)
@@ -220,7 +217,7 @@ estimationfunction_alpha_known <- function(X) {
   X$start <- results_estim_EM$params_history["0"]
   X$beta_0_estim <- params$root.state$exp.root
   X$log_likelihood <- attr(params, "log_likelihood")[1]
-  X$number_new_shifts <- results_estim_EM$number_new_shifts
+  X$mean_number_new_shifts <- mean(results_estim_EM$number_new_shifts)
   return(X)
 }
 
@@ -244,8 +241,12 @@ scale.tree <- function(phylo){
 
 tree <- scale.tree(tree)
 
-## Sequencial simulations (for reproductibility)
-simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
+## Register parallel backend for computing
+cl <- makeCluster(Ncores)
+registerDoParallel(cl)
+
+## Parallelized simulations
+simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
   alpha <- simparams[i, "alpha"]
   gamma <- simparams[i, "gamma"]
   K <- simparams[i, "K"]
@@ -256,10 +257,6 @@ simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
 }
 
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
-
-## Register parallel backend for computing
-cl <- makeCluster(Ncores)
-registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
@@ -284,8 +281,12 @@ lambda <- 0.1
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
 plot(tree)
 
-## Sequencial simulations (for reproductability)
-simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
+## Register parallel backend for computing
+cl <- makeCluster(Ncores)
+registerDoParallel(cl)
+
+## Parallelized simulations
+simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %dopar% {
   alpha <- simparams[i, "alpha"]
   gamma <- simparams[i, "gamma"]
   K <- simparams[i, "K"]
@@ -297,12 +298,8 @@ simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
 
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
 
-## Register parallel backend for computing
-cl <- makeCluster(Ncores)
-registerDoParallel(cl)
-
 ## Parallelized estimations
-time_alpha_known <- system.time(simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
+time_alpha_known <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
 {
   estimationfunction_alpha_known(i)
 }
