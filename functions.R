@@ -1022,8 +1022,8 @@ estimateEM <- function(phylo,
                               BM = is.finite.params.BM,
                               OU = is.finite.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
   is.in.ranges.params  <- switch(process, 
-                              BM = is.in.ranges.params.BM,
-                              OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                                 BM = is.in.ranges.params.BM,
+                                 OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
   compute_MaxCompleteLogLik <- switch(process, 
                                       BM = compute_MaxCompleteLogLik.BM,
                                       OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
@@ -1061,14 +1061,14 @@ estimateEM <- function(phylo,
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
-                            Y_data = Y_data,
-                            nbr_of_shifts = nbr_of_shifts,
-                            distances_phylo = distances_phylo,
-                            init.selection.strength = init.selection.strength,
-                            max_triplet_number = max_triplet_number,
-                            known.selection.strength = known.selection.strength,
-                            alpha_known = alpha_known,
-                            init.var.root = var.init.root)
+                                                  Y_data = Y_data,
+                                                  nbr_of_shifts = nbr_of_shifts,
+                                                  distances_phylo = distances_phylo,
+                                                  init.selection.strength = init.selection.strength,
+                                                  max_triplet_number = max_triplet_number,
+                                                  known.selection.strength = known.selection.strength,
+                                                  alpha_known = alpha_known,
+                                                  init.var.root = var.init.root)
   init.var.root <- init.a.g$gamma_0
   if (!alpha_known) {
     init.selection.strength <- init.a.g$alpha_0
@@ -1090,21 +1090,21 @@ estimateEM <- function(phylo,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state=params$root.state, 
-                                  process=process, 
-                                  optimal.value=params$optimal.value,
-                                  variance=params$variance, 
-                                  selection.strength=params$selection.strength)
+                                       process=process, 
+                                       optimal.value=params$optimal.value,
+                                       variance=params$variance, 
+                                       selection.strength=params$selection.strength)
   attr(params, "ntaxa")  <- ntaxa
   params_old <- NULL
   ## Iteration
   Nbr_It <- 0
   params_history <- vector("list")#, Nbr_It_Max)
-#   CLL_history <- NULL
+  #   CLL_history <- NULL
   number_new_shifts <- NULL
   while ( Nbr_It == 0 || # Initialisation
             ( !shutoff.EM(params_old,params,tol) && # Shutoff
-              is.in.ranges.params(params, min=min_params, max=max_params) && # Divergence ?
-              Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
+                is.in.ranges.params(params, min=min_params, max=max_params) && # Divergence ?
+                Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
@@ -1126,16 +1126,16 @@ estimateEM <- function(phylo,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
                                    Sigma_YY_inv = moments$Sigma_YY_inv)
-    ## Log likelihood as the sum of conditional + entropy
-#     H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
-#     CLL <- conditional_expectation_log_likelihood(phylo = phylo,
-#                                           conditional_law_X = conditional_law_X, 
-#                                           sigma2 = params_old$variance,
-#                                           mu = params_old$root.state$exp.root,
-#                                           shifts = params_old$shifts,
-#                                           alpha = params_old$selection.strength)
-#     log_likelihood_bis <- compute_log_likelihood_with_entropy.simple(CLL, H)
-#     attr(params_old, "log_likelihood_bis") <- log_likelihood_bis
+#   ## Log likelihood as the sum of conditional + entropy
+#         H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
+#         CLL <- conditional_expectation_log_likelihood(phylo = phylo,
+#                                               conditional_law_X = conditional_law_X, 
+#                                               sigma2 = params_old$variance,
+#                                               mu = params_old$root.state$exp.root,
+#                                               shifts = params_old$shifts,
+#                                               alpha = params_old$selection.strength)
+#         log_likelihood_bis <- compute_log_likelihood_with_entropy.simple(CLL, H)
+#         attr(params_old, "log_likelihood_bis") <- log_likelihood_bis
     ## Store params for history
     params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
     ## M step
@@ -1155,33 +1155,47 @@ estimateEM <- function(phylo,
     ## Number of shifts that changed position ?
     number_new_shifts <- c(number_new_shifts,
                            sum(!(params$shifts$edges %in% params_old$shifts$edges)))
-    ## Check that the M step rised the conditional expectation of the completed likelihood
-#     CLL_old <- conditional_expectation_log_likelihood(phylo = phylo,
-#                                     conditional_law_X = conditional_law_X, 
-#                                     sigma2 = params_old$variance,
-#                                     mu = params_old$root.state$exp.root,
-#                                     shifts = params_old$shifts,
-#                                     alpha = params_old$selection.strength)
-#     names(CLL_old) <- "CCL_old"
-#     CLL_new <- conditional_expectation_log_likelihood(phylo = phylo,
-#                                     conditional_law_X = conditional_law_X, 
-#                                     sigma2 = params$variance,
-#                                     mu = params$root.state$exp.root,
-#                                     shifts = params$shifts,
-#                                     alpha = params$selection.strength)
-#     names(CLL_new) <- "CCL_new"
-#     if (CLL_old > CLL_new) { warning("The conditional expectation of the completed log likelihood decreased after step M !")}
-#     CLL_history <- cbind(CLL_history, c(CLL_old, CLL_new))
-#     attr(params, "MaxCompleteLogLik") <- CLL_new
+#   ## Check that the M step rised the conditional expectation of the completed likelihood
+#         CLL_old <- conditional_expectation_log_likelihood(phylo = phylo,
+#                                         conditional_law_X = conditional_law_X, 
+#                                         sigma2 = params_old$variance,
+#                                         mu = params_old$root.state$exp.root,
+#                                         shifts = params_old$shifts,
+#                                         alpha = params_old$selection.strength)
+#         names(CLL_old) <- "CCL_old"
+#         CLL_new <- conditional_expectation_log_likelihood(phylo = phylo,
+#                                         conditional_law_X = conditional_law_X, 
+#                                         sigma2 = params$variance,
+#                                         mu = params$root.state$exp.root,
+#                                         shifts = params$shifts,
+#                                         alpha = params$selection.strength)
+#         names(CLL_new) <- "CCL_new"
+#         if (CLL_old > CLL_new) { warning("The conditional expectation of the completed log likelihood decreased after step M !")}
+#         CLL_history <- cbind(CLL_history, c(CLL_old, CLL_new))
+#         attr(params, "MaxCompleteLogLik") <- CLL_new
   }
+  ## Compute log-likelihood for final parameters
+  moments <- compute_mean_variance(phylo = phylo,
+                                   times_shared = times_shared,
+                                   distances_phylo = distances_phylo,
+                                   process = process,
+                                   params_old = params)
+  log_likelihood <- compute_log_likelihood(phylo = phylo,
+                                           Y_data = Y_data,
+                                           sim = moments$sim,
+                                           Sigma = moments$Sigma,
+                                           Sigma_YY_inv = moments$Sigma_YY_inv)
+  attr(params, "log_likelihood") <- log_likelihood
+  params_history[[paste(Nbr_It, sep="")]] <- params
+  ## Result
   result <- list(params = params, 
                  ReconstructedNodesStates = conditional_law_X$expectations[(ntaxa+1):length(conditional_law_X$expectations)], 
                  params_old = params_old, 
                  params_init = params_init,
                  params_history = params_history,
                  number_new_shifts = number_new_shifts)
-#                  CLL_history = CLL_history
-
+  #                  CLL_history = CLL_history
+  
   attr(result, "Nbr_It") <- Nbr_It
   attr(result, "Divergence") <- !is.in.ranges.params(result$params, min=min_params, max=max_params) # TRUE if has diverged
   if (Nbr_It == Nbr_It_Max) warning(paste("The maximum number of iterations (Nbr_It_Max = ",Nbr_It_Max,") was reached.",sep=""))
@@ -1280,19 +1294,39 @@ init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.roo
 #'
 #'06/10/14 - Initial release
 } ##
-lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
+lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
   excl <- NULL
   if (intercept.penalty) excl <- c(1)
   ## fit
-  fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, nlambda = 50000, dfmax = K + 1, exclude = excl)
+  fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, exclude = excl)
   ## Find the lambda that gives the right number of ruptures
-  K_2 <- K
-  ## Check that lambda goes far enought
-  if (K_2 > max(fit$df)) {
-    fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, dfmax = K + 1, exclude = excl)
+  # Check that lambda goes far enought
+  if (K > max(fit$df)) {
+    fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda.min.ratio = 0, exclude = excl)
+  }
+  if (K > max(fit$df)) {
+    stop("Lasso regression failed. There are too many variables.")
+  }
+  ## If the right lambda does not exists, find it.
+  count <- 0
+  while (sum(fit$df == K) == 0 && count < 500) {
+    count <- count + 1
+    K_inf <- K-1
+    while ((sum(K_inf == fit$df) == 0) && (K_inf >= 0)) {
+      K_inf <- K_inf - 1
+    }
+    lambda_inf <- fit$lambda[tail(which(K_inf == fit$df), n=1)]
+    K_sup <- K + 1
+    while ((sum(K_sup == fit$df) == 0) && (K_sup <= max(fit$df))) {
+      K_sup <- K_sup + 1
+    }
+    lambda_sup <- fit$lambda[head(which(K_sup == fit$df), n=1)]
+    lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+    fit <- glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda = lambda, exclude = excl)
   }
   ## If the right lambda does not exists, raise the number of shifts
+  K_2 <- K
   while (sum(fit$df == K_2) == 0 && K_2 < 500) {
     warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
     K_2 <- K_2 + 1
@@ -1311,6 +1345,8 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
     delta.gauss <- rep(0, dim(Xp)[2])
     E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
     delta.gauss[projection] <- coef(fit.gauss)[-1]
+    # If lm fails to find some coeeficients, put them to 0
+    delta.gauss[is.na(delta.gauss)] <- 0.1
     ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
     edges <- order(-abs(delta.gauss))[1:K]
     delta.gauss.final <- rep(0, length(delta.gauss))
@@ -1318,6 +1354,136 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
     shifts.gauss <- shifts.vector_to_list(delta.gauss.final);
     return(list(E0.gauss = E0.gauss, shifts.gauss = shifts.gauss))
   }
+}
+
+lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
+  ## Root is the intercept, should be excluded from varaiable selection
+  # In that case, project Yp on the orthogonal of the root
+  if (!is.null(root)){
+    L <- Xp[,root]
+    norme_L <- drop(crossprod(L))
+    Xp_noroot <- Xp[ , -root, drop = FALSE]
+    Xp_orth <- Xp_noroot - (tcrossprod(L)%*%Xp_noroot)/norme_L
+    Yp_orth <- Yp - crossprod(Yp, L)/(norme_L)*L
+    intercept <- FALSE
+  } else {
+    Xp_orth <- Xp
+    Yp_orth <- Yp
+    intercept <- TRUE
+  }
+  ## fit
+  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept)
+  df <- rowSums(fit@active.set)
+  ## Find the lambda that gives the right number of ruptures
+  # Check that lambda goes far enought
+  if (K > max(df)) {
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, min.ratio = 0.0001, intercept = intercept)
+    df <- rowSums(fit@active.set)
+  }
+  if (K > max(df)) {
+    stop("Lasso regression failed. There are too many variables.")
+  }
+  ## If the right lambda does not exists, find it.
+  count <- 0
+  while (sum(df == K) == 0 && count < 500) {
+    count <- count + 1
+    K_inf <- K-1
+    while ((sum(K_inf == df) == 0) && (K_inf >= 0)) {
+      K_inf <- K_inf - 1
+    }
+    lambda_inf <- fit@lambda1[tail(which(K_inf == df), n = 1)]
+    K_sup <- K + 1
+    while ((sum(K_sup == df) == 0) && (K_sup <= max(df))) {
+      K_sup <- K_sup + 1
+    }
+    lambda_sup <- fit@lambda1[head(which(K_sup == df), n = 1)]
+    lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda1 = lambda, lambda2 = 0, intercept = intercept)
+    df <- rowSums(fit@active.set)
+  }
+  ## If the right lambda does not exists, raise the number of shifts
+  K_2 <- K
+  while (sum(df == K_2) == 0 && K_2 < 500) {
+    warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+    K_2 <- K_2 + 1
+  }
+  ## If could not find the right lambda, do a default initialization
+  if (sum(df == K_2) == 0) {
+    stop("Lasso Initialisation failed : could not find a satisfying number of shifts.")
+  }
+  ## Select the row with the right number of coefficients
+  index <- min(which(df == K_2))
+  delta <- fit@coefficients[index,]
+  # If we put aside the root, replace it in the coefficients
+  if (!is.null(root)){
+    #deltabis <- unname(c(delta[1:(root - 1)], 0, tail(delta, n = max(0, length(delta) - root + 1))))
+    delta <- append(delta, 0, after = root - 1)
+  }
+  # Check that the matrix is of full rank
+  projection <- which(delta != 0)
+  Xproj <- Xp[ , projection, drop = FALSE]
+  if (dim(Xproj)[2] != qr(Xproj)$rank) {
+    stop("The selected variables do not produce a full rank regression matrix !")
+  }
+  ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
+  edges <- order(-abs(delta))[1:K]
+  delta.bis <- rep(0, length(delta))
+  delta.bis[edges] <- delta[edges]
+  ## Gauss lasso
+  return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+}
+
+{ ##
+#' @title Do a lm on top of a lasso regression.
+#'
+#' @description
+#' \code{compute_gauss_lasso} takes the variables selected by a lasso procedure, and
+#' uses them to do a simple linear least square regression. Function used is
+#' \code{lm} for non-transformed data (root = NULL), and \code{lm.fit} for
+#' transformed data (root = an integer).
+#'
+#' @details
+#' Depending on the value of root, the behaviour is different. If root is null, then
+#' we fit a linear regression with an intercept. If root is equal to an integer,
+#' then the "intercept" column of the matrix Xp (that has possibly been trough a 
+#' multiplication with a cholesky decomposition of the variance) is included, rather
+#' than the intercept.
+#'
+#' @param Yp (transformed) data
+#' @param Xp (transformed) matrix of regression
+#' @param delta regression coefficients obtained with a lasso regression
+#' @param root the position of the root (intercept) in delta
+#' 
+#' @return E0.gauss the intercept (value at the root)
+#' @return shifts.gauss the list of shifts found on the branches
+#' @return residuals the residuals of the regression
+#'
+} ##
+compute_gauss_lasso <- function (Yp, Xp, delta, root) {
+  projection <- which(delta != 0)
+  if (is.null(root)) { # If no one is excluded, "real" intercept
+    Xproj <- 0 + Xp[, projection, drop = FALSE]
+    fit.gauss <- lm(Yp ~ Xproj)
+    delta.gauss <- rep(0, dim(Xp)[2])
+    E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coef(fit.gauss)[-1]
+  } else { # take intercept (root) into consideration
+    Xproj <- 0 + Xp[, c(root, projection)]
+    fit.gauss <- lm.fit(x = Xproj, y = Yp)
+    delta.gauss <- rep(0, dim(Xp)[2])
+    E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coef(fit.gauss)[-1]
+  }
+  # If lm fails to find some coeficients
+  if (anyNA(delta.gauss)) {
+    warning("There were some NA in the lm fit for the Gauss Lasso. These were replaced with the values obtained from the Lasso. This is not the optimal solution.")
+    delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
+  }
+  # Result
+  shifts.gauss <- shifts.vector_to_list(delta.gauss);
+  return(list(E0.gauss = E0.gauss, 
+              shifts.gauss = shifts.gauss,
+              residuals = residuals(fit.gauss)))
 }
 
 { ##
@@ -1349,6 +1515,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
 #'06/10/14 - Externalization of function lasso
 } ##
 init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, ...) {
+  ntaxa <- length(phylo$tip.label)
   init.EM.default <- init.EM.default(process)
   ## Choose the norm :
   if (use_sigma) {
@@ -1365,15 +1532,17 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo,
     Sig_chol_inv <- t(solve(Sig_chol)) # Sigma_YY_inv = t(Sig_chol_inv)%*%Sig_chol_inv
     # Transform Y_data and T
     Tr <- incidence.matrix(phylo)
+    Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
     Tp <- Sig_chol_inv%*%Tr
     Yp <- Sig_chol_inv%*%Y_data
+    fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts, root = dim(Tr)[2]))
   } else {
     # Return untransformed Y_data and T
     Tp <- incidence.matrix(phylo)
     Yp <- Y_data
+    fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
   }
   ## Fit
-  fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
   if (inherits(fit, "try-error")) {
     warning("Lasso Initialisation fail : could not find a satisfying number of shifts. Proceeding to a default initialization.")
     return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, ...))
@@ -1586,7 +1755,7 @@ init.alpha.gamma.default <- function(init.selection.strength, known.selection.st
               gamma_0 = init.var.root))
 }
 
-init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, ...){
+init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, alpha_known, ...){
   ## Initialize a vector with the group of each tip
   tips_groups <- rep(0, length(phylo$tip.label))
   names(tips_groups) <- phylo$tip.label
@@ -1621,15 +1790,20 @@ init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_
     }
   }
   gamma_0 <- mean(hat_gam, na.rm=TRUE)
-  df <- data.frame(square_diff=square_diff, dists=dists)
-  fit.rob <- try(nlrob(square_diff ~ gam*(1-exp(-alpha*dists)), data=df, start=list(gam = gamma_0, alpha=1)))
-  if (inherits(fit.rob, "try-error")) {
-    warning("Robust estimation of alpha failed")
-    return(list(alpha_0 = init.alpha.gamma.default(...)$alpha_0,
+  if (alpha_known) {
+    return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
                 gamma_0 = gamma_0))
-  } else { 
-    return(list(alpha_0 = unname(coef(fit.rob)["alpha"]), 
-                gamma_0 = gamma_0))
+  } else {
+    df <- data.frame(square_diff=square_diff, dists=dists)
+    fit.rob <- try(nlrob(square_diff ~ gam*(1-exp(-alpha*dists)), data=df, start=list(gam = gamma_0, alpha=1)))
+    if (inherits(fit.rob, "try-error")) {
+      warning("Robust estimation of alpha failed")
+      return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
+                  gamma_0 = gamma_0))
+    } else { 
+      return(list(alpha_0 = unname(coef(fit.rob)["alpha"]), 
+                  gamma_0 = gamma_0))
+    }
   }
 }
 
@@ -2494,37 +2668,44 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 } ##
 segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, conditional_law_X, selection.strength, ...){
   ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
   ## Computation of answer matrix D
   diff_exp <- compute_diff_exp.OU(phylo = phylo, 
                                   conditional_law_X = conditional_law_X, 
                                   selection.strength = selection.strength)
-  parents <- phylo$edge[,1]
+  daughters <- phylo$edge[,2]
   ee <- exp(- selection.strength * phylo$edge.length )
   D <- (1 - ee^2)^(-1/2) * diff_exp
-  D <- c(conditional_law_X$expectations[ntaxa+1], D)
+  D <- D[match(1:(ntaxa + nNodes), phylo$edge[,2])]
+  D[ntaxa + 1] <- conditional_law_X$expectations[ntaxa+1]
   ## Regression matrix : modified incidence matrix
   U <- incidence.matrix.full(phylo)
-  U <- cbind(rep(1, dim(U)[1]), U)
-  A <- diag(c(1,sqrt((1-ee)/(1+ee))))
+  U <- cbind(U, rep(1, dim(U)[1]))
+  #A <- diag(c(sqrt((1-ee)/(1+ee)),1))
+  A <- sqrt((1-ee)/(1+ee))
+  A <- A[match(1:(ntaxa + nNodes), phylo$edge[,2])]
+  A[ntaxa + 1] <- 1
+  A <- diag(A)
   Xp <- A%*%U
   ## Segmentation per se
   if (nbr_of_shifts > 0) {
     # Lasso regression
-    fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, intercept.penalty = TRUE)
+    fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes)
     # Define shifts
     shifts <- fit$shifts.gauss
-    shifts$edges <- shifts$edges - 1
+    shifts$edges <- shifts$edges
     # Define mu = beta_0
     beta_0 <- fit$E0.gauss
     # Compute new costs
-    Delta <- shifts.list_to_vector(phylo, shifts)
-    Delta <- c(beta_0, Delta)
-    costs <- (D - Xp%*%Delta)^2
+    #Delta <- shifts.list_to_vector(phylo, shifts)
+    #Delta <- c(Delta, beta_0)
+    #costs <- (D - Xp%*%Delta)^2
+    costs <- fit$residuals^2
     return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
   } else {
    #edges_max <- length(costs0) + 1
     beta_0 <- conditional_law_X$expectations[ntaxa+1]
-    Delta <- c(beta_0, rep(0, length(phylo$edge)))
+    Delta <- c(rep(0, length(phylo$edge)), beta_0)
     costs <- (D - Xp%*%Delta)^2
     return(list(beta_0 = beta_0, shifts = NULL, costs = costs))
   }
