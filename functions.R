@@ -1,4 +1,4 @@
-# {description}
+# {Test}
 # Copyright (C) {2014}  {SR, MM, PB}
 # 
 # This program is free software; you can redistribute it and/or modify
