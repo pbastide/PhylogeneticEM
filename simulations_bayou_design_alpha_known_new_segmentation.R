@@ -1,7 +1,7 @@
 rm(list = ls())
 
-WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
-#WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
+#WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
+WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
 setwd(WD)
 
 reqpckg <- c("ape", "quadrupen", "robustbase")
@@ -19,7 +19,15 @@ library(TreeSim) # For simulation of the tree
 #require(grid) # Plot
 
 ## Source functions
-source("functions.R")
+source("simulate.R")
+source("estimateEM.R")
+source("init_EM.R")
+source("E_step.R")
+source("M_step.R")
+source("shutoff.R")
+source("generic_functions.R")
+source("shifts_manipulations.R")
+source("plot_functions.R")
 
 ## Set seed
 #set.seed(1121983)
@@ -221,6 +229,7 @@ estimationfunction_alpha_known <- function(X) {
   X$beta_0_estim <- params$root.state$exp.root
   X$log_likelihood <- attr(params, "log_likelihood")[1]
   X$number_new_shifts <- results_estim_EM$number_new_shifts
+  X$mean_number_new_shifts <- mean(results_estim_EM$number_new_shifts)
   return(X)
 }
 
