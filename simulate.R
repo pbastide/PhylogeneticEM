@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 ###############################################################################
 ## Here are functions used to simulate a process on the tree
 ## Dependencies : generic_functions.R
@@ -90,6 +91,7 @@ simulate <- function(phylo, process = c("BM", "OU"), root.state = list(random=FA
   attr(paramSimu, "ntaxa") <- ntaxa
   return(paramSimu)
 }
+
 ##
 # init.simulate.StateAndExp (phy, root.state = list(random=FALSE,value.root,exp.root,var.root))
 # PARAMETERS:
@@ -118,6 +120,7 @@ init.simulate.StateAndExp <- function(phy,root.state){
   }
   return(paramSimu)
 }
+
 ##
 # init.simulate.BM (phy, root.state = list(random=FALSE,value.root,exp.root,var.root))
 # PARAMETERS:
@@ -138,6 +141,7 @@ init.simulate.StateAndExp <- function(phy,root.state){
 init.simulate.BM <- function(phy,root.state,...){
   return(init.simulate.StateAndExp(phy,root.state))
 }
+
 ##
 # init.simulate.OU (phy, root.state = list(random=FALSE,value.root,exp.root,var.root))
 # PARAMETERS:
@@ -162,6 +166,7 @@ init.simulate.OU <- function(phy, root.state, optimal.value, ...){
   beta[ntaxa + 1] <- optimal.value
   paramSimu <- cbind(paramSimu,beta)
 }
+
 ##
 # update.simulate.BM (edgeNbr, ancestral, length, shifts, variance, ...)
 # PARAMETERS:
@@ -186,6 +191,7 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance, ...
   return(c( ancestral[1] + sum(shifts$values[shiftsIndex]) + sqrt(length*variance) * rnorm(1),
             ancestral[2] + sum(shifts$values[shiftsIndex]) ) )
 }
+
 ##
 # update.simulate.OU (edgeNbr, ancestral, length, shifts, variance, selection.strength, eps=10^(-6), ...)
 # PARAMETERS:
@@ -211,6 +217,7 @@ update.simulate.OU <- function(edgeNbr, ancestral, length, shifts, variance, sel
                ancestral[3]*(1-ee) + ancestral[2]*ee + ss )
   return(c(SimExp,beta))
 }
+
 ##
 # extract.simulate (paramSimu, where=c("tips","nodes"), what=c("states","expectations"))
 # PARAMETERS:

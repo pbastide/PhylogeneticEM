@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 ########################################################
 # Here are some general functions used in all the files.
 ########################################################
@@ -47,6 +48,7 @@ replaceInList <- function (x, FUN, ...) {
   }
   else FUN(x, ...)
 }
+
 ##
 # correspondanceEdges (edges,from,to)
 # PARAMETERS:
@@ -70,6 +72,7 @@ correspondanceEdges <- function(edges,from,to){
   newEdges <- mm[edges]
   return(newEdges)
 }
+
 ##
 # compute_times_ca (phy)
 # PARAMETERS:
@@ -92,6 +95,7 @@ compute_times_ca <- function(phy) {
   attr(times_ca, "ntaxa") <- length(phy$tip.label)
   return(times_ca)
 }
+
 ##
 # compute_dist_phy (phy)
 # PARAMETERS:
@@ -112,6 +116,7 @@ compute_dist_phy <- function(phy) {
   attr(dist_phy, "ntaxa") <- length(phy$tip.label)
   return(dist_phy)
 }
+
 ###############################################################################
 ## Functions to wander on the tree
 ###############################################################################
@@ -149,6 +154,7 @@ recursionDown <- function(phy, params, updateDown, ...) {
   }
   return(params)
 }
+
 ##
 # recursionUp ( phy, params, updateUp, ... )
 # PARAMETERS:
@@ -183,6 +189,7 @@ recursionUp <- function(phy, params, updateUp, ...){
   }
   return(params)
 }
+
 ###############################################################################
 ## Functions to generate trees with fixed topologies
 ###############################################################################
@@ -208,6 +215,7 @@ rtree.sym <- function(n){
   }
   return(read.tree(text=paste(tree, ";", sep="")))
 }
+
 ##
 # rtree.comb (n)
 # PARAMETERS:
@@ -231,6 +239,7 @@ rtree.comb <- function(n){
   }
   return(read.tree(text=paste(tree, ";", sep="")))
 }
+
 ###############################################################################
 ## Functions to test the parameters of the processes
 ###############################################################################
@@ -265,6 +274,7 @@ check.selection.strength <- function(process, selection.strength=NA, eps=10^(-6)
     return("OU")
   }
 }
+
 ##
 #' @title Test state of root.
 #'
@@ -293,6 +303,7 @@ test.root.state <- function(root.state, process=c("BM","OU"), ...) {
     return(test.root.state.OU(root.state, ...))
   }
 }
+
 test.root.state.BM <- function(root.state, ...) {
   if (!is.null(root.state$stationary.root) && root.state$stationary.root){
     warning("The BM does not have a stationary state. root.state$stationary.root is set to NULL")
@@ -309,6 +320,7 @@ test.root.state.BM <- function(root.state, ...) {
   }
   return(root.state)
 }
+
 test.root.state.OU <- function(root.state, process, variance, selection.strength, optimal.value, ...) {
   if (root.state$random && !is.na(root.state$value.root)) {
     warning("As root state is supposed random, its value is not defined and set to NA")
@@ -336,6 +348,7 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
   }
   return(root.state)
 }
+
 ##
 #' @title Log Likelihood of a model
 #'

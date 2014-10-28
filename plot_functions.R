@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 ###############################################################################
 ## Here is a set of functions to plot processes
 ## Dependencies : generic_functions.R
@@ -63,6 +64,7 @@ make.name <- function(process = c("BM", "OU"), paramsSimu, paramsEstimate=params
   }
   return(paste(ProcessParams, RootState, ShiftsState, EstimParams, sep=""))
 }
+
 ##
 # plot.process (Name, TreeType, Y.state, Z.state, phylo, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, ...)
 # PARAMETERS:
@@ -109,24 +111,28 @@ plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("B
   legend(paste(position.legend),legend=c(LegendProcess,LegendRoot), col="black", cex = 2)
   dev.off()
 }
+
 save.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
   ## Define File Name
   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
   FileName <- paste(Name, TreeType, FileName, sep="")
   save(XX, paramsSimu, paramsEstimate, file=paste(directory, FileName, ".RData",sep=""))
 }
+
 write.table.results <- function(Name, TreeType, res, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
   ## Define File Name
   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
   FileName <- paste(Name, TreeType, FileName, sep="")
   write.table(res, paste(directory, FileName, ".csv",sep=""))
 }
+
 load.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
   ## Define File Name
   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
   FileName <- paste(Name, TreeType, FileName, sep="")
   load(file=paste(directory, FileName, ".RData",sep=""))
 }
+
 ##
 # catch.ProcessParams (paramsSimu)
 # PARAMETERS:
@@ -145,9 +151,11 @@ load.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu
 catch.ProcessParams.BM <- function(paramsSimu){
   return(paste("_process=BM","_var=",paramsSimu$variance,sep=""))
 }
+
 catch.ProcessParams.OU <- function(paramsSimu){
   return(paste("_process=OU","_var=",paramsSimu$variance,"_opt-val=",paramsSimu$optimal.value,"_sel-strength=",paramsSimu$selection.strength,sep=""))
 }
+
 ##
 # catch.LegendProcess (paramsEstimate)
 # PARAMETERS:
@@ -179,12 +187,14 @@ catch.LegendProcess.BM <- function(paramsEstimate){
   return( c("Process : BM",
             paste("Process Variance = ", round(paramsEstimate$variance,2), sep="")) )
 }
+
 catch.LegendProcess.OU <- function(paramsEstimate){
   return( c("Process : OU",
             paste("Process Variance = ", round(paramsEstimate$variance,2),sep=""),
             paste("Beta_0 = ", round(paramsEstimate$optimal.value,2), sep=""),
             paste("Selection Strength = ", round(paramsEstimate$selection.strength,2), sep="")) )
 }
+
 ##
 # catch.TolParams (params_algo_EM)
 # PARAMETERS:
@@ -205,6 +215,7 @@ catch.TolParams.BM <- function(params_algo_EM){
                "_tol-exp-root=", params_algo_EM$tol$exp.root,
                "_tol-var-root=", params_algo_EM$tol$var.root,sep=""))
 }
+
 catch.TolParams.OU <- function(params_algo_EM){
   return(paste("_tol-variance=", params_algo_EM$tol$variance,
                "_tol-exp-root=", params_algo_EM$tol$exp.root,
@@ -212,9 +223,11 @@ catch.TolParams.OU <- function(params_algo_EM){
                "_tol-optim-value=", params_algo_EM$tol$optim.value,
                "_tol-selection-strength=", params_algo_EM$tol$selection.strength,sep=""))
 }
+
 #####################################################################
 ## Plot the history of the estimations
 #####################################################################
+
 list_to_table.history <- function(params_history) {
   ll <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood")[1]))
   ll_bis <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood_bis")[1]))

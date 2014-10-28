@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 ###############################################################################
 ## Here is a function to compute the number of partimonious allocation of shifts
 ## on the tree, given a clustering of the tips.
@@ -46,6 +47,7 @@ parcimonyNumber <- function(phylo,clusters=rep(1,length(phy$tip.label))){
   attr(nbrReconstructions, "ntaxa") <- ntaxa
   return(nbrReconstructions)
 }
+
 ##
 # init.parcimonyNumber (phy,clusters)
 # PARAMETERS:
@@ -71,6 +73,7 @@ init.parcimonyNumber <- function(phy,clusters){
   }
   return(nbrReconstructions)
 }
+
 ##
 # update.parcimonyNumber (daughtersNbr)
 # PARAMETERS:
@@ -98,6 +101,7 @@ update.parcimonyNumber <- function(daughtersParams, ...){
   }
   return(nbrAdm)
 }
+
 ##
 # extract.parcimonyNumber (nbrReconstructions,node=attr(nbrReconstructions, "ntaxa")+1)
 # PARAMETERS:

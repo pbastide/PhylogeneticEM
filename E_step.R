@@ -79,23 +79,23 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_inv) {
 }
 
 ##
-  # extract.variance_covariance (struct, what=c("YY","YZ","ZZ"))
-  # PARAMETERS:
-  #            @struct (matrix) structural matrix of size ntaxa+nNode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
-  #            @what (string) what to extract :
-  #                 "YY" : sub-matrix of tips (ntaxa first lines and columns)
-  #                 "YZ" : sub matrix tips x nodes (nNodes last rows and ntaxa first columns)
-  #                 "ZZ" : sub matrix of nodes (nNodes last rows and columns)
-  # RETURNS:
-  #            (matrix) : sub-matrix of the entry matrix corresponding to the wanted values
-  # DEPENDENCIES:
-  #            none
-  # PURPOSE:
-  #            Extract the right sub matrix
-  # NOTES:
-  #            none
-  # REVISIONS:
-  #            22/05/14 - Initial release
+# extract.variance_covariance (struct, what=c("YY","YZ","ZZ"))
+# PARAMETERS:
+#            @struct (matrix) structural matrix of size ntaxa+nNode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
+#            @what (string) what to extract :
+#                 "YY" : sub-matrix of tips (ntaxa first lines and columns)
+#                 "YZ" : sub matrix tips x nodes (nNodes last rows and ntaxa first columns)
+#                 "ZZ" : sub matrix of nodes (nNodes last rows and columns)
+# RETURNS:
+#            (matrix) : sub-matrix of the entry matrix corresponding to the wanted values
+# DEPENDENCIES:
+#            none
+# PURPOSE:
+#            Extract the right sub matrix
+# NOTES:
+#            none
+# REVISIONS:
+#            22/05/14 - Initial release
 ##
 extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
   ntaxa <- attr(struct, "ntaxa")
@@ -109,20 +109,20 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
 }
 
 ##
-  # extract.covariance_parents (phylo, struct)
-  # PARAMETERS:
-  #            @phylo (tree)
-  #            @struct (matrix) structural matrix of size ntaxa+nNode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
-  # RETURNS:
-  #            (vector) : for every node i, entry i-ntaxa of the vector is (i,pa(i)). For the root (ntaxa+1), entry 1 is NA
-  # DEPENDENCIES:
-  #            none
-  # PURPOSE:
-  #            Extract covariances needed
-  # NOTES:
-  #            none
-  # REVISIONS:
-  #            22/05/14 - Initial release
+# extract.covariance_parents (phylo, struct)
+# PARAMETERS:
+#            @phylo (tree)
+#            @struct (matrix) structural matrix of size ntaxa+nNode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
+# RETURNS:
+#            (vector) : for every node i, entry i-ntaxa of the vector is (i,pa(i)). For the root (ntaxa+1), entry 1 is NA
+# DEPENDENCIES:
+#            none
+# PURPOSE:
+#            Extract covariances needed
+# NOTES:
+#            none
+# REVISIONS:
+#            22/05/14 - Initial release
 ##
 extract.covariance_parents<- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
@@ -135,20 +135,20 @@ extract.covariance_parents<- function(phylo, struct){
 }
 
 ##
-  # compute_variance_covariance.BM (times_shared, params_old, ...) 
-  # PARAMETERS:
-  #            @times_shared (matrix) : times of shared ancestry, result of function compute_times_ca (see note above)
-  #            @params_old (list) : old parameters to be used in the E step
-  # RETURNS:
-  #            (matrix) : matrix of variance covariance for the BM
-  # DEPENDENCIES:
-  #            compute_times_ca
-  # PURPOSE:
-  #            Compute variance covariance matrix in the case of the BM
-  # NOTES:
-  #            none
-  # REVISIONS:
-  #            22/05/14 - Initial release
+# compute_variance_covariance.BM (times_shared, params_old, ...) 
+# PARAMETERS:
+#            @times_shared (matrix) : times of shared ancestry, result of function compute_times_ca (see note above)
+#            @params_old (list) : old parameters to be used in the E step
+# RETURNS:
+#            (matrix) : matrix of variance covariance for the BM
+# DEPENDENCIES:
+#            compute_times_ca
+# PURPOSE:
+#            Compute variance covariance matrix in the case of the BM
+# NOTES:
+#            none
+# REVISIONS:
+#            22/05/14 - Initial release
 ##
 compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
   J <- matrix(1, nrow=dim(times_shared)[1], ncol=dim(times_shared)[2])
