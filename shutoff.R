@@ -39,7 +39,7 @@
 # TO BE DEFINED
 # REVISIONS:
 # 22/05/14 - Initial release
-} ##
+##
 shutoff.EM.BM <- function(params_old, params, tol) {
   if (params_old$root.state$random) {
     return(shutoff.EM.BM.randroot(params_old,params,tol))

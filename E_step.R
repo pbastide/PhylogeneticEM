@@ -56,7 +56,7 @@
 #' 22/05/14 - Minimal "working" release
 #' 02/06/14 - Add case OU
 #' 29/09/14 - Reshape to externalize computation of Sigma_YY_inv
-} ##
+##
 compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_inv) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)

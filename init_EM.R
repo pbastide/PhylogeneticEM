@@ -39,7 +39,7 @@
 # REVISIONS:
 #            22/05/14 - Initial release
 #            28/05/14 - Add OU
-} ##
+##
 init.EM.default <- function(process){
   if (process=="BM"){
     return(init.EM.default.BM)

@@ -107,9 +107,9 @@ estimateEM <- function(phylo,
   is.in.ranges.params  <- switch(process, 
                                  BM = is.in.ranges.params.BM,
                                  OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
-  compute_MaxCompleteLogLik <- switch(process, 
-                                      BM = compute_MaxCompleteLogLik.BM,
-                                      OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
+#   compute_MaxCompleteLogLik <- switch(process, 
+#                                       BM = compute_MaxCompleteLogLik.BM,
+#                                       OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
   conditional_expectation_log_likelihood <- switch(process, 
                                                    BM = conditional_expectation_log_likelihood.BM,
                                                    OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))

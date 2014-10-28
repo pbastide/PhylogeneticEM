@@ -199,7 +199,7 @@ catch.LegendProcess.OU <- function(paramsEstimate){
 # none
 # REVISIONS:
 # 26/05/14 - Initial release
-} ##
+##
 catch.TolParams.BM <- function(params_algo_EM){
   return(paste("_tol-variance=", params_algo_EM$tol$variance,
                "_tol-exp-root=", params_algo_EM$tol$exp.root,
