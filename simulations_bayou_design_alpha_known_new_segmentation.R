@@ -262,7 +262,7 @@ cl <- makeCluster(Ncores)
 registerDoParallel(cl)
 
 ## Parallelized estimations
-time_alpha_known <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
+time_alpha_known <- system.time(simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
 {
   estimationfunction_alpha_known(i)
 }
