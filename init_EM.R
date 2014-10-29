@@ -341,7 +341,7 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
 #'18/06/14 - Initial release
 #'06/10/14 - Externalization of function lasso
 ##
-init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, ...) {
+init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, t_tree, ...) {
   ntaxa <- length(phylo$tip.label)
   init.EM.default <- init.EM.default(process)
   ## Choose the norm :
@@ -376,6 +376,12 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo,
   } else { 
     E0.gauss <- fit$E0.gauss
     shifts.gauss <- fit$shifts.gauss
+    ## If OU, apply the correct factor to shifts
+    if (process == "OU" && !is.null(times_shared)){
+      parents <- phylo$edge[shifts.gauss$edges,1]
+      factors <- exp(-selection.strength.init * t_tree - diag(times_shared[parents, parents]))
+      shifts.gauss$values <- shifts.gauss$values/(1-factors)
+    }
     params_init <- init.EM.default(value.root.init=E0.gauss[1], 
                                    exp.root.init=E0.gauss[1], 
                                    optimal.value.init=E0.gauss[1],

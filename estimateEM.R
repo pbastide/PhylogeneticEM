@@ -133,7 +133,12 @@ estimateEM <- function(phylo,
                                    simple = compute_mean_variance.simple)
   compute_log_likelihood  <- switch(method.variance, 
                                     simple = compute_log_likelihood.simple)
+  ## Iniialization Method
   method.init  <- match.arg(method.init)
+  # Lasso initialization for OU only works if the tree is ultrametric
+  if (!is.ultrametric(phylo) &&
+        method.init == "lasso" &&
+        process == "OU") stop("For the OU process, the Lasso initialization only works (for now) for ultrametric trees. Please consider using annother initialization.")
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
                      lasso = init.EM.lasso)
@@ -143,6 +148,7 @@ estimateEM <- function(phylo,
   ntaxa <- length(phylo$tip.label)
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
+  t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
                                                   nbr_of_shifts = nbr_of_shifts,
@@ -170,6 +176,7 @@ estimateEM <- function(phylo,
                          use_sigma = use_sigma_for_lasso,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
+                         t_tree = t_tree,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state=params$root.state, 

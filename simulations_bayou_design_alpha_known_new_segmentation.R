@@ -1,7 +1,7 @@
 rm(list = ls())
 
-#WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
-WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
+WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
+#WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
 setwd(WD)
 
 reqpckg <- c("ape", "quadrupen", "robustbase")
@@ -46,7 +46,7 @@ sigma_base <- 3
 gamma_base <- sigma_base/(2*alpha_base)
 K_base <- 9
 sigma_delta_base <- 18
-seg <- "lasso" #"best_single_move"
+seg <- c("lasso", "best_single_move")
 
 ## alpha grid
 alpha <- log(2)*1/c(0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1, 2, 10)
