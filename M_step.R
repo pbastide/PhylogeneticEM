@@ -97,6 +97,12 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
                                stationnary.root.init=TRUE,
                                random.init=TRUE,
                                ...)
+  ## Comutation of regression matrix idoine
+  regMat <- compute_regression_matrices(phylo = phylo,
+                                        conditional_law_X = conditional_law_X,
+                                        selection.strength = known.selection.strength)
+  D <- regMat$D
+  Xp <- regMat$Xp
   ## Choose method(s) for segmentation
   segmentation.OU.specialCase <- function(method.segmentation){
     segmentation <- switch(method.segmentation, 
@@ -110,7 +116,9 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
                         conditional_law_X = conditional_law_X, 
                         selection.strength = known.selection.strength,
                         beta_0_old = beta_0_old,
-                        shifts_old = shifts_old))
+                        shifts_old = shifts_old,
+                        D = D,
+                        Xp = Xp))
   }
   ## Segmentation
   segs <- sapply(methods.segmentation, segmentation.OU.specialCase, simplify = FALSE)
@@ -593,7 +601,32 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 #'                           
 #'06/10/14 - Initial release
 ##
-segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, conditional_law_X, selection.strength, ...){
+segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, ...){
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  ## Computation of answer matrix D
+  # This should be already done by now.
+  ## Segmentation per se
+  if (nbr_of_shifts > 0) {
+    # Lasso regression
+    fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes)
+    # Define shifts
+    shifts <- fit$shifts.gauss
+    shifts$edges <- shifts$edges
+    # Define mu = beta_0
+    beta_0 <- fit$E0.gauss
+    # Compute new costs
+    costs <- fit$residuals^2
+    return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
+  } else {
+    beta_0 <- conditional_law_X$expectations[ntaxa+1]
+    Delta <- c(rep(0, length(phylo$edge)), beta_0)
+    costs <- (D - Xp%*%Delta)^2
+    return(list(beta_0 = beta_0, shifts = NULL, costs = costs))
+  }
+}
+
+compute_regression_matrices <- function(phylo, conditional_law_X, selection.strength, ...){
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   ## Computation of answer matrix D
@@ -614,28 +647,7 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, conditional_
   A[ntaxa + 1] <- 1
   A <- diag(A)
   Xp <- A%*%U
-  ## Segmentation per se
-  if (nbr_of_shifts > 0) {
-    # Lasso regression
-    fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes)
-    # Define shifts
-    shifts <- fit$shifts.gauss
-    shifts$edges <- shifts$edges
-    # Define mu = beta_0
-    beta_0 <- fit$E0.gauss
-    # Compute new costs
-    #Delta <- shifts.list_to_vector(phylo, shifts)
-    #Delta <- c(Delta, beta_0)
-    #costs <- (D - Xp%*%Delta)^2
-    costs <- fit$residuals^2
-    return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
-  } else {
-    #edges_max <- length(costs0) + 1
-    beta_0 <- conditional_law_X$expectations[ntaxa+1]
-    Delta <- c(rep(0, length(phylo$edge)), beta_0)
-    costs <- (D - Xp%*%Delta)^2
-    return(list(beta_0 = beta_0, shifts = NULL, costs = costs))
-  }
+  return(list(D = D, Xp = Xp))
 }
 
 ##
@@ -708,7 +720,7 @@ segmentation.OU.specialCase.same_shifts <- function(phylo, conditional_law_X, se
                                                             shifts_edges = shifts_old$edges))
 }
 
-segmentation.OU.specialCase.best_single_move <- function(phylo, conditional_law_X, selection.strength, shifts_old, ...){
+segmentation.OU.specialCase.best_single_move.old <- function(phylo, conditional_law_X, selection.strength, shifts_old, ...){
   # Construct vector of all allowed combinations of shifts (variation from a base scenario)
   shifts_edges <- shifts_old$edges
   K <- length(shifts_edges)
@@ -793,4 +805,37 @@ optimize_costs_given_shift_position.OU.specialCase <- function(phylo, conditiona
   costs <- (1 - ee^2)^(-1) * (diff_exp - betas[daughters] * (1-ee))^2
   costs <- c((conditional_law_X$expectations[ntaxa+1] - beta_values[1])^2, costs)
   return(list(beta_0 = beta_values[1], shifts = shifts, costs = costs))
+}
+
+segmentation.OU.specialCase.best_single_move <- function(phylo, conditional_law_X, selection.strength, shifts_old, D, Xp, ...){
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  root <- ntaxa + nNodes
+  # Construct vector of all allowed combinations of shifts (variation from a base scenario)
+  shifts_edges <- shifts_old$edges
+  K <- length(shifts_edges)
+  nEdges <- dim(phylo$edge)[1]
+  allowed_moves <- which(!(1:nEdges %in% shifts_edges))
+  scenarii <- t(matrix(shifts_edges, (nEdges - K) * K + 1, nrow = K))
+  for (i in 1:K) {
+    scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
+  }
+  # Function to be applyed to each row
+  fun <- function(sh_ed){
+    fit.lm <- lm.fit(x = Xp[, c(root, sh_ed)], y = D)
+    return(list(shifts_edges = sh_ed,
+                coefs = unname(coef(fit.lm)),
+                costs = residuals(fit.lm)^2,
+                totalCost = sum(residuals(fit.lm)^2)))
+  }
+  # Apply to each row and take the minimal total cost
+  allSegs <- apply(scenarii, 1, fun)
+  dd <- do.call(rbind, allSegs)
+  min_conf <- which.min(dd[,"totalCost"])
+  # Go back to good format
+  res <- dd[min_conf,]
+  delta <- rep(0, dim(Xp)[2])
+  delta[res$shifts_edges] <- res$coef[-1]
+  shifts <- shifts.vector_to_list(delta)
+  return(list(beta_0 = res$coef[1], shifts = shifts, costs = res$costs))
 }

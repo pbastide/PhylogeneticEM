@@ -91,25 +91,38 @@ make.name <- function(process = c("BM", "OU"), paramsSimu, paramsEstimate=params
 # 06/06.14 - Add directory
 ##
 plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, position.legend="bottomleft", directory, params_algo_EM=NULL) {
-  ## Define File Name
-  FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, params_algo_EM)
   ## Define legend
   LegendProcess <- catch.LegendProcess(process, paramsEstimate, estimate, params_algo_EM)
   LegendRoot <- c(#paste("Random Root = ",round(paramsEstimate$root.state$random,2),sep=""),
     #paste("Root Value (if not random) = ",round(paramsEstimate$root.state$value.root,2),sep=""),
     paste("Root expectation = ",round(paramsEstimate$root.state$exp.root,2),sep=""),
     paste("Root variance = ",round(paramsEstimate$root.state$var.root,2), sep=""))
+  ## Define File Name
+  FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, params_algo_EM)
   ## Plot
   FileName <- paste(Name, TreeType, FileName, sep="")
   pdf(paste(directory, FileName, ".pdf",sep=""), height=10,width=20)
+  plot.process.actual <- function(Y.state = Y.state, 
+                                  Z.state = Z.state, 
+                                  phylo = phylo, 
+                                  process = process,
+                                  paramsEstimate = paramsEstimate,
+                                  estimate = estimate,
+                                  position.legend = position.legend,
+                                  params_algo_EM = params_algo_EM)
+    legend(paste(position.legend),legend=c(LegendProcess,LegendRoot), col="black", cex = 2)
+    dev.off()
+}
+
+plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate){
+  ## Plot
+  par(mar = c(0,0,0,0), omi = c(0,0,0,0))
   plot(phylo, show.tip.label = FALSE)
   tiplabels(pch = 19, cex = abs(Y.state)/mean(abs(Y.state)), col = ifelse(Y.state >= 0, "orangered", "lightblue"))
   nodelabels(pch = 19, cex = abs(Z.state)/mean(abs(Z.state)), col = ifelse(Z.state >= 0, "orangered", "lightblue"))
   if ( !is.null(paramsEstimate$shifts$edges) ) {
-    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg="chocolate4", cex=2.5)
+    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg="chocolate4", cex = 1)
   }
-  legend(paste(position.legend),legend=c(LegendProcess,LegendRoot), col="black", cex = 2)
-  dev.off()
 }
 
 save.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
@@ -231,12 +244,12 @@ catch.TolParams.OU <- function(params_algo_EM){
 list_to_table.history <- function(params_history) {
   ll <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood")[1]))
   ll_bis <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood_bis")[1]))
-  method <- unlist(sapply(params_history, function(x) attr(x, "segmentation_algorithm_used")))
+  #method <- unlist(sapply(params_history, function(x) attr(x, "segmentation_algorithm_used")))
   nbr_of_shifts <- length(params_history[['1']]$shifts$edges)
   params_history[['0']] <- replaceInList(params_history[['0']], function(x) if(is.null(x))rep(0,nbr_of_shifts) else x)
   params_history <- lapply(params_history, unlist)
   history <- do.call(cbind, params_history)
-  history <- rbind(history, log_likelihood = c(ll, NA), log_likelihood_bis = c(ll_bis, NA), segmentation_algorithm = c(method, NA, NA))
+  history <- rbind(history, log_likelihood = c(ll, NA), log_likelihood_bis = c(ll_bis, NA))#, segmentation_algorithm = c(method, NA, NA))
   return(history)
 }
 
@@ -246,18 +259,31 @@ write.table.history <- function(history, params_algo_EM, PATH, ...) {
   write.csv2(history, name, ...)
 }
 
-plot.history.OU.stationnary <- function(params_history, paramsSimu, PATH, params_algo_EM, name){
+plot.history.OU.stationnary <- function(params_history, paramsSimu, PATH, name){
+  params_history[["true"]] <- paramsSimu
   history <- list_to_table.history(params_history)
-  params_simu  <-  unlist(paramsSimu)[names(history[,1])]
-  pdf(paste(PATH, "history_parameters", "_init=", params_algo_EM$method.init, "_initalpha=", params_algo_EM$method.init.alpha, "_nbrofshifts=", params_algo_EM$nbr_of_shifts, ".pdf", sep=""), width = 12, height = 8)
+  history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, datasim$params)
+  #params_simu  <-  unlist(paramsSimu)[names(history[,1])]
+  pdf(paste(PATH, name, ".pdf", sep=""), width = 12, height = 8)
+  ## Title of the page
+  #title <- paste("Initialization : ", params_algo_EM$method.init, "\n", "Alpha Initialization : ", params_algo_EM$method.init.alpha, sep="")
+  ## Plot
+  plot.history.OU.stationnary.actual(history)
+  dev.off()
+}
+
+plot.history.OU.stationnary.actual <- function (history, title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
+  ## Discriminate
+  params_simu <- history[, "true"]
+  history <- history[, colnames(history)!="true"]
   ## Create grid
   pushViewport(viewport(layout = grid.layout(2+1, 3, heights = unit(c(1,5,5), "null"))))
-  ## Title of the page
-  grid.text(paste("Initialization : ", params_algo_EM$method.init, "\n", "Alpha Initialization : ", params_algo_EM$method.init.alpha, sep=""), vp = vplayout(1,1:3))
+  ## title
+  grid.text(title, vp = vplayout(1,1:3))
   ## Continuous parameters
-  row <- c(2,2,3,3); col <- c(1,2,1,2)
-  params_to_plot <- c("variance", "selection.strength", "root.state.var.root", "optimal.value")
-  params_to_plot_legend <- c(expression(sigma^2), expression(alpha), expression(gamma^2), expression(beta[0]))
+  row <- c(2,2,2,3); col <- c(1,2,3,3)
+  params_to_plot <- c("selection.strength", "root.state.var.root", "optimal.value", "log_likelihood")
+  params_to_plot_legend <- c(expression(alpha), expression(gamma^2), expression(beta[0]), "log likelihood")
   for (s in 1:4) {
     # Choose right score
     df <- history[params_to_plot[s],]
@@ -276,7 +302,7 @@ plot.history.OU.stationnary <- function(params_history, paramsSimu, PATH, params
   p <- ggplot(data=df_val_long, aes(x=iterations, y=shift.value, colour = shift)) + geom_point()
   p <- p + geom_hline(aes(yintercept=true, colour=shift), data=df_val_long)
   p <- p + ylab(expression(delta))
-  print(p, vp=vplayout(2,3))
+  print(p, vp=vplayout(3,1))
   # Edges
   df_ed <- as.data.frame(t(history[grepl('shifts.edges', names(history[,1])),, drop=F]))
   df_ed_long <- melt(df_ed, variable.name = "shift", value.name="shift.edge")
@@ -286,8 +312,7 @@ plot.history.OU.stationnary <- function(params_history, paramsSimu, PATH, params
   p <- ggplot(data=df_ed_long, aes(x=iterations, y=shift.edge, colour = shift)) + geom_point()
   p <- p + geom_hline(aes(yintercept=true, colour=shift), data=df_ed_long)
   p <- p + ylab(expression(tau))
-  print(p, vp=vplayout(3,3))
-  dev.off()
+  print(p, vp=vplayout(3,2))
 }
 
 vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)

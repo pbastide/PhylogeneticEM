@@ -743,7 +743,15 @@ library(robustbase) # For robust fitting of alpha
 library(ggplot2) # Plot
 library(reshape2) # Plot
 library(grid) # Plot
-source("R/functions.R")
+source("Phylogenetic-EM/simulate.R")
+source("Phylogenetic-EM/estimateEM.R")
+source("Phylogenetic-EM/init_EM.R")
+source("Phylogenetic-EM/E_step.R")
+source("Phylogenetic-EM/M_step.R")
+source("Phylogenetic-EM/shutoff.R")
+source("Phylogenetic-EM/generic_functions.R")
+source("Phylogenetic-EM/shifts_manipulations.R")
+source("Phylogenetic-EM/plot_functions.R")
 
 load("data/Several_Trees.RData")
 # set.seed(123)
@@ -1304,6 +1312,7 @@ estimationfunction <- function(X, seg) {
   X$history <- results_estim_EM$params_history
   X$beta_0_estim <- params$root.state$exp.root
   #X$CLL_history <- results_estim_EM$CLL_history
+  X$params_estim <- params
   return(X)
 }
 
@@ -1380,9 +1389,11 @@ shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
 #seg <- "lasso"
 #seg <- "best_single_move"
 #seg <- c("same_shifts", "same_shifts_same_values", "max_costs_0", "lasso")
-seg <- c("lasso", "same_shifts")#, "best_single_move")
+seg <- c("lasso", "same_shifts", "best_single_move")
 
 name <- paste0("_", paste0(seg, collapse="_"), "_alpha=", alpha, "_gamma=", gamma, "_K=", K, "_edges=", paste0(shifts$edges, collapse="-"), "_values=", paste0(shifts$values, collapse="-"))
+
+params_algo_EM <- list(process = process)
 
 ### Tree
 set.seed(25865)
@@ -1395,13 +1406,15 @@ plot(tree); edgelabels()
 set.seed(145)
 datasim <- datasetsim(alpha = alpha, gamma = gamma, K = K, shifts = shifts, 1, 1)
 
-simest <- estimationfunction(datasim, seg = seg)
+system.time(simest <- estimationfunction(datasim, seg = seg))
 simest$history[["true"]] <- datasim$params
 history <- list_to_table.history(simest$history)
 history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, datasim$params)
 #CLL_history <- cbind(simest$CLL_history, c(NA, NA))
 #history <- rbind(history, CLL_history)
-write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown_new", name, ".csv"))
+
+write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown", name, ".csv"))
+plot.history.OU.stationnary(simest$history, datasim$params, PATH=PATH, paste0("history_plot", name))
 
 simest_true_alpha <- estimationfunction_alpha_known(datasim, alphaKN = alpha, seg = seg)
 simest_true_alpha$history[["true"]] <- datasim$params
@@ -1410,6 +1423,17 @@ history_true_alpha[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data
 #CLL_history_true_alpha <- cbind(simest_true_alpha$CLL_history, c(NA, NA))
 #history_true_alpha <- rbind(history_true_alpha, CLL_history_true_alpha)
 write.csv2(history_true_alpha, paste0(PATH, "boite_noire_alpha_known", name, ".csv"))
+
+x11()
+plot.process.actual(Y.state = datasim$Y_data,
+                    Z.state = datasim$Z_data,
+                    phylo = tree, 
+                    paramsEstimate = datasim$params)
+
+plot.process.actual(Y.state = simest$Y_data,
+                    Z.state = simest$Zhat,
+                    phylo = tree, 
+                    paramsEstimate = simest$params_estim)
 
 plot(tree); edgelabels(text = round(datasim$shifts$values, 2), edge = datasim$shifts$edges)
 x11();
