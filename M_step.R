@@ -808,6 +808,11 @@ optimize_costs_given_shift_position.OU.specialCase <- function(phylo, conditiona
 }
 
 segmentation.OU.specialCase.best_single_move <- function(phylo, conditional_law_X, selection.strength, shifts_old, D, Xp, ...){
+  ## If no shifts, there is no such thing as a "single move"
+  if (is.null(shifts_old$edges)){
+    return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
+  }
+  ## "Normal case"
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   root <- ntaxa + nNodes

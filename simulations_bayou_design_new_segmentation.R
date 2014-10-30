@@ -6,7 +6,6 @@ setwd(WD)
 
 reqpckg <- c("ape", "quadrupen", "robustbase")
 
-
 require(doParallel)
 require(foreach)
 require(ape)
