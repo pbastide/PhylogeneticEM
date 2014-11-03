@@ -1290,8 +1290,11 @@ estimationfunction <- function(X, seg) {
                                  methods.segmentation = seg)
   extract.edges <- function(x) {
     z <- unlist(lapply(x, function(y) y$shifts$edges))
-    z <- matrix(z, nrow = X$K)      
-    return(z)
+    if (is.null(z)){
+      return(NULL)
+    } else {     
+      return(matrix(z, nrow = X$K))
+    }
   }
   selected.edges <- extract.edges(results_estim_EM$params_history)
   params <- results_estim_EM$params
@@ -1346,8 +1349,11 @@ estimationfunction_alpha_known <- function(X, alphaKN, seg) {
                                  methods.segmentation = seg)
   extract.edges <- function(x) {
     z <- unlist(lapply(x, function(y) y$shifts$edges))
-    z <- matrix(z, nrow = X$K)      
-    return(z)
+    if (is.null(z)){
+      return(NULL)
+    } else {     
+      return(matrix(z, nrow = X$K))
+    }
   }
   selected.edges <- extract.edges(results_estim_EM$params_history)
   params <- results_estim_EM$params
@@ -1377,9 +1383,10 @@ process <- "OU"
 beta_0 <- 0
 alpha <- 3
 gamma <- 0.1
-K <- 2
+K <- 0
+shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
 # haut placées
-shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
+#shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
 # dans les feuilles
 #shifts <- list(edges=c(17, 118),values=c(10, -10),relativeTimes=c(0,0))
 #shifts <- list(edges=c(17, 118, 23, 85, 53, 110, 56, 96, 7),values=c(0.5,1,1.5,-0.5,-1,-1.5,2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))

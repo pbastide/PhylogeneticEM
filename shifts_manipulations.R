@@ -246,7 +246,11 @@ shifts.list_to_vector <- function(phy, shifts){
 ##
 shifts.vector_to_list <- function(delta){
   edsh <- which(delta != 0)
-  shifts <- list(edges = edsh, values = delta[edsh], relativeTimes = rep(0, length(edsh)))
+  if (length(edsh) > 0){
+    shifts <- list(edges = edsh, values = delta[edsh], relativeTimes = rep(0, length(edsh)))
+  } else {
+    shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
+  }
   return(shifts)
 }
 

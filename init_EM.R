@@ -295,7 +295,7 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
     E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
     delta.gauss[projection] <- coef(fit.gauss)[-1]
   } else { # take intercept (root) into consideration
-    Xproj <- 0 + Xp[, c(root, projection)]
+    Xproj <- 0 + Xp[, c(root, projection), drop = FALSE]
     fit.gauss <- lm.fit(x = Xproj, y = Yp)
     delta.gauss <- rep(0, dim(Xp)[2])
     E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
@@ -377,18 +377,18 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances
     E0.gauss <- fit$E0.gauss
     shifts.gauss <- fit$shifts.gauss
     ## If OU, apply the correct factor to shifts
-    if (process == "OU" && !is.null(times_shared)){
+    if (process == "OU" && !is.null(times_shared) && !is.null(shifts.gauss$values)){
       parents <- phylo$edge[shifts.gauss$edges,1]
       factors <- exp(-selection.strength.init * t_tree - diag(times_shared[parents, parents, drop = FALSE]))
       shifts.gauss$values <- shifts.gauss$values/(1-factors)
     }
-    params_init <- init.EM.default(value.root.init=E0.gauss[1], 
-                                   exp.root.init=E0.gauss[1], 
-                                   optimal.value.init=E0.gauss[1],
-                                   edges.init=shifts.gauss$edges, 
-                                   values.init=shifts.gauss$values, 
-                                   relativeTimes.init=shifts.gauss$relativeTimes, 
-                                   selection.strength.init=selection.strength.init, 
+    params_init <- init.EM.default(value.root.init = E0.gauss[1], 
+                                   exp.root.init = E0.gauss[1], 
+                                   optimal.value.init = E0.gauss[1],
+                                   edges.init = shifts.gauss$edges, 
+                                   values.init = shifts.gauss$values, 
+                                   relativeTimes.init = shifts.gauss$relativeTimes, 
+                                   selection.strength.init =selection.strength.init, 
                                    random.init = random.init, 
                                    var.root.init = var.root.init, ...)
     return(params_init)
