@@ -60,7 +60,7 @@ gamma <- (1/(2*alpha_base))*c(0.1, 1, 2, 3, 5, 10, 25, 50) # enlevé : 0.5 (base
 K <- c(1, 5, 7, 8, 10, 11, 13, 20, 50) # enlevé : 9 (base)
 
 ## replication depth (number of replicates per )
-n <- 1:2
+n <- 1:200
 
 ## The combination of simulation parameters
 simparams_alpha <- expand.grid(alpha, gamma_base, K_base, n, "alpha_var")
@@ -294,73 +294,73 @@ estimationfunction_alpha_known <- function(X) {
 ##################################
 ## Mammal Tree
 ##################################
-savedatafile_mammal <- paste0(savedatafile, "_mammal_tree")
-## import tree
-load("../data/Several_Trees.RData")
-tree <- Cetacea_Autocorrelated
-tree <- reorder.phylo(tree, order="cladewise")
-
-## normalize tree height
-scale.tree <- function(phylo){
-  if (!is.ultrametric(phylo)) stop("The tree is not ultrametric")
-  ntaxa <- length(phylo$tip.label)
-  height <- min(node.depth.edgelength(phylo)[1:ntaxa]) - .Machine$double.eps^0.5# take the min so that any error is above 1
-  phylo$edge.length <- phylo$edge.length/height
-  return(phylo)
-}
-
-tree <- scale.tree(tree)
-
-## Sequencial simulations (for reproductibility)
-simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
-  alpha <- simparams[i, "alpha"]
-  gamma <- simparams[i, "gamma"]
-  K <- simparams[i, "K"]
-  n <- simparams[i, "n"]
-  grp <- simparams[i, "grp"]
-  sim <- datasetsim(alpha, gamma, K, n, grp)
-  return(sim)
-}
-
-names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
-
-############
-## Alpha known
-
-## Register parallel backend for computing
-cl <- makeCluster(Ncores)
-registerDoParallel(cl)
-
-## Parallelized estimations
-time_alpha_known <- system.time(simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
-{
-  estimationfunction_alpha_known(i)
-}
-)
-
-# Stop the cluster (parallel)
-stopCluster(cl)
-save.image(paste0(savedatafile_mammal, "_alpha_known-", datestamp, ".RData"))
-
-############
-## Alpha unknown
-
-## Register parallel backend for computing
-cl <- makeCluster(Ncores)
-registerDoParallel(cl)
-
-## Parallelized estimations
-time <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
-{
-  estimationfunction(i)
-}
-)
-
-# Stop the cluster (parallel)
-stopCluster(cl)
-save.image(paste0(savedatafile_mammal, "-", datestamp, ".RData"))
-
-rm(savedatafile_mammal, tree, scale.tree, simlist, cl, time_alpha_known, simestimations_alpha_known, time, simestimations)
+# savedatafile_mammal <- paste0(savedatafile, "_mammal_tree")
+# ## import tree
+# load("../data/Several_Trees.RData")
+# tree <- Cetacea_Autocorrelated
+# tree <- reorder.phylo(tree, order="cladewise")
+# 
+# ## normalize tree height
+# scale.tree <- function(phylo){
+#   if (!is.ultrametric(phylo)) stop("The tree is not ultrametric")
+#   ntaxa <- length(phylo$tip.label)
+#   height <- min(node.depth.edgelength(phylo)[1:ntaxa]) - .Machine$double.eps^0.5# take the min so that any error is above 1
+#   phylo$edge.length <- phylo$edge.length/height
+#   return(phylo)
+# }
+# 
+# tree <- scale.tree(tree)
+# 
+# ## Sequencial simulations (for reproductibility)
+# simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
+#   alpha <- simparams[i, "alpha"]
+#   gamma <- simparams[i, "gamma"]
+#   K <- simparams[i, "K"]
+#   n <- simparams[i, "n"]
+#   grp <- simparams[i, "grp"]
+#   sim <- datasetsim(alpha, gamma, K, n, grp)
+#   return(sim)
+# }
+# 
+# names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
+# 
+# ############
+# ## Alpha known
+# 
+# ## Register parallel backend for computing
+# cl <- makeCluster(Ncores)
+# registerDoParallel(cl)
+# 
+# ## Parallelized estimations
+# time_alpha_known <- system.time(simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
+# {
+#   estimationfunction_alpha_known(i)
+# }
+# )
+# 
+# # Stop the cluster (parallel)
+# stopCluster(cl)
+# save.image(paste0(savedatafile_mammal, "_alpha_known-", datestamp, ".RData"))
+# 
+# ############
+# ## Alpha unknown
+# 
+# ## Register parallel backend for computing
+# cl <- makeCluster(Ncores)
+# registerDoParallel(cl)
+# 
+# ## Parallelized estimations
+# time <- system.time(simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
+# {
+#   estimationfunction(i)
+# }
+# )
+# 
+# # Stop the cluster (parallel)
+# stopCluster(cl)
+# save.image(paste0(savedatafile_mammal, "-", datestamp, ".RData"))
+# 
+# rm(savedatafile_mammal, tree, scale.tree, simlist, cl, time_alpha_known, simestimations_alpha_known, time, simestimations)
 
 ##################################
 ## Simulated Tree
