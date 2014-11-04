@@ -1,8 +1,8 @@
 rm(list = ls())
 
 #WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
-#WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
-#setwd(WD)
+WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
+setwd(WD)
 
 reqpckg <- c("ape", "quadrupen", "robustbase")
 
@@ -191,16 +191,16 @@ estimationfunction <- function(X) {
                                  Nbr_It_Max = 1000, 
                                  nbr_of_shifts = X$K, 
                                  alpha_known = FALSE,
-                                 min_params=list(variance = 10^(-3), 
-                                                 value.root = -10^(3), 
-                                                 exp.root = -10^(3), 
-                                                 var.root = 10^(-3),
-                                                 selection.strength = 10^(-3)),
-                                 max_params=list(variance = 10^(3), 
-                                                 value.root = 10^(3), 
-                                                 exp.root = 10^(3), 
-                                                 var.root = 10^(3),
-                                                 selection.strength = 10^(3)),
+                                 min_params=list(variance = 10^(-4), 
+                                                 value.root = -10^(4), 
+                                                 exp.root = -10^(4), 
+                                                 var.root = 10^(-4),
+                                                 selection.strength = 10^(-4)),
+                                 max_params=list(variance = 10^(4), 
+                                                 value.root = 10^(4), 
+                                                 exp.root = 10^(4), 
+                                                 var.root = 10^(4),
+                                                 selection.strength = 10^(4)),
                                  methods.segmentation = seg)
   extract.edges <- function(x) {
     z <- unlist(lapply(x, function(y) y$shifts$edges))
@@ -251,16 +251,16 @@ estimationfunction_alpha_known <- function(X) {
                                  nbr_of_shifts = X$K, 
                                  alpha_known = TRUE, ##
                                  known.selection.strength = X$alpha,
-                                 min_params=list(variance = 10^(-3), 
-                                                 value.root = -10^(3), 
-                                                 exp.root = -10^(3), 
-                                                 var.root = 10^(-3),
-                                                 selection.strength = 10^(-3)),
-                                 max_params=list(variance = 10^(3), 
-                                                 value.root = 10^(3), 
-                                                 exp.root = 10^(3), 
-                                                 var.root = 10^(3),
-                                                 selection.strength = 10^(3)),
+                                 min_params=list(variance = 10^(-4), 
+                                                 value.root = -10^(4), 
+                                                 exp.root = -10^(4), 
+                                                 var.root = 10^(-4),
+                                                 selection.strength = 10^(-4)),
+                                 max_params=list(variance = 10^(4), 
+                                                 value.root = 10^(4), 
+                                                 exp.root = 10^(4), 
+                                                 var.root = 10^(4),
+                                                 selection.strength = 10^(4)),
                                  methods.segmentation = seg)
   extract.edges <- function(x) {
     z <- unlist(lapply(x, function(y) y$shifts$edges))

@@ -204,7 +204,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K > max(df)) {
-    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, min.ratio = 10^(-6), intercept = intercept)
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, min.ratio = 10^(-10), intercept = intercept)
     df <- rowSums(fit@active.set)
   }
   if (K > max(df)) {
