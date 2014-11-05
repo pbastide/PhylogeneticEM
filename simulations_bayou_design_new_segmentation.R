@@ -51,7 +51,7 @@ seg <- c("lasso", "best_single_move")
 alpha <- log(2)*1/c(0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1, 2, 10)
 
 ## gamma^2 grid (\gamma^2 = \sigma^2 / 2 \alpha)
-gamma <- (1/(2*alpha_base))*c(0.1, 1, 2, 3, 5, 10, 25, 50) # enlevé : 0.5 (base)
+gamma <- (1/(2*alpha_base))*c(0.1, 0.5, 1, 2, 5, 10, 25, 50) # enlevé : 3 (base)
 
 ## snr (signal to noise ratio, computed as \sigma_delta^2 / \gamma^2)
 #snr <- c(0.2, 0.5, 1, 2, 5)
