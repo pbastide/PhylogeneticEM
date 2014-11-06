@@ -87,6 +87,11 @@ datasetsim <- function(alpha, gamma, K, n, grp) {
                      value.root = NA,
                      exp.root = beta_0,
                      var.root = gamma)
+  params <-  list(variance = 2*alpha*gamma,
+                  root.state = root.state,
+                  shifts = shifts,
+                  selection.strength = alpha, 
+                  optimal.value = beta_0)
   XX <- simulate(phylo = tree,
                  process = process,
                  root.state = root.state, 
@@ -94,14 +99,16 @@ datasetsim <- function(alpha, gamma, K, n, grp) {
                  shifts = shifts, 
                  selection.strength = alpha, 
                  optimal.value = beta_0)
-  return(list(alpha = alpha,
+  sim <- list(alpha = alpha,
               gamma = gamma, 
               K = K,
               n = n,
               grp = grp,
               shifts = shifts,
               Y_data = extract.simulate(XX, what="states", where="tips"),
-              Z_data = extract.simulate(XX, what = "states", where = "nodes")))
+              Z_data = extract.simulate(XX, what = "states", where = "nodes"))
+  sim$log_likelihood.true <- log_likelihood.OU(sim$Y_data, tree, params)
+  return(sim)
 }
 
 sample_shifts <- function(tree, sigma_delta, K){
