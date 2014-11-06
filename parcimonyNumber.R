@@ -37,7 +37,7 @@
 # 19/05/14 - Initial release
 # 21/05/14 - Gestion of case only one cluster. Extraction of the recursion.
 ##
-parcimonyNumber <- function(phylo,clusters=rep(1,length(phy$tip.label))){
+parcimonyNumber <- function(phylo,clusters=rep(1,length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
   ntaxa <- length(phy$tip.label)
   ## Initialization
@@ -124,4 +124,66 @@ extract.parcimonyNumber <- function(nbrReconstructions,node=attr(nbrReconstructi
   } else{
     return(sum(nbrReconstructions[node,]))
   }
+}
+
+###############################################################################
+## Find the clustering of the tips, given the shifts
+###############################################################################
+
+##
+#' @title Tips descendants of nodes.
+#'
+#' @description
+#' \code{enumerate_tips_under_edges} gives, for each edge of the tree, the labels
+#' of the tips that have this edge as an ancestor.
+#'
+#' @details
+#' This function uses function \code{prop.part} from package \code{ape}.
+#'
+#' @param tree phylogenetic tree
+#' 
+#' @return list of size n+m-1, entry i is the vector of tips bellow edge i.
+#'
+##
+enumerate_tips_under_edges <- function (tree) {
+  ntaxa <- length(tree$tip.label)
+  temp <- prop.part(tree)
+  subtree.list <- vector("list", nrow(tree$edge))
+  for (i in 1:nrow(tree$edge)) {
+    node <- tree$edge[i, 2]
+    if (node > ntaxa) {
+      subtree.list[[i]] <- temp[[node -ntaxa]]
+    } else {
+      subtree.list[[i]] <- node
+    }
+  }
+  return(subtree.list)
+}
+
+##
+#' @title Clusters of the tips corresponding to a list of shifts.
+#'
+#' @description
+#' \code{clusters_from_shifts} take a vector of shifts edges, and gives the
+#' clustering of the tips induced by them.
+#'
+#' @details
+#' By default, this function uses \code{enumerate_tips_under_edges} to compute 
+#' the list of tips under each edge.
+#'
+#' @param tree phylogenetic tree
+#' @param edges a vector of edges of the tree, where the shifts are
+#' @param part.list a list giving the descendant tips of each edge
+#' 
+#' @return list of size n+m-1, entry i is the vector of tips bellow edge i.
+#'
+##
+clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_edges(tree)) {
+  ntaxa <- length(tree$tip.label)
+  part <- rep(0, ntaxa)
+  edges <- sort(edges)
+  for (i in 1:length(edges)) {
+    part[part.list[[edges[i]]]] <- i
+  }
+  return(part)
 }

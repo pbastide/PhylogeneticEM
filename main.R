@@ -1230,6 +1230,7 @@ source("Phylogenetic-EM/shutoff.R")
 source("Phylogenetic-EM/generic_functions.R")
 source("Phylogenetic-EM/shifts_manipulations.R")
 source("Phylogenetic-EM/plot_functions.R")
+source("Phylogenetic-EM/parcimonyNumber.R")
 
 ### Functions
 
@@ -1316,6 +1317,7 @@ estimationfunction <- function(X, seg) {
   X$beta_0_estim <- params$root.state$exp.root
   #X$CLL_history <- results_estim_EM$CLL_history
   X$params_estim <- params
+  X$number_equivalent_solutions <- results_estim_EM$number_equivalent_solutions
   return(X)
 }
 
@@ -1374,6 +1376,7 @@ estimationfunction_alpha_known <- function(X, alphaKN, seg) {
   X$history <- results_estim_EM$params_history
   X$beta_0_estim <- params$root.state$exp.root
   #X$CLL_history <- results_estim_EM$CLL_history
+  X$number_equivalent_solutions <- results_estim_EM$number_equivalent_solutions
   return(X)
 }
 
@@ -1383,20 +1386,20 @@ process <- "OU"
 beta_0 <- 0
 alpha <- 3
 gamma <- 0.1
-K <- 0
-shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
+K <- 9
+#shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
 # haut placées
 #shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
 # dans les feuilles
 #shifts <- list(edges=c(17, 118),values=c(10, -10),relativeTimes=c(0,0))
 #shifts <- list(edges=c(17, 118, 23, 85, 53, 110, 56, 96, 7),values=c(0.5,1,1.5,-0.5,-1,-1.5,2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
-#shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
+shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
 
 #seg <- "max_costs_0"
 #seg <- "lasso"
 #seg <- "best_single_move"
-#seg <- c("same_shifts", "same_shifts_same_values", "max_costs_0", "lasso")
-seg <- c("lasso", "same_shifts", "best_single_move")
+seg <- c("same_shifts", "lasso")
+#seg <- c("lasso", "same_shifts", "best_single_move")
 
 name <- paste0("_", paste0(seg, collapse="_"), "_alpha=", alpha, "_gamma=", gamma, "_K=", K, "_edges=", paste0(shifts$edges, collapse="-"), "_values=", paste0(shifts$values, collapse="-"))
 

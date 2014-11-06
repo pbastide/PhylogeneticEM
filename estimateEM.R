@@ -277,13 +277,18 @@ estimateEM <- function(phylo,
                                            Sigma_YY_inv = moments$Sigma_YY_inv)
   attr(params, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
+  ## Number of equivalent solutions
+  clusters <- clusters_from_shifts(phylo, params$shifts$edges)
+  Neq <- extract.parcimonyNumber(parcimonyNumber(phylo, clusters))
+  if (Neq > 1) message("There are some equivalent solutions to the solution found.")
   ## Result
   result <- list(params = params, 
                  ReconstructedNodesStates = conditional_law_X$expectations[(ntaxa+1):length(conditional_law_X$expectations)], 
                  params_old = params_old, 
                  params_init = params_init,
                  params_history = params_history,
-                 number_new_shifts = number_new_shifts)
+                 number_new_shifts = number_new_shifts,
+                 number_equivalent_solutions = Neq)
   #                  CLL_history = CLL_history
   
   attr(result, "Nbr_It") <- Nbr_It
