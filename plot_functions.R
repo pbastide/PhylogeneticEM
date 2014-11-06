@@ -114,12 +114,25 @@ plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("B
     dev.off()
 }
 
-plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate){
+plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE){
+  if (normalize){
+    norm <- mean(abs(Y.state))
+  } else {
+    norm <- 1
+  }
   ## Plot
   par(mar = c(0,0,0,0), omi = c(0,0,0,0))
-  plot(phylo, show.tip.label = FALSE)
-  tiplabels(pch = 19, cex = abs(Y.state)/mean(abs(Y.state)), col = ifelse(Y.state >= 0, "orangered", "lightblue"))
-  nodelabels(pch = 19, cex = abs(Z.state)/mean(abs(Z.state)), col = ifelse(Z.state >= 0, "orangered", "lightblue"))
+  # Take care of the root
+  phylo$root.edge <- quantile(phylo$edge.length, 0.25)
+  plot(phylo, show.tip.label = FALSE, root.edge = TRUE)
+  tiplabels(pch = 19, cex = abs(Y.state)/norm, col = ifelse(Y.state >= 0, "orangered", "lightblue"))
+  nodelabels(pch = 19, cex = abs(Z.state)/norm, col = ifelse(Z.state >= 0, "orangered", "lightblue"))
+  my.labeller <- function(variable, value) {
+    value <- paste(variable, "==", as.character(value))
+    value <- lapply(value, function(x) parse(text = x))
+    return(value)
+  }
+  nodelabels(text = round(paramsEstimate$optimal.value, 2), node=length(Y.state)+1, bg="chocolate4", cex = 1, adj = 1)
   if ( !is.null(paramsEstimate$shifts$edges) ) {
     edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg="chocolate4", cex = 1)
   }
@@ -243,13 +256,13 @@ catch.TolParams.OU <- function(params_algo_EM){
 
 list_to_table.history <- function(params_history) {
   ll <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood")[1]))
-  ll_bis <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood_bis")[1]))
+#  ll_bis <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood_bis")[1]))
   #method <- unlist(sapply(params_history, function(x) attr(x, "segmentation_algorithm_used")))
   nbr_of_shifts <- length(params_history[['1']]$shifts$edges)
   params_history[['0']] <- replaceInList(params_history[['0']], function(x) if(is.null(x))rep(0,nbr_of_shifts) else x)
   params_history <- lapply(params_history, unlist)
   history <- do.call(cbind, params_history)
-  history <- rbind(history, log_likelihood = c(ll, NA), log_likelihood_bis = c(ll_bis, NA))#, segmentation_algorithm = c(method, NA, NA))
+  history <- rbind(history, log_likelihood = c(ll, NA))#, log_likelihood_bis = c(ll_bis, NA)), segmentation_algorithm = c(method, NA, NA))
   return(history)
 }
 
@@ -259,23 +272,25 @@ write.table.history <- function(history, params_algo_EM, PATH, ...) {
   write.csv2(history, name, ...)
 }
 
-plot.history.OU.stationnary <- function(params_history, paramsSimu, PATH, name){
-  params_history[["true"]] <- paramsSimu
+plot.history.OU.stationnary <- function(params_history, paramsSimu, tree, Y_data_ref, params_ref, PATH, name, ref = "true"){
+  params_history[[ref]] <- paramsSimu
   history <- list_to_table.history(params_history)
-  history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, datasim$params)
+  history[,ref]["log_likelihood"] <-log_likelihood.OU(Y_data_ref, 
+                                                            tree, 
+                                                            params_ref)
   #params_simu  <-  unlist(paramsSimu)[names(history[,1])]
   pdf(paste(PATH, name, ".pdf", sep=""), width = 12, height = 8)
   ## Title of the page
   #title <- paste("Initialization : ", params_algo_EM$method.init, "\n", "Alpha Initialization : ", params_algo_EM$method.init.alpha, sep="")
   ## Plot
-  plot.history.OU.stationnary.actual(history)
+  plot.history.OU.stationnary.actual(history, ref)
   dev.off()
 }
 
-plot.history.OU.stationnary.actual <- function (history, title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
+plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
   ## Discriminate
-  params_simu <- history[, "true"]
-  history <- history[, colnames(history)!="true"]
+  params_simu <- history[, ref]
+  history <- history[, colnames(history) != ref]
   ## Create grid
   pushViewport(viewport(layout = grid.layout(2+1, 3, heights = unit(c(1,5,5), "null"))))
   ## title
