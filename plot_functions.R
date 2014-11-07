@@ -272,8 +272,8 @@ write.table.history <- function(history, params_algo_EM, PATH, ...) {
   write.csv2(history, name, ...)
 }
 
-plot.history.OU.stationnary <- function(params_history, paramsSimu, tree, Y_data_ref, params_ref, PATH, name, ref = "true"){
-  params_history[[ref]] <- paramsSimu
+plot.history.OU.stationnary <- function(params_history, tree, params_ref, Y_data_ref, PATH, name, ref = "true"){
+  params_history[[ref]] <- params_ref
   history <- list_to_table.history(params_history)
   history[,ref]["log_likelihood"] <-log_likelihood.OU(Y_data_ref, 
                                                             tree, 

@@ -704,11 +704,16 @@ segmentation.OU.specialCase.same_shifts_same_values <- function(phylo, condition
 #'
 #'06/10/14 - Initial release
 ##
-segmentation.OU.specialCase.same_shifts <- function(phylo, conditional_law_X, selection.strength, shifts_old, ...){
-  return(optimize_costs_given_shift_position.OU.specialCase(phylo = phylo,
-                                                            conditional_law_X = conditional_law_X,
-                                                            selection.strength = selection.strength,
-                                                            shifts_edges = shifts_old$edges))
+segmentation.OU.specialCase.same_shifts <- function(phylo, shifts_old, D, Xp, ...){
+  edges <- shifts_old$edges
+  if (is.null(edges)) edges <- 0
+  dim(edges) <- c(1, length(edges))
+  root <- length(phylo$tip.label) + phylo$Nnode
+  return(best_scenario(D, Xp, edges, root))
+#   return(optimize_costs_given_shift_position.OU.specialCase(phylo = phylo,
+#                                                             conditional_law_X = conditional_law_X,
+#                                                             selection.strength = selection.strength,
+#                                                             shifts_edges = shifts_old$edges))
 }
 
 segmentation.OU.specialCase.best_single_move.old <- function(phylo, conditional_law_X, selection.strength, shifts_old, ...){
@@ -798,12 +803,12 @@ optimize_costs_given_shift_position.OU.specialCase <- function(phylo, conditiona
   return(list(beta_0 = beta_values[1], shifts = shifts, costs = costs))
 }
 
-segmentation.OU.specialCase.best_single_move <- function(phylo, conditional_law_X, selection.strength, shifts_old, D, Xp, ...){
+segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, Xp, ...){
   ## If no shifts, there is no such thing as a "single move"
   if (is.null(shifts_old$edges)){
     return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
   }
-  ## "Normal case"
+  ## Construct scenarii
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   root <- ntaxa + nNodes
@@ -816,9 +821,15 @@ segmentation.OU.specialCase.best_single_move <- function(phylo, conditional_law_
   for (i in 1:K) {
     scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
   }
+  ## Choose the best scenario
+  return(best_scenario(D, Xp, scenarii, root))
+}
+
+
+best_scenario <- function (D, Xp, scenarii, root) {
   # Function to be applyed to each row
   fun <- function(sh_ed){
-    fit.lm <- lm.fit(x = Xp[, c(root, sh_ed)], y = D)
+    fit.lm <- lm.fit(x = Xp[, c(root, sh_ed), drop = FALSE], y = D)
     return(list(shifts_edges = sh_ed,
                 coefs = unname(coef(fit.lm)),
                 costs = residuals(fit.lm)^2,
