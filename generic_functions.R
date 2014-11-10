@@ -190,6 +190,24 @@ recursionUp <- function(phy, params, updateUp, ...){
   return(params)
 }
 
+recursionUp_list <- function(phy, params, updateUp, ...){
+  if (attr(phy,"order") != "postorder") stop("The tree must be in postorder order")
+  ## Tree recursion
+  e <- 1
+  while (e <= nrow(phy$edge)) {
+    edge <- phy$edge[e, ]
+    parent <- edge[1]
+    ii <- which(phy$edge[,1]==parent)
+    daughters <- phy$edge[ii,2]
+    params[[parent]] <- updateUp(edgesNbr=ii,
+                                daughters=daughters,
+                                daughtersParams = params[daughters],
+                                parent = parent, ...)
+    e <- ii[length(ii)]+1
+  }
+  return(params)
+}
+
 ###############################################################################
 ## Functions to generate trees with fixed topologies
 ###############################################################################

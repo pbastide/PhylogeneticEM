@@ -165,18 +165,34 @@ nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered
 ## Test of function parcimonyNumber
 #######################################
 tree <- read.tree(text="(((T,T),C),(A,A));")
-plot(tree); tiplabels()
+ntaxa <- 5
+plot(tree); tiplabels(); nodelabels()
 clusters=c(1,1,2,3,3)
 extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 clusters=c(1,1,1,1,1)
 extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 clusters=c(1,2,3,4,4)
 extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+pos <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
+for (k in 1:dim(pos)[1]){
+  plot(tree, show.tip.label=FALSE)
+  tiplabels(text = pos[k, 1:ntaxa])
+  nodelabels(text = pos[k,-(1:ntaxa)])
+}
 
 tree <- rtree(10)
 plot(tree); tiplabels()
 clusters <- c(1,1,1,1,1,2,2,2,2,2)
 extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
+
+tree <- read.tree(text="((((T,T),C),(A,A)),(((T,T),C),(A,A)));")
+plot(tree); tiplabels(); nodelabels()
+clusters=c(1,1,2,3,3,1,1,2,3,3)
+extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 
 #######################################
 ## Test of function partitionsNumber - Binary
@@ -1386,22 +1402,22 @@ process <- "OU"
 beta_0 <- 0
 alpha <- 3
 gamma <- 0.1
-K <- 0
+K <- 8
 #shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
 # haut placées
 #shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
 # dans les feuilles
 #shifts <- list(edges=c(17, 118),values=c(10, -10),relativeTimes=c(0,0))
 #shifts <- list(edges=c(17, 118, 23, 85, 53, 110, 56, 96, 7),values=c(0.5,1,1.5,-0.5,-1,-1.5,2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
-#shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
+shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
 #shifts <- list(edges=c(7, 17, 23),values=c(2,2,-2),relativeTimes=c(0,0,0))
-shifts <- NULL
+#shifts <- NULL
 
 #seg <- "max_costs_0"
 #seg <- "lasso"
 #seg <- "best_single_move"
-seg <- c("same_shifts", "lasso")
-#seg <- c("lasso", "same_shifts", "best_single_move")
+#seg <- c("same_shifts", "lasso")
+seg <- c("lasso", "same_shifts", "best_single_move")
 
 name <- paste0("_", paste0(seg, collapse="_"), "_alpha=", alpha, "_gamma=", gamma, "_K=", K, "_edges=", paste0(shifts$edges, collapse="-"), "_values=", paste0(shifts$values, collapse="-"))
 
@@ -1425,7 +1441,7 @@ history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, dat
 #CLL_history <- cbind(simest$CLL_history, c(NA, NA))
 #history <- rbind(history, CLL_history)
 write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown", name, ".csv"))
-plot.history.OU.stationnary(simest$history, datasim$params, PATH=PATH, paste0("history_plot", name))
+plot.history.OU.stationnary(simest$history, tree, datasim$params, datasim$Y_data, PATH=PATH, paste0("history_plot", name))
 
 simest_true_alpha <- estimationfunction_alpha_known(datasim, alphaKN = alpha, seg = seg)
 simest_true_alpha$history[["true"]] <- datasim$params
