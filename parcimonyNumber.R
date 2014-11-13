@@ -491,18 +491,24 @@ equivalent_shifts_values <- function(phylo,
                                      selection.strength, t_tree, times_shared, Tr) {
   ## Compute actualized shifts values
   shifts_ac <- shifts
-  parents <- phylo$edge[shifts_ac$edges,1]
-  factors <- compute_actualization_factors(selection.strength = selection.strength, 
-                                           t_tree = t_tree, 
-                                           times_shared = times_shared, 
-                                           parents = parents)
-  shifts_ac$values <- shifts_ac$values*factors
+  fun <- function(shift_pos){
+    parents <- phylo$edge[shift_pos, 1]
+    factors <- compute_actualization_factors(selection.strength = selection.strength, 
+                                             t_tree = t_tree, 
+                                             times_shared = times_shared, 
+                                             parents = parents)
+    return(factors)
+  }
+  factors_or <- fun(shifts_ac$edges)
+  shifts_ac$values <- shifts_ac$values*factors_or
   ## corresponding values at tips
-  delta_ac <- shifts.list_to_vector (phylo, shifts_ac)
+  delta_ac <- shifts.list_to_vector(phylo, shifts_ac)
   m_Y <- Tr%*%delta_ac + beta_0
   ## find the right coefficients for each combination of edges
   shifts_and_beta <- apply(eq_shifts_edges, 2, find_actualized_shift_values, Tr = Tr, m_Y = m_Y)
-  return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE]/factors,
+  ## Apply the correct factor back
+  Factors <- apply(eq_shifts_edges, 2, fun)
+  return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE]/Factors,
               betas_0 = shifts_and_beta[1,]))
 }
 
@@ -552,12 +558,12 @@ find_actualized_shift_values <- function(shifts_edges, Tr, m_Y){
 plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
                                    PATH, name){
   nbrSol <- dim(eq_shifts_edges)[2]
-  nbrLignes <- (nbrSol %/% 4) + 1
+  nbrLignes <- (nbrSol %/% 3) + 1
   nbrShifts <- dim(eq_shifts_edges)[1]
   colors <- c("black", palette(rainbow(nbrShifts)))
   pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
       width = 4*3, height = nbrLignes * 3)
-  split.screen(c(nbrLignes, 3))
+  scr <- split.screen(c(nbrLignes, 3))
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
     params <- list(optimal.value = eq_shifts_values$betas_0[sol],
@@ -568,10 +574,10 @@ plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values,
     regimes <- allocate_regimes_from_shifts(phylo, eq_shifts_edges[, sol])
     edges_regimes <- regimes[phylo$edge[,2]]
     ## Plot
-    screen(sol)
+    screen(scr[sol])
     plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2)
   }
-  close.screen(all = TRUE)
+  close.screen(all.screens = TRUE)
   dev.off()
   
 }
