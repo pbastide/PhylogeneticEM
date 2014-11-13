@@ -557,12 +557,18 @@ find_actualized_shift_values <- function(shifts_edges, Tr, m_Y){
 ##
 plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
                                    PATH, name){
+  pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
+      width = 4*3, height = nbrLignes * 3)
+  plot_equivalent_shifts.actual(phylo, eq_shifts_edges, eq_shifts_values)
+  dev.off()
+  
+}
+
+plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_values){
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% 3) + 1
   nbrShifts <- dim(eq_shifts_edges)[1]
   colors <- c("black", palette(rainbow(nbrShifts)))
-  pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
-      width = 4*3, height = nbrLignes * 3)
   scr <- split.screen(c(nbrLignes, 3))
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
@@ -578,6 +584,4 @@ plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values,
     plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2)
   }
   close.screen(all.screens = TRUE)
-  dev.off()
-  
 }
