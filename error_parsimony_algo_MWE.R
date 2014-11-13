@@ -1,0 +1,26 @@
+rm(list=ls())
+
+#WD <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
+WD <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
+setwd(WD)
+
+
+library(ape)
+library(plyr)
+
+source("Phylogenetic-EM/generic_functions.R")
+source("Phylogenetic-EM/parcimonyNumber.R")
+
+tree <- read.tree(text="(((T,T),C),C);")
+plot(tree); tiplabels(); nodelabels()
+
+clusters=c(1,2,3,3)
+
+extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
+
+# Reconstruction (1,2,3,3,3,3,3) has also two shifts, and is missing !
+
+# Problem with the algorithm at node 7 : (1,1,0) from the informations given by the
+# tips, excluding solution that starts with state 3 (two shifts bellow it, but no 
+# shift before)
