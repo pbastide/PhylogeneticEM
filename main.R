@@ -1237,6 +1237,7 @@ library(ggplot2) # Plot
 library(reshape2) # Plot
 library(grid) # Plot
 library(TreeSim)
+library(plyr)
 source("Phylogenetic-EM/simulate.R")
 source("Phylogenetic-EM/estimateEM.R")
 source("Phylogenetic-EM/init_EM.R")
@@ -1402,22 +1403,22 @@ process <- "OU"
 beta_0 <- 0
 alpha <- 3
 gamma <- 0.1
-K <- 8
+K <- 9
 #shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
 # haut placées
 #shifts <- list(edges=c(53, 110), values=c(2, -2), relativeTimes=c(0,0))
 # dans les feuilles
 #shifts <- list(edges=c(17, 118),values=c(10, -10),relativeTimes=c(0,0))
-#shifts <- list(edges=c(17, 118, 23, 85, 53, 110, 56, 96, 7),values=c(0.5,1,1.5,-0.5,-1,-1.5,2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
-shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
+shifts <- list(edges=c(17, 118, 23, 85, 53, 110, 56, 96, 7),values=c(0.5,1,1.5,-0.5,-1,-1.5,2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
+#shifts <- list(edges=c(7, 17, 23, 53, 56, 85, 96, 110, 118),values=c(2,2,2,2,-2,-2,-2,-2,5),relativeTimes=c(0,0,0,0,0,0,0,0,0))
 #shifts <- list(edges=c(7, 17, 23),values=c(2,2,-2),relativeTimes=c(0,0,0))
 #shifts <- NULL
 
 #seg <- "max_costs_0"
 #seg <- "lasso"
 #seg <- "best_single_move"
-#seg <- c("same_shifts", "lasso")
-seg <- c("lasso", "same_shifts", "best_single_move")
+seg <- c("same_shifts", "lasso")
+#seg <- c("lasso", "same_shifts", "best_single_move")
 
 name <- paste0("_", paste0(seg, collapse="_"), "_alpha=", alpha, "_gamma=", gamma, "_K=", K, "_edges=", paste0(shifts$edges, collapse="-"), "_values=", paste0(shifts$values, collapse="-"))
 
@@ -1465,3 +1466,30 @@ plot.process.actual(Y.state = simest$Y_data,
 plot(tree); edgelabels(text = round(datasim$shifts$values, 2), edge = datasim$shifts$edges)
 x11();
 plot(tree); edgelabels(); edgelabels(edge = datasim$shifts$edges, col="red")
+
+## Equivalent solutions
+times_shared <- compute_times_ca(tree)
+t_tree <-  min(node.depth.edgelength(tree)[1:ntaxa])
+Tr <- incidence.matrix(tree)
+
+# Simulated data
+eq_shifts_edges_sim <- equivalent_shifts_edges(tree, datasim$shifts$edges)
+eq_shifts_values_sim <- equivalent_shifts_values(tree,
+                                                 shifts = datasim$shifts,
+                                                 beta_0 = beta_0,
+                                                 eq_shifts_edges_sim,
+                                                 selection.strength = datasim$alpha,
+                                                 t_tree, times_shared, Tr)
+
+plot_equivalent_shifts(tree, eq_shifts_edges_sim, eq_shifts_values_sim, paste0(PATH, "sim_"), name)
+
+# Estimated shifts
+eq_shifts_edges_estim <- equivalent_shifts_edges(tree, simest$shifts_estim$edges)
+eq_shifts_values_estim <- equivalent_shifts_values(tree,
+                                             shifts = simest$shifts_estim,
+                                             beta_0 = simest$beta_0_estim,
+                                             eq_shifts_edges_estim,
+                                             selection.strength = simest$alpha_estim,
+                                             t_tree, times_shared, Tr)
+
+plot_equivalent_shifts(tree, eq_shifts_edges_estim, eq_shifts_values_estim, paste0(PATH, "estim_"), name)

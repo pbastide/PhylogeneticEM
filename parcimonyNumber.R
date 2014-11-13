@@ -305,7 +305,7 @@ update.enumerate_parsimony <- function(daughters, daughtersParams, parent, ...){
     # From the list of possible regimes, compute the possible regimes staring with 
     # parent node i regime k.
     possibles[[k]] <- matrix_of_possibles(matlist)
-    possibles[[k]][ ,parent] <- k
+    possibles[[k]][ , parent] <- k
   }
   return(possibles)
 }
@@ -422,4 +422,156 @@ add_complementary <- function(z){
 extract.enumerate_parsimony <- function(allocations,
                                         node = attr(allocations, "ntaxa") + 1){
   return(do.call(rbind, allocations[[node]]))
+}
+
+###############################################################################
+## Compute equivalent shifts given one solution
+###############################################################################
+
+##
+#' @title Find all the equivalent shift edges allocations.
+#'
+#' @description
+#' \code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to find all
+#' the shifts positions that are equivalent to a given one.
+#' 
+#' @details
+#' This function is uses functions \code{enumerate_parsimony} for the actual
+#' computation of equivalent regimes, \code{clusters_from_shifts} for the clustering
+#' of the tips induced by the original set of shifts given, and 
+#' \code{allocate_shifts_from_regimes} to convert back a parametrization in term of
+#' regimes to a parametrization in term of shifts.
+#' 
+#' @param phylo a phylogenetic tree.
+#' @param shifts_edges a vector of shifts positions on the edges of the tree.
+#'
+#' @return a matrix with as many columns as equivalent allocation, each column
+#'  representing a possible parsimonious allocation of shifts on the tree.
+##
+equivalent_shifts_edges <- function(phylo, shifts_edges){
+  clusters <- clusters_from_shifts(phylo, shifts_edges) + 1
+  regime_allocs <- extract.enumerate_parsimony(enumerate_parsimony(phylo, clusters))
+  eq_shifts_edges <- apply(regime_allocs, 1, allocate_shifts_from_regimes, phylo = phylo)
+  return(eq_shifts_edges)
+}
+
+##
+#' @title Find values given edges. OU stationnary case. Ultrametric tree.
+#'
+#' @description
+#' \code{equivalent_shifts_values} computes the values of the shifts given all the 
+#' possible allocations computed by function \code{equivalent_shifts_edges}.
+#' 
+#' @details
+#' This function uses the linear representation of the problem. It fist compute the 
+#' mean at the tips given by the orgininal shifts positions and values, and then uses
+#' function \code{qr.solve} (through function \code{find_actualized_shift_values}) to 
+#' find back the values of the shifts, givent their various positions, and the means
+#' at the tips. Function \code{compute_actualization_factors} is used to compute the actualization factor that multipies the shifts values at the tips. Carefull, only 
+#' work for ultrametric trees.
+#' 
+#' @param phylo a phylogenetic tree.
+#' @param shifts a list of positions and values of original shifts.
+#' @param beta_0 value of the original optimal value at the root.
+#' @param eq_shifts_edges matrix, result of function \code{equivalent_shifts_edges}.
+#' @param selection.strength the selection strength of the OU process.
+#' @param t_tree the depth of the ultrametric tree.
+#' @param times_shared matrix of times of shared evolution, result of function
+#' \code{compute_times_ca}.
+#' @param Tr matrix of incidence of the tree, result of function 
+#' \code{incidence.matrix}.
+#'
+#' @return shifts_values a matrix of shifts values corresponding to the shifts
+#' positions in eq_shifts_edges.
+#' @return betas_0 a vector of corresponding root optimal values.
+##
+equivalent_shifts_values <- function(phylo, 
+                                     shifts, beta_0, 
+                                     eq_shifts_edges = equivalent_shifts_edges(phylo, shifts$edges), 
+                                     selection.strength, t_tree, times_shared, Tr) {
+  ## Compute actualized shifts values
+  shifts_ac <- shifts
+  parents <- phylo$edge[shifts_ac$edges,1]
+  factors <- compute_actualization_factors(selection.strength = selection.strength, 
+                                           t_tree = t_tree, 
+                                           times_shared = times_shared, 
+                                           parents = parents)
+  shifts_ac$values <- shifts_ac$values*factors
+  ## corresponding values at tips
+  delta_ac <- shifts.list_to_vector (phylo, shifts_ac)
+  m_Y <- Tr%*%delta_ac + beta_0
+  ## find the right coefficients for each combination of edges
+  shifts_and_beta <- apply(eq_shifts_edges, 2, find_actualized_shift_values, Tr = Tr, m_Y = m_Y)
+  return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE]/factors,
+              betas_0 = shifts_and_beta[1,]))
+}
+
+##
+#' @title Find values given edges. OU stationnary case. Ultrametric tree.
+#'
+#' @description
+#' \code{find_actualized_shift_values} computes the values of the shifts their
+#' positions, and the mean values at the tips.
+#' Warning : this function does not check for consistency. Please make sure that the
+#' shifts postions and the mean values are compatible.
+#' 
+#' @details
+#' This function uses \code{qr.solve} for rectangular linear system solving.
+#' 
+#' @param shifts_edges a vector of positions of shifts on the tree.
+#' @param Tr matrix of incidence of the tree, result of function 
+#' \code{incidence.matrix}.
+#' @param m_Y the vector of values of the means at the tips.
+#'
+#' @return vector, with first entry the values at the root, and other entries the 
+#' values of the shifts.
+##
+find_actualized_shift_values <- function(shifts_edges, Tr, m_Y){
+  coefs <- qr.solve(cbind(rep(1, dim(Tr)[1]),Tr[,shifts_edges]), m_Y)
+  return(coefs)
+}
+
+##
+#' @title Plot all the equivalent solutions.
+#'
+#' @description
+#' \code{plot_equivalent_shifts} plots and save a representation of all the equivalent
+#' shifts allocations, with a representation of the shifts and their values, and a 
+#' coloration of the branches in term of regimes. Black is the ancestral regime.
+#' 
+#' @details
+#' This function uses \code{qr.solve} for rectangular linear system solving.
+#' 
+#' @param phylo a phylogenetic tree.
+#' @param eq_shifts_edges matrix, result of function \code{equivalent_shifts_edges}.
+#' @param eq_shifts_values, result of function \code{equivalent_shifts_values}.
+#' @param PATH a string linking to the path were the plot is to be stored.
+#' @param name a name to be given to the plot.
+#' 
+##
+plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
+                                   PATH, name){
+  nbrSol <- dim(eq_shifts_edges)[2]
+  nbrLignes <- (nbrSol %/% 4) + 1
+  nbrShifts <- dim(eq_shifts_edges)[1]
+  colors <- c("black", palette(rainbow(nbrShifts)))
+  pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
+      width = 4*3, height = nbrLignes * 3)
+  split.screen(c(nbrLignes, 3))
+  for (sol in 1:nbrSol) {
+    ## Shifts and beta_0
+    params <- list(optimal.value = eq_shifts_values$betas_0[sol],
+                   shifts = list(edges = eq_shifts_edges[, sol],
+                                 values = eq_shifts_values$shifts_values[, sol],
+                                 relativeTimes = rep(0, nbrShifts)))
+    ## Regimes
+    regimes <- allocate_regimes_from_shifts(phylo, eq_shifts_edges[, sol])
+    edges_regimes <- regimes[phylo$edge[,2]]
+    ## Plot
+    screen(sol)
+    plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2)
+  }
+  close.screen(all = TRUE)
+  dev.off()
+  
 }

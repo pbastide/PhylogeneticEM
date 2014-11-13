@@ -114,7 +114,8 @@ plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("B
     dev.off()
 }
 
-plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE){
+plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, bg_shifts = "chocolate4", bg_beta_0 = "chocolate4", ...){
+  ntaxa <- length(phylo$tip.label)
   if (normalize){
     norm <- mean(abs(Y.state))
   } else {
@@ -124,7 +125,7 @@ plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normali
   par(mar = c(0,0,0,0), omi = c(0,0,0,0))
   # Take care of the root
   phylo$root.edge <- quantile(phylo$edge.length, 0.25)
-  plot(phylo, show.tip.label = FALSE, root.edge = TRUE)
+  p <- plot(phylo, show.tip.label = FALSE, root.edge = TRUE, ...)
   tiplabels(pch = 19, cex = abs(Y.state)/norm, col = ifelse(Y.state >= 0, "orangered", "lightblue"))
   nodelabels(pch = 19, cex = abs(Z.state)/norm, col = ifelse(Z.state >= 0, "orangered", "lightblue"))
   my.labeller <- function(variable, value) {
@@ -132,10 +133,11 @@ plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normali
     value <- lapply(value, function(x) parse(text = x))
     return(value)
   }
-  nodelabels(text = round(paramsEstimate$optimal.value, 2), node=length(Y.state)+1, bg="chocolate4", cex = 1, adj = 1)
+  nodelabels(text = round(paramsEstimate$optimal.value, 2), node=ntaxa + 1, bg=bg_beta_0, cex = 1, adj = adj)
   if ( !is.null(paramsEstimate$shifts$edges) ) {
-    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg="chocolate4", cex = 1)
+    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg = bg_shifts, cex = 1)
   }
+  return(p)
 }
 
 save.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
