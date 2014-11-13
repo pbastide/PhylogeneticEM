@@ -379,8 +379,11 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances
     ## If OU, apply the correct factor to shifts
     if (process == "OU" && !is.null(times_shared) && !is.null(shifts.gauss$values)){
       parents <- phylo$edge[shifts.gauss$edges,1]
-      factors <- exp(-selection.strength.init * t_tree - diag(times_shared[parents, parents, drop = FALSE]))
-      shifts.gauss$values <- shifts.gauss$values/(1-factors)
+      factors <- compute_actualization_factors(selection.strength = selection.strength.init, 
+                                               t_tree = t_tree, 
+                                               times_shared = times_shared, 
+                                               parents = parents)
+      shifts.gauss$values <- shifts.gauss$values/factors
     }
     params_init <- init.EM.default(value.root.init = E0.gauss[1], 
                                    exp.root.init = E0.gauss[1], 
@@ -393,6 +396,14 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances
                                    var.root.init = var.root.init, ...)
     return(params_init)
   }
+}
+
+compute_actualization_factors <- function(selection.strength, 
+                                                t_tree, 
+                                                times_shared, 
+                                                parents){
+  factors <- exp(-selection.strength * t_tree - diag(times_shared[parents, parents, drop = FALSE]))
+  return(1-factors)
 }
 
 ###############################################
