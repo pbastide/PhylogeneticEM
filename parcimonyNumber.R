@@ -243,6 +243,9 @@ enumerate_tips_under_edges <- function (tree) {
       subtree.list[[i]] <- node
     }
   }
+  ## Compact alternative using the special structure of prop.part
+  ## subtree.list <- c(lapply(1:ntaxa, function(x) x),
+  ##                   temp)
   return(subtree.list)
 }
 
