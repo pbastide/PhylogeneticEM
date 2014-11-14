@@ -114,7 +114,7 @@ plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("B
     dev.off()
 }
 
-plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, bg_shifts = "chocolate4", bg_beta_0 = "chocolate4", ...){
+plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, bg_shifts = "chocolate4", bg_beta_0 = "chocolate4", quant.root = 0.25, ...){
   ntaxa <- length(phylo$tip.label)
   if (normalize){
     norm <- mean(abs(Y.state))
@@ -124,7 +124,7 @@ plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normali
   ## Plot
   par(mar = c(0,0,0,0), omi = c(0,0,0,0))
   # Take care of the root
-  phylo$root.edge <- quantile(phylo$edge.length, 0.25)
+  phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   plot(phylo, show.tip.label = FALSE, root.edge = TRUE, ...)
   tiplabels(pch = 19, cex = abs(Y.state)/norm, col = ifelse(Y.state >= 0, "orangered", "lightblue"))
   nodelabels(pch = 19, cex = abs(Z.state)/norm, col = ifelse(Z.state >= 0, "orangered", "lightblue"))

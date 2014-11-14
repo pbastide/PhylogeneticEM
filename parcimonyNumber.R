@@ -723,7 +723,7 @@ plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_valu
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% 3) + 1
   nbrShifts <- dim(eq_shifts_edges)[1]
-  colors <- c("black", palette(rainbow(nbrShifts)))
+  colors <- c("black", rainbow(nbrShifts))
   scr <- split.screen(c(nbrLignes, 3))
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
@@ -736,7 +736,7 @@ plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_valu
     edges_regimes <- regimes[phylo$edge[,2]]
     ## Plot
     screen(scr[sol])
-    plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2)
+    plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2, quant.root = 0.7)
   }
   close.screen(all.screens = TRUE)
 }
