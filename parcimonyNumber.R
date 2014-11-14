@@ -94,14 +94,17 @@ init.parcimonyCost <- function(phy,clusters){
 #' @return A line vector corresponding to the parent node.
 ##
 update.parcimonyCost <- function(daughtersParams, ...){
+  require(plyr)
   nclus <- dim(daughtersParams)[2]
   parCosts <- rep(0, nclus)
   ## Minimum cost parent -> daughter -> subtree(daughter), over all possible states of daughter
   cost.subtree <- function(x) {
     y <- (1 - diag(1, length(x))) + x
     return(apply(y, 2, min))
+#    return(unname(aaply(y, 2, min, .drop = FALSE)))
   }
-  daughtersCost <- t(apply(daughtersParams, 1, cost.subtree))
+  daughtersCost <- aaply(daughtersParams, 1, cost.subtree, .drop = FALSE)
+#  daughtersCost <- t(unname(daughtersCost))
   ## Sum costs over all daughters
   parCosts <- colSums(daughtersCost)
   return(parCosts)
