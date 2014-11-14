@@ -18,6 +18,25 @@
 ###############################################################################
 ## Function implementing the Sankoff alogrithm
 ###############################################################################
+##
+#' @title Minimal number of shifts needed to get a clustering.
+#'
+#' @description
+#' \code{parcimonyCost} is an implementation of the Sankoff algorithm, when the cost of
+#' transition between two state is always one.
+#'
+#' @details
+#' This functin does a recursion up the tree, using functions 
+#' \code{init.parcimonyCost} for the initialization at the tips, 
+#' \code{updateUp} for the actual recursion on the tree,
+#' and \code{update.parcimonyCost} for the actualisation of the parameters.
+#'
+#' @param phylo phylogenetic tree.
+#' @param clusters the vector of the clusters of the tips.
+#' 
+#' @return A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed 
+#' to get the clustering, if starting from a node in state k.
+##
 parcimonyCost <- function(phylo, 
                           clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
@@ -29,6 +48,23 @@ parcimonyCost <- function(phylo,
   return(costReconstructions)
 }
 
+##
+#' @title Initialization for parsimonyCost.
+#'
+#' @description
+#' \code{init.parcimonyCost} initialize a (ntaxa + nNodes) x (nclus) matrix with
+#' NAs everywhere, except for the tips.
+#' 
+#' @details
+#' At a tip i in state k, the line-vector is initialized as follow : 
+#' (1 - Ind(k=p)_{1<=p<=nclus})*Inf (where Inf * 0 = 0)
+#'
+#' @param phylo phylogenetic tree.
+#' @param clusters the vector of the clusters of the tips.
+#' 
+#' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
+#' described.
+##
 init.parcimonyCost <- function(phy,clusters){
   ntaxa <- length(phy$tip.label)
   clus <- unique(clusters)
@@ -40,6 +76,23 @@ init.parcimonyCost <- function(phy,clusters){
   return(costReconstructions)
 }
 
+##
+#' @title Actualization for parsimonyCost.
+#'
+#' @description
+#' \code{update.parcimonyCost} compute the line vector of a parent node, given
+#' the vectors of its daughters.
+#' 
+#' @details
+#' This function computes the cost of putting the parent in a state k, as the 
+#' minimum number of shifts needed to get the given clustering of the trees bellow
+#' parental node.
+#'
+#' @param daughtersParams a (ndaughters) x (nclus) matrix with the line vectors of the cost
+#' for the daughters node.
+#' 
+#' @return A line vector corresponding to the parent node.
+##
 update.parcimonyCost <- function(daughtersParams, ...){
   nclus <- dim(daughtersParams)[2]
   parCosts <- rep(0, nclus)
@@ -60,21 +113,31 @@ update.parcimonyCost <- function(daughtersParams, ...){
 ## Dependencies : generic_functions.R
 ###############################################################################
 ##
-# parcimonyNumber (phylo,clusters=rep(1,length(phy$tip.label)))
-# PARAMETERS:
-# @phylo (tree) imput tree
-# @clusters (vector) : vector indicating the clusters of each tip
-# RETURNS:
-# (matrix) matrix with ncluster columns and Nnodes+ntaxa rows. Each row i contains the numbers of most parcimonious reconstruction of the subtree under the node i, if starting with state j (column)
-# DEPENDENCIES:
-# init.parcimonyNumber, update.parcimonyNumber (, extrac.parcimonyNumber)
-# PURPOSE:
-# Find the number of parcimonious repartition of the shift that can lead to a given clustering
-# NOTES:
-# none
-# REVISIONS:
-# 19/05/14 - Initial release
-# 21/05/14 - Gestion of case only one cluster. Extraction of the recursion.
+#' @title Number of equivalent parsimonious allocations.
+#'
+#' @description
+#' \code{parcimonyNumber} aims at finding the number of equivalent allocations of
+#' the shifts on the tree, i.e allocations that are parsimonious and compatible
+#' with a given clustering of the tips.
+#'
+#' @details
+#' This functin does a recursion up the tree, using functions 
+#' \code{init.parcimonyNumber} for the initialization at the tips, 
+#' \code{updateUp} for the actual recursion on the tree,
+#' and \code{update.parcimonyNumber} for the actualisation of the parameters.
+#' The function \code{extract_parcimonyNumber} furnishes the result seeked for any
+#' subtree.
+#' The matrix of costs of the states (number of shifts) is also required, it is computed
+#' by function \code{parsimonyCost}.
+#'
+#' @param phylo phylogenetic tree.
+#' @param clusters the vector of the clusters of the tips.
+#' 
+#' @return nbrReconstructions a (ntaxa + nNodes) x (nclus) matrix of loccaly parsimonious
+#'  solutions starting from a cluster k at a given node.
+#' @return costReconstructions a (ntaxa + nNodes) x (nclus) matrix of the total number of
+#' shifts needed to get the clustering, if starting from a node in state k (result of function
+#' \code{parsimonyCost}.
 ##
 parcimonyNumber <- function(phylo, 
                             clusters = rep(1, length(phylo$tip.label))){
@@ -96,21 +159,22 @@ parcimonyNumber <- function(phylo,
 }
 
 ##
-# init.parcimonyNumber (phy,clusters)
-# PARAMETERS:
-# @(phy,clusters) see note above
-# RETURNS:
-# (matrix) matrix with ncluster columns and Nnodes+ntaxa rows. For each tip i, row i is the vector rep(1, length(unique(clusters)))
-# DEPENDENCIES:
-# none
-# PURPOSE:
-# Initialise the matrix for function parcimonyNumber
-# NOTES:
-# none
-# REVISIONS:
-# 19/05/14 - Initial release
+#' @title Initialization for parsimonyNumber.
+#'
+#' @description
+#' \code{init.parcimonyNumber} initialize a (ntaxa + nNodes)x(nclus) matrix with
+#' NAs everywhere, except for the tips.
+#' 
+#' @details
+#' At a tip i in state k, the line-vector is initialized as follow : Ind(k=p)_{1<=p<=nclus}
+#'
+#' @param phy phylogenetic tree.
+#' @param clusters the vector of the clusters of the tips.
+#' 
+#' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
+#' described.
 ##
-init.parcimonyNumber <- function(phy,clusters){
+init.parcimonyNumber <- function(phy, clusters){
   ntaxa <- length(phy$tip.label)
   clus <- unique(clusters)
   nclus <- length(clus)
@@ -121,22 +185,23 @@ init.parcimonyNumber <- function(phy,clusters){
   return(nbrReconstructions)
 }
 
-
 ##
-# update.parcimonyNumber (daughtersNbr)
-# PARAMETERS:
-# @daughtersNbr (matrix) matrix with ncluster columns. Each row contains the result of parcimonyNumber for the children of a given node
-# @costReconstructions (matrix) matrix with ncluster columns. Each row the results of parcimonyCost for the daughters of a given node
-# RETURNS:
-# (vector) vector containing the number of parcimonious reconstructions from the current node if starting with cluster j
-# DEPENDENCIES:
-# none
-# PURPOSE:
-# Update
-# NOTES:
-# none
-# REVISIONS:
-# 19/05/14 - Initial release
+#' @title Actualization for parsimonyNumber.
+#'
+#' @description
+#' \code{update.parcimonyNumber} compute the line vector of a parent node, given
+#' the vectors of its daughters.
+#' 
+#' @details
+#' This function uses function \code{compute_state_filter} to find all the admissible
+#' states of the daughters, given a starting state for the parent.
+#'
+#' @param daughters the identifiers of the daughters nodes.
+#' @param daughtersParams a ndaughters x (nclus) matrix with the line vectors of the number of
+#' solutions for the daughters nodes.
+#' @param cost the (ntaxa + nNode) x nclus matrix of costs (computed by \code{parsimonyCost}).
+#' 
+#' @return A line vector corresponding to the parent node.
 ##
 update.parcimonyNumber <- function(daughters, daughtersParams, cost, ...){
     nclus <- dim(daughtersParams)[2]
@@ -163,6 +228,24 @@ update.parcimonyNumber <- function(daughters, daughtersParams, cost, ...){
     return(nbrAdm)
 }
 
+##
+#' @title List of potential daughter states when parent is in state k.
+#'
+#' @description
+#' \code{compute_state_filter} compute the admissible daughters states, i.e. states that 
+#' realize the minimum cost for the tree parent -> daughter -> subtree(daughter), when 
+#' the parent node is in state k.
+#' 
+#' @details
+#' This function is used in functions \code{parsimonyNumber} and \code{enumerate_parsimony}.
+#'
+#' @param cost a (ndaughters) x (nclus) matrix of the cost of each state for the 
+#' daughters nodes.
+#' @param k the parental state considered.
+#' 
+#' @return A (ndaughters) x (nclus) binary matrix indicating the admissible states for
+#' the daughters node when parent node is in state k.
+##
 compute_state_filter <- function (cost, k) {
   nclus <- dim(cost)[2]
   candidate.states <- function(x) {
