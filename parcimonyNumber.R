@@ -375,8 +375,10 @@ clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_
 #' 
 #' @param phylo Input tree.
 #' @param clusters a vector representing the group of each tip.
-#'
-#' @return A list of size nNode + ntaxa. Each entry i of the list represents the
+#' 
+#' @return nbrReconstructions a (ntaxa + nNodes) x (nclus) matrix of loccaly parsimonious
+#' solutions starting from a cluster k at a given node.
+#' @return allocations a list of size nNode + ntaxa. Each entry i of the list represents the
 #'  solutions for the subtree starting at node i. It is a list with nclus entries,
 #'  each entry being a matrix. A line of the kth matrix for the ith node is one
 #'  possible allocation of the shifts, starting with regime k for node i.
@@ -472,29 +474,6 @@ update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost,
     possibles[[k]][ , parent] <- k
   }
   return(possibles)
-}
-
-##
-#' @title Select possible regimes.
-#'
-#' @description
-#' \code{select.matrices} is used in function \code{update.enumerate_parsimony}, 
-#' and find the adequate matrices to keep.
-#' 
-#' @details
-#' If there is a solution for daughter node starting with group k, then return the 
-#' corresponding matrix. Otherwise, return all the other solutions, starting with
-#' different groups at daughter node.
-#' 
-#' @param z a list of nclust matrices.
-#' @param k the group being considered.
-#'
-#' @return Matrix of all possible regimes for the node bellow node daughter, when
-#' parent is in state k.
-##
-select.matrices <- function(z, k){
-  if (is.null(z[[k]])) return(do.call(rbind,z))
-  return(z[[k]])
 }
 
 ##
