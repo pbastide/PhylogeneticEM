@@ -16,6 +16,45 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 ###############################################################################
+## Function implementing the Sankoff alogrithm
+###############################################################################
+parcimonyCost <- function(phylo, 
+                          clusters = rep(1, length(phylo$tip.label))){
+  phy <- reorder(phylo,"postorder")
+  ntaxa <- length(phy$tip.label)
+  ## Initialization (cost of parcimonious reconstructions)
+  costReconstructions <- init.parcimonyCost(phy,clusters)
+  ## Tree recursion
+  costReconstructions <- recursionUp(phy, costReconstructions, update.parcimonyCost)
+  return(costReconstructions)
+}
+
+init.parcimonyCost <- function(phy,clusters){
+  ntaxa <- length(phy$tip.label)
+  clus <- unique(clusters)
+  nclus <- length(clus)
+  costReconstructions <- matrix(NA, nrow = 1 + nrow(phy$edge), ncol = nclus)
+  for (i in 1:ntaxa){
+    costReconstructions[i, ] <- as.integer(clusters[i] != clus)
+  }
+  return(costReconstructions)
+}
+
+update.parcimonyCost <- function(daughtersParams, ...){
+  nclus <- dim(daughtersParams)[2]
+  parCosts <- rep(0, nclus)
+  ## Minimum cost parent -> daughter -> subtree(daughter), over all possible states of daughter
+  cost.subtree <- function(x) {
+    y <- (1 - diag(1, length(x))) + x
+    return(apply(y, 2, min))
+  }
+  daughtersCost <- t(apply(daughtersParams, 1, cost.subtree))
+  ## Sum costs over all daughters
+  parCosts <- colSums(daughtersCost)
+  return(parCosts)
+}
+
+###############################################################################
 ## Here is a function to compute the number of partimonious allocation of shifts
 ## on the tree, given a clustering of the tips.
 ## Dependencies : generic_functions.R
@@ -37,27 +76,23 @@
 # 19/05/14 - Initial release
 # 21/05/14 - Gestion of case only one cluster. Extraction of the recursion.
 ##
-parcimonyNumber <- function(phylo,clusters=rep(1,length(phylo$tip.label))){
+parcimonyNumber <- function(phylo, 
+                            clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
   ntaxa <- length(phy$tip.label)
+  ## Computation of costs
+  costReconstructions <- parcimonyCost(phylo, clusters)
   ## Initialization (number of parcimonious reconstructions)
   ## Note: those are NOT globally most parcimonious reconstructions, but locally most
   ## parcimonious reconstructions, i.e. given that node i (row) is in state j (column)
   nbrReconstructions <- init.parcimonyNumber(phy,clusters)
-  ## Initialization (cost of parcimonious reconstructions)
-  costReconstructions <- init.parcimonyCost(phy,clusters)
-  ## Tree recursion
-  ## For the parcimony cost
-  costReconstructions <- recursionUp(phy, costReconstructions, update.parcimonyCost)
-  ## For the number of (locally) most parsimonious allocations
+  ## Tree recursion for the number of (locally) most parsimonious allocations
   nbrReconstructions <- recursionUp(phy, nbrReconstructions,
                                     update.parcimonyNumber, costReconstructions)
-  ## Return globally most parsimonious allocations from locally most parcimonious ones
-  ## Apply local filter (at each node) to keep only states that achieves minimum cost
-  state.filter <- as.integer(t(apply(costReconstructions, 1, function(x) { x == min(x)} )))
-  nbrReconstructions <- nbrReconstructions * state.filter
+  ## Return reconstructions, with their cost
   attr(nbrReconstructions, "ntaxa") <- ntaxa
-  return(nbrReconstructions)
+  return(list(nbrReconstructions = nbrReconstructions,
+              costReconstructions = costReconstructions))
 }
 
 ##
@@ -86,32 +121,6 @@ init.parcimonyNumber <- function(phy,clusters){
   return(nbrReconstructions)
 }
 
-##
-# init.parcimonyCost (phy,clusters)
-# PARAMETERS:
-# @(phy,clusters) see note above
-# RETURNS:
-# (matrix) matrix with ncluster columns and Nnodes+ntaxa rows. For each tip i, row i is the vector 1 - Ind(i=j). All other rows are set to NAs
-# DEPENDENCIES:
-# none
-# PURPOSE:
-# Initialise the parcimony cost matrix for function parcimonyNumber
-# NOTES:
-# none
-# REVISIONS:
-# 19/05/14 - Initial release
-##
-init.parcimonyCost <- function(phy,clusters){
-  ntaxa <- length(phy$tip.label)
-  clus <- unique(clusters)
-  nclus <- length(clus)
-  costReconstructions <- matrix(NA,nrow=1 + nrow(phy$edge),ncol=nclus)
-  for (i in 1:ntaxa){
-    costReconstructions[i, ] <- as.integer(clusters[i] != clus)
-  }
-  return(costReconstructions)
-}
-
 
 ##
 # update.parcimonyNumber (daughtersNbr)
@@ -131,7 +140,7 @@ init.parcimonyCost <- function(phy,clusters){
 ##
 update.parcimonyNumber <- function(daughters, daughtersParams, cost, ...){
     nclus <- dim(daughtersParams)[2]
-    nbrAdm <- rep(0,nclus)
+    nbrAdm <- rep(0, nclus)
     ## Cost of daughter nodes
     cost <- cost[daughters, , drop = F]
     ## Local function to compute the number of allocations for  subtree(parent) when
@@ -139,12 +148,7 @@ update.parcimonyNumber <- function(daughters, daughtersParams, cost, ...){
     allocation <- function(k) {
         ## List of potential daughter states (i.e that realize the minimum cost for the tree
         ## parent -> daughter -> subtree(daughter) ) when parent is in state k
-        candidate.states <- function(x) {
-            daughter.cost <- x + as.numeric(1:nclus != k)
-            return(as.integer(daughter.cost == min(daughter.cost)))
-        }
-        ## binary matrix of candidate states for each daughter
-        state.filter <- t(apply(cost, 1, candidate.states))
+        state.filter <- compute_state_filter(cost, k)
         ## Compute the number of parsimonious allocations in each
         ## parent -> daughter -> subtree(daughter) tree by summing the number
         ## of parsimonious allocations over all candidate daughter states
@@ -159,57 +163,43 @@ update.parcimonyNumber <- function(daughters, daughtersParams, cost, ...){
     return(nbrAdm)
 }
 
-##
-# update.parcimonyCost (daughtersNbr)
-# PARAMETERS:
-# @daughtersNbr (matrix) matrix with ncluster columns. Each row contains the result of parcimonyCost for the children of a given node
-# RETURNS:
-# (vector) vector containing the cost of parcimonious reconstructions from the current node if starting with cluster j
-# DEPENDENCIES:
-# none
-# PURPOSE:
-# Update
-# NOTES:
-# none
-# REVISIONS:
-# 19/05/14 - Initial release
-##
-update.parcimonyCost <- function(daughtersParams, ...){
-  nclus <- dim(daughtersParams)[2]
-  nbrAdm <- rep(0,nclus)
-  ## Minimum cost parent -> daughter -> subtree(daughter), over all possible states of daughter
-  cost.subtree <- function(x) {
-      y <- (1 - diag(1, length(x))) + x
-      return(apply(y, 2, min))
+compute_state_filter <- function (cost, k) {
+  nclus <- dim(cost)[2]
+  candidate.states <- function(x) {
+    daughter.cost <- x + as.numeric(1:nclus != k)
+    return(as.integer(daughter.cost == min(daughter.cost)))
   }
-  daughtersCost <- t(apply(daughtersParams, 1, cost.subtree))
-  ## Sum costs over all daughters
-  nbrAdm <- colSums(daughtersCost)
-  return(nbrAdm)
+  ## binary matrix of candidate states for each daughter
+  state.filter <- t(apply(cost, 1, candidate.states))
 }
 
 ##
-# extract.parcimonyNumber (nbrReconstructions,node=attr(nbrReconstructions, "ntaxa")+1)
-# PARAMETERS:
-# @nbrReconstructions (matrix) return of the function parcimonyNumber
-# @node (int) : node from which to start (default value : root)
-# RETURNS:
-# (int) Number of parcimonious reconstructions for the subtree starting at node node.
-# DEPENDENCIES:
-# parcimonyNumber
-# PURPOSE:
-# Extract the values wanted from the raw result of function parcimonyNumber
-# NOTES:
-# none
-# REVISIONS:
-# 19/05/14 - Initial release
+#' @title Extraction of the actual number of solutions.
+#'
+#' @description
+#' \code{extract.parcimonyNumber} takes the two matrices computed by 
+#' \code{parsimonyNumber}, and compute the atual number of parsimonious solution for
+#' any subtree starting from a given node.
+#' 
+#' @details
+#' The parsimonious solutions are the one with the minimum number of shifts (that are
+#' given by matrice costReconstructions). This function sums the number of 
+#' solutions (given in matrice nbrReconstructions) that have the minimum number of 
+#' shifts.
+#'
+#' @param Reconstructions two (ntaxa + nNodes)x(nclus) matrices, result of function
+#' \code{pasimonyNumber}, with :
+#'    -- nbrReconstructions the matrix of number of local parsimonious solutions.
+#'    -- costReconstructions the matrix of costs (i.e number of shifts).
+#' @param node the root node of the subtree. By default, the root of the tree.
+#' 
+#' @return An integer giving the number of equivalent parsimonious solutions.
 ##
-extract.parcimonyNumber <- function(nbrReconstructions,node=attr(nbrReconstructions, "ntaxa")+1){
-  if (is.vector(nbrReconstructions)){
-    return(1)
-  } else{
-    return(sum(nbrReconstructions[node,]))
-  }
+extract.parcimonyNumber <- function(Reconstructions, 
+                                    node = attr(Reconstructions$nbrReconstructions, "ntaxa") + 1){
+  cost <- Reconstructions$costReconstructions[node, ]
+  nbr <- Reconstructions$nbrReconstructions[node, ]
+  return(sum(nbr[which(cost == min(cost))]))
 }
 
 ###############################################################################
