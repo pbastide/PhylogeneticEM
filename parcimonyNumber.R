@@ -178,9 +178,9 @@ init.parcimonyNumber <- function(phy, clusters){
   ntaxa <- length(phy$tip.label)
   clus <- unique(clusters)
   nclus <- length(clus)
-  nbrReconstructions <- matrix(NA,nrow=1 + nrow(phy$edge),ncol=nclus)
+  nbrReconstructions <- matrix(NA, nrow=1 + nrow(phy$edge), ncol = nclus)
   for (i in 1:ntaxa){
-    nbrReconstructions[i,] <- as.integer(clusters[i] == clus)
+    nbrReconstructions[i, ] <- as.integer(clusters[i] == clus)
   }
   return(nbrReconstructions)
 }
@@ -213,7 +213,7 @@ update.parcimonyNumber <- function(daughters, daughtersParams, cost, ...){
     allocation <- function(k) {
         ## List of potential daughter states (i.e that realize the minimum cost for the tree
         ## parent -> daughter -> subtree(daughter) ) when parent is in state k
-        state.filter <- compute_state_filter(cost, k)
+        state.filter <- as.integer(compute_state_filter(cost, k))
         ## Compute the number of parsimonious allocations in each
         ## parent -> daughter -> subtree(daughter) tree by summing the number
         ## of parsimonious allocations over all candidate daughter states
@@ -250,7 +250,7 @@ compute_state_filter <- function (cost, k) {
   nclus <- dim(cost)[2]
   candidate.states <- function(x) {
     daughter.cost <- x + as.numeric(1:nclus != k)
-    return(as.integer(daughter.cost == min(daughter.cost)))
+    return(daughter.cost == min(daughter.cost))
   }
   ## binary matrix of candidate states for each daughter
   state.filter <- t(apply(cost, 1, candidate.states))
@@ -381,16 +381,18 @@ clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_
 #'  each entry being a matrix. A line of the kth matrix for the ith node is one
 #'  possible allocation of the shifts, starting with regime k for node i.
 ##
-
-enumerate_parsimony <- function(phylo, clusters = rep(1,length(phylo$tip.label))){
+enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
   ntaxa <- length(phy$tip.label)
+  ## Computation of costs
+  costReconstructions <- parcimonyCost(phylo, clusters)
   ## Initialization
   allocations <- init.enumerate_parsimony(phy, clusters)
   ## Tree recursion
-  allocations <- recursionUp_list(phy, allocations, update.enumerate_parsimony)
+  allocations <- recursionUp_list(phy, allocations, update.enumerate_parsimony, costReconstructions)
   attr(allocations, "ntaxa") <- ntaxa
-  return(allocations)
+  return(list(costReconstructions = costReconstructions,
+              allocations = allocations))
 }
 
 ##
@@ -447,23 +449,23 @@ init.enumerate_parsimony <- function(phy, clusters){
 #' @return A list of size nclus, each entry being a matrix representing the possible 
 #' allocations starting with node parent in state k.
 ##
-update.enumerate_parsimony <- function(daughters, daughtersParams, parent, ...){
+update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost, ...){
   # Number of nodes and clusters
   nedges <- max(sapply(daughtersParams[[1]], 
                        function(z) max(dim(z)[2], length(dim(z)[2]))))
   nclus <- length(daughtersParams[[1]])
-  # Computation of costs : sum_l I[e_k^l = 0], for all groups k.
-  costs <- sapply(1:nclus, 
-                  function(k) sum(sapply(1:length(daughters), 
-                                         function(z) is.null(daughtersParams[[z]][[k]]))))
+  ## Cost of daughter nodes
+  cost <- cost[daughters, , drop = F]
   # Initialization of the list, with all the entries to NULL
-  Krond <- which(costs == min(costs))
   possibles <- vector("list", nclus)
   # Update matrices for adequate regimes
-  for (k in Krond){
+  for (k in 1:nclus){
+    # List of potential daughter states (i.e that realize the minimum cost for the tree
+    # parent -> daughter -> subtree(daughter) ) when parent is in state k
+    state.filter <- compute_state_filter(cost, k)
+    state.filter <- alply(state.filter, 1, function(z) z)
     # Select the possible regimes for each child
-    matlist <- lapply(1:length(daughters), 
-                      function(z) select.matrices(daughtersParams[[z]], k))
+    matlist <- mapply(function(dpar, sfil) do.call(rbind, dpar[sfil]), daughtersParams, state.filter, SIMPLIFY = FALSE)
     # From the list of possible regimes, compute the possible regimes staring with 
     # parent node i regime k.
     possibles[[k]] <- matrix_of_possibles(matlist)
@@ -584,6 +586,12 @@ add_complementary <- function(z){
 extract.enumerate_parsimony <- function(allocations,
                                         node = attr(allocations, "ntaxa") + 1){
   return(do.call(rbind, allocations[[node]]))
+}
+extract.enumerate_parsimony <- function(Reconstructions, 
+                                    node = attr(Reconstructions$allocations, "ntaxa") + 1){
+  cost <- Reconstructions$costReconstructions[node, ]
+  allocations <- Reconstructions$allocations[[node]]
+  return(do.call(rbind, allocations[which(cost == min(cost))]))
 }
 
 ###############################################################################
