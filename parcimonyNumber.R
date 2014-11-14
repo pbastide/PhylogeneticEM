@@ -389,6 +389,9 @@ clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_
 enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
   ntaxa <- length(phy$tip.label)
+  ## Re-order clusters if necessary
+  clus <- unique(clusters)
+  clusters <- sapply(clusters, function(z) which(clus == z))
   ## Computation of costs
   costReconstructions <- parcimonyCost(phylo, clusters)
   ## Initialization
