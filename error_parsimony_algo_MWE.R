@@ -18,9 +18,11 @@ plot(tree); tiplabels(); nodelabels()
 clusters=c(1,2,3,3)
 
 ## Finds the correct number of parsimonious allocations
+extract.parcimonyNumber(parcimonyNumber(tree,clusters))
 microbenchmark(extract.parcimonyNumber(parcimonyNumber(tree,clusters)), times = 1000L)
 
 extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
+microbenchmark(extract.parcimonyNumber(parcimonyNumber(tree,clusters)), times = 1000L)
 
 # Reconstruction (1,2,3,3,3,3,3) has also two shifts, and is missing !
 
