@@ -144,11 +144,13 @@ estimateEM <- function(phylo,
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
-  ## Initialization
+  ## Fixed Quantities
   ntaxa <- length(phylo$tip.label)
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
   t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
+  subtree.list <- enumerate_tips_under_edges(phylo)
+  ## Initialization
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
                                                   nbr_of_shifts = nbr_of_shifts,
@@ -240,7 +242,8 @@ estimateEM <- function(phylo,
                         eps = eps,
                         methods.segmentation = methods.segmentation,
                         beta_0_old = params_old$optimal.value,
-                        shifts_old = params_old$shifts)
+                        shifts_old = params_old$shifts, 
+                        subtree.list = subtree.list)
     attr(params, "ntaxa")  <- ntaxa
     ## Number of shifts that changed position ?
     number_new_shifts <- c(number_new_shifts,
