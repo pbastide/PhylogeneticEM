@@ -355,6 +355,34 @@ clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_
   return(part)
 }
 
+##
+#' @title Check wether an allocation of the shifts is parsimonious, 
+#' in the "infinite site model".
+#'
+#' @description
+#' \code{check_parsimony} take a vector of shifts edges, and check wether the number of 
+#' groups of the tips induced by this allocation is exactly the number of shifts plus one.
+#'
+#' @details
+#' This function computes explicitely the clustering of the tips, using 
+#' function \code{check_parsimony}.
+#' By default, this function uses \code{enumerate_tips_under_edges} to compute 
+#' the list of tips under each edge, but a list can be provided (if many tests are done).
+#'
+#' @param tree phylogenetic tree
+#' @param edges a vector of edges of the tree, where the shifts are
+#' @param ... possibly, a list giving the descendant tips of each edge
+#' 
+#' @return boolean : TRUE if the allocation is parsimonious.
+#'
+##
+check_parsimony(tree, edges, ...){
+  clusters <- clusters_from_shifts(tree, edges, ...)
+  nclus <- length(unique(clusters))
+  nshifts <- length(edges)
+  return((nclus - 1) == nshifts)
+}
+
 ###############################################################################
 ## Enumerate all the equivalent parsimonious solutions
 ###############################################################################
