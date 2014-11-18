@@ -210,10 +210,10 @@ extract.partitionsNumber(partitionsNumber(phy,2))
 n <- 3
 
 set.seed(456); phy <- rtree(2^n); plot(phy, show.tip.label = FALSE); nodelabels()
-extract.partitionsNumber(partitionsNumber(phy,10),npart=1:10)
+extract.partitionsNumber(partitionsNumber(phy,10), npart=1:10)
 
 SymTree <- rtree.sym(n); plot(SymTree,show.tip.label = FALSE); nodelabels()
-extract.partitionsNumber(partitionsNumber(SymTree,10),npart=1:10)
+extract.partitionsNumber(partitionsNumber(SymTree,10), npart=1:10)
 
 CombTree <- rtree.comb(20); plot(CombTree,show.tip.label = FALSE); nodelabels()
 extract.partitionsNumber(partitionsNumber(CombTree,3))
