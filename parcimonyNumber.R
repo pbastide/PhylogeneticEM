@@ -1,4 +1,4 @@
-# {Parcimony Number}
+# {parsimony Number}
 # Copyright (C) {2014} {SR, MM, PB}
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,14 +22,14 @@
 #' @title Minimal number of shifts needed to get a clustering.
 #'
 #' @description
-#' \code{parcimonyCost} is an implementation of the Sankoff algorithm, when the cost of
+#' \code{parsimonyCost} is an implementation of the Sankoff algorithm, when the cost of
 #' transition between two state is always one.
 #'
 #' @details
 #' This functin does a recursion up the tree, using functions 
-#' \code{init.parcimonyCost} for the initialization at the tips, 
+#' \code{init.parsimonyCost} for the initialization at the tips, 
 #' \code{updateUp} for the actual recursion on the tree,
-#' and \code{update.parcimonyCost} for the actualisation of the parameters.
+#' and \code{update.parsimonyCost} for the actualisation of the parameters.
 #'
 #' @param phylo phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
@@ -37,14 +37,15 @@
 #' @return A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed 
 #' to get the clustering, if starting from a node in state k.
 ##
-parcimonyCost <- function(phylo, 
+parsimonyCost <- function(phylo, 
                           clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
   ntaxa <- length(phy$tip.label)
   ## Initialization (cost of parcimonious reconstructions)
-  costReconstructions <- init.parcimonyCost(phy,clusters)
+  costReconstructions <- init.parsimonyCost(phy,clusters)
   ## Tree recursion
-  costReconstructions <- recursionUp(phy, costReconstructions, update.parcimonyCost)
+  costReconstructions <- recursionUp(phy, costReconstructions, update.parsimonyCost)
+  attr(nbrReconstructions, "ntaxa") <- ntaxa
   return(costReconstructions)
 }
 
@@ -52,7 +53,7 @@ parcimonyCost <- function(phylo,
 #' @title Initialization for parsimonyCost.
 #'
 #' @description
-#' \code{init.parcimonyCost} initialize a (ntaxa + nNodes) x (nclus) matrix with
+#' \code{init.parsimonyCost} initialize a (ntaxa + nNodes) x (nclus) matrix with
 #' NAs everywhere, except for the tips.
 #' 
 #' @details
@@ -65,7 +66,7 @@ parcimonyCost <- function(phylo,
 #' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
 #' described.
 ##
-init.parcimonyCost <- function(phy,clusters){
+init.parsimonyCost <- function(phy,clusters){
   ntaxa <- length(phy$tip.label)
   clus <- unique(clusters)
   nclus <- length(clus)
@@ -80,7 +81,7 @@ init.parcimonyCost <- function(phy,clusters){
 #' @title Actualization for parsimonyCost.
 #'
 #' @description
-#' \code{update.parcimonyCost} compute the line vector of a parent node, given
+#' \code{update.parsimonyCost} compute the line vector of a parent node, given
 #' the vectors of its daughters.
 #' 
 #' @details
@@ -93,7 +94,7 @@ init.parcimonyCost <- function(phy,clusters){
 #' 
 #' @return A line vector corresponding to the parent node.
 ##
-update.parcimonyCost <- function(daughtersParams, ...){
+update.parsimonyCost <- function(daughtersParams, ...){
   require(plyr)
   nclus <- dim(daughtersParams)[2]
   parCosts <- rep(0, nclus)
@@ -110,6 +111,11 @@ update.parcimonyCost <- function(daughtersParams, ...){
   return(parCosts)
 }
 
+extract.parsimonyCost <- function(costReconstructions, 
+                                  node = attr(costReconstructions$nbrReconstructions, "ntaxa") + 1){
+  return(min(costReconstructions[node, ]))
+}
+
 ###############################################################################
 ## Here is a function to compute the number of partimonious allocation of shifts
 ## on the tree, given a clustering of the tips.
@@ -119,16 +125,16 @@ update.parcimonyCost <- function(daughtersParams, ...){
 #' @title Number of equivalent parsimonious allocations.
 #'
 #' @description
-#' \code{parcimonyNumber} aims at finding the number of equivalent allocations of
+#' \code{parsimonyNumber} aims at finding the number of equivalent allocations of
 #' the shifts on the tree, i.e allocations that are parsimonious and compatible
 #' with a given clustering of the tips.
 #'
 #' @details
 #' This functin does a recursion up the tree, using functions 
-#' \code{init.parcimonyNumber} for the initialization at the tips, 
+#' \code{init.parsimonyNumber} for the initialization at the tips, 
 #' \code{updateUp} for the actual recursion on the tree,
-#' and \code{update.parcimonyNumber} for the actualisation of the parameters.
-#' The function \code{extract_parcimonyNumber} furnishes the result seeked for any
+#' and \code{update.parsimonyNumber} for the actualisation of the parameters.
+#' The function \code{extract_parsimonyNumber} furnishes the result seeked for any
 #' subtree.
 #' The matrix of costs of the states (number of shifts) is also required, it is computed
 #' by function \code{parsimonyCost}.
@@ -142,19 +148,19 @@ update.parcimonyCost <- function(daughtersParams, ...){
 #' shifts needed to get the clustering, if starting from a node in state k (result of function
 #' \code{parsimonyCost}.
 ##
-parcimonyNumber <- function(phylo, 
+parsimonyNumber <- function(phylo, 
                             clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
   ntaxa <- length(phy$tip.label)
   ## Computation of costs
-  costReconstructions <- parcimonyCost(phylo, clusters)
+  costReconstructions <- parsimonyCost(phylo, clusters)
   ## Initialization (number of parcimonious reconstructions)
   ## Note: those are NOT globally most parcimonious reconstructions, but locally most
   ## parcimonious reconstructions, i.e. given that node i (row) is in state j (column)
-  nbrReconstructions <- init.parcimonyNumber(phy,clusters)
+  nbrReconstructions <- init.parsimonyNumber(phy,clusters)
   ## Tree recursion for the number of (locally) most parsimonious allocations
   nbrReconstructions <- recursionUp(phy, nbrReconstructions,
-                                    update.parcimonyNumber, costReconstructions)
+                                    update.parsimonyNumber, costReconstructions)
   ## Return reconstructions, with their cost
   attr(nbrReconstructions, "ntaxa") <- ntaxa
   return(list(nbrReconstructions = nbrReconstructions,
@@ -165,7 +171,7 @@ parcimonyNumber <- function(phylo,
 #' @title Initialization for parsimonyNumber.
 #'
 #' @description
-#' \code{init.parcimonyNumber} initialize a (ntaxa + nNodes)x(nclus) matrix with
+#' \code{init.parsimonyNumber} initialize a (ntaxa + nNodes)x(nclus) matrix with
 #' NAs everywhere, except for the tips.
 #' 
 #' @details
@@ -177,7 +183,7 @@ parcimonyNumber <- function(phylo,
 #' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
 #' described.
 ##
-init.parcimonyNumber <- function(phy, clusters){
+init.parsimonyNumber <- function(phy, clusters){
   ntaxa <- length(phy$tip.label)
   clus <- unique(clusters)
   nclus <- length(clus)
@@ -192,7 +198,7 @@ init.parcimonyNumber <- function(phy, clusters){
 #' @title Actualization for parsimonyNumber.
 #'
 #' @description
-#' \code{update.parcimonyNumber} compute the line vector of a parent node, given
+#' \code{update.parsimonyNumber} compute the line vector of a parent node, given
 #' the vectors of its daughters.
 #' 
 #' @details
@@ -206,7 +212,7 @@ init.parcimonyNumber <- function(phy, clusters){
 #' 
 #' @return A line vector corresponding to the parent node.
 ##
-update.parcimonyNumber <- function(daughters, daughtersParams, cost, ...){
+update.parsimonyNumber <- function(daughters, daughtersParams, cost, ...){
     nclus <- dim(daughtersParams)[2]
     nbrAdm <- rep(0, nclus)
     ## Cost of daughter nodes
@@ -263,7 +269,7 @@ compute_state_filter <- function (cost, k) {
 #' @title Extraction of the actual number of solutions.
 #'
 #' @description
-#' \code{extract.parcimonyNumber} takes the two matrices computed by 
+#' \code{extract.parsimonyNumber} takes the two matrices computed by 
 #' \code{parsimonyNumber}, and compute the atual number of parsimonious solution for
 #' any subtree starting from a given node.
 #' 
@@ -281,7 +287,7 @@ compute_state_filter <- function (cost, k) {
 #' 
 #' @return An integer giving the number of equivalent parsimonious solutions.
 ##
-extract.parcimonyNumber <- function(Reconstructions, 
+extract.parsimonyNumber <- function(Reconstructions, 
                                     node = attr(Reconstructions$nbrReconstructions, "ntaxa") + 1){
   cost <- Reconstructions$costReconstructions[node, ]
   nbr <- Reconstructions$nbrReconstructions[node, ]
@@ -397,7 +403,7 @@ check_parsimony <- function(tree, edges, ...){
 #' @description
 #' \code{enumerate_parsimony} enumerate all the equivalent allocation of the 
 #' regimes in the tree, a clustering of the tips being given. The number of such
-#' equivalent regimes is given by \code{parcimonyNumber} (which is faster).
+#' equivalent regimes is given by \code{parsimonyNumber} (which is faster).
 #' 
 #' @details
 #' This functin does a recursion up the tree, using functions 
@@ -424,7 +430,7 @@ enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label)
   clus <- unique(clusters)
   clusters <- sapply(clusters, function(z) which(clus == z))
   ## Computation of costs
-  costReconstructions <- parcimonyCost(phylo, clusters)
+  costReconstructions <- parsimonyCost(phylo, clusters)
   ## Initialization
   allocations <- init.enumerate_parsimony(phy, clusters)
   ## Tree recursion

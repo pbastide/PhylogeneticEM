@@ -22,7 +22,7 @@ source("Phylogenetic-EM/shutoff.R")
 source("Phylogenetic-EM/generic_functions.R")
 source("Phylogenetic-EM/shifts_manipulations.R")
 source("Phylogenetic-EM/plot_functions.R")
-source("Phylogenetic-EM/parcimonyNumber.R")
+source("Phylogenetic-EM/parsimonyNumber.R")
 source("Phylogenetic-EM/partitionsNumber.R")
 
 test_dir(paste0(WD, "/Phylogenetic-EM/tests"))

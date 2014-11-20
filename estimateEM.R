@@ -43,7 +43,7 @@
 # RETURNS:
 #            (list) list of parameters for the model fitted
 # DEPENDENCIES:
-#            init.EM, compute_E, compute_M, compute_times_ca, compute_dist_phy, shutoff.EM, update.parcimonyNumber (, ...)
+#            init.EM, compute_E, compute_M, compute_times_ca, compute_dist_phy, shutoff.EM, update.parsimonyNumber (, ...)
 # PURPOSE:
 #            Run the EM algorithm
 # NOTES:
@@ -282,7 +282,7 @@ estimateEM <- function(phylo,
   params_history[[paste(Nbr_It, sep="")]] <- params
   ## Number of equivalent solutions
   clusters <- clusters_from_shifts(phylo, params$shifts$edges)
-  Neq <- extract.parcimonyNumber(parcimonyNumber(phylo, clusters))
+  Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1) message("There are some equivalent solutions to the solution found.")
   ## Result
   result <- list(params = params, 
