@@ -311,17 +311,20 @@ enumerate_tips_under_edges <- function (tree) {
   ntaxa <- length(tree$tip.label)
   temp <- prop.part(tree)
   subtree.list <- vector("list", nrow(tree$edge))
-  for (i in 1:nrow(tree$edge)) {
-    node <- tree$edge[i, 2]
-    if (node > ntaxa) {
-      subtree.list[[i]] <- temp[[node -ntaxa]]
-    } else {
-      subtree.list[[i]] <- node
-    }
-  }
-  ## Compact alternative using the special structure of prop.part
-  ## subtree.list <- c(lapply(1:ntaxa, function(x) x),
-  ##                   temp)
+#   for (i in 1:nrow(tree$edge)) {
+#     node <- tree$edge[i, 2]
+#     if (node > ntaxa) {
+#       subtree.list[[i]] <- temp[[node - ntaxa]]
+#     } else {
+#       subtree.list[[i]] <- node
+#     }
+#   }
+  # Compact alternative using the special structure of prop.part
+  # List of tips under nodes, ordered by nodes
+  subtree.list <- c(as.list(1:ntaxa),temp)
+  # Subset subtree.list by daughter nodes of edges, i.e. sort subtree.list in
+  # edge order
+  subtree.list <- subtree.list[tree$edge[ , 2]]
   return(subtree.list)
 }
 
@@ -376,7 +379,7 @@ clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_
 #' @return boolean : TRUE if the allocation is parsimonious.
 #'
 ##
-check_parsimony(tree, edges, ...){
+check_parsimony <- function(tree, edges, ...){
   clusters <- clusters_from_shifts(tree, edges, ...)
   nclus <- length(unique(clusters))
   nshifts <- length(edges)
@@ -747,7 +750,7 @@ plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values,
   
 }
 
-plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_values){
+plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_values, ...){
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% 3) + 1
   nbrShifts <- dim(eq_shifts_edges)[1]
@@ -764,7 +767,7 @@ plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_valu
     edges_regimes <- regimes[phylo$edge[,2]]
     ## Plot
     screen(scr[sol])
-    plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2, quant.root = 0.7)
+    plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2, quant.root = 0.7, ...)
   }
   close.screen(all.screens = TRUE)
 }

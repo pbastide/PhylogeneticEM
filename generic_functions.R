@@ -117,6 +117,14 @@ compute_dist_phy <- function(phy) {
   return(dist_phy)
 }
 
+scale.tree <- function(phylo){
+  if (!is.ultrametric(phylo)) stop("The tree is not ultrametric")
+  ntaxa <- length(phylo$tip.label)
+  height <- min(node.depth.edgelength(phylo)[1:ntaxa]) - .Machine$double.eps^0.5# take the min so that any error is above 1
+  phylo$edge.length <- phylo$edge.length/height
+  return(phylo)
+}
+
 ###############################################################################
 ## Functions to wander on the tree
 ###############################################################################
