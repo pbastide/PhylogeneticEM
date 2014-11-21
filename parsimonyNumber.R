@@ -666,12 +666,9 @@ equivalent_shifts_edges <- function(phylo, shifts_edges){
 #' @param shifts a list of positions and values of original shifts.
 #' @param beta_0 value of the original optimal value at the root.
 #' @param eq_shifts_edges matrix, result of function \code{equivalent_shifts_edges}.
-#' @param selection.strength the selection strength of the OU process.
-#' @param t_tree the depth of the ultrametric tree.
-#' @param times_shared matrix of times of shared evolution, result of function
-#' \code{compute_times_ca}.
-#' @param Tr matrix of incidence of the tree, result of function 
-#' \code{incidence.matrix}.
+#' @param T_tree_ac matrix of incidence of the tree, result of function 
+#' \code{incidence.matrix}, actualized with coeficients computed by function 
+#' \code{incidence_matrix_actualization_factors}.
 #'
 #' @return shifts_values a matrix of shifts values corresponding to the shifts
 #' positions in eq_shifts_edges.
@@ -680,27 +677,13 @@ equivalent_shifts_edges <- function(phylo, shifts_edges){
 equivalent_shifts_values <- function(phylo, 
                                      shifts, beta_0, 
                                      eq_shifts_edges = equivalent_shifts_edges(phylo, shifts$edges), 
-                                     selection.strength, t_tree, times_shared, Tr) {
-  ## Compute actualized shifts values
-  shifts_ac <- shifts
-  fun <- function(shift_pos){
-    parents <- phylo$edge[shift_pos, 1]
-    factors <- compute_actualization_factors(selection.strength = selection.strength, 
-                                             t_tree = t_tree, 
-                                             times_shared = times_shared, 
-                                             parents = parents)
-    return(factors)
-  }
-  factors_or <- fun(shifts_ac$edges)
-  shifts_ac$values <- shifts_ac$values*factors_or
+                                     T_tree_ac ) {
   ## corresponding values at tips
-  delta_ac <- shifts.list_to_vector(phylo, shifts_ac)
-  m_Y <- Tr%*%delta_ac + beta_0
+  delta <- shifts.list_to_vector(phylo, shifts)
+  m_Y <- T_tree_ac %*% delta + beta_0
   ## find the right coefficients for each combination of edges
-  shifts_and_beta <- apply(eq_shifts_edges, 2, find_actualized_shift_values, Tr = Tr, m_Y = m_Y)
-  ## Apply the correct factor back
-  Factors <- apply(eq_shifts_edges, 2, fun)
-  return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE]/Factors,
+  shifts_and_beta <- apply(eq_shifts_edges, 2, find_shift_values, T_tree_ac = T_tree_ac, m_Y = m_Y)
+  return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE],
               betas_0 = shifts_and_beta[1,]))
 }
 
@@ -724,8 +707,8 @@ equivalent_shifts_values <- function(phylo,
 #' @return vector, with first entry the values at the root, and other entries the 
 #' values of the shifts.
 ##
-find_actualized_shift_values <- function(shifts_edges, Tr, m_Y){
-  coefs <- qr.solve(cbind(rep(1, dim(Tr)[1]),Tr[,shifts_edges]), m_Y)
+find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
+  coefs <- qr.solve(cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[,shifts_edges]), m_Y)
   return(coefs)
 }
 
