@@ -1233,8 +1233,9 @@ plot(tree); edgelabels(); edgelabels(edge = datasim$shifts$edges, col="red")
 ## Test of Divergence - 2 - simple
 #######################################
 rm(list=ls())
-#WD <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
-WD <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
+WD_mac <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
+WD_unb <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
+WD <- ifelse(file.exists(WD_mac), WD_mac, WD_unb)
 setwd(WD)
 PATH <- paste(WD, "/Results/Miscellaneous_Evals/", sep="")
 library(ape)

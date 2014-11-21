@@ -45,7 +45,7 @@ parsimonyCost <- function(phylo,
   costReconstructions <- init.parsimonyCost(phy,clusters)
   ## Tree recursion
   costReconstructions <- recursionUp(phy, costReconstructions, update.parsimonyCost)
-  attr(nbrReconstructions, "ntaxa") <- ntaxa
+  attr(costReconstructions, "ntaxa") <- ntaxa
   return(costReconstructions)
 }
 

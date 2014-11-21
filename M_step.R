@@ -170,7 +170,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   return(params)
 }
 
-compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, ...){
+compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, subtree.list, ...){
   ## Estimate all parameters with alpha of the previous step
   params <- compute_M.OU.specialCase(phylo = phylo, 
                                      Y_data = Y_data, 
@@ -179,7 +179,8 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
                                      known.selection.strength = alpha_old,
                                      methods.segmentation = methods.segmentation,
                                      beta_0_old = beta_0_old,
-                                     shifts_old = shifts_old)
+                                     shifts_old = shifts_old, 
+                                     subtree.list = subtree.list)
   ## Estimate new alpha
   params$selection.strength <- estimate.alpha(phylo = phylo,
                                               conditional_law_X = conditional_law_X, 
