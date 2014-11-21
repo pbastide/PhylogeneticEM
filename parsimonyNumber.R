@@ -742,6 +742,7 @@ plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values,
 plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_values, ...){
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% 3) + 1
+  if (nbrSol %% 3 == 0) nbrLignes <- nbrLignes - 1
   nbrShifts <- dim(eq_shifts_edges)[1]
   colors <- c("black", rainbow(nbrShifts))
   scr <- split.screen(c(nbrLignes, 3))
