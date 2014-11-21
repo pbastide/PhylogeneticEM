@@ -254,6 +254,46 @@ shifts.vector_to_list <- function(delta){
   return(shifts)
 }
 
+##
+#' @title Compute the actualizations factors to apply to the incidence matrix.
+#'
+#' @description
+#' \code{incidence_matrix_actualization_factors} computes a ntaxa x nedges matrix of the 
+#' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
+#' This matrix is to be multiplied to the incidence matrix with an outer product.
+#'
+#' @details
+#'
+#' @param tree a phylogenetic tree.
+#' @param selection.strength the selection strength of the process.
+#' @param relativeTimes_tree a nedge vector of relative times associated with the branches.
+#' @param times_shared a matrix, result of function \code{compute_times_ca}.
+#' 
+#' @return Matrix of size ntaxa x nedges
+#' 
+##
+incidence_matrix_actualization_factors <- function(tree, 
+                                                   selection.strength, 
+                                                   relativeTimes_tree = 0,
+                                                   times_shared = compute_times_ca(tree)){
+  ntaxa <- length(tree$tip.label)
+  nedges <- dim(tree$edge)[1]
+  # Vector of exp(-alpha*t_i) at tips
+  ac_tip <- diag(times_shared[1:ntaxa, 1:ntaxa])
+  ac_tip <- exp(-selection.strength * ac_tip)
+  # Relative times
+  ac_rt <- exp(selection.strength * relativeTimes_tree * tree$edge.length)
+  # Vector of exp(-alpha*t_pa(j)) at edges
+  parents <- tree$edge[, 1]
+  ac_edges <- diag(times_shared[parents, parents])
+  ac_edges <- exp(selection.strength * ac_edges)
+  ac_edges <- ac_edges * ac_rt
+  # Matrix 
+  ac_mat <- tcrossprod(ac_tip, ac_edges)
+  ac_mat <- 1 - ac_mat
+  return(ac_mat)
+}
+
 ##########################################
 ## Handle correspondance shifts - regimes
 ##########################################

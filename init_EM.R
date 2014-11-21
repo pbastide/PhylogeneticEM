@@ -341,9 +341,15 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
 #'18/06/14 - Initial release
 #'06/10/14 - Externalization of function lasso
 ##
-init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, t_tree, ...) {
+init.EM.lasso <- function(phylo, Y_data, process, times_shared = compute_times_ca(phylo), distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, T_tree = incidence.matrix(phylo), ...) {
   ntaxa <- length(phylo$tip.label)
   init.EM.default <- init.EM.default(process)
+  ## Actualization of incidence matrix
+  Tr <- T_tree
+  ac_tree <- incidence_matrix_actualization_factors(tree = phylo, 
+                                                    selection.strength = selection.strength.init,
+                                                    times_shared = times_shared)
+  Tr <- T_tree * ac_tree
   ## Choose the norm :
   if (use_sigma) {
     # Choose process
@@ -358,14 +364,13 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances
     Sig_chol <- chol(Sigma_YY)
     Sig_chol_inv <- t(solve(Sig_chol)) # Sigma_YY_inv = t(Sig_chol_inv)%*%Sig_chol_inv
     # Transform Y_data and T
-    Tr <- incidence.matrix(phylo)
-    Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
+    Tr <- cbind(Tr, rep(1, dim(Tr)[1])) # Here we use hypothesis : stationnary root.
     Tp <- Sig_chol_inv%*%Tr
     Yp <- Sig_chol_inv%*%Y_data
     fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts, root = dim(Tr)[2]))
   } else {
     # Return untransformed Y_data and T
-    Tp <- incidence.matrix(phylo)
+    Tp <- Tr
     Yp <- Y_data
     fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
   }
@@ -376,15 +381,15 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances
   } else { 
     E0.gauss <- fit$E0.gauss
     shifts.gauss <- fit$shifts.gauss
-    ## If OU, apply the correct factor to shifts
-    if (process == "OU" && !is.null(times_shared) && !is.null(shifts.gauss$values)){
-      parents <- phylo$edge[shifts.gauss$edges,1]
-      factors <- compute_actualization_factors(selection.strength = selection.strength.init, 
-                                               t_tree = t_tree, 
-                                               times_shared = times_shared, 
-                                               parents = parents)
-      shifts.gauss$values <- shifts.gauss$values/factors
-    }
+#     ## If OU, apply the correct factor to shifts
+#     if (process == "OU" && !is.null(times_shared) && !is.null(shifts.gauss$values)){
+#       parents <- phylo$edge[shifts.gauss$edges,1]
+#       factors <- compute_actualization_factors(selection.strength = selection.strength.init, 
+#                                                t_tree = t_tree, 
+#                                                times_shared = times_shared, 
+#                                                parents = parents)
+#       shifts.gauss$values <- shifts.gauss$values/factors
+#     }
     params_init <- init.EM.default(value.root.init = E0.gauss[1], 
                                    exp.root.init = E0.gauss[1], 
                                    optimal.value.init = E0.gauss[1],
@@ -402,7 +407,7 @@ compute_actualization_factors <- function(selection.strength,
                                                 t_tree, 
                                                 times_shared, 
                                                 parents){
-  factors <- exp(-selection.strength * t_tree - diag(times_shared[parents, parents, drop = FALSE]))
+  factors <- exp(- selection.strength * (t_tree - diag(times_shared[parents, parents, drop = FALSE])))
   return(1-factors)
 }
 

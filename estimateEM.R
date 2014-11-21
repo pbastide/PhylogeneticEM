@@ -135,10 +135,11 @@ estimateEM <- function(phylo,
                                     simple = compute_log_likelihood.simple)
   ## Iniialization Method
   method.init  <- match.arg(method.init)
-  # Lasso initialization for OU only works if the tree is ultrametric
-  if (!is.ultrametric(phylo) &&
-        method.init == "lasso" &&
-        process == "OU") stop("For the OU process, the Lasso initialization only works (for now) for ultrametric trees. Please consider using annother initialization.")
+  # Lasso initialization for OU only works for stationnary root
+  if (!stationnary.root && (method.init == "lasso")){
+    method.init <- "default"
+    warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+  }
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
                      lasso = init.EM.lasso)
@@ -148,12 +149,14 @@ estimateEM <- function(phylo,
   ntaxa <- length(phylo$tip.label)
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
-  t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
+#  t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
   subtree.list <- enumerate_tips_under_edges(phylo)
+  T_tree <- incidence.matrix(phylo)
   ## Initialization
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
                                                   nbr_of_shifts = nbr_of_shifts,
+                                                  times_shared = times_shared,
                                                   distances_phylo = distances_phylo,
                                                   init.selection.strength = init.selection.strength,
                                                   max_triplet_number = max_triplet_number,
@@ -178,7 +181,7 @@ estimateEM <- function(phylo,
                          use_sigma = use_sigma_for_lasso,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
-                         t_tree = t_tree,
+                         T_tree = T_tree,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state=params$root.state, 
