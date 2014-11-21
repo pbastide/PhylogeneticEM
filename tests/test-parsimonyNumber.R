@@ -5,7 +5,7 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
   require(plyr)
   ## First exemple (tricky one)
   tree <- read.tree(text="(((T,T),C),C);")
-  clusters=c(1,2,3,3)
+  clusters <- c(3.21, 26, 5.3, 5.3)
   Nbr <- extract.parsimonyNumber(parsimonyNumber(tree, clusters))
   Allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
   # Same number of solutions
@@ -13,7 +13,7 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
   # Right number of solutions
   expect_that(Nbr, equals(3))
   # Right solutions
-  right_allocs <- rbind(c(1,2,3,3,3,3,1), c(1,2,3,3,3,3,2), c(1,2,3,3,3,3,3))
+  right_allocs <- rbind(c(3.21,26,5.3,5.3,5.3,5.3,3.21), c(3.21,26,5.3,5.3,5.3,5.3,26), c(3.21,26,5.3,5.3,5.3,5.3,5.3))
   expect_that(Allocs, equals(right_allocs))
   
   ## Second exemple

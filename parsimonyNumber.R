@@ -428,13 +428,13 @@ enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label)
   ntaxa <- length(phy$tip.label)
   ## Re-order clusters if necessary
   clus <- unique(clusters)
-  clusters <- sapply(clusters, function(z) which(clus == z))
+  pos <- function(z) which(clus == z)
   ## Computation of costs
   costReconstructions <- parsimonyCost(phylo, clusters)
   ## Initialization
-  allocations <- init.enumerate_parsimony(phy, clusters)
+  allocations <- init.enumerate_parsimony(phy, clusters, pos)
   ## Tree recursion
-  allocations <- recursionUp_list(phy, allocations, update.enumerate_parsimony, costReconstructions)
+  allocations <- recursionUp_list(phy, allocations, update.enumerate_parsimony, costReconstructions, clus, pos)
   attr(allocations, "ntaxa") <- ntaxa
   return(list(costReconstructions = costReconstructions,
               allocations = allocations))
@@ -459,15 +459,15 @@ enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label)
 #' @return A list of size nNode + ntaxa, as described above.
 ##
 
-init.enumerate_parsimony <- function(phy, clusters){
+init.enumerate_parsimony <- function(phy, clusters, pos){
   ntaxa <- length(phy$tip.label)
   nclus <- length(unique(clusters))
   allocations <- vector("list", 1 + nrow(phy$edge))
   allocations <- lapply(allocations, function(z) return(vector("list", nclus)))
   temp <- rep(NA, 1 + nrow(phy$edge))
   for (i in 1:ntaxa){
-    allocations[[i]][[clusters[i]]] <- matrix(temp, nrow = 1)
-    allocations[[i]][[clusters[i]]][i] <- clusters[i]
+    allocations[[i]][[pos(clusters[i])]] <- matrix(temp, nrow = 1)
+    allocations[[i]][[pos(clusters[i])]][i] <- clusters[i]
   }
   return(allocations)
 }
@@ -494,7 +494,7 @@ init.enumerate_parsimony <- function(phy, clusters){
 #' @return A list of size nclus, each entry being a matrix representing the possible 
 #' allocations starting with node parent in state k.
 ##
-update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost, ...){
+update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost, clus, pos, ...){
   # Number of nodes and clusters
   nedges <- max(sapply(daughtersParams[[1]], 
                        function(z) max(dim(z)[2], length(dim(z)[2]))))
@@ -504,17 +504,17 @@ update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost,
   # Initialization of the list, with all the entries to NULL
   possibles <- vector("list", nclus)
   # Update matrices for adequate regimes
-  for (k in 1:nclus){
+  for (k in clus){
     # List of potential daughter states (i.e that realize the minimum cost for the tree
     # parent -> daughter -> subtree(daughter) ) when parent is in state k
-    state.filter <- compute_state_filter(cost, k)
+    state.filter <- compute_state_filter(cost, pos(k))
     state.filter <- alply(state.filter, 1, function(z) z)
     # Select the possible regimes for each child
     matlist <- mapply(function(dpar, sfil) do.call(rbind, dpar[sfil]), daughtersParams, state.filter, SIMPLIFY = FALSE)
     # From the list of possible regimes, compute the possible regimes staring with 
     # parent node i regime k.
-    possibles[[k]] <- matrix_of_possibles(matlist)
-    possibles[[k]][ , parent] <- k
+    possibles[[pos(k)]] <- matrix_of_possibles(matlist)
+    possibles[[pos(k)]][ , parent] <- k
   }
   return(possibles)
 }
@@ -605,10 +605,11 @@ add_complementary <- function(z){
 #' @return A matrix with ntaxa + nNode columns, and as many rows as the number of
 #' possible parsimonious reconstructions.
 ##
-extract.enumerate_parsimony <- function(allocations,
-                                        node = attr(allocations, "ntaxa") + 1){
-  return(do.call(rbind, allocations[[node]]))
-}
+# extract.enumerate_parsimony <- function(allocations,
+#                                         node = attr(allocations, "ntaxa") + 1){
+#   return(do.call(rbind, allocations[[node]]))
+# }
+
 extract.enumerate_parsimony <- function(Reconstructions, 
                                     node = attr(Reconstructions$allocations, "ntaxa") + 1){
   cost <- Reconstructions$costReconstructions[node, ]
