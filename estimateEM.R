@@ -169,6 +169,13 @@ estimateEM <- function(phylo,
   } else {
     init.selection.strength <- known.selection.strength
   }
+  # Always start with some shifts, in case of default initialisation
+  if (missing(edges.init) || is.null(edges.init)){
+    init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list) 
+  } else {
+    init_edges <- edges.init
+  }
+# Initialization per se
   params_init <- init.EM(phylo = phylo,
                          Y_data = Y_data,
                          process = process, 
@@ -182,6 +189,7 @@ estimateEM <- function(phylo,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
                          T_tree = T_tree,
+                         edges.init = init_edges,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state=params$root.state, 

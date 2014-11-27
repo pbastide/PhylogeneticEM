@@ -529,3 +529,95 @@ compute_shifts_from_betas <- function(phylo, betas){
                  relativeTimes = rep(0, length(edges)))
   return(shifts)
 }
+
+##############################################################################
+## Random generation of shifts edges
+##############################################################################
+##
+#' @title Sample shifts edges in a parsimonious way.
+#'
+#' @description
+#' \code{sample_shifts_edges} attempts to find K shifts in the tree which allocations
+#' are parsimonious. The actual generation of edges is done by function 
+#' \code{sample_edges_intervals}.
+#' 
+#' @details
+#' This function uses function \code{enumerate_tips_under_edges} to generate a list 
+#' of tips under each edge, and function \code{check_parsimony_ism} to check for
+#' parsimony of a given solution, under the assumption of an "infinite site model".
+#'
+#' @param tree : imput tree
+#' @param K : number of edges to be sampled.
+#' 
+#' @return vector of edges
+#'
+##
+sample_shifts_edges <- function(tree, K, 
+                                part.list = enumerate_tips_under_edges(tree)){
+  Nbranch <- nrow(tree$edge)
+  ntaxa <- length(tree$tip.label)
+  ## If too many shifts, abort.
+  if (K > ntaxa) stop("A parcimonious repartition of the shifts cannot have more shifts than tips !")
+  ## Else, try several times to generate parsimonious shifts.
+  for(It in 1:1000) {
+    ## Generate K branches
+    edges <- sample_edges_intervals(tree, K)
+    ## Check that these are parsimonious
+    parsi <- check_parsimony_ism(tree, edges, part.list = part.list)
+    ## If parsiomnious, finish
+    if (parsi){
+      return(edges)
+    }
+  }
+  stop("Could not find a parsimonious repartition of the shifts after 1000 random generations. Please consider taking a smaller number of shifts.")
+}
+
+##
+#' @title Sample equally espaced edges.
+#'
+#' @description
+#' \code{sample_edges_intervals} samples K shifts, each in one of the K intervalles
+#' regularly espaced on the height of the tree.
+#' 
+#' @details
+#' In case where the tree is not ultrametric, its "height" is defined as the minimum
+#' tip height.
+#'
+#' @param tree : imput tree
+#' @param K : number of edges to be sampled.
+#' 
+#' @return vector of edges
+#'
+##
+sample_edges_intervals <- function(tree, K){
+  ntaxa <- length(tree$tip.label)
+  node_heights <- node.depth.edgelength(tree)
+  tree_height <- min(node_heights[1:ntaxa])
+  pas <- tree_height / K * 0:K
+  groups <- split(1:length(node_heights), findInterval(node_heights, pas))
+  sh <- NULL; p <- 1
+  for (k in 1:K) {
+    grp <- groups[[paste(k)]]
+    if (is.null(grp)){
+      p <- p + 1
+    } else {
+      if (p <= length(grp)){
+        if (length(grp) == 1) {
+          sh <- c(sh, grp)
+        } else {
+          sh <- c(sh, sample(grp, p))
+        }
+        p <- 1
+      } else {
+        sh <- c(sh, grp)
+        p <- p - length(grp) + 1
+      }
+    }
+  }
+  sh <- sapply(sh, function(x) which(tree$edge[, 1] == x)[1])
+  if (length(sh) < K) {
+    p <- K - length(sh)
+    sh <- c(sh, sample(tree$edge[-sh], p))
+  }
+  return(sh)
+}

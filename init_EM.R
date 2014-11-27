@@ -377,7 +377,9 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = compute_times_c
   ## Fit
   if (inherits(fit, "try-error")) {
     warning("Lasso Initialisation fail : could not find a satisfying number of shifts. Proceeding to a default initialization.")
-    return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, ...))
+    return(init.EM.default(selection.strength.init = selection.strength.init, 
+                           random.init = random.init, 
+                           stationnary.root.init = stationnary.root.init, ...))
   } else { 
     E0.gauss <- fit$E0.gauss
     shifts.gauss <- fit$shifts.gauss
