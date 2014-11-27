@@ -156,6 +156,10 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   ## If no solution is parsimonious, keep the same one.
   if (prod(is.infinite(obj_funcs)) == 1){
     warning("Could not find any parsimonious solution at the M Step. Keeping the same shifts.")
+    if (is.null(shifts_olds$edges)){
+      warning("Had to use the same_shift method, but with no old shift. Taking random ones. This is probably not what you intented to do.")
+      shifts_olds$edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
+    }
     segs <- sapply("same_shifts", segmentation.OU.specialCase, simplify = FALSE)
     var.roots <- sapply("same_shifts", compute_var_M)
     best.method.seg <- 1
