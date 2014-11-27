@@ -335,7 +335,7 @@ enumerate_tips_under_edges <- function (tree) {
 }
 
 ##
-#' @title Clusters of the tips corresponding to a list of shifts.
+#' @title Clusters of the tips corresponding to a list of shifts, in an "infinite site model".
 #'
 #' @description
 #' \code{clusters_from_shifts} take a vector of shifts edges, and gives the
@@ -352,7 +352,7 @@ enumerate_tips_under_edges <- function (tree) {
 #' @return list of size n+m-1, entry i is the vector of tips bellow edge i.
 #'
 ##
-clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_edges(tree)) {
+clusters_from_shifts_ism <- function (tree, edges, part.list = enumerate_tips_under_edges(tree)) {
   ntaxa <- length(tree$tip.label)
   part <- rep(0, ntaxa)
   if (length(edges) > 0 ){
@@ -362,6 +362,29 @@ clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_
     }
   }
   return(part)
+}
+
+clusters_from_shifts_primary_opt <- function (tree, shifts, T_tree = incidence.matrix(tree)) {
+  delta <- shifts.list_to_vector(tree, shifts)
+  O_Y <- T_tree %*% delta
+#   clus <- as.factor(O_Y)
+#   levels(O_Y) <- 1:length(levels(O_Y))
+  return(O_Y)
+}
+
+clusters_from_shifts_expectations <- function (tree, 
+                                               shifts, 
+                                               T_tree = incidence.matrix(tree),
+                                               ac = TRUE, ...) {
+  if (ac){
+    ac_tree <- incidence_matrix_actualization_factors(tree = tree, ...)
+    T_tree <- T_tree * ac_tree
+  }
+  delta <- shifts.list_to_vector(tree, shifts)
+  O_Y <- T_tree %*% delta
+  #   clus <- as.factor(O_Y)
+  #   levels(O_Y) <- 1:length(levels(O_Y))
+  return(O_Y)
 }
 
 ##
@@ -385,11 +408,32 @@ clusters_from_shifts <- function (tree, edges, part.list = enumerate_tips_under_
 #' @return boolean : TRUE if the allocation is parsimonious.
 #'
 ##
-check_parsimony <- function(tree, edges, ...){
-  clusters <- clusters_from_shifts(tree, edges, ...)
+check_parsimony_ism <- function(tree, edges, ...){
+  clusters <- clusters_from_shifts_ism(tree, edges, ...)
   nclus <- length(unique(clusters))
   nshifts <- length(edges)
   return((nclus - 1) == nshifts)
+}
+
+check_parsimony <- function(tree, clusters){
+  npars <- extract.parsimonyCost(parsimonyCost(tree, clusters))
+  nshifts <- length(shifts$edges)
+  if (nshifts < npars){
+    stop("There are less shifts than the parsimonious minimum ! There is a problem.")
+  }
+  return(nshifts == npars)
+}
+
+check_infinite_site_model <- function(tree, shifts, ...){
+  clusters <- clusters_from_shifts_primary_opt(tree, shifts, ...)
+  if (!check_parsimony(tree, clusters)){
+    warning("This allocation is not parsimonious. Could not check for the infinite site model assumption.")
+    return(NA)
+  } else {
+    nclus <- length(unique(clusters))
+    nshifts <- length(shifts$edges)
+    return(nclus == nshifts + 1)
+  }
 }
 
 ###############################################################################
@@ -621,6 +665,14 @@ extract.enumerate_parsimony <- function(Reconstructions,
 ## Compute equivalent shifts given one solution
 ###############################################################################
 
+equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
+  ntaxa <- length(tree$tip.label)
+  clusters <- clusters_from_shifts_primary_opt(tree, shifts, ...)
+  betas_allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree, clusters))
+  eq_shifts <- apply(betas_allocs, 1, compute_shifts_from_betas, phylo = tree)
+  betas_0 <- betas_allocs[, ntaxa + 1]
+}
+
 ##
 #' @title Find all the equivalent shift edges allocations.
 #'
@@ -642,7 +694,7 @@ extract.enumerate_parsimony <- function(Reconstructions,
 #'  representing a possible parsimonious allocation of shifts on the tree.
 ##
 equivalent_shifts_edges <- function(phylo, shifts_edges){
-  clusters <- clusters_from_shifts(phylo, shifts_edges) + 1
+  clusters <- clusters_from_shifts_ism(phylo, shifts_edges) + 1
   regime_allocs <- extract.enumerate_parsimony(enumerate_parsimony(phylo, clusters))
   eq_shifts_edges <- apply(regime_allocs, 1, allocate_shifts_from_regimes, phylo = phylo)
   return(eq_shifts_edges)
@@ -660,7 +712,8 @@ equivalent_shifts_edges <- function(phylo, shifts_edges){
 #' mean at the tips given by the orgininal shifts positions and values, and then uses
 #' function \code{qr.solve} (through function \code{find_actualized_shift_values}) to 
 #' find back the values of the shifts, givent their various positions, and the means
-#' at the tips. Function \code{compute_actualization_factors} is used to compute the actualization factor that multipies the shifts values at the tips. Carefull, only 
+#' at the tips. Function \code{compute_actualization_factors} is used to compute the
+#' actualization factor that multipies the shifts values at the tips. Carefull, only 
 #' work for ultrametric trees.
 #' 
 #' @param phylo a phylogenetic tree.
