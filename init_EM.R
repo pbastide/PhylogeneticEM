@@ -199,7 +199,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
     intercept <- TRUE
   }
   ## fit
-  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept)
+  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept, max.feat = K + 10)
   df <- rowSums(fit@active.set)
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
@@ -214,7 +214,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   count <- 0
   while (!any(df == K) && count < 500) {
     count <- count + 1
-    K_inf <- K-1
+    K_inf <- K - 1
     while (!any(K_inf == df) && (K_inf >= 0)) {
       K_inf <- K_inf - 1
     }
@@ -250,7 +250,11 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   projection <- which(delta != 0)
   Xproj <- Xp[ , projection, drop = FALSE]
   if (dim(Xproj)[2] != qr(Xproj)$rank) {
-    stop("The selected variables do not produce a full rank regression matrix !")
+    warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
+    # Re-do a fit and try again.
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept, max.feat = K + 10)
+    delta <- try(find_independent_regression_vectors(Xp, K, fit, root))
+    if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
   }
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
   edges <- order(-abs(delta))[1:K]
@@ -258,6 +262,60 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   delta.bis[edges] <- delta[edges]
   ## Gauss lasso
   return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+}
+
+##
+#' @title Given a regularization path, find K selected independant variables.
+#'
+#' @description
+#' \code{find_independent_regression_vectors} tries to find a situation where K variables
+#' are selected, so that the selected columns of matrix Xp are independant.
+#'
+#' @details
+#' To do that, if a set of selected is not independent, we go back to the previous selected 
+#' variables, and forbid the moves that led to non-independance for the rest of the path.
+#'
+#' @param Xp (transformed) matrix of regression
+#' @param K number of non-zero components allowed
+#' @param root integer, position of the root column (intercept) excluded from the fit. null 
+#' if no root column.
+#' 
+#' @return delta a vector of regression with K non-zero coefficients.
+#'
+##
+find_independent_regression_vectors <- function(Xp, K, fit, root){
+  deltas <- fit@coefficients
+  nsets <- dim(deltas)[1]
+  if (!is.null(root)){
+    deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
+  }
+  projections <- t(apply(deltas, 1, function(z) return(z != 0)))
+  check_independance <- function(projection, Xp){
+    Xproj <- Xp[ , projection, drop = FALSE]
+    return(dim(Xproj)[2] == qr(Xproj)$rank)
+  }
+  for (i in 1:nsets){
+    # If not independent : go back to the previous state.
+    if (!check_independance(projections[i, ], Xp)){
+      # Variables that were activated or inactivated
+      changes <- xor(projections[i - 1, ], projections[i, ])
+      # Activated variables : inactivate them for the futur
+      new_vars <- changes && projections[i, ]
+      projections[i:nsets, new_vars] <- 0
+      # Inactivated variables : re-activate them for the futur
+      del_vars <- changes && projections[i - 1, ]
+      projections[i:nsets, del_vars] <- 1
+    }
+  }
+  ## Find the right number of selected variables
+  n_select <- rowSums(projections)
+  right_ones <- n_select == K
+  if (!any(right_ones)){
+    stop("Could not find K independant vectors in the regression path provided.")
+  } else {
+    right_one <- which(right_ones)
+    return(projections[right_one, ])
+  }
 }
 
 ##
