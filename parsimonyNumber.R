@@ -736,8 +736,10 @@ equivalent_shifts_values <- function(phylo,
   ## corresponding values at tips
   delta <- shifts.list_to_vector(phylo, shifts)
   m_Y <- T_tree_ac %*% delta + beta_0
-  ## find the right coefficients for each combination of edges
+  ## find the right coefficients for each combination of edges (! stationnary case)
   shifts_and_beta <- apply(eq_shifts_edges, 2, find_shift_values, T_tree_ac = T_tree_ac, m_Y = m_Y)
+  ## exclude NAs column (when qr.solve failed)
+  shifts_and_beta <- t(na.omit(t(shifts_and_beta)))
   return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE],
               betas_0 = shifts_and_beta[1,]))
 }
@@ -763,8 +765,50 @@ equivalent_shifts_values <- function(phylo,
 #' values of the shifts.
 ##
 find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
-  coefs <- qr.solve(cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[,shifts_edges]), m_Y)
-  return(coefs)
+  mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[,shifts_edges]) # stationnary case assumption used here
+  coefs <- try(qr.solve_exact(mat, m_Y), silent = TRUE)
+  if (inherits(coefs, "try-error")){
+    warning("Had a problem solving exactly the linear system.")
+    return(rep(NA, length(shifts_edges) + 1))
+  } else {
+    return(coefs)
+  }
+}
+
+##
+#' @title exact qr.solve
+#'
+#' @description
+#' This is the same function as \code{qr.solve}, but it throws an error if an exact fit cannot
+#' be found (instead of returning a least square fitted value, which is the default behavior
+#' of \code{qr.solve}). 
+#' 
+#' @param a a QR decomposition or a rectangular matrix.
+#' @param b a vector or matrix of right-hand sides of equations.
+#' \code{incidence.matrix}.
+#' @param tol the tolerance for detecting linear dependencies in the columns of x.
+#' Only used if LAPACK is false and x is real.
+#'
+##
+qr.solve_exact <- function (a, b, tol = 1e-07) {
+  if (!is.qr(a)) 
+    a <- qr(a, tol = tol)
+  nc <- ncol(a$qr)
+  nr <- nrow(a$qr)
+  if (a$rank != min(nc, nr)) 
+    stop("singular matrix 'a' in solve")
+  if (missing(b)) {
+    if (nc != nr) 
+      stop("only square matrices can be inverted")
+    b <- diag(1, nc)
+  }
+  test <- qr.resid(a, b)
+  if (!isTRUE(all.equal(as.vector(test), rep(0, nr)))) {
+    stop("This linear system cannot be solve exactly")
+  }
+  res <- qr.coef(a, b)
+  res[is.na(res)] <- 0
+  return(res)
 }
 
 ##
