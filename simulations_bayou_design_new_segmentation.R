@@ -1,7 +1,8 @@
 rm(list = ls())
 
-#WD <- "/home/bastide/Dropbox/These/Code/Phylogenetic-EM"
-WD <- "/Users/paulb/Dropbox/These/Code/Phylogenetic-EM" # (Mac)
+WD_mac <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
+WD_unb <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
+WD <- ifelse(file.exists(WD_mac), WD_mac, WD_unb)
 setwd(WD)
 
 reqpckg <- c("ape", "quadrupen", "robustbase")
@@ -18,21 +19,22 @@ library(TreeSim) # For simulation of the tree
 #require(grid) # Plot
 
 ## Source functions
-source("simulate.R")
-source("estimateEM.R")
-source("init_EM.R")
-source("E_step.R")
-source("M_step.R")
-source("shutoff.R")
-source("generic_functions.R")
-source("shifts_manipulations.R")
-source("plot_functions.R")
+source("Phylogenetic-EM/simulate.R")
+source("Phylogenetic-EM/estimateEM.R")
+source("Phylogenetic-EM/init_EM.R")
+source("Phylogenetic-EM/E_step.R")
+source("Phylogenetic-EM/M_step.R")
+source("Phylogenetic-EM/shutoff.R")
+source("Phylogenetic-EM/generic_functions.R")
+source("Phylogenetic-EM/shifts_manipulations.R")
+source("Phylogenetic-EM/plot_functions.R")
+source("Phylogenetic-EM/parsimonyNumber.R")
 
 ## Set seed
 #set.seed(1121983)
 #set.seed(21031989)
 set.seed(18051804)
-savedatafile = "../Results/Simulation_Estimation_Bayou_Design_new_seg/simulation_ou_on_tree_bayou_design"
+savedatafile = "Results/Simulation_Estimation_Bayou_Design_new_seg/simulation_ou_on_tree_bayou_design"
 
 ## Set number of parallel cores
 Ncores <- 3
@@ -60,7 +62,7 @@ gamma <- (1/(2*alpha_base))*c(0.1, 0.5, 1, 2, 5, 10, 25, 50) # enlevé : 3 (base
 K <- c(1, 5, 7, 8, 10, 11, 13, 20, 50) # enlevé : 9 (base)
 
 ## replication depth (number of replicates per )
-n <- 1:200
+n <- 1:2
 
 ## The combination of simulation parameters
 simparams_alpha <- expand.grid(alpha, gamma_base, K_base, n, "alpha_var")
@@ -120,60 +122,60 @@ sample_shifts <- function(tree, sigma_delta, K){
   return(shifts)
 }
 
-sample_shifts_edges <- function(tree, K){
-  Nbranch <- nrow(tree$edge)
-  ntaxa <- length(tree$tip.label)
-  if (K > ntaxa) stop("A parcimonious repartition of the shifts cannot have more shifts than tips !")
-  ## Generate shifts so that they are parcimonious
-  Tr <- incidence.matrix(tree)
-  Nbr_grps <- 0
-  It <- 0
-  while ((Nbr_grps < K+1 && It < 500)) {
-    ## Generate K branches
-    edges <- sample_edges_intervals(tree, K)
-    ## Generate Groups
-    groups <- rep(0, ntaxa); names(groups) <- tree$tip.label
-    for (i in order(edges)) { # Do it in order
-      ed <- edges[i]
-      groups[tree$tip.label[Tr[,ed]]] <- i
-    }
-    Nbr_grps <- length(unique(groups))
-    It <- It + 1
-  }
-  if (It==500) stop("I could not find a parcimonious repartition of the shifts after 500 iterations. Please consider taking a smaller number of shifts.")
-  return(edges)
-}
-
-sample_edges_intervals <- function(tree, K){
-  pas <- 1/K * 0:K
-  node_heights <- node.depth.edgelength(tree)
-  groups <- split(1:length(node_heights), findInterval(node_heights, pas))
-  sh <- NULL; p <- 1
-  for (k in 1:K) {
-    grp <- groups[[paste(k)]]
-    if (is.null(grp)){
-      p <- p + 1
-    } else {
-      if (p <= length(grp)){
-        if (length(grp) == 1) {
-          sh <- c(sh, grp)
-        } else {
-          sh <- c(sh, sample(grp, p))
-        }
-        p <- 1
-      } else {
-        sh <- c(sh, grp)
-        p <- p - length(grp) + 1
-      }
-    }
-  }
-  sh <- sapply(sh, function(x) which(tree$edge[,1]==x)[1])
-  if (length(sh) < K) {
-    p <- K-length(sh)
-    sh <- c(sh, sample(tree$edge[-sh], p))
-  }
-  return(sh)
-}
+# sample_shifts_edges <- function(tree, K){
+#   Nbranch <- nrow(tree$edge)
+#   ntaxa <- length(tree$tip.label)
+#   if (K > ntaxa) stop("A parcimonious repartition of the shifts cannot have more shifts than tips !")
+#   ## Generate shifts so that they are parcimonious
+#   Tr <- incidence.matrix(tree)
+#   Nbr_grps <- 0
+#   It <- 0
+#   while ((Nbr_grps < K+1 && It < 500)) {
+#     ## Generate K branches
+#     edges <- sample_edges_intervals(tree, K)
+#     ## Generate Groups
+#     groups <- rep(0, ntaxa); names(groups) <- tree$tip.label
+#     for (i in order(edges)) { # Do it in order
+#       ed <- edges[i]
+#       groups[tree$tip.label[Tr[,ed]]] <- i
+#     }
+#     Nbr_grps <- length(unique(groups))
+#     It <- It + 1
+#   }
+#   if (It==500) stop("I could not find a parcimonious repartition of the shifts after 500 iterations. Please consider taking a smaller number of shifts.")
+#   return(edges)
+# }
+# 
+# sample_edges_intervals <- function(tree, K){
+#   pas <- 1/K * 0:K
+#   node_heights <- node.depth.edgelength(tree)
+#   groups <- split(1:length(node_heights), findInterval(node_heights, pas))
+#   sh <- NULL; p <- 1
+#   for (k in 1:K) {
+#     grp <- groups[[paste(k)]]
+#     if (is.null(grp)){
+#       p <- p + 1
+#     } else {
+#       if (p <= length(grp)){
+#         if (length(grp) == 1) {
+#           sh <- c(sh, grp)
+#         } else {
+#           sh <- c(sh, sample(grp, p))
+#         }
+#         p <- 1
+#       } else {
+#         sh <- c(sh, grp)
+#         p <- p - length(grp) + 1
+#       }
+#     }
+#   }
+#   sh <- sapply(sh, function(x) which(tree$edge[,1]==x)[1])
+#   if (length(sh) < K) {
+#     p <- K-length(sh)
+#     sh <- c(sh, sample(tree$edge[-sh], p))
+#   }
+#   return(sh)
+# }
 
 sample_shifts_values <- function(sigma_delta, K){
   return(rnorm(K, mean=0, sd=sqrt(sigma_delta)))
@@ -235,6 +237,7 @@ estimationfunction <- function(X) {
   X$log_likelihood <- attr(params, "log_likelihood")[1]
   X$number_new_shifts <- results_estim_EM$number_new_shifts
   X$mean_number_new_shifts <- mean(results_estim_EM$number_new_shifts)
+  X$number_equivalent_solutions <- results_estim_EM$number_equivalent_solutions
   return(X)
 }
 
