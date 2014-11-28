@@ -162,43 +162,46 @@ tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", 
 nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
 
 #######################################
-## Test of function parcimonyNumber
+## Test of function parsimonyNumber
 #######################################
 tree <- read.tree(text="(((T,T),C),(A,A));")
 ntaxa <- 5
 plot(tree); tiplabels(); nodelabels()
 clusters=c(1,1,2,3,3)
-extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.parsimonyNumber(parsimonyNumber(tree,clusters))
 extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 clusters=c(1,1,1,1,1)
-extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.parsimonyNumber(parsimonyNumber(tree,clusters))
 extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 clusters=c(1,2,3,4,4)
-extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.parsimonyNumber(parsimonyNumber(tree,clusters))
 pos <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 for (k in 1:dim(pos)[1]){
   plot(tree, show.tip.label=FALSE)
   tiplabels(text = pos[k, 1:ntaxa])
   nodelabels(text = pos[k,-(1:ntaxa)])
 }
+clusters=c(1,2,2,1,1)
+extract.parsimonyNumber(parsimonyNumber(tree,clusters))
+extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 
 tree <- rtree(10)
 plot(tree); tiplabels()
 clusters <- c(1,1,1,1,1,2,2,2,2,2)
-extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.parsimonyNumber(parsimonyNumber(tree,clusters))
 extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 
 tree <- read.tree(text="((((T,T),C),(A,A)),(((T,T),C),(A,A)));")
 plot(tree); tiplabels(); nodelabels()
 clusters=c(1,1,2,3,3,1,1,2,3,3)
-extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.parsimonyNumber(parsimonyNumber(tree,clusters))
 extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 
 tree <- read.tree(text="(((T,T),C),C);")
 ntaxa <- 4
 plot(tree); tiplabels(); nodelabels()
 clusters=c(1,2,3,3)
-extract.parcimonyNumber(parcimonyNumber(tree,clusters))
+extract.parsimonyNumber(parsimonyNumber(tree,clusters))
 extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 
 #######################################
@@ -1230,8 +1233,9 @@ plot(tree); edgelabels(); edgelabels(edge = datasim$shifts$edges, col="red")
 ## Test of Divergence - 2 - simple
 #######################################
 rm(list=ls())
-#WD <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
-WD <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
+WD_mac <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
+WD_unb <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
+WD <- ifelse(file.exists(WD_mac), WD_mac, WD_unb)
 setwd(WD)
 PATH <- paste(WD, "/Results/Miscellaneous_Evals/", sep="")
 library(ape)
@@ -1254,7 +1258,7 @@ source("Phylogenetic-EM/shutoff.R")
 source("Phylogenetic-EM/generic_functions.R")
 source("Phylogenetic-EM/shifts_manipulations.R")
 source("Phylogenetic-EM/plot_functions.R")
-source("Phylogenetic-EM/parcimonyNumber.R")
+source("Phylogenetic-EM/parsimonyNumber.R")
 
 ### Functions
 

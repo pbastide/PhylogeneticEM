@@ -254,6 +254,46 @@ shifts.vector_to_list <- function(delta){
   return(shifts)
 }
 
+##
+#' @title Compute the actualizations factors to apply to the incidence matrix.
+#'
+#' @description
+#' \code{incidence_matrix_actualization_factors} computes a ntaxa x nedges matrix of the 
+#' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
+#' This matrix is to be multiplied to the incidence matrix with an outer product.
+#'
+#' @details
+#'
+#' @param tree a phylogenetic tree.
+#' @param selection.strength the selection strength of the process.
+#' @param relativeTimes_tree a nedge vector of relative times associated with the branches.
+#' @param times_shared a matrix, result of function \code{compute_times_ca}.
+#' 
+#' @return Matrix of size ntaxa x nedges
+#' 
+##
+incidence_matrix_actualization_factors <- function(tree, 
+                                                   selection.strength, 
+                                                   relativeTimes_tree = 0,
+                                                   times_shared = compute_times_ca(tree)){
+  ntaxa <- length(tree$tip.label)
+  nedges <- dim(tree$edge)[1]
+  # Vector of exp(-alpha*t_i) at tips
+  ac_tip <- diag(times_shared[1:ntaxa, 1:ntaxa])
+  ac_tip <- exp(-selection.strength * ac_tip)
+  # Relative times
+  ac_rt <- exp(selection.strength * relativeTimes_tree * tree$edge.length)
+  # Vector of exp(-alpha*t_pa(j)) at edges
+  parents <- tree$edge[, 1]
+  ac_edges <- diag(times_shared[parents, parents])
+  ac_edges <- exp(selection.strength * ac_edges)
+  ac_edges <- ac_edges * ac_rt
+  # Matrix 
+  ac_mat <- tcrossprod(ac_tip, ac_edges)
+  ac_mat <- 1 - ac_mat
+  return(ac_mat)
+}
+
 ##########################################
 ## Handle correspondance shifts - regimes
 ##########################################
@@ -488,4 +528,96 @@ compute_shifts_from_betas <- function(phylo, betas){
                  values = shifts_ed[2, edges],
                  relativeTimes = rep(0, length(edges)))
   return(shifts)
+}
+
+##############################################################################
+## Random generation of shifts edges
+##############################################################################
+##
+#' @title Sample shifts edges in a parsimonious way.
+#'
+#' @description
+#' \code{sample_shifts_edges} attempts to find K shifts in the tree which allocations
+#' are parsimonious. The actual generation of edges is done by function 
+#' \code{sample_edges_intervals}.
+#' 
+#' @details
+#' This function uses function \code{enumerate_tips_under_edges} to generate a list 
+#' of tips under each edge, and function \code{check_parsimony_ism} to check for
+#' parsimony of a given solution, under the assumption of an "infinite site model".
+#'
+#' @param tree : imput tree
+#' @param K : number of edges to be sampled.
+#' 
+#' @return vector of edges
+#'
+##
+sample_shifts_edges <- function(tree, K, 
+                                part.list = enumerate_tips_under_edges(tree)){
+  Nbranch <- nrow(tree$edge)
+  ntaxa <- length(tree$tip.label)
+  ## If too many shifts, abort.
+  if (K > ntaxa) stop("A parcimonious repartition of the shifts cannot have more shifts than tips !")
+  ## Else, try several times to generate parsimonious shifts.
+  for(It in 1:1000) {
+    ## Generate K branches
+    edges <- sample_edges_intervals(tree, K)
+    ## Check that these are parsimonious
+    parsi <- check_parsimony_ism(tree, edges, part.list = part.list)
+    ## If parsiomnious, finish
+    if (parsi){
+      return(edges)
+    }
+  }
+  stop("Could not find a parsimonious repartition of the shifts after 1000 random generations. Please consider taking a smaller number of shifts.")
+}
+
+##
+#' @title Sample equally espaced edges.
+#'
+#' @description
+#' \code{sample_edges_intervals} samples K shifts, each in one of the K intervalles
+#' regularly espaced on the height of the tree.
+#' 
+#' @details
+#' In case where the tree is not ultrametric, its "height" is defined as the minimum
+#' tip height.
+#'
+#' @param tree : imput tree
+#' @param K : number of edges to be sampled.
+#' 
+#' @return vector of edges
+#'
+##
+sample_edges_intervals <- function(tree, K){
+  ntaxa <- length(tree$tip.label)
+  node_heights <- node.depth.edgelength(tree)
+  tree_height <- min(node_heights[1:ntaxa])
+  pas <- tree_height / K * 0:K
+  groups <- split(1:length(node_heights), findInterval(node_heights, pas))
+  sh <- NULL; p <- 1
+  for (k in 1:K) {
+    grp <- groups[[paste(k)]]
+    if (is.null(grp)){
+      p <- p + 1
+    } else {
+      if (p <= length(grp)){
+        if (length(grp) == 1) {
+          sh <- c(sh, grp)
+        } else {
+          sh <- c(sh, sample(grp, p))
+        }
+        p <- 1
+      } else {
+        sh <- c(sh, grp)
+        p <- p - length(grp) + 1
+      }
+    }
+  }
+  sh <- sapply(sh, function(x) which(tree$edge[, 1] == x)[1])
+  if (length(sh) < K) {
+    p <- K - length(sh)
+    sh <- c(sh, sample(tree$edge[-sh], p))
+  }
+  return(sh)
 }

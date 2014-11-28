@@ -90,7 +90,7 @@ compute_M.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
   }
 }
 
-compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, known.selection.strength, methods.segmentation, beta_0_old, shifts_old, ...){
+compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, known.selection.strength, methods.segmentation, beta_0_old, shifts_old, subtree.list, ...){
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   params <- init.EM.default.OU(selection.strength.init=known.selection.strength,
@@ -139,7 +139,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   ## Compute objective function for each set of parameters, and choose the best one
   cond_exp_log_lik <- function(method.segmentation){
     return(unname(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
-                                                                                                        conditional_law_X = conditional_law_X, 
+                                                                                          conditional_law_X = conditional_law_X, 
                                                                                                         sigma2 = 2 * known.selection.strength * var.roots[method.segmentation],
                                                                                                         mu = segs[[method.segmentation]]$beta_0,
                                                                                                         shifts = segs[[method.segmentation]]$shifts,
@@ -147,6 +147,23 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   }
   obj_funcs <- sapply(methods.segmentation, cond_exp_log_lik)
   best.method.seg <- which.max(obj_funcs)
+  ## Take the best method, that provides a parsimonious solution
+  while(!check_parsimony_ism(phylo, segs[[best.method.seg]]$shifts$edges, subtree.list) && 
+          any(is.finite(obj_funcs))){
+    obj_funcs[best.method.seg] <- -Inf
+    best.method.seg <- which.max(obj_funcs)
+  }
+  ## If no solution is parsimonious, keep the same one.
+  if (prod(is.infinite(obj_funcs)) == 1){
+    warning("Could not find any parsimonious solution at the M Step. Keeping the same shifts.")
+    if (is.null(shifts_olds$edges)){
+      warning("Had to use the same_shift method, but with no old shift. Taking random ones. This is probably not what you intented to do.")
+      shifts_olds$edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
+    }
+    segs <- sapply("same_shifts", segmentation.OU.specialCase, simplify = FALSE)
+    var.roots <- sapply("same_shifts", compute_var_M)
+    best.method.seg <- 1
+  }
   ## Actualize paremters with the ones found by the best segmentation method
   params$root.state$var.root <- unname(var.roots[best.method.seg])
   params$variance <- 2 * known.selection.strength * params$root.state$var.root
@@ -157,7 +174,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   return(params)
 }
 
-compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, ...){
+compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, subtree.list, ...){
   ## Estimate all parameters with alpha of the previous step
   params <- compute_M.OU.specialCase(phylo = phylo, 
                                      Y_data = Y_data, 
@@ -166,7 +183,8 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
                                      known.selection.strength = alpha_old,
                                      methods.segmentation = methods.segmentation,
                                      beta_0_old = beta_0_old,
-                                     shifts_old = shifts_old)
+                                     shifts_old = shifts_old, 
+                                     subtree.list = subtree.list)
   ## Estimate new alpha
   params$selection.strength <- estimate.alpha(phylo = phylo,
                                               conditional_law_X = conditional_law_X, 

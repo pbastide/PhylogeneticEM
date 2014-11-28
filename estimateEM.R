@@ -43,7 +43,7 @@
 # RETURNS:
 #            (list) list of parameters for the model fitted
 # DEPENDENCIES:
-#            init.EM, compute_E, compute_M, compute_times_ca, compute_dist_phy, shutoff.EM, update.parcimonyNumber (, ...)
+#            init.EM, compute_E, compute_M, compute_times_ca, compute_dist_phy, shutoff.EM, update.parsimonyNumber (, ...)
 # PURPOSE:
 #            Run the EM algorithm
 # NOTES:
@@ -135,23 +135,28 @@ estimateEM <- function(phylo,
                                     simple = compute_log_likelihood.simple)
   ## Iniialization Method
   method.init  <- match.arg(method.init)
-  # Lasso initialization for OU only works if the tree is ultrametric
-  if (!is.ultrametric(phylo) &&
-        method.init == "lasso" &&
-        process == "OU") stop("For the OU process, the Lasso initialization only works (for now) for ultrametric trees. Please consider using annother initialization.")
+  # Lasso initialization for OU only works for stationnary root
+  if (!stationnary.root && (method.init == "lasso")){
+    method.init <- "default"
+    warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+  }
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
-  ## Initialization
+  ## Fixed Quantities
   ntaxa <- length(phylo$tip.label)
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
-  t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
+#  t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
+  subtree.list <- enumerate_tips_under_edges(phylo)
+  T_tree <- incidence.matrix(phylo)
+  ## Initialization
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
                                                   nbr_of_shifts = nbr_of_shifts,
+                                                  times_shared = times_shared,
                                                   distances_phylo = distances_phylo,
                                                   init.selection.strength = init.selection.strength,
                                                   max_triplet_number = max_triplet_number,
@@ -164,6 +169,13 @@ estimateEM <- function(phylo,
   } else {
     init.selection.strength <- known.selection.strength
   }
+  # Always start with some shifts, in case of default initialisation
+  if (!exists("edges.init") || is.null(edges.init)){
+    init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list) 
+  } else {
+    init_edges <- edges.init
+  }
+# Initialization per se
   params_init <- init.EM(phylo = phylo,
                          Y_data = Y_data,
                          process = process, 
@@ -176,7 +188,8 @@ estimateEM <- function(phylo,
                          use_sigma = use_sigma_for_lasso,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
-                         t_tree = t_tree,
+                         T_tree = T_tree,
+                         edges.init = init_edges,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state=params$root.state, 
@@ -240,7 +253,8 @@ estimateEM <- function(phylo,
                         eps = eps,
                         methods.segmentation = methods.segmentation,
                         beta_0_old = params_old$optimal.value,
-                        shifts_old = params_old$shifts)
+                        shifts_old = params_old$shifts, 
+                        subtree.list = subtree.list)
     attr(params, "ntaxa")  <- ntaxa
     ## Number of shifts that changed position ?
     number_new_shifts <- c(number_new_shifts,
@@ -278,8 +292,8 @@ estimateEM <- function(phylo,
   attr(params, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
   ## Number of equivalent solutions
-  clusters <- clusters_from_shifts(phylo, params$shifts$edges)
-  Neq <- extract.parcimonyNumber(parcimonyNumber(phylo, clusters))
+  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
+  Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1) message("There are some equivalent solutions to the solution found.")
   ## Result
   result <- list(params = params, 

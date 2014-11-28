@@ -187,11 +187,11 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   ## Root is the intercept, should be excluded from varaiable selection
   # In that case, project Yp on the orthogonal of the root
   if (!is.null(root)){
-    L <- Xp[,root]
+    L <- Xp[ , root]
     norme_L <- drop(crossprod(L))
     Xp_noroot <- Xp[ , -root, drop = FALSE]
-    Xp_orth <- Xp_noroot - (tcrossprod(L)%*%Xp_noroot)/norme_L
-    Yp_orth <- Yp - crossprod(Yp, L)/(norme_L)*L
+    Xp_orth <- Xp_noroot - (tcrossprod(L) %*% Xp_noroot) / norme_L
+    Yp_orth <- Yp - crossprod(Yp, L) / (norme_L) * L
     intercept <- FALSE
   } else {
     Xp_orth <- Xp
@@ -199,7 +199,7 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
     intercept <- TRUE
   }
   ## fit
-  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept)
+  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept, max.feat = K + 10)
   df <- rowSums(fit@active.set)
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
@@ -212,15 +212,15 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   ## If the right lambda does not exists, find it.
   count <- 0
-  while (sum(df == K) == 0 && count < 500) {
+  while (!any(df == K) && count < 500) {
     count <- count + 1
-    K_inf <- K-1
-    while ((sum(K_inf == df) == 0) && (K_inf >= 0)) {
+    K_inf <- K - 1
+    while (!any(K_inf == df) && (K_inf >= 0)) {
       K_inf <- K_inf - 1
     }
     lambda_inf <- fit@lambda1[tail(which(K_inf == df), n = 1)]
     K_sup <- K + 1
-    while ((sum(K_sup == df) == 0) && (K_sup <= max(df))) {
+    while (!any(K_sup == df) && (K_sup <= max(df))) {
       K_sup <- K_sup + 1
     }
     lambda_sup <- fit@lambda1[head(which(K_sup == df), n = 1)]
@@ -230,12 +230,12 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   ## If the right lambda does not exists, raise the number of shifts
   K_2 <- K
-  while (sum(df == K_2) == 0 && K_2 < 500) {
+  while (!any(df == K_2) && K_2 <= min(dim(Xp))) {
     warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
     K_2 <- K_2 + 1
   }
   ## If could not find the right lambda, do a default initialization
-  if (sum(df == K_2) == 0) {
+  if (!any(df == K_2)) {
     stop("Lasso Initialisation failed : could not find a satisfying number of shifts.")
   }
   ## Select the row with the right number of coefficients
@@ -250,7 +250,11 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   projection <- which(delta != 0)
   Xproj <- Xp[ , projection, drop = FALSE]
   if (dim(Xproj)[2] != qr(Xproj)$rank) {
-    stop("The selected variables do not produce a full rank regression matrix !")
+    warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
+    # Re-do a fit and try again.
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept, max.feat = K + 10)
+    delta <- try(find_independent_regression_vectors(Xp, K, fit, root))
+    if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
   }
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
   edges <- order(-abs(delta))[1:K]
@@ -258,6 +262,60 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   delta.bis[edges] <- delta[edges]
   ## Gauss lasso
   return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+}
+
+##
+#' @title Given a regularization path, find K selected independant variables.
+#'
+#' @description
+#' \code{find_independent_regression_vectors} tries to find a situation where K variables
+#' are selected, so that the selected columns of matrix Xp are independant.
+#'
+#' @details
+#' To do that, if a set of selected is not independent, we go back to the previous selected 
+#' variables, and forbid the moves that led to non-independance for the rest of the path.
+#'
+#' @param Xp (transformed) matrix of regression
+#' @param K number of non-zero components allowed
+#' @param root integer, position of the root column (intercept) excluded from the fit. null 
+#' if no root column.
+#' 
+#' @return delta a vector of regression with K non-zero coefficients.
+#'
+##
+find_independent_regression_vectors <- function(Xp, K, fit, root){
+  deltas <- fit@coefficients
+  nsets <- dim(deltas)[1]
+  if (!is.null(root)){
+    deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
+  }
+  projections <- t(apply(deltas, 1, function(z) return(z != 0)))
+  check_independance <- function(projection, Xp){
+    Xproj <- Xp[ , projection, drop = FALSE]
+    return(dim(Xproj)[2] == qr(Xproj)$rank)
+  }
+  for (i in 1:nsets){
+    # If not independent : go back to the previous state.
+    if (!check_independance(projections[i, ], Xp)){
+      # Variables that were activated or inactivated
+      changes <- xor(projections[i - 1, ], projections[i, ])
+      # Activated variables : inactivate them for the futur
+      new_vars <- changes && projections[i, ]
+      projections[i:nsets, new_vars] <- 0
+      # Inactivated variables : re-activate them for the futur
+      del_vars <- changes && projections[i - 1, ]
+      projections[i:nsets, del_vars] <- 1
+    }
+  }
+  ## Find the right number of selected variables
+  n_select <- rowSums(projections)
+  right_ones <- n_select == K
+  if (!any(right_ones)){
+    stop("Could not find K independant vectors in the regression path provided.")
+  } else {
+    right_one <- which(right_ones)
+    return(projections[right_one, ])
+  }
 }
 
 ##
@@ -341,9 +399,15 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
 #'18/06/14 - Initial release
 #'06/10/14 - Externalization of function lasso
 ##
-init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, t_tree, ...) {
+init.EM.lasso <- function(phylo, Y_data, process, times_shared = compute_times_ca(phylo), distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, T_tree = incidence.matrix(phylo), ...) {
   ntaxa <- length(phylo$tip.label)
   init.EM.default <- init.EM.default(process)
+  ## Actualization of incidence matrix
+  Tr <- T_tree
+  ac_tree <- incidence_matrix_actualization_factors(tree = phylo, 
+                                                    selection.strength = selection.strength.init,
+                                                    times_shared = times_shared)
+  Tr <- T_tree * ac_tree
   ## Choose the norm :
   if (use_sigma) {
     # Choose process
@@ -358,33 +422,34 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = NULL, distances
     Sig_chol <- chol(Sigma_YY)
     Sig_chol_inv <- t(solve(Sig_chol)) # Sigma_YY_inv = t(Sig_chol_inv)%*%Sig_chol_inv
     # Transform Y_data and T
-    Tr <- incidence.matrix(phylo)
-    Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
+    Tr <- cbind(Tr, rep(1, dim(Tr)[1])) # Here we use hypothesis : stationnary root.
     Tp <- Sig_chol_inv%*%Tr
     Yp <- Sig_chol_inv%*%Y_data
     fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts, root = dim(Tr)[2]))
   } else {
     # Return untransformed Y_data and T
-    Tp <- incidence.matrix(phylo)
+    Tp <- Tr
     Yp <- Y_data
     fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
   }
   ## Fit
   if (inherits(fit, "try-error")) {
     warning("Lasso Initialisation fail : could not find a satisfying number of shifts. Proceeding to a default initialization.")
-    return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, ...))
+    return(init.EM.default(selection.strength.init = selection.strength.init, 
+                           random.init = random.init, 
+                           stationnary.root.init = stationnary.root.init, ...))
   } else { 
     E0.gauss <- fit$E0.gauss
     shifts.gauss <- fit$shifts.gauss
-    ## If OU, apply the correct factor to shifts
-    if (process == "OU" && !is.null(times_shared) && !is.null(shifts.gauss$values)){
-      parents <- phylo$edge[shifts.gauss$edges,1]
-      factors <- compute_actualization_factors(selection.strength = selection.strength.init, 
-                                               t_tree = t_tree, 
-                                               times_shared = times_shared, 
-                                               parents = parents)
-      shifts.gauss$values <- shifts.gauss$values/factors
-    }
+#     ## If OU, apply the correct factor to shifts
+#     if (process == "OU" && !is.null(times_shared) && !is.null(shifts.gauss$values)){
+#       parents <- phylo$edge[shifts.gauss$edges,1]
+#       factors <- compute_actualization_factors(selection.strength = selection.strength.init, 
+#                                                t_tree = t_tree, 
+#                                                times_shared = times_shared, 
+#                                                parents = parents)
+#       shifts.gauss$values <- shifts.gauss$values/factors
+#     }
     params_init <- init.EM.default(value.root.init = E0.gauss[1], 
                                    exp.root.init = E0.gauss[1], 
                                    optimal.value.init = E0.gauss[1],
@@ -402,7 +467,7 @@ compute_actualization_factors <- function(selection.strength,
                                                 t_tree, 
                                                 times_shared, 
                                                 parents){
-  factors <- exp(-selection.strength * t_tree - diag(times_shared[parents, parents, drop = FALSE]))
+  factors <- exp(- selection.strength * (t_tree - diag(times_shared[parents, parents, drop = FALSE])))
   return(1-factors)
 }
 
