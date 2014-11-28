@@ -263,7 +263,7 @@ list_to_table.history <- function(params_history) {
   params_history[['0']] <- replaceInList(params_history[['0']], function(x) if(is.null(x))rep(0,nbr_of_shifts) else x)
   params_history <- lapply(params_history, unlist)
   history <- do.call(cbind, params_history)
-  history <- rbind(history, log_likelihood = c(ll, NA))#, log_likelihood_bis = c(ll_bis, NA)), segmentation_algorithm = c(method, NA, NA))
+  history <- rbind(history, log_likelihood = c(ll))#, log_likelihood_bis = c(ll_bis, NA)), segmentation_algorithm = c(method, NA, NA))
   return(history)
 }
 
@@ -274,11 +274,16 @@ write.table.history <- function(history, params_algo_EM, PATH, ...) {
 }
 
 plot.history.OU.stationnary <- function(params_history, tree, params_ref, Y_data_ref, PATH, name, ref = "true"){
-  params_history[[ref]] <- params_ref
-  history <- list_to_table.history(params_history)
-  history[,ref]["log_likelihood"] <-log_likelihood.OU(Y_data_ref, 
-                                                            tree, 
-                                                            params_ref)
+  if (missing(params_ref)){
+    ref <- NULL
+    history <- list_to_table.history(params_history)
+  } else {
+    params_history[[ref]] <- params_ref
+    history <- list_to_table.history(params_history)
+    history[,ref]["log_likelihood"] <-log_likelihood.OU(Y_data_ref, 
+                                                        tree, 
+                                                        params_ref)
+  }
   #params_simu  <-  unlist(paramsSimu)[names(history[,1])]
   pdf(paste(PATH, name, ".pdf", sep=""), width = 12, height = 8)
   ## Title of the page
@@ -290,8 +295,10 @@ plot.history.OU.stationnary <- function(params_history, tree, params_ref, Y_data
 
 plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
   ## Discriminate
-  params_simu <- history[, ref]
-  history <- history[, colnames(history) != ref]
+  if (!is.null(ref)){
+    params_simu <- history[, ref]
+    history <- history[, colnames(history) != ref]
+  }
   ## Create grid
   pushViewport(viewport(layout = grid.layout(2+1, 3, heights = unit(c(1,5,5), "null"))))
   ## title
@@ -305,7 +312,7 @@ plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "
     df <- history[params_to_plot[s],]
     # Plot
     p <- qplot(seq_along(df)-1, df, xlab="iterations", ylab=params_to_plot_legend[s])
-    p <- p + geom_hline(yintercept=params_simu[params_to_plot[s]])
+    if (!is.null(ref)) p <- p + geom_hline(yintercept = params_simu[params_to_plot[s]])
     print(p, vp=vplayout(row[s],col[s]))
   }
   ## Plot with differents colours for each shift
@@ -314,9 +321,9 @@ plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "
   df_val_long <- melt(df_val, variable.name = "shift", value.name="shift.value")
   df_val_long$iterations <- rep(seq_along(df_val[,1])-1, dim(df_val)[2])
   df_val_long$shift <- as.factor(rep(seq_along(df_val[1,]), each=dim(df_val)[1]))
-  df_val_long$true <- rep(params_simu[grepl('shifts.values', names(history[,1]))], each=dim(df_val)[1])
+  if (!is.null(ref)) df_val_long$true <- rep(params_simu[grepl('shifts.values', names(history[,1]))], each=dim(df_val)[1])
   p <- ggplot(data=df_val_long, aes(x=iterations, y=shift.value, colour = shift)) + geom_point()
-  p <- p + geom_hline(aes(yintercept=true, colour=shift), data=df_val_long)
+  if (!is.null(ref)) p <- p + geom_hline(aes(yintercept=true, colour=shift), data=df_val_long)
   p <- p + ylab(expression(delta))
   print(p, vp=vplayout(3,1))
   # Edges
@@ -324,9 +331,9 @@ plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "
   df_ed_long <- melt(df_ed, variable.name = "shift", value.name="shift.edge")
   df_ed_long$iterations <- rep(seq_along(df_ed[,1])-1, dim(df_ed)[2])
   df_ed_long$shift <- as.factor(rep(seq_along(df_ed[1,]), each=dim(df_ed)[1]))
-  df_ed_long$true <- rep(params_simu[grepl('shifts.edges', names(history[,1]))], each=dim(df_ed)[1])
+  if (!is.null(ref)) df_ed_long$true <- rep(params_simu[grepl('shifts.edges', names(history[,1]))], each=dim(df_ed)[1])
   p <- ggplot(data=df_ed_long, aes(x=iterations, y=shift.edge, colour = shift)) + geom_point()
-  p <- p + geom_hline(aes(yintercept=true, colour=shift), data=df_ed_long)
+  if (!is.null(ref)) p <- p + geom_hline(aes(yintercept=true, colour=shift), data=df_ed_long)
   p <- p + ylab(expression(tau))
   print(p, vp=vplayout(3,2))
 }
