@@ -693,8 +693,9 @@ equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
 #' @return a matrix with as many columns as equivalent allocation, each column
 #'  representing a possible parsimonious allocation of shifts on the tree.
 ##
-equivalent_shifts_edges <- function(phylo, shifts_edges){
-  clusters <- clusters_from_shifts_ism(phylo, shifts_edges) + 1
+equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
+  if(!check_parsimony_ism(phylo, shifts_edges, ...)) stop("The edges entered are not parsimonious.")
+  clusters <- clusters_from_shifts_ism(phylo, shifts_edges, ...) + 1
   regime_allocs <- extract.enumerate_parsimony(enumerate_parsimony(phylo, clusters))
   eq_shifts_edges <- apply(regime_allocs, 1, allocate_shifts_from_regimes, phylo = phylo)
   return(eq_shifts_edges)
