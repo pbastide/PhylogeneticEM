@@ -187,11 +187,11 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   ## Root is the intercept, should be excluded from varaiable selection
   # In that case, project Yp on the orthogonal of the root
   if (!is.null(root)){
-    L <- Xp[,root]
+    L <- Xp[ , root]
     norme_L <- drop(crossprod(L))
     Xp_noroot <- Xp[ , -root, drop = FALSE]
-    Xp_orth <- Xp_noroot - (tcrossprod(L)%*%Xp_noroot)/norme_L
-    Yp_orth <- Yp - crossprod(Yp, L)/(norme_L)*L
+    Xp_orth <- Xp_noroot - (tcrossprod(L) %*% Xp_noroot) / norme_L
+    Yp_orth <- Yp - crossprod(Yp, L) / (norme_L) * L
     intercept <- FALSE
   } else {
     Xp_orth <- Xp
@@ -212,15 +212,15 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   ## If the right lambda does not exists, find it.
   count <- 0
-  while (sum(df == K) == 0 && count < 500) {
+  while (!any(df == K) && count < 500) {
     count <- count + 1
     K_inf <- K-1
-    while ((sum(K_inf == df) == 0) && (K_inf >= 0)) {
+    while (!any(K_inf == df) && (K_inf >= 0)) {
       K_inf <- K_inf - 1
     }
     lambda_inf <- fit@lambda1[tail(which(K_inf == df), n = 1)]
     K_sup <- K + 1
-    while ((sum(K_sup == df) == 0) && (K_sup <= max(df))) {
+    while (!any(K_sup == df) && (K_sup <= max(df))) {
       K_sup <- K_sup + 1
     }
     lambda_sup <- fit@lambda1[head(which(K_sup == df), n = 1)]
@@ -230,12 +230,12 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
   }
   ## If the right lambda does not exists, raise the number of shifts
   K_2 <- K
-  while (sum(df == K_2) == 0 && K_2 < 500) {
+  while (!any(df == K_2) && K_2 <= min(dim(Xp))) {
     warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
     K_2 <- K_2 + 1
   }
   ## If could not find the right lambda, do a default initialization
-  if (sum(df == K_2) == 0) {
+  if (!any(df == K_2)) {
     stop("Lasso Initialisation failed : could not find a satisfying number of shifts.")
   }
   ## Select the row with the right number of coefficients
