@@ -170,7 +170,7 @@ estimateEM <- function(phylo,
     init.selection.strength <- known.selection.strength
   }
   # Always start with some shifts, in case of default initialisation
-  if (missing(edges.init) || is.null(edges.init)){
+  if (!exists("edges.init") || is.null(edges.init)){
     init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list) 
   } else {
     init_edges <- edges.init
@@ -292,7 +292,7 @@ estimateEM <- function(phylo,
   attr(params, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
   ## Number of equivalent solutions
-  clusters <- clusters_from_shifts(phylo, params$shifts$edges)
+  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1) message("There are some equivalent solutions to the solution found.")
   ## Result

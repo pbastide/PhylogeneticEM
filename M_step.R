@@ -148,7 +148,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   obj_funcs <- sapply(methods.segmentation, cond_exp_log_lik)
   best.method.seg <- which.max(obj_funcs)
   ## Take the best method, that provides a parsimonious solution
-  while(!check_parsimony(phylo, segs[[best.method.seg]]$shifts$edges, subtree.list) && 
+  while(!check_parsimony_ism(phylo, segs[[best.method.seg]]$shifts$edges, subtree.list) && 
           any(is.finite(obj_funcs))){
     obj_funcs[best.method.seg] <- -Inf
     best.method.seg <- which.max(obj_funcs)
