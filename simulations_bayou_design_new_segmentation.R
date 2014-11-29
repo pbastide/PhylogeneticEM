@@ -62,7 +62,7 @@ gamma <- (1/(2*alpha_base))*c(0.1, 0.5, 1, 2, 5, 10, 25, 50) # enlevé : 3 (base
 K <- c(1, 5, 7, 8, 10, 11, 13, 20, 50) # enlevé : 9 (base)
 
 ## replication depth (number of replicates per )
-n <- 1:2
+n <- 1:200
 
 ## The combination of simulation parameters
 simparams_alpha <- expand.grid(alpha, gamma_base, K_base, n, "alpha_var")
@@ -298,6 +298,7 @@ estimationfunction_alpha_known <- function(X) {
   X$log_likelihood <- attr(params, "log_likelihood")[1]
   X$number_new_shifts <- results_estim_EM$number_new_shifts
   X$mean_number_new_shifts <- mean(results_estim_EM$number_new_shifts)
+  X$number_equivalent_solutions <- results_estim_EM$number_equivalent_solutions
   return(X)
 }
 
