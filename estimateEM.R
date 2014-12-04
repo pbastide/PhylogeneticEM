@@ -88,10 +88,13 @@ estimateEM <- function(phylo,
                                        var.root = 10^(3),
                                        selection.strength = 10^(3)),
                        var.init.root = 1,
-                       methods.segmentation = c("max_costs_0", "lasso", "same_shifts", "same_shifts_same_values", "best_single_move"), ...){
-  ## Check consistancy
+                       methods.segmentation = c("max_costs_0", "lasso", "same_shifts", "same_shifts_same_values", "best_single_move"),
+                       check.tips.names = FALSE, ...){
+  
+  ## Check consistancy #########################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
-  ## Choose process
+  
+  ## Choose process #########################################
   process <- match.arg(process)
   process <- check.selection.strength(process, known.selection.strength, eps)
   # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
@@ -113,7 +116,8 @@ estimateEM <- function(phylo,
   conditional_expectation_log_likelihood <- switch(process, 
                                                    BM = conditional_expectation_log_likelihood.BM,
                                                    OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))
-  ## init alpha
+
+  ## init alpha #########################################
   method.init.alpha  <- match.arg(method.init.alpha)
   if (!stationnary.root && (method.init.alpha == "estimation")){
     method.init.alpha <- "default"
@@ -133,7 +137,8 @@ estimateEM <- function(phylo,
                                    simple = compute_mean_variance.simple)
   compute_log_likelihood  <- switch(method.variance, 
                                     simple = compute_log_likelihood.simple)
-  ## Iniialization Method
+
+  ## Iniialization Method #########################################
   method.init  <- match.arg(method.init)
   # Lasso initialization for OU only works for stationnary root
   if (!stationnary.root && (method.init == "lasso")){
@@ -145,13 +150,31 @@ estimateEM <- function(phylo,
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
-  ## Fixed Quantities
+
+  ## Fixed Quantities #########################################
   ntaxa <- length(phylo$tip.label)
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
 #  t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
   subtree.list <- enumerate_tips_under_edges(phylo)
   T_tree <- incidence.matrix(phylo)
+
+  ## Check that the vector of data is in the correct order #####################
+  if (length(Y_data) != length(phylo$tip.label)){
+    stop("The data vector has not the same length as the number of taxa.")
+  }
+  if (check.tips.names && (is.null(phylo$tip.label) || is.null(names(Y_data)))){
+    warning("The vector of data and/or the tips of the phylogeny are not named. Could not check for consistency : please make sure that you gave them in the right order.")
+  } else {
+    if (!all(phylo$tip.label == names(Y_data))){
+      correspondances <- match(phylo$tip.label, names(Y_data))
+      if (length(unique(correspondances)) != length(phylo$tip.label)){
+        stop("The names of the data vector do not match the tip labels.")
+      }
+      warning("The vector of data was not sorted in the correct order, when compared with the tips label. I am re-ordering the vector of data.")
+      Y_data <- Y_data[correspondances]
+    }
+  }
   ## Initialization
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
