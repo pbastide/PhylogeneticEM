@@ -38,11 +38,12 @@ load("data/chelonia.rda")
 
 tree <- chelonia$phy
 data <- chelonia$dat
+data <- data[match(tree$tip.label, names(data))]
 
-plot(tree)
+plot(tree, show.tip.label = FALSE)
 
 # EM
-K <- 17
+K <- 16
 time <- system.time(
   results_estim_EM <- estimateEM(phylo = tree, 
                                  Y_data = data, 
