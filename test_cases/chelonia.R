@@ -82,4 +82,8 @@ plot.history.OU.stationnary(params_history = results_estim_EM$params_history,
                             Y_data_ref = data,
                             PATH = PATH,
                             name = paste0("history_plot", name))
+plot.process.actual(Y.state = data,
+                    Z.state = results_estim_EM$ReconstructedNodesStates,
+                    phylo = tree, 
+                    paramsEstimate = results_estim_EM$params)
 save.image(paste0(PATH, "estimation", name, ".RData"))
