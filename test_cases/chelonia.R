@@ -6,12 +6,9 @@
 ## -> Jaffe 2011 (original data)
 
 rm(list=ls())
-WD_mac <- "/Users/paulb/Dropbox/These/Code" # Dossier de travail (Mac)
-WD_unb <- "/home/bastide/Dropbox/These/Code" # Dossier de travail (Ubuntu)
-WD <- ifelse(file.exists(WD_mac), WD_mac, WD_unb)
-setwd(WD)
 
-PATH <- paste(WD, "/Results/Chelonia/", sep="")
+PATH <- "../Results/Chelonia/"
+
 library(ape)
 library(glmnet) # For Lasso initialization
 library(quadrupen)
@@ -23,18 +20,18 @@ library(reshape2) # Plot
 library(grid) # Plot
 library(TreeSim)
 library(plyr)
-source("Phylogenetic-EM/simulate.R")
-source("Phylogenetic-EM/estimateEM.R")
-source("Phylogenetic-EM/init_EM.R")
-source("Phylogenetic-EM/E_step.R")
-source("Phylogenetic-EM/M_step.R")
-source("Phylogenetic-EM/shutoff.R")
-source("Phylogenetic-EM/generic_functions.R")
-source("Phylogenetic-EM/shifts_manipulations.R")
-source("Phylogenetic-EM/plot_functions.R")
-source("Phylogenetic-EM/parsimonyNumber.R")
+source("R/simulate.R")
+source("R/estimateEM.R")
+source("R/init_EM.R")
+source("R/E_step.R")
+source("R/M_step.R")
+source("R/shutoff.R")
+source("R/generic_functions.R")
+source("R/shifts_manipulations.R")
+source("R/plot_functions.R")
+source("R/parsimonyNumber.R")
 
-load("data/chelonia.rda")
+load("../data/chelonia.rda")
 
 tree <- chelonia$phy
 data <- chelonia$dat
