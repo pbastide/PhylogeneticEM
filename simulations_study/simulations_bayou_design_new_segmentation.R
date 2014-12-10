@@ -223,7 +223,7 @@ estimationfunction <- function(X) {
   X$shifts_estim = params$shifts
   X$EM_steps <- attr(results_estim_EM, "Nbr_It")
   X$DV_estim <- attr(results_estim_EM, "Divergence")
-  X$CV_estim <- (attr(results_estim_EM, "Nbr_It") != 500) && !X$DV_estim
+  X$CV_estim <- (attr(results_estim_EM, "Nbr_It") != 1000) && !X$DV_estim
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
   compute.quality <- function(i) {
     res <- 0 + (selected.edges == i)
@@ -284,7 +284,7 @@ estimationfunction_alpha_known <- function(X) {
   X$shifts_estim = params$shifts
   X$EM_steps <- attr(results_estim_EM, "Nbr_It")
   X$DV_estim <- attr(results_estim_EM, "Divergence")
-  X$CV_estim <- (attr(results_estim_EM, "Nbr_It") != 500) && !X$DV_estim
+  X$CV_estim <- (attr(results_estim_EM, "Nbr_It") != 1000) && !X$DV_estim
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
   compute.quality <- function(i) {
     res <- 0 + (selected.edges == i)
