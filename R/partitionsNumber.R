@@ -318,3 +318,11 @@ sum.partitions.cardFixed <- function(A, N, K, p, cardI){
 sum.partitions <- function(A, N, K, p, m) {
   return(sum(sapply(m:p, function(x) sum.partitions.cardFixed(A,N,K,p,x))))
 }
+
+###############################################################################
+## Complexity Break Point
+###############################################################################
+
+complexity_break_point <- function(n){
+  return(floor((10 * n - 13 - sqrt(20 * n^2 - 20 * n + 9)) / 10) + 1)
+}
