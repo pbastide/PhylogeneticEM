@@ -7,7 +7,7 @@
 
 rm(list=ls())
 
-PATH <- "../Results/Chelonia/"
+PATH <- "../Results/Likelihood_Plot/"
 
 reqpckg <- c("ape", "quadrupen", "robustbase")
 
@@ -39,7 +39,6 @@ source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
 
 Ncores <- 3
-Ks <- 1:9
 
 ###################################################
 ## Import or generate data
@@ -67,6 +66,9 @@ alpha <- 3
 
 K_true <- 3
 shifts <- sample_shifts(tree, 18, K_true)
+
+Ks <- 1:21
+data_type <- paste0("random_ntaxa=", ntaxa, "lambda=", lambda)
 
 XX <- simulate(phylo = tree,
                process = "OU",
@@ -159,7 +161,7 @@ estimations <- foreach(i = Ks, .packages = reqpckg) %dopar%
 }
 stopCluster(cl)
 
-save.image(paste0(PATH, "estimation_K_in_", paste(Ks, collapse = "_"), ".RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_in_", paste(Ks, collapse = "_"), ".RData"))
 
 ####################################################
 ## Exploitation for likelihood plot
@@ -183,8 +185,9 @@ model_complexity <- sapply(Ks, function(z) extract.partitionsNumber(partitionsNu
 df[["model_complexity"]] <- model_complexity
 
 ## Plot Likelihood
-p <- ggplot(df , aes(x = model_complexity, y = log_likelihood))
+p <- ggplot(df, aes(x = model_complexity, y = log_likelihood))
 p <- p + geom_point()
+p <- p + geom_vline(x_intercept = K_true)
 p <- p + labs(x = "Model Complexity",
               y = "Log Likelihood")
 p <- p + theme_bw()
@@ -195,4 +198,17 @@ p <- p + theme(axis.text = element_text(size = 12),
 )
 p
 
-save.image(paste0(PATH, "estimation_K_in_", paste(Ks, collapse = "_"), ".RData"))
+# Model Complexity with K
+p <- ggplot(df , aes(x = K, y = model_complexity))
+p <- p + geom_point()
+p <- p + labs(x = "Number of Shifts",
+              y = "Model Complexity")
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
+save.image(paste0(PATH, data_type, "_estimation_K_in_", paste(Ks, collapse = "_"), ".RData"))
