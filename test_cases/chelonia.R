@@ -114,6 +114,7 @@ rm(results_estim_EM, history, times_shared, t_tree, T_tree, ac_tree, T_tree_ac, 
 ###############################################################################
 ## OUwie
 ###############################################################################
+library(OUwie)
 
 ## Import Data from Jaffe
 vv <- read.csv("../data/Chelonia_habitats_vector.txt", header = FALSE)
