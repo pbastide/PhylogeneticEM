@@ -621,3 +621,16 @@ sample_edges_intervals <- function(tree, K){
   }
   return(sh)
 }
+
+sample_shifts <- function(tree, sigma_delta, K){
+  shifts_edges <- sample_shifts_edges(tree, K)
+  shifts_values <- sample_shifts_values(sigma_delta, K)
+  shifts <- list(edges = shifts_edges, 
+                 values = shifts_values, 
+                 relativeTimes = rep(0, K))
+  return(shifts)
+}
+
+sample_shifts_values <- function(sigma_delta, K){
+  return(rnorm(K, mean=0, sd=sqrt(sigma_delta)))
+}
