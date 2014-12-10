@@ -55,6 +55,7 @@ Ncores <- 3
 # plot(tree, show.tip.label = FALSE)
 
 ## Random data
+set.seed(20141210)
 ntaxa <- 64
 lambda <- 0.1
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
@@ -134,7 +135,7 @@ estimationfunction <- function(K) {
   X$shifts_estim = params$shifts
   X$EM_steps <- attr(results_estim_EM, "Nbr_It")
   X$DV_estim <- attr(results_estim_EM, "Divergence")
-  X$CV_estim <- (attr(results_estim_EM, "Nbr_It") != 500) && !X$DV_estim
+  X$CV_estim <- (attr(results_estim_EM, "Nbr_It") != 1000) && !X$DV_estim
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
   compute.quality <- function(i) {
     res <- 0 + (selected.edges == i)
@@ -203,6 +204,75 @@ p <- ggplot(df , aes(x = K, y = model_complexity))
 p <- p + geom_point()
 p <- p + labs(x = "Number of Shifts",
               y = "Model Complexity")
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
+# Estimations of alpha with K
+p <- ggplot(df , aes(x = K, y = alpha_estim))
+p <- p + geom_point()
+p <- p + geom_hline(yintercept = alpha)
+p <- p + labs(x = "Number of Shifts",
+              y = "Estimated Selection Strength")
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
+# Estimations of gamma with K
+p <- ggplot(df , aes(x = K, y = gamma_estim))
+p <- p + geom_point()
+p <- p + geom_hline(yintercept = gamma)
+p <- p + labs(x = "Number of Shifts",
+              y = "Estimated Selection Strength")
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
+# Estimations of beta_0 with K
+p <- ggplot(df , aes(x = K, y = beta_0_estim))
+p <- p + geom_point()
+p <- p + geom_hline(yintercept = beta_0)
+p <- p + labs(x = "Number of Shifts",
+              y = "Estimated Selection Strength")
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
+# Nbr of EM steps with K
+p <- ggplot(df , aes(x = K, y = EM_steps))
+p <- p + geom_point()
+p <- p + geom_hline(yintercept = 1000)
+p <- p + labs(x = "Number of Shifts",
+              y = "Estimated Selection Strength")
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
+# Nbr of equivalent solutions with K
+p <- ggplot(df , aes(x = K, y = number_equivalent_solutions))
+p <- p + geom_point()
+p <- p + labs(x = "Number of Shifts",
+              y = "Estimated Selection Strength")
 p <- p + theme_bw()
 p <- p + theme(axis.text = element_text(size = 12),
                strip.text = element_text(size = 12)
