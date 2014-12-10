@@ -1,9 +1,5 @@
 ##########
-## Test Case : Chelonian carapace evolution.
-## Used in :
-## - Uyeda 2014
-## - Eastman 2011 (link to data : https://github.com/eastman/auteur/tree/master/auteur/data)
-## -> Jaffe 2011 (original data)
+## Test Case : Varying K in the inference.
 
 rm(list=ls())
 
