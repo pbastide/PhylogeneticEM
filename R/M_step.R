@@ -625,14 +625,19 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, ...){
   ## Computation of answer matrix D : already done by now.
   ## Segmentation per se
   # Lasso regression
-  fit <- lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes)
-  # Define shifts
-  shifts <- fit$shifts.gauss
-  # Define mu = beta_0
-  beta_0 <- fit$E0.gauss
-  # Compute new costs
-  costs <- fit$residuals^2
-  return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
+  fit <- try(lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes))
+  if (inherits(fit, "try-error")) {
+    warning("At M step, Lasso regression failed.")
+    return(list(beta_0 = 0, shifts = NULL, costs = Inf))
+  } else {
+    # Define shifts
+    shifts <- fit$shifts.gauss
+    # Define mu = beta_0
+    beta_0 <- fit$E0.gauss
+    # Compute new costs
+    costs <- fit$residuals^2
+    return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
+  }
 }
 
 compute_regression_matrices <- function(phylo, conditional_law_X, selection.strength, ...){
