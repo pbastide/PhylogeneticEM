@@ -41,50 +41,50 @@ Ncores <- 3
 ###################################################
 
 ## Import data set form package geiger
-# library(geiger)
-# data(chelonia)
-# 
-# tree <- chelonia$phy
-# data <- chelonia$dat
-# data <- data[match(tree$tip.label, names(data))]
-# 
-# plot(tree, show.tip.label = FALSE)
-# 
-# Ks <- 42:63
-# data_type <- "chelonia"
-# ntaxa <- length(data)
-# K_true <- 16
+library(geiger)
+data(chelonia)
 
-## Random data
-set.seed(20141211)
-ntaxa <- 64
-lambda <- 0.1
-tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
+tree <- chelonia$phy
+data <- chelonia$dat
+data <- data[match(tree$tip.label, names(data))]
+
 plot(tree, show.tip.label = FALSE)
 
-beta_0 <- 0
-gamma <- 0.1
-alpha <- 3
+Ks <- 1:63
+data_type <- "chelonia"
+ntaxa <- length(data)
+K_true <- 16
 
-K_true <- 10
-shifts <- sample_shifts(tree, 18, K_true)
-
-Ks <- 1:50
-data_type <- paste0("random_ntaxa=", ntaxa, "K_true=", K_true)
-
-XX <- simulate(phylo = tree,
-               process = "OU",
-               root.state = list(random = TRUE,
-                                 stationary.root = TRUE,
-                                 value.root = NA,
-                                 exp.root = beta_0,
-                                 var.root = gamma), 
-               variance = 2*alpha*gamma,
-               shifts = shifts, 
-               selection.strength = alpha, 
-               optimal.value = beta_0)
-
-data = extract.simulate(XX, what="states", where="tips")
+## Random data
+# set.seed(20141211)
+# ntaxa <- 64
+# lambda <- 0.1
+# tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
+# plot(tree, show.tip.label = FALSE)
+# 
+# beta_0 <- 0
+# gamma <- 0.1
+# alpha <- 3
+# 
+# K_true <- 10
+# shifts <- sample_shifts(tree, 18, K_true)
+# 
+# Ks <- 1:50
+# data_type <- paste0("random_ntaxa=", ntaxa, "K_true=", K_true)
+# 
+# XX <- simulate(phylo = tree,
+#                process = "OU",
+#                root.state = list(random = TRUE,
+#                                  stationary.root = TRUE,
+#                                  value.root = NA,
+#                                  exp.root = beta_0,
+#                                  var.root = gamma), 
+#                variance = 2*alpha*gamma,
+#                shifts = shifts, 
+#                selection.strength = alpha, 
+#                optimal.value = beta_0)
+# 
+# data = extract.simulate(XX, what="states", where="tips")
 
 ###############################################################################
 ## EM for several values of K
@@ -166,10 +166,10 @@ stopCluster(cl)
 save.image(paste0(PATH, data_type, "_estimation_K_in_", paste(Ks, collapse = "_"), ".RData"))
 
 ####################################################
-## Exploitation for likelihood plot
+## Arrange Data 
 ####################################################
 
-## Arange Data
+## Arange data
 dd <- do.call(rbind, estimations)
 df <- apply(dd[ , colnames(dd) %in% c("alpha", "gamma", "K", "n",
                                               "grp", "alpha_estim",
@@ -191,7 +191,15 @@ df[["naive_complexity"]] <- naive_complexity
 
 save.image(paste0(PATH, data_type, "_estimation_K_in_", paste(Ks, collapse = "_"), ".RData"))
 
+####################################################
+## Likelihood plots
+####################################################
+
 load(paste0(PATH, data_type, "_estimation_K_in_", paste(Ks, collapse = "_"), ".RData"))
+
+## Find K_select
+c <- 3
+K_select <- which.max(df$log_likelihood - c*df$K - log(df$model_complexity))
 
 ## Plot Likelihood
 p <- ggplot(df, aes(x = K, y = log_likelihood))
@@ -208,9 +216,10 @@ p <- p + theme(axis.text = element_text(size = 12),
 p
 
 ## Plot Likelihood penalty
-p <- ggplot(df, aes(x = K + log(model_complexity), y = log_likelihood))
+p <- ggplot(df, aes(x = c*K + log(model_complexity), y = log_likelihood))
 p <- p + geom_point()
-p <- p + geom_vline(xintercept = K_true + log(model_complexity[K_true]))
+p <- p + geom_vline(xintercept = c*K_true + log(model_complexity[K_true]))
+p <- p + geom_vline(xintercept = c*6 + log(model_complexity[6]), linetype = 2)
 p <- p + labs(x = "Penalty",
               y = "Log Likelihood")
 p <- p + theme_bw()
@@ -222,9 +231,9 @@ p <- p + theme(axis.text = element_text(size = 12),
 p
 
 ## Plot Likelihood penalty naive
-p <- ggplot(df, aes(x = K + log(naive_complexity), y = log_likelihood))
+p <- ggplot(df, aes(x = c*K + log(naive_complexity), y = log_likelihood))
 p <- p + geom_point()
-p <- p + geom_vline(xintercept = K_true + log(naive_complexity[K_true]))
+p <- p + geom_vline(xintercept = c*K_true + log(naive_complexity[K_true]))
 p <- p + labs(x = "Naive Penalty",
               y = "Log Likelihood")
 p <- p + theme_bw()
@@ -263,7 +272,7 @@ p <- p + theme(axis.text = element_text(size = 12),
 p
 
 # Penalty with K
-p <- ggplot(df , aes(x = K, y = penalty))
+p <- ggplot(df , aes(x = K, y = c*K + log(model_complexity)))
 p <- p + geom_point()
 p <- p + labs(x = "Number of Shifts",
               y = "Model Complexity")
@@ -276,7 +285,7 @@ p <- p + theme(axis.text = element_text(size = 12),
 p
 
 # Penalty naive with K
-p <- ggplot(df , aes(x = K, y = penalty_naive))
+p <- ggplot(df , aes(x = K, y = c*K + log(naive_complexity)))
 p <- p + geom_point()
 p <- p + labs(x = "Number of Shifts",
               y = "Model Complexity")
@@ -289,10 +298,11 @@ p <- p + theme(axis.text = element_text(size = 12),
 p
 
 ## Plot Likelihood + penalty
-p <- ggplot(df, aes(x = K, y = -log_likelihood + K + log(model_complexity)))
+p <- ggplot(df, aes(x = K, y = log_likelihood - c*K - log(model_complexity)))
 p <- p + geom_point()
-p <- p + geom_vline(xintercept = -log_likelihood[K_true] + K_true + log(model_complexity[K_true]))
-p <- p + labs(x = "Penalty",
+p <- p + geom_hline(data = df, aes(yintercept = max(log_likelihood - c*K - log(model_complexity))))
+p <- p + geom_vline(xintercept = K_true)
+p <- p + labs(x = "K",
               y = "Log Likelihood")
 p <- p + theme_bw()
 p <- p + theme(axis.text = element_text(size = 12),
@@ -303,9 +313,11 @@ p <- p + theme(axis.text = element_text(size = 12),
 p
 
 # Estimations of alpha with K
-p <- ggplot(df , aes(x = K, y = alpha_estim))
+p <- ggplot(subset(df, K<20) , aes(x = K, y = alpha_estim))
 p <- p + geom_point()
 #p <- p + geom_hline(yintercept = alpha)
+p <- p + geom_vline(xintercept = K_true)
+p <- p + geom_vline(xintercept = K_select, linetype = 2)
 p <- p + labs(x = "Number of Shifts",
               y = "Estimated Selection Strength")
 p <- p + theme_bw()
@@ -320,6 +332,8 @@ p
 p <- ggplot(df , aes(x = K, y = gamma_estim))
 p <- p + geom_point()
 #p <- p + geom_hline(yintercept = gamma)
+p <- p + geom_vline(xintercept = K_true)
+p <- p + geom_vline(xintercept = K_select, linetype = 2)
 p <- p + labs(x = "Number of Shifts",
               y = "Estimated Root Variance")
 p <- p + theme_bw()
@@ -334,6 +348,8 @@ p
 p <- ggplot(df , aes(x = K, y = beta_0_estim))
 p <- p + geom_point()
 #p <- p + geom_hline(yintercept = beta_0)
+p <- p + geom_vline(xintercept = K_true)
+p <- p + geom_vline(xintercept = K_select, linetype = 2)
 p <- p + labs(x = "Number of Shifts",
               y = "Estimated Root Optimal Value")
 p <- p + theme_bw()
@@ -348,6 +364,8 @@ p
 p <- ggplot(df , aes(x = K, y = EM_steps))
 p <- p + geom_point()
 #p <- p + geom_hline(yintercept = 1000)
+p <- p + geom_vline(xintercept = K_true)
+p <- p + geom_vline(xintercept = K_select, linetype = 2)
 p <- p + labs(x = "Number of Shifts",
               y = "Number of EM steps")
 p <- p + theme_bw()
@@ -359,8 +377,10 @@ p <- p + theme(axis.text = element_text(size = 12),
 p
 
 # Nbr of equivalent solutions with K
-p <- ggplot(df , aes(x = K, y = number_equivalent_solutions))
+p <- ggplot(subset(df, K<20) , aes(x = K, y = number_equivalent_solutions))
 p <- p + geom_point()
+p <- p + geom_vline(xintercept = K_true)
+p <- p + geom_vline(xintercept = K_select, linetype = 2)
 p <- p + labs(x = "Number of Shifts",
               y = "Number of Equivalent Solutions")
 p <- p + theme_bw()
