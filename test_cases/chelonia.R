@@ -72,6 +72,7 @@ levels(colors_regimes) <- 1:length(levels(colors_regimes))
 plot(tree, show.tip.label = FALSE, edge.color = colors_regimes, x.lim = 300)
 tiplabels(frame = "circle", col = colors_habitat, pch = 16, adj = 4)
 legend("topright", legend = levels(chel_df$habitat), col = levels(colors_habitat), pch = 16)
+axisPhylo()
 
 ###############################################################################
 ## EM
@@ -209,6 +210,10 @@ dataWIE$length <- log(dataWIE$length)
 res_OUwie <- OUwie(phy = treeWIE,
                    data = dataWIE,
                    model = "OUM")
+
+res_OUwie_BM <- OUwie(phy = treeWIE,
+                   data = dataWIE,
+                   model = "BM1")
 
 save.image(paste0(PATH, "estimation_OUwie", ".RData"))
 rm(vv, treeWIE, dataWIE, res_OUwie)
