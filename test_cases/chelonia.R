@@ -218,6 +218,43 @@ res_OUwie_BM <- OUwie(phy = treeWIE,
 save.image(paste0(PATH, "estimation_OUwie", ".RData"))
 rm(vv, treeWIE, dataWIE, res_OUwie)
 
+## Equivalent solutions
+times_shared <- compute_times_ca(tree)
+t_tree <-  min(node.depth.edgelength(tree)[1:ntaxa])
+T_tree <- incidence.matrix(tree)
+ac_tree <- incidence_matrix_actualization_factors(tree = tree, 
+                                                  selection.strength = res_OUwie$solution[1,1],
+                                                  times_shared = times_shared)
+T_tree_ac <- T_tree * ac_tree
+
+betas_wie <- res_OUwie$theta[,1]
+names(betas_wie) <- colnames(res_OUwie$solution)
+betas_wie <- unname(betas_wie[ParSols[1,]])
+shifts_wie <- compute_shifts_from_betas(phylo = tree, betas = betas_wie)
+#shifts_wie_all_edges <- apply(ParSols, 1, function(z) allocate_shifts_from_regimes(phylo = tree, regimes = z))
+
+eq_shifts_edges_wie <- equivalent_shifts_edges(tree, 
+                                               shifts_wie$edges)
+eq_shifts_values_wie <- equivalent_shifts_values(tree,
+                                                 shifts = shifts_wie,
+                                                 beta_0 = betas_wie[length(tree$tip.label)+1],
+                                                 eq_shifts_edges = eq_shifts_edges_wie,
+                                                 T_tree_ac = T_tree_ac)
+
+fun <- function(edges, values){
+  return(list(edges = edges,
+              values = values,
+              relativeTimes = rep(0, length(values))))
+}
+
+shifts_eq <- mapply(fun, alply(eq_shifts_edges_wie, 2), alply(eq_shifts_values_wie$shifts_values, 2), SIMPLIFY = FALSE)
+
+betas_eq <- mapply( function(beta_0, shifts) compute_betas(tree, beta_0, shifts), as.list(eq_shifts_values_wie$betas_0), shifts_eq)
+
+plot_equivalent_shifts.actual(tree, shifts_wie_all_edges, eq_shifts_values_wie, use.edge.length = FALSE, adj = 0)
+
+save.image(paste0(PATH, "estimation_OUwie", ".RData"))
+
 ###############################################################################
 ## Summary
 ###############################################################################

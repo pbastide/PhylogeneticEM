@@ -55,11 +55,20 @@ plot(tree, type="cladogram", use.edge.length=FALSE, show.tip.label=FALSE)
 ########################
 rm(list=ls())
 setwd("/Users/paulb/Dropbox/These/Code") # Dossier de travail (Mac)
-#setwd("/home/bastide/Dropbox/These/Code") # Dossier de travail (Ubuntu)
+setwd("/home/bastide/Dropbox/These/Code/Phylogenetic-EM") # Dossier de travail (Ubuntu)
 library(ape)
 library(phytools)
-source("R/functions.R")
-load("data/Several_Trees.RData")
+source("R/simulate.R")
+source("R/estimateEM.R")
+source("R/init_EM.R")
+source("R/E_step.R")
+source("R/M_step.R")
+source("R/shutoff.R")
+source("R/generic_functions.R")
+source("R/shifts_manipulations.R")
+source("R/plot_functions.R")
+source("R/parsimonyNumber.R")
+load("../data/Several_Trees.RData")
 
 tree <- read.tree(text="(((E:3,D:3):1,C:4):4,(B:2,A:2):6):0.5;");
 plot(tree);
