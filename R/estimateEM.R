@@ -192,9 +192,14 @@ estimateEM <- function(phylo,
   } else {
     init.selection.strength <- known.selection.strength
   }
-  # Always start with some shifts, in case of default initialisation
+  # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
   if (!exists("edges.init") || is.null(edges.init)){
-    init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list) 
+    if (nbr_of_shifts != 0){
+      init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
+    }
+    else {
+      init_edges <- NULL
+    }
   } else {
     init_edges <- edges.init
   }
