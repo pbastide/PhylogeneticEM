@@ -176,8 +176,12 @@ estimationfunction_alpha_known <- function(X, K_t) {
     res <- 0 + (selected.edges == i)
     return(mean(colSums(res)))
   }
-  edge.quality <- unlist(lapply(params$shifts$edges, compute.quality))
-  names(edge.quality) <- params$shifts$edges
+  if (K_t != 0){
+    edge.quality <- unlist(lapply(params$shifts$edges, compute.quality))
+    names(edge.quality) <- params$shifts$edges
+  } else {
+    edge.quality <- NA
+  }
   X$edge.quality <- edge.quality
   X$start <- results_estim_EM$params_history["0"]
   X$beta_0_estim <- params$root.state$exp.root
