@@ -229,6 +229,34 @@ compute_mean_variance.simple <- function (phylo, times_shared, distances_phylo, 
 #####################################################################
 
 ##
+#' @title Squared Mahalanobis Distance
+#'
+#' @description
+#' \code{compute_mahalanobis_distance.simple} computes the squared mahalanobis distance 
+#' between the data and mean at tips  of the data in the simple case where the inverse
+#' of the variance matrix is given.
+#'
+#' @details
+#' This function takes parameters sim and Sigma_YY_inv from  
+#' \code{compute_mean_variance.simple}. It uses function \code{extract.simulate}
+#' to extract the needed quantities from these objects.
+#'
+#' @param phylo Input tree.
+#' @param Y_data : vector indicating the data at the tips.
+#' @param sim (list) : result of function \code{simulate}.
+#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
+#' 
+#' @return squared Mahalanobis distance between data and mean at the tips.
+##
+compute_mahalanobis_distance.simple <- function(phylo, Y_data, sim, Sigma_YY_inv){
+  ntaxa <- length(phylo$tip.label)
+  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data-m_Y)
+  return(MD)
+}
+
+
+##
 #' @title Log Likelihood
 #'
 #' @description

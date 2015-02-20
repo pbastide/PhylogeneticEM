@@ -137,6 +137,8 @@ estimateEM <- function(phylo,
                                    simple = compute_mean_variance.simple)
   compute_log_likelihood  <- switch(method.variance, 
                                     simple = compute_log_likelihood.simple)
+  compute_mahalanobis_distance  <- switch(method.variance, 
+                                          simple = compute_mahalanobis_distance.simple)
 
   ## Iniialization Method #########################################
   method.init  <- match.arg(method.init)
@@ -319,6 +321,12 @@ estimateEM <- function(phylo,
                                            Sigma_YY_inv = moments$Sigma_YY_inv)
   attr(params, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
+  ## Compute Mahalanobis norm between data and mean at tips
+  maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
+                                                 Y_data = Y_data,
+                                                 sim = moments$sim,
+                                                 Sigma_YY_inv = moments$Sigma_YY_inv)
+  attr(params, "mahalanobis_distance_data_mean") <- maha_data_mean
   ## Number of equivalent solutions
   clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
@@ -333,6 +341,7 @@ estimateEM <- function(phylo,
                  number_equivalent_solutions = Neq)
   #                  CLL_history = CLL_history
   
+  ## Handle convergence
   attr(result, "Nbr_It") <- Nbr_It
   attr(result, "Divergence") <- !is.in.ranges.params(result$params, min=min_params, max=max_params) # TRUE if has diverged
   if (Nbr_It == Nbr_It_Max) warning(paste("The maximum number of iterations (Nbr_It_Max = ",Nbr_It_Max,") was reached.",sep=""))
