@@ -96,7 +96,7 @@ estimateEM <- function(phylo,
   
   ## Choose process #########################################
   process <- match.arg(process)
-  process <- check.selection.strength(process, known.selection.strength, eps)
+  if (alpha_known) process <- check.selection.strength(process, known.selection.strength, eps)
   # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
