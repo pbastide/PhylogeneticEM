@@ -41,19 +41,22 @@ Ncores <- 3
 ###################################################
 
 ## Import data set form package geiger
-# library(geiger)
-# data(chelonia)
-# 
-# tree <- chelonia$phy
-# data <- chelonia$dat
-# data <- data[match(tree$tip.label, names(data))]
-# 
-# plot(tree, show.tip.label = FALSE)
-# 
-# Ks <- 1:63
-# data_type <- "chelonia"
-# ntaxa <- length(data)
-# K_true <- 16
+library(geiger)
+data(chelonia)
+
+tree <- chelonia$phy
+data <- chelonia$dat
+data <- data[match(tree$tip.label, names(data))]
+
+plot(tree, show.tip.label = FALSE)
+
+Ks <- 0:30
+data_type <- "chelonia"
+ntaxa <- length(data)
+K_true <- 16
+
+#alpha <- 0.15 # Pick a "reasonable" alpha
+#data_type <- paste0(data_type, "_alpha=", alpha)
 
 ## Random data
 # set.seed(20141211)
@@ -125,48 +128,48 @@ Ncores <- 3
 #                     paramsEstimate = list(shifts = shifts, optimal.value = beta_0))
 
 ## Easy data big tree
-set.seed(20141211)
-ntaxa <- 256
-lambda <- 0.1
-tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
-plot(tree, show.tip.label = FALSE); edgelabels();
-
-beta_0 <- 0
-gamma <- 0.1
-alpha <- 3
-
-K_true <- 5
-shifts <- list(edges = c(396, 314, 217, 80, 19),
-               values = c(2, -2, 2, -2, 5),
-               relativeTimes = rep(0, K_true))
-
-Ks <- 0:35
-data_type <- paste0("easy_ntaxa=", ntaxa, "K_true=", K_true)
-
-XX <- simulate(phylo = tree,
-               process = "OU",
-               root.state = list(random = TRUE,
-                                 stationary.root = TRUE,
-                                 value.root = NA,
-                                 exp.root = beta_0,
-                                 var.root = gamma), 
-               variance = 2*alpha*gamma,
-               shifts = shifts, 
-               selection.strength = alpha, 
-               optimal.value = beta_0)
-
-data = extract.simulate(XX, what="states", where="tips")
-
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
-                    Z.state = extract.simulate(XX, what="states", where="nodes"),
-                    phylo = tree, 
-                    paramsEstimate = list(shifts = shifts, optimal.value = beta_0))
+# set.seed(20141211)
+# ntaxa <- 256
+# lambda <- 0.1
+# tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
+# plot(tree, show.tip.label = FALSE); edgelabels();
+# 
+# beta_0 <- 0
+# gamma <- 0.1
+# alpha <- 3
+# 
+# K_true <- 5
+# shifts <- list(edges = c(396, 314, 217, 80, 19),
+#                values = c(2, -2, 2, -2, 5),
+#                relativeTimes = rep(0, K_true))
+# 
+# Ks <- 0:35
+# data_type <- paste0("easy_ntaxa=", ntaxa, "K_true=", K_true)
+# 
+# XX <- simulate(phylo = tree,
+#                process = "OU",
+#                root.state = list(random = TRUE,
+#                                  stationary.root = TRUE,
+#                                  value.root = NA,
+#                                  exp.root = beta_0,
+#                                  var.root = gamma), 
+#                variance = 2*alpha*gamma,
+#                shifts = shifts, 
+#                selection.strength = alpha, 
+#                optimal.value = beta_0)
+# 
+# data = extract.simulate(XX, what="states", where="tips")
+# 
+# plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+#                     Z.state = extract.simulate(XX, what="states", where="nodes"),
+#                     phylo = tree, 
+#                     paramsEstimate = list(shifts = shifts, optimal.value = beta_0))
 
 ###############################################################################
 ## EM for several values of K
 ##############################################################################
 
-estimationfunction_alpha_known <- function(K_t) {
+estimationfunction <- function(K_t, alpha_known = FALSE, alpha = 0) {
   ## If an estimation fails, catch error with "try" and try again
   results_estim_EM <- estimateEM(phylo=tree, 
                                  Y_data = data, 
@@ -181,7 +184,7 @@ estimationfunction_alpha_known <- function(K_t) {
                                  method.init.alpha = "estimation",
                                  Nbr_It_Max = 1000, 
                                  nbr_of_shifts = K_t, 
-                                 alpha_known = TRUE, ##
+                                 alpha_known = alpha_known, ##
                                  known.selection.strength = alpha,
                                  min_params=list(variance = 10^(-4), 
                                                  value.root = -10^(4), 
@@ -232,12 +235,14 @@ estimationfunction_alpha_known <- function(K_t) {
   return(X)
 }
 
+
+
 ## Parallelized estimations
 cl <- makeCluster(Ncores)
 registerDoParallel(cl)
 estimations <- foreach(i = Ks, .packages = reqpckg) %dopar%
 {
-  estimationfunction_alpha_known(i)
+  estimationfunction(i)
 }
 stopCluster(cl)
 
