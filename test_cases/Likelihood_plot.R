@@ -21,6 +21,9 @@ library(doParallel)
 library(foreach)
 # Tree Sim
 library(TreeSim)
+# Model selection
+library(LINselect)
+library(capushe)
 
 source("R/simulate.R")
 source("R/estimateEM.R")
@@ -33,6 +36,7 @@ source("R/shifts_manipulations.R")
 source("R/plot_functions.R")
 source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
+source("R/model_selection")
 
 Ncores <- 3
 
@@ -267,7 +271,7 @@ df <- apply(dd[ , colnames(dd) %in% c("alpha", "gamma", "K_try", "n",
 df <- as.data.frame(df)
 
 ## Normalize mahalanobis distance (stationnary root case)
-df$least_squares <- df$mahalanobis_distance_data_mean*df$gamma_estim
+df$least_squares <- df$mahalanobis_distance_data_mean * df$gamma_estim
 
 ## Model Complexity
 #model_complexity <- sapply(Ks, function(z) extract.partitionsNumber(partitionsNumber(tree, z + 1)))
