@@ -89,7 +89,11 @@ estimateEM <- function(phylo,
                                        selection.strength = 10^(3)),
                        var.init.root = 1,
                        methods.segmentation = c("max_costs_0", "lasso", "same_shifts", "same_shifts_same_values", "best_single_move"),
-                       check.tips.names = FALSE, ...){
+                       check.tips.names = FALSE,
+                       times_shared = NULL, # These can be specified to save time
+                       distances_phylo = NULL, 
+                       subtree.list = NULL,
+                       T_tree = NULL, ...){
   
   ## Check consistancy #########################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
@@ -155,11 +159,10 @@ estimateEM <- function(phylo,
 
   ## Fixed Quantities #########################################
   ntaxa <- length(phylo$tip.label)
-  times_shared <- compute_times_ca(phylo)
-  distances_phylo <- compute_dist_phy(phylo)
-#  t_tree <-  min(node.depth.edgelength(phylo)[1:ntaxa])
-  subtree.list <- enumerate_tips_under_edges(phylo)
-  T_tree <- incidence.matrix(phylo)
+  if (is.null(times_shared)) times_shared <- compute_times_ca(phylo)
+  if (is.null(distances_phylo)) distances_phylo <- compute_dist_phy(phylo)
+  if (is.null(subtree.list)) subtree.list <- enumerate_tips_under_edges(phylo)
+  if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
 
   ## Check that the vector of data is in the correct order #####################
   if (length(Y_data) != length(phylo$tip.label)){
@@ -346,4 +349,210 @@ estimateEM <- function(phylo,
   attr(result, "Divergence") <- !is.in.ranges.params(result$params, min=min_params, max=max_params) # TRUE if has diverged
   if (Nbr_It == Nbr_It_Max) warning(paste("The maximum number of iterations (Nbr_It_Max = ",Nbr_It_Max,") was reached.",sep=""))
   return(result)
+}
+
+##
+#' @title Maximal number of shifts allowed
+#'
+#' @description
+#' \code{compute_K_max} computes the quantity 
+#' min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+#' that is the maximal dimention allowed to get theoretical garenties during
+#' the selection model, when using the procedure defined by Baraud et al (2009)
+#'
+#' @details
+#' See Baraud et al (2009)
+#'
+#' @param ntaxa the number of tips
+#' @param kappa a real strictly bellow 1.
+#' 
+#' @return K_max the maximal number of shifts allowed.
+#'
+##
+compute_K_max <- function(ntaxa, kappa = 0.9){
+  if (kappa >= 1) stop("For K_max computation, one must have kappa < 1")
+  return(min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+}
+
+##
+#' @title Run the EM for several values of K
+#'
+#' @description
+#' \code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
+#' for all values of K between 0 and K_max.
+#'
+#' @details
+#' The EM is fisrt launched for K=0, with alpha and gamma estimated. The
+#' estimated values of alpha, gamma and beta_0 found by this fisrt EM are then
+#' used as initialisation parameters for all the other runs of the EM for other
+#' K.
+#' The EMs are parralelized thanks to packages \code{foreach} and 
+#' \code{doParallel}.
+#' WARNING : this code only work of OU with stationnary root, on an ultrametric
+#' tree.
+#' 
+#'
+#' @param phylo a phylogenetic tree
+#' @param Y_data vector of data at the tips
+#' @param K_max the maximal number of shifts allowed. By default, computed with 
+#' function \code{compute_K_max}.
+#' @param ... other arguments to pass to \coed{estimateEM}.
+#' 
+#' @return summary a data frame with K_max lines, and columns:
+#'    - alpha_estim the estimated selection strength
+#'    - gamma_estim the estimated root variance
+#'    - beta_0_estim the estimated value of root optumum
+#'    - EM_steps number of iterations needed before convergence
+#'    - DV_estim has the EM diverged ?
+#'    - CV_estim has the EM converged ?
+#'    - log_likelihood log likelihood of the data using the estimated parameters
+#'    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+#' and the estimated means at the tips
+#'    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+#' mahalanobis_distance_data_mean * gamma_estim.
+#'    - mean_number_new_shifts the mean number of shifts that changed over the 
+#' iterations of the EM
+#'    - number_equivalent_solutions the number of equivalent solutions to 
+#' the solution found.
+#'    - K_try the number of shifts allowed.
+#'    - complexity the complexity for K_try
+#'    - time the CPU time needed.
+#' @return params a list of infered parameters for each EM.
+#'
+##
+
+estimateEM_several_K.OUsr <- function(phylo, 
+                                 Y_data, 
+                                 K_max = compute_K_max(length(tree$tip.label), 0.9), 
+                                 ...){
+  ## Fixed quantities
+  times_shared <- compute_times_ca(phylo)
+  distances_phylo <- compute_dist_phy(phylo)
+  subtree.list <- enumerate_tips_under_edges(phylo)
+  T_tree <- incidence.matrix(phylo)
+  ## With no shift
+  X_0 <- estimation_wrapper.OUsr(0, 
+                                 phylo = phylo, 
+                                 Y_data = Y_data, 
+                                 times_shared = times_shared, 
+                                 distances_phylo = distances_phylo, 
+                                 T_tree = T_tree, ...)
+  beta_0_noshift  <-  X_0$summary$beta_0_estim
+  gamma_noshift <- X_0$summary$gamma_estim
+  alpha_noshift <- X_0$summary$alpha_estim
+  ## Parallel computation using results as initialization
+  cl <- makeCluster(Ncores)
+  registerDoParallel(cl)
+  reqpckg <- c("ape", "quadrupen", "robustbase")
+  estimations <- foreach(i = 1:K_max, 
+                         .packages = reqpckg, .export=ls(envir=globalenv())) %dopar% {
+    estimation_wrapper.OUsr(i, phylo = phylo, Y_data = Y_data,
+                            method.init.alpha = "default",
+                            exp.root.init = beta_0_noshift,
+                            var.init.root = gamma_noshift,
+                            init.selection.strength = alpha_noshift, ...)
+  }
+  stopCluster(cl)
+  ## Join 0 and rest together
+  names(estimations) <- 1:K_max
+  X_0_bis <- list('0' = X_0)
+  estimations <- c(X_0_bis, estimations)
+  dd <- do.call(rbind, estimations)
+  df <- do.call(rbind, dd[ , "summary"])
+  df <- as.data.frame(df)
+  return(list(summary = df, 
+              parameters = dd[, "params"]))
+}
+
+##
+#' @title A wrapper for estimateEM for OU with stationnary root.
+#'
+#' @description
+#' \code{estimation_wrapper.OUsr} call estimateEM with a set of parameters well
+#' suited for the OU with stationnary root.
+#' It is used in \code{estimateEM_several_K.OUsr}.
+#'
+#' @param K_t the number of shifts allowed
+#' @param phylo a phylogenetic tree
+#' @param Y_data vector of data at the tips
+#' @param alpha_known a boolean
+#' @param alpha the value of alpha if known
+#' @param method.init.alpha the initialization method for alpha
+#' @param ... other arguments to pass to \coed{estimateEM}.
+#' 
+#' @return summary a data frame with columns:
+#'    - alpha_estim the estimated selection strength
+#'    - gamma_estim the estimated root variance
+#'    - beta_0_estim the estimated value of root optumum
+#'    - EM_steps number of iterations needed before convergence
+#'    - DV_estim has the EM diverged ?
+#'    - CV_estim has the EM converged ?
+#'    - log_likelihood log likelihood of the data using the estimated parameters
+#'    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+#' and the estimated means at the tips
+#'    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+#' mahalanobis_distance_data_mean * gamma_estim.
+#'    - mean_number_new_shifts the mean number of shifts that changed over the 
+#' iterations of the EM
+#'    - number_equivalent_solutions the number of equivalent solutions to 
+#' the solution found.
+#'    - K_try the number of shifts allowed.
+#'    - complexity the complexity for K_try
+#'    - time the CPU time needed.
+#' @return params a list of infered parameters
+#' @return params_init a list of initial parameters
+#' @return raw_results complete result of \code{estimateEM}
+#'
+##
+
+estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alpha = 0, method.init.alpha = "estimation", ...) {
+  time <- system.time(
+    results_estim_EM <- estimateEM(phylo = phylo, 
+                                   Y_data = Y_data, 
+                                   tol = list(variance=10^(-4), 
+                                              value.root=10^(-4), 
+                                              exp.root=10^(-4), 
+                                              var.root=10^(-4), 
+                                              selection.strength=10^(-3)), 
+                                   process = "OU", 
+                                   method.variance = "simple", 
+                                   method.init = "lasso",
+                                   method.init.alpha = method.init.alpha,
+                                   Nbr_It_Max = 1000, 
+                                   nbr_of_shifts = K_t, 
+                                   alpha_known = alpha_known, ##
+                                   known.selection.strength = alpha,
+                                   min_params=list(variance = 10^(-4), 
+                                                   value.root = -10^(4), 
+                                                   exp.root = -10^(4), 
+                                                   var.root = 10^(-4),
+                                                   selection.strength = 10^(-4)),
+                                   max_params=list(variance = 10^(4), 
+                                                   value.root = 10^(4), 
+                                                   exp.root = 10^(4), 
+                                                   var.root = 10^(4),
+                                                   selection.strength = 10^(4)),
+                                   methods.segmentation = c("lasso", "best_single_move"), ...)
+  )
+  params <- results_estim_EM$params
+  X <- NULL
+  X$params = params
+  X$params_init <- results_estim_EM$params_history['0']$'0'
+  X$raw_results <- results_estim_EM
+  X$summary <- data.frame("alpha_estim" = params$selection.strength,
+                          "gamma_estim" = params$root.state$var.root,
+                          "beta_0_estim" = params$root.state$exp.root,
+                          "EM_steps" = attr(results_estim_EM, "Nbr_It"),
+                          "DV_estim" = attr(results_estim_EM, "Divergence"),
+                          "CV_estim" = (attr(results_estim_EM, "Nbr_It") != 1000) && !attr(results_estim_EM, "Divergence"),
+                          "log_likelihood" = attr(params, "log_likelihood")[1],
+                          "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
+                          "least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
+                          "mean_number_new_shifts" = mean(results_estim_EM$number_new_shifts),
+                          "number_equivalent_solutions" = results_estim_EM$number_equivalent_solutions,
+                          "K_try" = K_t,
+                          "complexity" = choose(2*ntaxa-2-K_t, K_t),
+                          "time" = time["elapsed"]
+  )
+  return(X)
 }
