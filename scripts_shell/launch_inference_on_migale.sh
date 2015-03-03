@@ -3,7 +3,7 @@
 ## For qsub using SGE on migale with 3 threads reserved
 CMD="qsub -S /bin/bash -q long.q -cwd -V -M paul.bastide@agroparistech.fr -m ae -pe thread 3"
 
-rscript="../simulations_study/dummy.R"
+rscript="../simulations_study/2015-03-03/dummy.R"
 for i in {1..10}
 do
     SCRIPT="inference_script.sh"
