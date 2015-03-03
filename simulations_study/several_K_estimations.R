@@ -13,11 +13,12 @@ Ncores <- 3
 
 ## Define date-stamp for file names
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
+datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_day <- format(Sys.time(), "%Y-%m-%d")
+datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 savedatafile = "../Results/Simulations_Several_K/several_K_simlist"
-load(paste0(savedatafile, "_", datestamp_day, ".RData"))
+load(paste0(savedatafile, "_", datestamp_data, ".RData"))
 
 ## Select data (according to the value of n)
 n <- n
@@ -82,4 +83,4 @@ time_alpha_known <- system.time(
 
 # Stop the cluster (parallel)
 stopCluster(cl)
-save.image(paste0(savedatafile_sim, "_alpha_known-", datestamp, ".RData"))
+save.image(paste0(savedatafile_sim, "_alpha_known-", datestamp_day, "_nrange=", n.range, ".RData"))

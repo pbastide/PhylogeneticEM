@@ -85,9 +85,7 @@ for (nta in ntaxa){
 
 
 ## Define date-stamp for file names
-datestamp_day <- format(Sys.time(), "%Y-%m-%d")
-print(datestamp)
-
+datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 
 ## simulation function 
 # Return list of parameters + list of shifts + data at tips
@@ -145,4 +143,4 @@ simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
 
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
 
-save.image(paste0(savedatafile, "_", datestamp_day, ".RData"))
+save.image(paste0(savedatafile, "_", datestamp_data, ".RData"))
