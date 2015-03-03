@@ -26,7 +26,7 @@ replace_n <- function(i, filename = file) {
     data.i <- c(data, n.range)
     ## reorder lines of r script
     data.i <- data.i[c(1:line2change, length(data.i),
-                       seq_along(data.i[-c(1:line2change, length(data.i))]))]
+                       seq_along(data.i)[-c(1:line2change, length(data.i))])]
     write(data.i, filename)
 }
 
