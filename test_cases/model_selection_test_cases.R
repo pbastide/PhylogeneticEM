@@ -56,9 +56,11 @@ Ncores <- 3
 # data_type <- "chelonia"
 # ntaxa <- length(data)
 # K_true <- 16
-
-#alpha <- 0.15 # Pick a "reasonable" alpha
-#data_type <- paste0(data_type, "_alpha=", alpha)
+# 
+# alpha <- 0.038 # Pick a "reasonable" alpha
+# # alpha <- 0.03204742 # K = 6 Baraud et al
+# # alpha <- 0.04470039 # K = 8 Birgé Massart
+# data_type <- paste0(data_type, "_alpha=", alpha)
 
 ## Random data
 # set.seed(20141211)
@@ -101,6 +103,7 @@ plot(tree, show.tip.label = FALSE); edgelabels();
 beta_0 <- 0
 gamma <- 0.1
 alpha <- 3
+alpha_try <- 100 # 0.1 1 2 4
 
 K_true <- 5
 shifts <- list(edges = c(61, 96, 87, 11, 30),
@@ -108,7 +111,7 @@ shifts <- list(edges = c(61, 96, 87, 11, 30),
                relativeTimes = rep(0, K_true))
 
 K_max <- 30
-data_type <- paste0("easy_ntaxa=", ntaxa, "_K_true=", K_true)
+data_type <- paste0("easy_ntaxa=", ntaxa, "_K_true=", K_true, "_alpha_try=",alpha_try)
 
 XX <- simulate(phylo = tree,
                process = "OU",
@@ -175,7 +178,7 @@ estimations <- estimateEM_several_K.OUsr(phylo = tree,
                                          Y_data = data, 
                                          K_max = K_max,
                                          alpha_known = TRUE,
-                                         alpha = alpha)
+                                         alpha = alpha_try)
 
 save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, ".RData"))
 
@@ -239,7 +242,7 @@ p <- p + geom_point(data = crits_min, aes(x = K_try, y = criteria, size = 5))
 p <- p + labs(x = "K",
               y = "Penalized Least Squares")
 p <- p + scale_size(name = "", labels = "Min")
-p <- p + scale_x_continuous(breaks = c(0, 5, 9, 10, 20, 30))
+p <- p + scale_x_continuous(breaks = c(0, 5, 10, 13, 20, 30))
 p <- p + theme_bw()
 p <- p + theme(axis.text = element_text(size = 12),
                strip.text = element_text(size = 12)
