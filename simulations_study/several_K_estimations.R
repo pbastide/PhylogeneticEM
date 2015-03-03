@@ -75,7 +75,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(
-  simestimations_alpha_known <- foreach(i = simlist[1:3], .packages = reqpckg) %dopar%
+  simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
 {
   estimations_several_K_alpha_known(i)
 }
