@@ -556,6 +556,8 @@ sample_shifts_edges <- function(tree, K,
                                 part.list = enumerate_tips_under_edges(tree)){
   Nbranch <- nrow(tree$edge)
   ntaxa <- length(tree$tip.label)
+  ## If no shift at all, abort
+  if (K == 0) stop("There are no shifts to sample !")
   ## If too many shifts, abort.
   if (K > ntaxa) stop("A parcimonious repartition of the shifts cannot have more shifts than tips !")
   ## Else, try several times to generate parsimonious shifts.
@@ -623,6 +625,7 @@ sample_edges_intervals <- function(tree, K){
 }
 
 sample_shifts <- function(tree, sigma_delta, K){
+  if (K == 0) return(NULL)   ## If no shift, return NULL
   shifts_edges <- sample_shifts_edges(tree, K)
   shifts_values <- sample_shifts_values(sigma_delta, K)
   shifts <- list(edges = shifts_edges, 
