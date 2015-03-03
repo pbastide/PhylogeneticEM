@@ -130,7 +130,7 @@ datasetsim <- function(alpha, gamma, K, ntaxa, n, grp) {
 set.seed(18051804)
 
 ## Sequencial simulations (for reproductability)
-simlist <- foreach(i = 1:nrow(simparams), .packages = reqpckg[1]) %do% {
+simlist <- foreach(i = 1:nrow(simparams)) %do% {
   alpha <- simparams[i, "alpha"]
   gamma <- simparams[i, "gamma"]
   K <- simparams[i, "K"]

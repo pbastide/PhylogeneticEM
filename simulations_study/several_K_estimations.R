@@ -83,4 +83,4 @@ time_alpha_known <- system.time(
 
 # Stop the cluster (parallel)
 stopCluster(cl)
-save.image(paste0(savedatafile_sim, "_alpha_known-", datestamp_day, "_nrange=", n.range, ".RData"))
+save.image(paste0(savedatafile, "_alpha_known-", datestamp_day, "_nrange=", paste(n.range, collapse = "-"), ".RData"))
