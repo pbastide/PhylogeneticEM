@@ -60,7 +60,7 @@ K <- c(0, 1, 2)#5, 7, 8, 10, 11, 13, 20) # enlevé : 9 (base) et 50 (trop)
 K_try <- 0:5
 
 ## replication depth (number of replicates per )
-n <- 1:2
+n <- 1:200
 
 ## The combination of simulation parameters
 simparams_alpha <- expand.grid(alpha, gamma_base, K_base, n, "alpha_var")
@@ -230,6 +230,11 @@ names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
 ## Register parallel backend for computing
 cl <- makeCluster(Ncores)
 registerDoParallel(cl)
+
+
+n.range <- 1:200
+simulations2keep <- lapply(simlist, function(x) { x$n %in% n.range }, simplify = TRUE)
+simlist <- simlist[simulations2keep]
 
 ## Parallelized estimations
 time_alpha_known <- system.time(simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
