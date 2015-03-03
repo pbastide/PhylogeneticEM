@@ -435,7 +435,8 @@ estimateEM_several_K.OUsr <- function(phylo,
                                  phylo = phylo, 
                                  Y_data = Y_data, 
                                  times_shared = times_shared, 
-                                 distances_phylo = distances_phylo, 
+                                 distances_phylo = distances_phylo,
+                                 subtree.list = subtree.list,
                                  T_tree = T_tree, ...)
   beta_0_noshift  <-  X_0$summary$beta_0_estim
   gamma_noshift <- X_0$summary$gamma_estim
@@ -447,6 +448,10 @@ estimateEM_several_K.OUsr <- function(phylo,
   estimations <- foreach(i = 1:K_max, 
                          .packages = reqpckg, .export=ls(envir=globalenv())) %dopar% {
     estimation_wrapper.OUsr(i, phylo = phylo, Y_data = Y_data,
+                            times_shared = times_shared, 
+                            distances_phylo = distances_phylo,
+                            subtree.list = subtree.list,
+                            T_tree = T_tree,
                             method.init.alpha = "default",
                             exp.root.init = beta_0_noshift,
                             var.init.root = gamma_noshift,
@@ -501,6 +506,8 @@ estimateEM_several_K.OUsr <- function(phylo,
 #'    - time the CPU time needed.
 #' @return params a list of infered parameters
 #' @return params_init a list of initial parameters
+#' @return Zhat the reconstructed node states
+#' @return edge.quality the quality of each selected edge
 #' @return raw_results complete result of \code{estimateEM}
 #'
 ##
@@ -538,7 +545,8 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
   X <- NULL
   X$params = params
   X$params_init <- results_estim_EM$params_history['0']$'0'
-  X$raw_results <- results_estim_EM
+  X$Zhat <- results_estim_EM$ReconstructedNodesStates
+#  X$raw_results <- results_estim_EM
   X$summary <- data.frame("alpha_estim" = params$selection.strength,
                           "gamma_estim" = params$root.state$var.root,
                           "beta_0_estim" = params$root.state$exp.root,
@@ -554,5 +562,23 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
                           "complexity" = choose(2*ntaxa-2-K_t, K_t),
                           "time" = time["elapsed"]
   )
+  ## Compute edge quality
+  extract.edges <- function(x) {
+    z <- unlist(lapply(x, function(y) y$shifts$edges))
+    if (!is.null(z)) z <- matrix(z, nrow = K_t)      
+    return(z)
+  }
+  selected.edges <- extract.edges(results_estim_EM$params_history)
+  compute.quality <- function(i) {
+    res <- 0 + (selected.edges == i)
+    return(mean(colSums(res)))
+  }
+  if (K_t != 0){
+    edge.quality <- unlist(lapply(params$shifts$edges, compute.quality))
+    names(edge.quality) <- params$shifts$edges
+  } else {
+    edge.quality <- NA
+  }
+  X$edge.quality <- edge.quality
   return(X)
 }
