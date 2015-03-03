@@ -13,5 +13,5 @@ do
 
     OUT="inferences_script_${i}.out"
     ERR="inferences_script_${i}.err"
-    echo "$CMD $SCRIPT -o $OUT -e $ERR"
+    $CMD $SCRIPT -o $OUT -e $ERR
 done
