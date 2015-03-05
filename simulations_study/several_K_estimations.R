@@ -20,12 +20,25 @@ datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 savedatafile = "../Results/Simulations_Several_K/several_K_simlist"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
 
+## These values should be erased by further allocations (generate_inference_files)
+n.range <- n
+inference.index <- 0
+
 ## Select data (according to the value of n)
 n <- n
 
 ## Here n.range should be defined by generate_inference_files.R
 simulations2keep <- sapply(simlist, function(x) { x$n %in% n.range }, simplify = TRUE)
 simlist <- simlist[simulations2keep]
+nbrSim <- length(simlist)
+
+# ## Log file
+# logfile <- paste0(savedatafile, "_alpha_known-", datestamp_day, "_", inference.index,"_log.txt")
+# 
+# log <- function(it){
+#   txt <- paste0(Sys.time(), " : on batch ", inference.index, ", iteration ", it, " on ", nbrSim, " completed.")
+#   writeLines(txt, logfile)
+# }
 
 ######################
 ## Estimation Function
@@ -80,7 +93,12 @@ time_alpha_known <- system.time(
   estimations_several_K_alpha_known(i)
 }
 )
-
 # Stop the cluster (parallel)
 stopCluster(cl)
-save.image(paste0(savedatafile, "_alpha_known-", datestamp_day, "_nrange=", paste(n.range, collapse = "-"), ".RData"))
+
+## rename object and save
+assign(paste0("simestimations_alpha_known_", inference.index), 
+       simestimations_alpha_known)
+rm(simestimations_alpha_known)
+
+save.image(paste0(savedatafile, "_alpha_known-", datestamp_day, "_", inference.index, ".RData"))
