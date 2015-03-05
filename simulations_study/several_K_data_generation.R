@@ -119,7 +119,23 @@ datasetsim <- function(alpha, gamma, K, ntaxa, n, grp) {
               Y_data = extract.simulate(XX, what="states", where="tips"),
               Z_data = extract.simulate(XX, what = "states", where = "nodes"),
               m_Y_data = extract.simulate(XX, what="expectations", where="tips"))
-  sim$log_likelihood.true <- log_likelihood.OU(sim$Y_data, tree, params)
+  ## Compute true likelihood and difficulty of the problem
+  # Moments
+  Sigma <- compute_variance_covariance.OU(times_shared = times_shared[[paste0(ntaxa)]], 
+                                       distances_phylo = distances_phylo[[paste0(ntaxa)]],
+                                       params_old = params)
+  Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
+  Sigma_YY_inv <- solve(Sigma_YY)
+  # Difficulty
+  mu_0 <- (sum(Sigma_YY_inv))^(-1) * sum(Sigma_YY_inv%*%sim$m_Y_data)
+  sim$difficulty <- t(sim$m_Y_data - mu_0) %*% Sigma_YY_inv %*% (sim$m_Y_data - mu_0)
+  # Log likelihood
+  sim$log_likelihood.true <- compute_log_likelihood.simple(phylo = tree,
+                                                           Y_data = sim$Y_data,
+                                                           sim = XX,
+                                                           Sigma = Sigma,
+                                                           Sigma_YY_inv = Sigma_YY_inv)
+  
   return(sim)
 }
 

@@ -18,6 +18,7 @@ datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 ## Load simulated data
 datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 savedatafile = "../Results/Simulations_Several_K/several_K_simlist"
+saveresultfile <- "../Results/Simulations_Several_K/several_K_estimations"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
 
 ## These values should be erased by further allocations (generate_inference_files)
@@ -64,11 +65,12 @@ estimations_several_K_alpha_known <- function(X){
   df <- do.call(rbind, dd[ , "summary"])
   df <- as.data.frame(df)
   df$alpha  <- X$alpha
-  df$ gamma  <- X$gamma
+  df$gamma  <- X$gamma
   df$K <- X$K
   df$n <- X$n
   df$grp <- X$grp
   df$log_likelihood_true <- X$log_likelihood.true[1]
+  df$difficulty <- X$difficulty
   ## Results
   X$results_summary <- df
   X$params_estim <- dd[, "params"]
@@ -101,4 +103,4 @@ assign(paste0("simestimations_alpha_known_", inference.index),
        simestimations_alpha_known)
 rm(simestimations_alpha_known)
 
-save.image(paste0(savedatafile, "_alpha_known-", datestamp_day, "_", inference.index, ".RData"))
+save.image(paste0(saveresultfile, "_alpha_known-", datestamp_day, "_", inference.index, ".RData"))
