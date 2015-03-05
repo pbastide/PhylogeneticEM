@@ -29,10 +29,11 @@ replace_n <- function(i, filename = file) {
     range <- nchunks[[i]]
     n.range <- paste0("n.range <- c(",
                       paste0(range, collapse = ", "), ")")
-    data.i <- c(data, n.range)
+    index <- paste0("inference.index <- ", i)
+    data.i <- c(data, n.range, index)
     ## reorder lines of r script
-    data.i <- data.i[c(1:line2change, length(data.i),
-                       seq_along(data.i)[-c(1:line2change, length(data.i))])]
+    data.i <- data.i[c(1:line2change, length(data.i) - 0:1,
+                       seq_along(data.i)[-c(1:line2change, length(data.i) - 0:1)])]
     write(data.i, filename)
 }
 
