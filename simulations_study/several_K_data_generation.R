@@ -131,13 +131,13 @@ set.seed(18051804)
 
 ## Sequencial simulations (for reproductability)
 simlist <- foreach(i = 1:nrow(simparams)) %do% {
-  alpha <- simparams[i, "alpha"]
-  gamma <- simparams[i, "gamma"]
-  K <- simparams[i, "K"]
-  ntaxa <- simparams[i, "ntaxa"]
-  n <- simparams[i, "n"]
-  grp <- simparams[i, "grp"]
-  sim <- datasetsim(alpha, gamma, K, ntaxa, n, grp)
+  sim <- datasetsim(alpha = simparams[i, "alpha"],
+                    gamma = simparams[i, "gamma"],
+                    K = simparams[i, "K"],
+                    ntaxa = simparams[i, "ntaxa"],
+                    n = simparams[i, "n"],
+                    grp = simparams[i, "grp"])
+  sim$it <- i
   return(sim)
 }
 
