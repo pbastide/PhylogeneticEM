@@ -559,7 +559,7 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
                           "mean_number_new_shifts" = mean(results_estim_EM$number_new_shifts),
                           "number_equivalent_solutions" = results_estim_EM$number_equivalent_solutions,
                           "K_try" = K_t,
-                          "complexity" = choose(2*ntaxa-2-K_t, K_t),
+                          "complexity" = extract.partitionsNumber(partitionsNumber(phylo, K_t + 1)),
                           "time" = time["elapsed"]
   )
   ## Compute edge quality

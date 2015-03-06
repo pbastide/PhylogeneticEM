@@ -68,6 +68,7 @@ estimations_several_K_alpha_known <- function(X){
   df$gamma  <- X$gamma
   df$K <- X$K
   df$n <- X$n
+  df$ntaxa <- X$ntaxa
   df$grp <- X$grp
   df$log_likelihood_true <- X$log_likelihood.true[1]
   df$difficulty <- X$difficulty
