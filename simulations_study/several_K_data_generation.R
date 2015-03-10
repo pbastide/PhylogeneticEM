@@ -24,6 +24,7 @@ source("R/generic_functions.R")
 source("R/shifts_manipulations.R")
 source("R/plot_functions.R")
 source("R/parsimonyNumber.R")
+source("R/partitionsNumber.R")
 
 savedatafile = "../Results/Simulations_Several_K/several_K_simlist"
 
@@ -53,7 +54,7 @@ ntaxa <- c(64, 128, 256)
 K_try <- 0:sqrt(nta)
 
 ## replication depth (number of replicates per )
-n <- 1:2
+n <- 1:20
 
 ## The combination of simulation parameters
 simparams_alpha <- expand.grid(alpha, gamma_base, K_base, ntaxa, n, "alpha_var")
@@ -128,7 +129,7 @@ datasetsim <- function(alpha, gamma, K, ntaxa, n, grp) {
   Sigma_YY_inv <- solve(Sigma_YY)
   # Difficulty
   mu_0 <- (sum(Sigma_YY_inv))^(-1) * sum(Sigma_YY_inv%*%sim$m_Y_data)
-  sim$difficulty <- t(sim$m_Y_data - mu_0) %*% Sigma_YY_inv %*% (sim$m_Y_data - mu_0)
+  sim$difficulty <- as.vector(t(sim$m_Y_data - mu_0) %*% Sigma_YY_inv %*% (sim$m_Y_data - mu_0))
   # Log likelihood
   sim$log_likelihood.true <- compute_log_likelihood.simple(phylo = tree,
                                                            Y_data = sim$Y_data,
