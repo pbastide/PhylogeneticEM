@@ -853,10 +853,11 @@ best_scenario <- function (D, Xp, scenarii, root) {
   # Function to be applyed to each row
   fun <- function(sh_ed){
     fit.lm <- lm.fit(x = Xp[, c(root, sh_ed), drop = FALSE], y = D)
+    squared_res <- residuals(fit.lm)^2
     return(list(shifts_edges = sh_ed,
                 coefs = unname(coef(fit.lm)),
-                costs = residuals(fit.lm)^2,
-                totalCost = sum(residuals(fit.lm)^2)))
+                costs = squared_res,
+                totalCost = sum(squared_res)))
   }
   # Apply to each row and take the minimal total cost
   allSegs <- apply(scenarii, 1, fun)
