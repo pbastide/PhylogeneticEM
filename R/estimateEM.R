@@ -256,6 +256,12 @@ estimateEM <- function(phylo,
                                              Sigma = moments$Sigma,
                                              Sigma_YY_inv = moments$Sigma_YY_inv)
     attr(params_old, "log_likelihood") <- log_likelihood
+    ## Compute Mahalanobis norm between data and mean at tips
+    maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
+                                                   Y_data = Y_data,
+                                                   sim = moments$sim,
+                                                   Sigma_YY_inv = moments$Sigma_YY_inv)
+    attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
     ## E step
     conditional_law_X <- compute_E(phylo = phylo,
                                    Y_data = Y_data,
@@ -542,25 +548,37 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
                                    methods.segmentation = c("lasso", "best_single_move"), ...)
   )
   params <- results_estim_EM$params
+  params_init <- results_estim_EM$params_history['0']$'0'
   X <- NULL
   X$params = params
-  X$params_init <- results_estim_EM$params_history['0']$'0'
+  X$params_init <- params_init
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
 #  X$raw_results <- results_estim_EM
-  X$summary <- data.frame("alpha_estim" = params$selection.strength,
-                          "gamma_estim" = params$root.state$var.root,
-                          "beta_0_estim" = params$root.state$exp.root,
-                          "EM_steps" = attr(results_estim_EM, "Nbr_It"),
-                          "DV_estim" = attr(results_estim_EM, "Divergence"),
-                          "CV_estim" = (attr(results_estim_EM, "Nbr_It") != 1000) && !attr(results_estim_EM, "Divergence"),
-                          "log_likelihood" = attr(params, "log_likelihood")[1],
-                          "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
-                          "least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
-                          "mean_number_new_shifts" = mean(results_estim_EM$number_new_shifts),
-                          "number_equivalent_solutions" = results_estim_EM$number_equivalent_solutions,
-                          "K_try" = K_t,
-                          "complexity" = extract.partitionsNumber(partitionsNumber(phylo, K_t + 1)),
-                          "time" = time["elapsed"]
+  X$summary <- data.frame(
+    ## Estimated Parameters
+    "alpha_estim" = params$selection.strength,
+    "gamma_estim" = params$root.state$var.root,
+    "beta_0_estim" = params$root.state$exp.root,
+    "log_likelihood" = attr(params, "log_likelihood")[1],
+    "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
+    "least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
+    ## Convergence Monitoring Quantities
+    "EM_steps" = attr(results_estim_EM, "Nbr_It"),
+    "DV_estim" = attr(results_estim_EM, "Divergence"),
+    "CV_estim" = (attr(results_estim_EM, "Nbr_It") != 1000) && !attr(results_estim_EM, "Divergence"),
+    "mean_number_new_shifts" = mean(results_estim_EM$number_new_shifts),
+    ## Other useful informations
+    "number_equivalent_solutions" = results_estim_EM$number_equivalent_solutions,
+    "K_try" = K_t,
+    "complexity" = extract.partitionsNumber(partitionsNumber(phylo, K_t + 1)),
+    "time" = time["elapsed"],
+    ## Initial Estimated Parameters
+     "alpha_estim_init" = params_init$selection.strength,
+     "gamma_estim_init" = params_init$root.state$var.root,
+     "beta_0_estim_init" = params_init$root.state$exp.root,
+     "log_likelihood_init" = attr(params_init, "log_likelihood")[1],
+     "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean"),
+     "least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
   )
   ## Compute edge quality
   extract.edges <- function(x) {
