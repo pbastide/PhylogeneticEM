@@ -139,6 +139,121 @@ plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normali
   }
 }
 
+## add a parameter frac to deplace the position of the label on the edge
+## frac must be a power of 2
+edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
+                             pch = NULL, thermo = NULL, pie = NULL,
+                             piecol = NULL, col = "black", bg = "lightgreen",
+                             horiz = FALSE, width = NULL, height = NULL, 
+                             date = NULL,
+                             beg = FALSE, ...) 
+{
+  lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+  if (missing(edge)) {
+    sel <- 1:dim(lastPP$edge)[1]
+    subedge <- lastPP$edge
+  }
+  else {
+    sel <- edge
+    subedge <- lastPP$edge[sel, , drop = FALSE]
+  }
+  if (lastPP$type == "phylogram") {
+    if (lastPP$direction %in% c("rightwards", "leftwards")) {
+      XX <- lastPP$xx[subedge[, 1]] + lastPP$xx[subedge[, 2]]
+      if (beg) XX <- lastPP$xx[subedge[, 1]]
+      YY <- lastPP$yy[subedge[, 2]]
+    }
+    else {
+      XX <- lastPP$xx[subedge[, 2]]
+      YY <- lastPP$yy[subedge[, 1]] + lastPP$yy[subedge[, 2]]
+      if (beg) YY <- lastPP$yy[subedge[, 1]]
+    }
+  }
+  else {
+    XX <- lastPP$xx[subedge[, 1]] + lastPP$xx[subedge[, 2]]
+    if (beg) XX <- lastPP$xx[subedge[, 1]]
+    YY <- lastPP$yy[subedge[, 1]] + lastPP$yy[subedge[, 2]]
+    if (beg) YY <- lastPP$yy[subedge[, 1]]
+  }
+  if (!is.null(date)) 
+    XX[] <- max(lastPP$xx) - date
+  BOTHlabels(text, sel, XX, YY, adj, frame, pch, thermo, pie, 
+             piecol, col, bg, horiz, width, height, ...)
+}
+
+plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
+                                     adj = 1, bg_shifts = "chocolate4",
+                                     bg_beta_0 = "chocolate4", quant.root = 0.25,
+                                     color_characters = "black",
+                                     color_edges = "black", ...){
+  ntaxa <- length(phylo$tip.label)
+  if (normalize){
+    norm <- max(abs(Y.state))
+  } else {
+    norm <- 1
+  }
+  Y.state <- Y.state / norm
+  unit <- 1/norm
+  ## Plot
+  par(mar = c(0,0,0,0), omi = c(0,0,0,0))
+  # Take care of the root
+  phylo$root.edge <- quantile(phylo$edge.length, quant.root)
+  # Plot tree
+  h_p <- max(node.depth.edgelength(phylo))
+  x.lim.max <- h_p + h_p/5
+  y.lim.min <- -ntaxa/10
+  y.lim.max <- ntaxa + ntaxa/10
+  plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
+       x.lim = c(0, x.lim.max), 
+       y.lim = c(y.lim.min, y.lim.max),
+       edge.color = as.vector(color_edges), ...)
+  # Plot data at tips
+    # length available for character plotting
+  lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+  pos_last_tip <- max(lastPP$xx)
+  available_x <- x.lim.max - pos_last_tip
+  offset <- available_x/8
+  ell <- available_x - offset # lenght for the plot of the character
+  mult <- ell / (max(Y.state) - min(0, min(Y.state)))
+  Y.plot <- mult * Y.state
+  unit <- mult * unit
+  minY <- min(Y.plot)
+  maxY <- max(Y.plot)
+  eccart_g <- -min(minY, 0) + offset
+    # 0 bar
+  segments(pos_last_tip + eccart_g, y.lim.min,
+           pos_last_tip + eccart_g, y.lim.max - ntaxa/10,
+           lty = 3)
+  text(pos_last_tip + eccart_g, y.lim.max - 2*ntaxa/30,
+       "0", cex = lastPP$cex)
+    # characters
+  segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa],
+           pos_last_tip + eccart_g + Y.plot, lastPP$yy[1:ntaxa],
+           col = as.vector(color_characters))
+    # unit length
+  segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
+           pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
+           lwd = 2)
+  text(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
+       "Unit", cex = lastPP$cex,
+       pos = 2)
+  # Plot beta_0
+  nodelabels(text = round(params$optimal.value, 2), 
+             node = ntaxa + 1,
+             bg = bg_beta_0,
+             cex = lastPP$cex,
+             adj = adj)
+  # Plot shifts
+  if ( !is.null(params$shifts$edges) ) {
+    edgelabels_home(text = round(params$shifts$values,2), 
+                    edge = params$shifts$edges, 
+                    bg = bg_shifts,
+                    cex = 8/10*lastPP$cex,
+                    beg = TRUE,
+                    adj = 0)
+  }
+}
+
 save.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
   ## Define File Name
   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
