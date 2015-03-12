@@ -635,5 +635,5 @@ sample_shifts <- function(tree, sigma_delta, K){
 }
 
 sample_shifts_values <- function(sigma_delta, K){
-  return(rnorm(K, mean=0, sd=sqrt(sigma_delta)))
+  return(rnorm(K, mean = 0, sd = sqrt(sigma_delta)))
 }

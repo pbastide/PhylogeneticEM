@@ -74,7 +74,9 @@ subtree.list <- NULL; T_tree <- NULL; K_try <- NULL
 lambda <- 0.1
 for (nta in ntaxa){
   # Generate tree with nta taxa
-  trees[[paste0(nta)]] <- sim.bd.taxa.age(n = nta, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
+  trees[[paste0(nta)]] <- sim.bd.taxa.age(n = nta, numbsim = 1, 
+                                          lambda = lambda, mu = 0,
+                                          age = 1, mrca = TRUE)[[1]]
   # Fixed tree quantities
   times_shared[[paste0(nta)]] <- compute_times_ca(trees[[paste0(nta)]])
   distances_phylo[[paste0(nta)]] <- compute_dist_phy(trees[[paste0(nta)]])
