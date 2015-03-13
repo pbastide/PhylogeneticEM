@@ -127,10 +127,11 @@ XX <- simulate(phylo = tree,
 
 data = extract.simulate(XX, what="states", where="tips")
 
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
-                    Z.state = extract.simulate(XX, what="states", where="nodes"),
+plot.data.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+                    #Z.state = extract.simulate(XX, what="states", where="nodes"),
                     phylo = tree, 
-                    paramsEstimate = list(shifts = shifts, optimal.value = beta_0))
+                    params = list(shifts = shifts, optimal.value = beta_0),
+                    automatic_colors = TRUE)
 
 # ## Easy data big tree
 # set.seed(20141211)

@@ -185,7 +185,8 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
                                      adj = 1, bg_shifts = "chocolate4",
                                      bg_beta_0 = "chocolate4", quant.root = 0.25,
                                      color_characters = "black",
-                                     color_edges = "black", ...){
+                                     color_edges = "black",
+                                     automatic_colors = FALSE, ...){
   ntaxa <- length(phylo$tip.label)
   if (normalize){
     norm <- max(abs(Y.state))
@@ -194,6 +195,20 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
   }
   Y.state <- Y.state / norm
   unit <- 1/norm
+  ## Automatic colors
+  if (automatic_colors){
+    nodes_regimes <- allocate_regimes_from_shifts(phylo,
+                                                  params$shifts$edges)
+    
+    color_characters <- as.factor(nodes_regimes[1:ntaxa])
+    levels(color_characters) <- c("black", 
+                                  rainbow(length(levels(color_characters)) - 1,
+                                          start = 0, v = 0.5))
+    
+    color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
+    levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
+                                                start = 0, v = 0.5))
+  }
   ## Plot
   par(mar = c(0,0,0,0), omi = c(0,0,0,0))
   # Take care of the root
