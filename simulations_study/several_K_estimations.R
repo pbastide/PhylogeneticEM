@@ -77,6 +77,7 @@ estimations_several_K_alpha_known <- function(X){
   X$params_estim <- dd[, "params"]
   X$params_init_estim <- dd[, "params_init"]
   X$Zhat <- dd[, "Zhat"]
+  X$m_Y_estim <- dd[, "m_Y_estim"]
   X$edge.quality <- dd[, "edge.quality"]
   return(X)
 }

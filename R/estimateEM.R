@@ -336,13 +336,16 @@ estimateEM <- function(phylo,
                                                  sim = moments$sim,
                                                  Sigma_YY_inv = moments$Sigma_YY_inv)
   attr(params, "mahalanobis_distance_data_mean") <- maha_data_mean
+  ## Mean at tips with estimated parameters
+  m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")
   ## Number of equivalent solutions
   clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1) message("There are some equivalent solutions to the solution found.")
   ## Result
   result <- list(params = params, 
-                 ReconstructedNodesStates = conditional_law_X$expectations[(ntaxa+1):length(conditional_law_X$expectations)], 
+                 ReconstructedNodesStates = conditional_law_X$expectations[(ntaxa+1):length(conditional_law_X$expectations)],
+                 ReconstructedTipsStates = m_Y_estim,
                  params_old = params_old, 
                  params_init = params_init,
                  params_history = params_history,
@@ -553,6 +556,7 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
   X$params = params
   X$params_init <- params_init
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
+  X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
 #  X$raw_results <- results_estim_EM
   X$summary <- data.frame(
     ## Estimated Parameters
