@@ -108,6 +108,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
     segmentation <- switch(method.segmentation, 
                            max_costs_0 = segmentation.OU.specialCase.max_costs_0,
                            lasso = segmentation.OU.specialCase.lasso,
+                           lasso_one_move = segmentation.OU.specialCase.lasso_one_move,
                            same_shifts = segmentation.OU.specialCase.same_shifts,
                            same_shifts_same_values = segmentation.OU.specialCase.same_shifts_same_values,
                            best_single_move = segmentation.OU.specialCase.best_single_move)
@@ -619,13 +620,13 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 #'                           
 #'06/10/14 - Initial release
 ##
-segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, ...){
+segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, penscale = rep(1, ncol(Xp)), ...){
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   ## Computation of answer matrix D : already done by now.
   ## Segmentation per se
   # Lasso regression
-  fit <- try(lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes))
+  fit <- try(lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes, penscale = penscale))
   if (inherits(fit, "try-error")) {
     warning("At M step, Lasso regression failed.")
     return(list(beta_0 = 0, shifts = NULL, costs = Inf))
@@ -662,6 +663,35 @@ compute_regression_matrices <- function(phylo, conditional_law_X, selection.stre
   A <- diag(A)
   Xp <- A%*%U
   return(list(D = D, Xp = Xp))
+}
+
+segmentation.OU.specialCase.lasso_one_move <- function(phylo, shifts_old, nbr_of_shifts, D, Xp, ...){
+  ## If no shifts, there is no such thing as a "single move"
+  if (is.null(shifts_old$edges)){
+    return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
+  }
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  ## do not penalise K-1 shifts
+  pens <- rep(1, ncol(Xp))
+  penscales <- matrix(1, nrow = nbr_of_shifts, ncol = ncol(Xp))
+  for (i in 1:nbr_of_shifts){
+    shs <- shifts_old$edges[-i]
+    penscales[i, shs] <- 10^(-5)
+  }
+  ## Computation of answer matrix D : already done by now.
+  ## Segmentation per se
+  # Lasso regressions
+  fun <- function(penscale){
+    segmentation.OU.specialCase.lasso(phylo = phylo, 
+                                      nbr_of_shifts = nbr_of_shifts,
+                                      D = D,
+                                      Xp = Xp,
+                                      penscale = penscale)
+  }
+  segs <- apply(penscales, 1, fun)
+  costs <- sapply(segs, function(z) return(sum(z$cost)))
+  return(segs[[which.min(costs)]])
 }
 
 ##

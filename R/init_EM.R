@@ -183,7 +183,7 @@ lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALS
   }
 }
 
-lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
+lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL, penscale = rep(1, ncol(Xp))) {
   ## Root is the intercept, should be excluded from varaiable selection
   # In that case, project Yp on the orthogonal of the root
   if (!is.null(root)){
@@ -193,18 +193,19 @@ lasso_regression_K_fixed <- function (Yp, Xp, K, root = NULL) {
     Xp_orth <- Xp_noroot - (tcrossprod(L) %*% Xp_noroot) / norme_L
     Yp_orth <- Yp - crossprod(Yp, L) / (norme_L) * L
     intercept <- FALSE
+    penscale <- penscale[-root]
   } else {
     Xp_orth <- Xp
     Yp_orth <- Yp
     intercept <- TRUE
   }
   ## fit
-  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept, max.feat = K + 10)
+  fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, nlambda1 = 500, intercept = intercept, max.feat = K + 10, penscale = penscale)
   df <- rowSums(fit@active.set)
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K > max(df)) {
-    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, min.ratio = 10^(-10), intercept = intercept)
+    fit <- elastic.net(x = 0 + Xp_orth, y = Yp_orth, lambda2 = 0, min.ratio = 10^(-10), intercept = intercept, penscale = penscale)
     df <- rowSums(fit@active.set)
   }
   if (K > max(df)) {

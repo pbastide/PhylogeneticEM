@@ -88,7 +88,7 @@ estimateEM <- function(phylo,
                                        var.root = 10^(3),
                                        selection.strength = 10^(3)),
                        var.init.root = 1,
-                       methods.segmentation = c("max_costs_0", "lasso", "same_shifts", "same_shifts_same_values", "best_single_move"),
+                       methods.segmentation = c("max_costs_0", "lasso", "same_shifts", "same_shifts_same_values", "best_single_move", "lasso_one_move"),
                        check.tips.names = FALSE,
                        times_shared = NULL, # These can be specified to save time
                        distances_phylo = NULL, 
