@@ -5,7 +5,7 @@
 N <- 10
 ## Inference template file
 folder <- "simulations_study"
-file <- file.path(folder, "dummy.R")
+file <- file.path(folder, "several_K_estimations.R")
 ## Folder to keep the generated files
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 new_folder <- file.path(folder, datestamp_day)

@@ -634,6 +634,23 @@ sample_shifts <- function(tree, sigma_delta, K){
   return(shifts)
 }
 
+sample_shifts_GMM <- function(tree, m1, m2, s1, s2, K){
+  if (K == 0) return(NULL)   ## If no shift, return NULL
+  shifts_edges <- sample_shifts_edges(tree, K)
+  shifts_values <- sample_shifts_values_GMM(m1, m2, s1, s2, K)
+  shifts <- list(edges = shifts_edges, 
+                 values = shifts_values, 
+                 relativeTimes = rep(0, K))
+  return(shifts)
+}
+
 sample_shifts_values <- function(sigma_delta, K){
   return(rnorm(K, mean = 0, sd = sqrt(sigma_delta)))
+}
+
+sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
+  m <- c(m1, m2)
+  s <- c(s1, s2)
+  modes <- rbinom(K, 1, 0.5) + 1
+  return(rnorm(K, mean = m[modes], sd = sqrt(s[modes])))
 }

@@ -33,16 +33,18 @@ process <- "OU"
 beta_0 <- 0
 alpha_base <- 3
 sigma_base <- 3
-gamma_base <- sigma_base / (2 * alpha_base)
+gamma_base <- 0.5
 K_base <- 5 # Change par rapport à Uyeda (au lieu de 9)
-sigma_delta_base <- 18
+# sigma_delta_base <- 18
+m1 <- 4; m2 <- - m1
+s1 <- 1; s2 <- s1
 seg <- c("lasso", "best_single_move")
 
 ## alpha grid
 alpha <- log(2)*1/c(0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1, 2, 10)
 
 ## gamma^2 grid (\gamma^2 = \sigma^2 / 2 \alpha)
-gamma <- (1/(2*alpha_base))*c(0.1, 0.5, 1, 2, 5, 10, 25, 50) # enlevé : 3 (base)
+gamma <- c(0.05, 0.1, 1, 2, 3, 5, 10, 25) # enlevé : 0.5 (base)
 
 ## Number of shifts for simulation
 K <- c(0:4, 8, 11, 16) # enlevé : 5 (base)
@@ -50,11 +52,11 @@ K <- c(0:4, 8, 11, 16) # enlevé : 5 (base)
 ## Number of taxa
 ntaxa <- c(64, 128, 256)
 
-## Number of shifts for inference (depends on the size of the tree)
-K_try <- 0:sqrt(nta)
+# ## Number of shifts for inference (depends on the size of the tree)
+# K_try <- 0:sqrt(nta)
 
 ## replication depth (number of replicates per )
-n <- 1:20
+n <- 1:2
 
 ## The combination of simulation parameters
 simparams_alpha <- expand.grid(alpha, gamma_base, K_base, ntaxa, n, "alpha_var")
@@ -94,7 +96,7 @@ datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 # Return list of parameters + list of shifts + data at tips
 datasetsim <- function(alpha, gamma, K, ntaxa, n, grp) {
   tree <- trees[[paste0(ntaxa)]]
-  shifts <- sample_shifts(tree, sigma_delta_base, K)
+  shifts <- sample_shifts_GMM(tree, m1, m2, s1, s2, K)
   root.state <- list(random = TRUE,
                      stationary.root = TRUE,
                      value.root = NA,
