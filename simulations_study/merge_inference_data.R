@@ -6,7 +6,6 @@ saveresultfile = "../Results/Simulations_Several_K/several_K_estimations"
 datestamp_day <- "2015-03-17"
 
 simestimations_alpha_known <- NULL
-simlist_n <- NULL
 
 for (inference.index in 1:40){
   file <- paste0(saveresultfile, "_alpha_known-", datestamp_day, "_", inference.index, ".RData")
@@ -17,14 +16,9 @@ for (inference.index in 1:40){
     simestimations_alpha_known <- c(simestimations_alpha_known, 
                                     eval(siminf))
     rm(list = paste0("simestimations_alpha_known_", inference.index))
-    ## simlist
-    simlist_n <- c(simlist_n, simlist)
-    rm(simlist)
   } else {
     warning(paste0("File number ", inference.index, " do not exists"))
   }
 }
 
-simlist <- simlist_n
-rm(simlist_n)
 save.image(paste0(saveresultfile, "_alpha_known-", datestamp_day, "_all", ".RData"))
