@@ -61,7 +61,8 @@ estimateEM <- function(phylo,
                                 value.root = 10^(-5), 
                                 exp.root = 10^(-5), 
                                 var.root = 10^(-5),
-                                selection.strength = 10^(-5)),  
+                                selection.strength = 10^(-5),
+                                normalized_half_life = 10^(-5)),  
                        Nbr_It_Max = 500, 
                        method.variance = c("simple"), 
                        method.init = c("default", "lasso"),
@@ -93,7 +94,9 @@ estimateEM <- function(phylo,
                        times_shared = NULL, # These can be specified to save time
                        distances_phylo = NULL, 
                        subtree.list = NULL,
-                       T_tree = NULL, ...){
+                       T_tree = NULL, 
+                       h_tree = NULL,
+                       tol_half_life = TRUE, ...){
   
   ## Check consistancy #########################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
@@ -107,7 +110,7 @@ estimateEM <- function(phylo,
                        OU = compute_M.OU(stationnary.root, shifts_at_nodes, alpha_known))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
-                        OU = shutoff.EM.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                        OU = shutoff.EM.OU(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life))
   is.finite.params  <- switch(process, 
                               BM = is.finite.params.BM,
                               OU = is.finite.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
@@ -163,6 +166,7 @@ estimateEM <- function(phylo,
   if (is.null(distances_phylo)) distances_phylo <- compute_dist_phy(phylo)
   if (is.null(subtree.list)) subtree.list <- enumerate_tips_under_edges(phylo)
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
+  if (is.null(h_tree)) h_tree <- max(diag(times_shared)[1:ntaxa])
 
   ## Check that the vector of data is in the correct order #####################
   if (length(Y_data) != length(phylo$tip.label)){
@@ -238,7 +242,7 @@ estimateEM <- function(phylo,
   #   CLL_history <- NULL
   number_new_shifts <- NULL
   while ( Nbr_It == 0 || # Initialisation
-            ( !shutoff.EM(params_old,params,tol) && # Shutoff
+            ( !shutoff.EM(params_old, params, tol, h_tree) && # Shutoff
                 is.in.ranges.params(params, min=min_params, max=max_params) && # Divergence ?
                 Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
@@ -529,7 +533,8 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
                                               value.root=10^(-4), 
                                               exp.root=10^(-4), 
                                               var.root=10^(-4), 
-                                              selection.strength=10^(-3)), 
+                                              selection.strength=10^(-3),
+                                              normalized_half_life = 10^(-2)), 
                                    process = "OU", 
                                    method.variance = "simple", 
                                    method.init = "lasso",

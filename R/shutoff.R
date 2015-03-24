@@ -67,11 +67,13 @@ shutoff.EM.BM.fixedroot <- function(params_old, params, tol){
   }
 }
 
-shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
+shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life){
   if (stationnary.root && shifts_at_nodes && alpha_known) {
     return(shutoff.EM.OU.specialCase)
+  } else if (stationnary.root && shifts_at_nodes && tol_half_life) {
+    return(shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.half_life)
   } else if (stationnary.root && shifts_at_nodes) {
-    return(shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes)
+    return(shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha)
   } else {
     stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
   }
@@ -87,11 +89,22 @@ shutoff.EM.OU.specialCase <- function(params_old, params, tol){
   }
 }
 
-shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes <- function(params_old, params, tol){
+shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha <- function(params_old, params, tol){
   if (abs(params_old$variance-params$variance)<tol$variance &&
         abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
         abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root &&
         abs(params_old$selection.strength-params$selection.strength)<tol$selection.strength) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.half_life <- function(params_old, params, tol, h_tree){
+  if (abs(params_old$variance - params$variance) < tol$variance &&
+        abs(params_old$root.state$exp.root - params$root.state$exp.root) < tol$exp.root &&
+        abs(params_old$root.state$var.root - params$root.state$var.root) < tol$var.root &&
+        abs(log(2) / (h_tree * params_old$selection.strength) - log(2) / (h_tree * params$selection.strength)) < tol$normalized_half_life) {
     return(TRUE)
   } else {
     return(FALSE)
