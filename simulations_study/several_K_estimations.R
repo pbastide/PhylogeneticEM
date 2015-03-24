@@ -150,19 +150,54 @@ estimations_several_K <- function(X){
 ## Estimations (alpha NOT known)
 ############
 
+## Separate "favorable" values from others
+simparams_keep <- subset(simparams, n %in% n.range)
+favorables <- simparams_keep$gamma <= 1 & simparams_keep$alpha >= 3 & simparams_keep$K <= 5
+
+## FAVORABLES ##
 ## Register parallel backend for computing
 cl <- makeCluster(Ncores)
 registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(
-  simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
+  simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
 {
   estimations_several_K(i)
 }
 )
 # Stop the cluster (parallel)
 stopCluster(cl)
+
+## rename object and save
+assign(paste0("simestimations_fav_", inference.index), 
+       simestimations_fav)
+rm(simestimations_fav)
+
+save.image(paste0(saveresultfile, "favorables-", datestamp_day, "_", inference.index, ".RData"))
+
+## NOT FAVORABLES ##
+## Register parallel backend for computing
+cl <- makeCluster(Ncores)
+registerDoParallel(cl)
+
+## Parallelized estimations
+time_alpha_known <- system.time(
+  simestimations_unfav <- foreach(i = simlist[!favorables], .packages = reqpckg) %dopar%
+{
+  estimations_several_K(i)
+}
+)
+# Stop the cluster (parallel)
+stopCluster(cl)
+
+## group favorables and unfavorables
+simestimations <- vector(mode = "list", length = length(favorables))
+simestimations[favorables] <- eval(as.name(paste0("simestimations_fav_", inference.index)))
+simestimations[!favorables] <- simestimations_unfav
+
+rm(simestimations_unfav)
+rm(list = paste0("simestimations_fav_", inference.index))
 
 ## rename object and save
 assign(paste0("simestimations_", inference.index), 
