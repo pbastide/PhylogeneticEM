@@ -16,7 +16,7 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- format(Sys.time(), "%Y-%m-%d")
+datestamp_data <- "2015-03-17" #format(Sys.time(), "%Y-%m-%d")
 savedatafile = "../Results/Simulations_Several_K/several_K_simlist"
 saveresultfile <- "../Results/Simulations_Several_K/several_K_estimations"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
@@ -53,7 +53,8 @@ estimations_several_K_alpha_known <- function(X){
                                    times_shared = times_shared[[paste0(X$ntaxa)]], 
                                    distances_phylo = distances_phylo[[paste0(X$ntaxa)]], 
                                    T_tree = T_tree[[paste0(X$ntaxa)]],
-                                   subtree.list = subtree.list[[paste0(X$ntaxa)]], 
+                                   subtree.list = subtree.list[[paste0(X$ntaxa)]],
+                                   h_tree = max(diag(times_shared[[paste0(X$ntaxa)]])[1:X$ntaxa]),
                                    alpha_known = TRUE,
                                    alpha = X$alpha))
   }
@@ -82,8 +83,71 @@ estimations_several_K_alpha_known <- function(X){
   return(X)
 }
 
+estimations_several_K <- function(X){
+  ## Inference function
+  fun <- function(K_t){
+    return(estimation_wrapper.OUsr(K_t, 
+                                   phylo = trees[[paste0(X$ntaxa)]], 
+                                   Y_data = X$Y_data, 
+                                   times_shared = times_shared[[paste0(X$ntaxa)]], 
+                                   distances_phylo = distances_phylo[[paste0(X$ntaxa)]], 
+                                   T_tree = T_tree[[paste0(X$ntaxa)]],
+                                   subtree.list = subtree.list[[paste0(X$ntaxa)]],
+                                   h_tree = max(diag(times_shared[[paste0(X$ntaxa)]])[1:X$ntaxa]),
+                                   alpha_known = FALSE))
+  }
+  ## Apply function for all K_try
+  XX <- lapply(K_try[[paste0(X$ntaxa)]], fun)
+  names(XX) <- K_try[[paste0(X$ntaxa)]]
+  ## Formate results
+  dd <- do.call(rbind, XX)
+  df <- do.call(rbind, dd[ , "summary"])
+  df <- as.data.frame(df)
+  df$alpha  <- X$alpha
+  df$gamma  <- X$gamma
+  df$K <- X$K
+  df$n <- X$n
+  df$ntaxa <- X$ntaxa
+  df$grp <- X$grp
+  df$log_likelihood_true <- X$log_likelihood.true[1]
+  df$difficulty <- X$difficulty
+  ## Results
+  X$results_summary <- df
+  X$params_estim <- dd[, "params"]
+  X$params_init_estim <- dd[, "params_init"]
+  X$Zhat <- dd[, "Zhat"]
+  X$m_Y_estim <- dd[, "m_Y_estim"]
+  X$edge.quality <- dd[, "edge.quality"]
+  return(X)
+}
+
+# ############
+# ## Estimations (alpha known)
+# ############
+# 
+# ## Register parallel backend for computing
+# cl <- makeCluster(Ncores)
+# registerDoParallel(cl)
+# 
+# ## Parallelized estimations
+# time_alpha_known <- system.time(
+#   simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
+# {
+#   estimations_several_K_alpha_known(i)
+# }
+# )
+# # Stop the cluster (parallel)
+# stopCluster(cl)
+# 
+# ## rename object and save
+# assign(paste0("simestimations_alpha_known_", inference.index), 
+#        simestimations_alpha_known)
+# rm(simestimations_alpha_known)
+# 
+# save.image(paste0(saveresultfile, "_alpha_known-", datestamp_day, "_", inference.index, ".RData"))
+
 ############
-## Estimations (alpha known)
+## Estimations (alpha NOT known)
 ############
 
 ## Register parallel backend for computing
@@ -92,17 +156,17 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(
-  simestimations_alpha_known <- foreach(i = simlist, .packages = reqpckg) %dopar%
+  simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
 {
-  estimations_several_K_alpha_known(i)
+  estimations_several_K(i)
 }
 )
 # Stop the cluster (parallel)
 stopCluster(cl)
 
 ## rename object and save
-assign(paste0("simestimations_alpha_known_", inference.index), 
-       simestimations_alpha_known)
-rm(simestimations_alpha_known)
+assign(paste0("simestimations_", inference.index), 
+       simestimations)
+rm(simestimations)
 
-save.image(paste0(saveresultfile, "_alpha_known-", datestamp_day, "_", inference.index, ".RData"))
+save.image(paste0(saveresultfile, "-", datestamp_day, "_", inference.index, ".RData"))

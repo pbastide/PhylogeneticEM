@@ -84,6 +84,7 @@ for (nta in ntaxa){
   distances_phylo[[paste0(nta)]] <- compute_dist_phy(trees[[paste0(nta)]])
   subtree.list[[paste0(nta)]] <- enumerate_tips_under_edges(trees[[paste0(nta)]])
   T_tree[[paste0(nta)]] <- incidence.matrix(trees[[paste0(nta)]])
+  h_tree[[paste0(nta)]] <- max(diag(times_shared[[paste0(nta)]])[1:nta])
   # Number of tries (depends on tree)
   K_try[[paste0(nta)]] <- 0:floor(sqrt(nta))
 }
