@@ -67,6 +67,7 @@ estimateEM <- function(phylo,
                        method.variance = c("simple"), 
                        method.init = c("default", "lasso"),
                        method.init.alpha = c("default", "estimation"),
+                       method.init.alpha.estimation = c("regression", "median"),
                        nbr_of_shifts = 0,
                        random.root = TRUE,
                        stationnary.root = TRUE,
@@ -159,6 +160,7 @@ estimateEM <- function(phylo,
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
+  method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
 
   ## Fixed Quantities #########################################
   ntaxa <- length(phylo$tip.label)
@@ -194,10 +196,11 @@ estimateEM <- function(phylo,
                                                   max_triplet_number = max_triplet_number,
                                                   known.selection.strength = known.selection.strength,
                                                   alpha_known = alpha_known,
-                                                  init.var.root = var.init.root)
+                                                  init.var.root = var.init.root,
+                                                  method.init.alpha.estimation = method.init.alpha.estimation)
   init.var.root <- init.a.g$gamma_0
   if (!alpha_known) {
-    init.selection.strength <- init.a.g$alpha_0
+    init.selection.strength <- mean(init.a.g$alpha_0)
   } else {
     init.selection.strength <- known.selection.strength
   }
@@ -243,7 +246,7 @@ estimateEM <- function(phylo,
   number_new_shifts <- NULL
   while ( Nbr_It == 0 || # Initialisation
             ( !shutoff.EM(params_old, params, tol, h_tree) && # Shutoff
-                is.in.ranges.params(params, min=min_params, max=max_params) && # Divergence ?
+                is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
                 Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
     Nbr_It <- Nbr_It + 1
@@ -352,6 +355,7 @@ estimateEM <- function(phylo,
                  ReconstructedTipsStates = m_Y_estim,
                  params_old = params_old, 
                  params_init = params_init,
+                 alpha_0 = init.a.g$alpha_0,
                  params_history = params_history,
                  number_new_shifts = number_new_shifts,
                  number_equivalent_solutions = Neq)
@@ -525,7 +529,12 @@ estimateEM_several_K.OUsr <- function(phylo,
 #'
 ##
 
-estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alpha = 0, method.init.alpha = "estimation", ...) {
+estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
+                                    alpha_known = FALSE, alpha = 0,
+                                    method.init.alpha = "estimation",
+                                    method.init.alpha.estimation = c("regression", "median"),
+                                    Nbr_It_Max = 1000,
+                                    ...) {
   time <- system.time(
     results_estim_EM <- estimateEM(phylo = phylo, 
                                    Y_data = Y_data, 
@@ -539,7 +548,8 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
                                    method.variance = "simple", 
                                    method.init = "lasso",
                                    method.init.alpha = method.init.alpha,
-                                   Nbr_It_Max = 1000, 
+                                   method.init.alpha.estimation = method.init.alpha.estimation,
+                                   Nbr_It_Max = Nbr_It_Max, 
                                    nbr_of_shifts = K_t, 
                                    alpha_known = alpha_known, ##
                                    known.selection.strength = alpha,
@@ -560,6 +570,8 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
   X <- NULL
   X$params = params
   X$params_init <- params_init
+  X$alpha_0 <- results_estim_EM$alpha_0
+  names(X$alpha_0) <- paste0("alpha_0_", names(X$alpha_0))
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
   X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
 #  X$raw_results <- results_estim_EM
@@ -589,6 +601,7 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data, alpha_known = FALSE, alp
      "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean"),
      "least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
   )
+  X$summary <- as.data.frame(c(X$summary, X$alpha_0))
   ## Compute edge quality
   extract.edges <- function(x) {
     z <- unlist(lapply(x, function(y) y$shifts$edges))

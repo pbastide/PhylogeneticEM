@@ -115,6 +115,7 @@ estimations_several_K <- function(X){
   X$results_summary <- df
   X$params_estim <- dd[, "params"]
   X$params_init_estim <- dd[, "params_init"]
+  X$alpha_0 <- dd[, "alpha_0"]
   X$Zhat <- dd[, "Zhat"]
   X$m_Y_estim <- dd[, "m_Y_estim"]
   X$edge.quality <- dd[, "edge.quality"]

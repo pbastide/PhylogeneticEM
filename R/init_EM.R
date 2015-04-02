@@ -627,7 +627,13 @@ init.alpha.gamma.default <- function(init.selection.strength, known.selection.st
               gamma_0 = init.var.root))
 }
 
-init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, alpha_known, ...){
+init.alpha.gamma.estimation <- function(phylo, 
+                                        Y_data, 
+                                        nbr_of_shifts, 
+                                        distances_phylo, 
+                                        max_triplet_number, 
+                                        alpha_known,
+                                        method.init.alpha.estimation, ...){
   ## Initialize a vector with the group of each tip
   tips_groups <- rep(0, length(phylo$tip.label))
   names(tips_groups) <- phylo$tip.label
@@ -661,21 +667,52 @@ init.alpha.gamma.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_
       dists <- c(dists, Z[upper.tri(Z)])
     }
   }
+  ## Estimation of gamma
   gamma_0 <- mean(hat_gam, na.rm=TRUE)
+  ## Estimation of alpha
   if (alpha_known) {
     return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
                 gamma_0 = gamma_0))
   } else {
-    df <- data.frame(square_diff=square_diff, dists=dists)
-    fit.rob <- try(nlrob(square_diff ~ gam*(1-exp(-alpha*dists)), data=df, start=list(gam = gamma_0, alpha=1)))
-    if (inherits(fit.rob, "try-error")) {
-      warning("Robust estimation of alpha failed")
-      return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
-                  gamma_0 = gamma_0))
-    } else { 
-      return(list(alpha_0 = unname(coef(fit.rob)["alpha"]), 
-                  gamma_0 = gamma_0))
+    alpha_0 <- vector(length = length(method.init.alpha.estimation))
+    names(alpha_0) <- method.init.alpha.estimation
+    for (method in method.init.alpha.estimation){
+      estimate.alpha  <- switch(method, 
+                                regression = estimate.alpha.regression,
+                                median = estimate.alpha.median)
+      
+      alpha_0_try <- try(estimate.alpha(square_diff, dists, gamma_0))
+      
+      if (inherits(alpha_0_try, "try-error")) {
+        warning(paste0("Robust estimation of alpha by ", method.init.alpha.estimation, " failed. Going back to default value."))
+        alpha_0[method] <- init.alpha.gamma.default(alpha_known, ...)$alpha_0
+      } else {
+        alpha_0[method] <- alpha_0_try
+      }
     }
+    return(list(alpha_0 = alpha_0, 
+                gamma_0 = gamma_0))
   }
+}
+
+estimate.alpha.regression <- function (square_diff, dists, gamma_0) {
+  df <- data.frame(square_diff = square_diff,
+                   dists = dists)
+  fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-alpha * dists)),
+                   data = df,
+                   start = list(gam = gamma_0, alpha = 1))
+  return(unname(coef(fit.rob)["alpha"]))
+}
+
+estimate.alpha.median <- function (square_diff, dists, gamma_0) {
+  delta <- 1 - square_diff / (2 * gamma_0)
+  delta <- sapply(delta, function(x) max(0, x))
+  rap <- -log(delta) / dists
+  med <- median(rap)
+  if (is.infinite(med)){
+    rap[is.infinite(rap)] <- NA
+    return(max(rap, na.rm = TRUE))
+  }
+  return(med)
 }
 
