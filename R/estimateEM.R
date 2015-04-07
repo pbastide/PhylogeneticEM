@@ -207,12 +207,10 @@ estimateEM <- function(phylo,
                                                   method.init.alpha.estimation = method.init.alpha.estimation,
                                                   tol = tol,
                                                   h_tree = h_tree)
-  init.var.root <- init.a.g$gamma_0
+  init.var.root <- mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
   if (!alpha_known && (sum(is.finite(init.a.g$alpha_0)) != 0)) {
     ## Only if not all NAs ot infinite
-    alphas_0 <- init.a.g$alpha_0
-    alphas_0[is.infinite(alphas_0)] <- NA
-    init.selection.strength <- mean(alphas_0, na.rm = TRUE)
+    init.selection.strength <- mean(init.a.g$alpha_0[is.finite(init.a.g$alpha_0)])
   } else {
     init.selection.strength <- known.selection.strength
   }
@@ -368,6 +366,7 @@ estimateEM <- function(phylo,
                  params_old = params_old, 
                  params_init = params_init,
                  alpha_0 = init.a.g$alpha_0,
+                 gamma_0 = init.a.g$gamma_0,
                  params_history = params_history,
                  number_new_shifts = number_new_shifts,
                  number_equivalent_solutions = Neq)
@@ -586,6 +585,8 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
   X$params_init <- params_init
   X$alpha_0 <- results_estim_EM$alpha_0
   names(X$alpha_0) <- paste0("alpha_0_", names(X$alpha_0))
+  X$gamma_0 <- results_estim_EM$gamma_0
+  names(X$gamma_0) <- paste0("gamma_0_", names(X$gamma_0))
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
   X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
 #  X$raw_results <- results_estim_EM
@@ -616,6 +617,7 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
      "least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
   )
   X$summary <- as.data.frame(c(X$summary, X$alpha_0))
+  X$summary <- as.data.frame(c(X$summary, X$gamma_0))
   ## Compute edge quality
   extract.edges <- function(x) {
     z <- unlist(lapply(x, function(y) y$shifts$edges))

@@ -640,7 +640,11 @@ init.alpha.gamma.estimation <- function(phylo,
   names(tips_groups) <- phylo$tip.label
   ## Initialize shifts by a lasso without sigma
   if (nbr_of_shifts > 0) {
-    lasso <- init.EM.lasso(phylo=phylo, Y_data=Y_data, process="OU", nbr_of_shifts=nbr_of_shifts, use_sigma=FALSE)
+    lasso <- init.EM.lasso(phylo = phylo,
+                           Y_data = Y_data,
+                           process = "OU",
+                           nbr_of_shifts = nbr_of_shifts,
+                           use_sigma = FALSE)
     ## Roeorder phylo and trace edges
     phy <- reorder(phylo, order = "cladewise")
     edges_shifts <- correspondanceEdges(edges=lasso$shifts$edges,from=phylo,to=phy)
@@ -658,9 +662,11 @@ init.alpha.gamma.estimation <- function(phylo,
   square_diff <- NULL # (Y_i-Y_j)^2
   dists <- NULL # corresponding phylogenetic distances between pairs
   hat_gam <- rep(0, length(edges_shifts)+1)
+  hat_gam_mad <- rep(0, length(edges_shifts)+1)
   for (grp in 0:length(edges_shifts)) {
     tips <- which(tips_groups==grp)
     hat_gam[grp+1] <- var(Y_data[tips])
+    hat_gam_mad[grp+1] <- mad(Y_data[tips])
     if (length(tips) > 1){
       Z <- outer(Y_data[tips], Y_data[tips], function(x,y){x-y} )
       square_diff <- c(square_diff, (Z[upper.tri(Z)])^2)
@@ -669,7 +675,11 @@ init.alpha.gamma.estimation <- function(phylo,
     }
   }
   ## Estimation of gamma
-  gamma_0 <- mean(hat_gam, na.rm=TRUE)
+  gamma_0 <- rep(NA, length.out = length(method.init.alpha.estimation) + 2)
+  names(gamma_0) <- c("var", "mad", method.init.alpha.estimation)
+  gamma_0["var"] <- mean(hat_gam, na.rm=TRUE) # Simple variance
+  gamma_0["mad"] <- median(hat_gam_mad, na.rm=TRUE) # MAD
+               
   ## Estimation of alpha
   # Supress couple "too far away"
   too_far <- (dists > h_tree)
@@ -677,9 +687,9 @@ init.alpha.gamma.estimation <- function(phylo,
   square_diff <- square_diff[too_far]
   if (alpha_known) {
     return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
-                gamma_0 = gamma_0))
+                gamma_0 = gamma_0[c("var", "mad")]))
   } else {
-    alpha_0 <- vector(length = length(method.init.alpha.estimation))
+    alpha_0 <- rep(NA, length.out = length(method.init.alpha.estimation))
     names(alpha_0) <- method.init.alpha.estimation
     for (method in method.init.alpha.estimation){
       estimate.alpha  <- switch(method, 
@@ -687,13 +697,15 @@ init.alpha.gamma.estimation <- function(phylo,
                                 regression.MM = estimate.alpha.regression.MM,
                                 median = estimate.alpha.median)
       
-      alpha_0_try <- try(estimate.alpha(square_diff, dists, gamma_0, tol, h_tree))
+      ag_0_try <- try(estimate.alpha(square_diff, dists, gamma_0[["mad"]], tol, h_tree))
       
-      if (inherits(alpha_0_try, "try-error")) {
-        warning(paste0("Robust estimation of alpha by ", method.init.alpha.estimation, " failed. Going back to default value."))
+      if (inherits(ag_0_try, "try-error")) {
+        warning(paste0("Robust estimation of alpha by ", method, " failed. Going back to default value."))
         alpha_0[method] <- NA # init.alpha.gamma.default(alpha_known, ...)$alpha_0
+        gamma_0[method] <- NA
       } else {
-        alpha_0[method] <- alpha_0_try
+        alpha_0[method] <- ag_0_try[["alpha_0"]]
+        gamma_0[method] <- ag_0_try[["gamma_0"]]
       }
     }
     return(list(alpha_0 = alpha_0, 
@@ -712,8 +724,8 @@ estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree)
                    tol = tol_t_half,
                    control = nls.control(tol = tol_t_half,
                                          maxiter = 100))
-  alpha_0 <- log(2) / unname(coef(fit.rob)["t_half"])
-  return(alpha_0)
+  return(list(alpha_0 = log(2) / unname(coef(fit.rob)["t_half"]),
+              gamma_0 = unname(coef(fit.rob)["gam"])))
 }
 
 estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
@@ -732,8 +744,8 @@ estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
                    lower = low_bound,
                    upper = up_bound,
                    method = "MM")
-  alpha_0 <- log(2) / unname(coef(fit.rob)["t_half"])
-  return(alpha_0)
+  return(list(alpha_0 = log(2) / unname(coef(fit.rob)["t_half"]),
+              gamma_0 = unname(coef(fit.rob)["gam"])))
 }
 
 estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
@@ -743,8 +755,9 @@ estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
   med <- median(rap)
   if (is.infinite(med)){
     rap[is.infinite(rap)] <- NA
-    return(max(rap, na.rm = TRUE))
+    med <- max(rap, na.rm = TRUE)
   }
-  return(med)
+  return(list(alpha_0 = med,
+              gamma_0 = gamma_0))
 }
 
