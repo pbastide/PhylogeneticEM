@@ -109,8 +109,14 @@ save.image(paste0(saveresultfile, "-", datestamp_day, "_", inference.index, ".RD
 ###################################################################
 ## Extract Results
 ###################################################################
+library(reshape2)
+library(plyr)
+library(proto)
+library(ggplot2)
+library(grid)
+
 saveresultfile <- "../Results/Simulations_Several_K/several_K_alpha_0"
-datestamp_day <- "2015-03-31"
+datestamp_day <- "2015-04-02"
 inference.index <- 0
 
 load(paste0(saveresultfile, "-", datestamp_day, "_res_", inference.index, ".RData"))
@@ -126,15 +132,19 @@ result_summary_alpha_0 <- extract_data_frame(simestimations_alpha_0)
 ####################################################################
 ## Fails
 ####################################################################
+# Infinites or NAs
 result_summary_alpha_0 <- transform(result_summary_alpha_0,
-                                    fail_regression = (result_summary_alpha_0$alpha_0_regression == 1))
+                                    fail_regression = !is.finite(result_summary_alpha_0$alpha_0_regression),
+                                    fail_regression.MM = !is.finite(result_summary_alpha_0$alpha_0_regression.MM))
 
 mean(result_summary_alpha_0$fail_regression)
+mean(result_summary_alpha_0$fail_regression.MM)
 
 results_fails <- ddply(result_summary_alpha_0,
                        .(alpha, gamma, K, K_try, ntaxa, grp),
                        summarize,
-                       n.fails = mean(fail_regression))
+                       n.fails = mean(fail_regression),
+                       n.fails.MM = mean(fail_regression.MM))
 
 ####################################################################
 ## Format for Plot
@@ -177,7 +187,7 @@ results_fails_plot <- format_plot(results_fails)
 
 ## Melt for estimations of alpha_0
 result_summary_alpha_0_plot_methods <- melt(result_summary_alpha_0_plot,
-                                            measure.vars = c("alpha_0_regression", "alpha_0_median", "alpha_estim_init"),
+                                            measure.vars = c("alpha_0_regression", "alpha_0_regression.MM", "alpha_0_median", "alpha_estim_init"),
                                             value.name = "alpha_0",
                                             variable.name = "method")
 
@@ -371,8 +381,8 @@ plot_alpha_0_boxplot <- function(estim, true = NULL, name, sub = "K_try", val){
                          y = paste0(estim, minustrueontrue),
                          color = "method"))
   p <- p + scale_colour_discrete(name = "Method",
-                                 breaks = c("alpha_0_regression", "alpha_0_median", "alpha_estim_init"),
-                                 labels = c("Robust Regression", "Median", "Mean of the two"))
+                                 breaks = c("alpha_0_regression", "alpha_0_regression.MM" , "alpha_0_median", "alpha_estim_init"),
+                                 labels = c("Robust Regression", "Robust Regression MM", "Median", "Mean of estimators"))
   #p <- p + aes(group = interaction(ntaxa, alpha_known))
   p <- p + facet_wrap(ntaxa ~ variable,
                       #labeller = label_parsed,
@@ -402,13 +412,13 @@ plot_alpha_0_boxplot <- function(estim, true = NULL, name, sub = "K_try", val){
   grid.draw(g)
 }
 
-plot_alpha_0_boxplot("alpha_0", "alpha.true", "alpha - alpha / alpha", "K_try", 0)
+plot_alpha_0_boxplot("alpha_0", "alpha.true", "alpha - alpha / alpha", "K_try", 5)
 
 
 results_fails_plot$K_try <- as.factor(results_fails_plot$K_try)
 p <- ggplot(results_fails_plot,
             aes(x = parameter.value,
-                y = n.fails,
+                y = n.fails.MM,
                 color = K_try))
 p <- p + aes(group = K_try)
 p <- p + facet_wrap(ntaxa ~ variable, scales = "free")

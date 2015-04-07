@@ -633,7 +633,8 @@ init.alpha.gamma.estimation <- function(phylo,
                                         distances_phylo, 
                                         max_triplet_number, 
                                         alpha_known,
-                                        method.init.alpha.estimation, ...){
+                                        method.init.alpha.estimation,
+                                        tol, h_tree, ...){
   ## Initialize a vector with the group of each tip
   tips_groups <- rep(0, length(phylo$tip.label))
   names(tips_groups) <- phylo$tip.label
@@ -670,6 +671,10 @@ init.alpha.gamma.estimation <- function(phylo,
   ## Estimation of gamma
   gamma_0 <- mean(hat_gam, na.rm=TRUE)
   ## Estimation of alpha
+  # Supress couple "too far away"
+  too_far <- (dists > h_tree)
+  dists <- dists[too_far]
+  square_diff <- square_diff[too_far]
   if (alpha_known) {
     return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
                 gamma_0 = gamma_0))
@@ -679,13 +684,14 @@ init.alpha.gamma.estimation <- function(phylo,
     for (method in method.init.alpha.estimation){
       estimate.alpha  <- switch(method, 
                                 regression = estimate.alpha.regression,
+                                regression.MM = estimate.alpha.regression.MM,
                                 median = estimate.alpha.median)
       
-      alpha_0_try <- try(estimate.alpha(square_diff, dists, gamma_0))
+      alpha_0_try <- try(estimate.alpha(square_diff, dists, gamma_0, tol, h_tree))
       
       if (inherits(alpha_0_try, "try-error")) {
         warning(paste0("Robust estimation of alpha by ", method.init.alpha.estimation, " failed. Going back to default value."))
-        alpha_0[method] <- init.alpha.gamma.default(alpha_known, ...)$alpha_0
+        alpha_0[method] <- NA # init.alpha.gamma.default(alpha_known, ...)$alpha_0
       } else {
         alpha_0[method] <- alpha_0_try
       }
@@ -695,16 +701,42 @@ init.alpha.gamma.estimation <- function(phylo,
   }
 }
 
-estimate.alpha.regression <- function (square_diff, dists, gamma_0) {
+## Regression on normalized half life to have the good tolerence.
+estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree) {
+  tol_t_half <- tol$normalized_half_life * h_tree
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
-  fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-alpha * dists)),
+  fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
                    data = df,
-                   start = list(gam = gamma_0, alpha = 1))
-  return(unname(coef(fit.rob)["alpha"]))
+                   start = list(gam = gamma_0, t_half = log(2)),
+                   tol = tol_t_half,
+                   control = nls.control(tol = tol_t_half,
+                                         maxiter = 100))
+  alpha_0 <- log(2) / unname(coef(fit.rob)["t_half"])
+  return(alpha_0)
 }
 
-estimate.alpha.median <- function (square_diff, dists, gamma_0) {
+estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
+                                          tol, h_tree) {
+  tol_t_half <- tol$normalized_half_life * h_tree
+  df <- data.frame(square_diff = square_diff,
+                   dists = dists)
+  set.seed(18051220)
+  low_bound = c(gam = gamma_0/5,
+                     t_half = 0)
+  up_bound = c(gam = 5 * gamma_0,
+                    t_half = 10 * h_tree)
+  fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
+                   data = df,
+                   tol = tol_t_half,
+                   lower = low_bound,
+                   upper = up_bound,
+                   method = "MM")
+  alpha_0 <- log(2) / unname(coef(fit.rob)["t_half"])
+  return(alpha_0)
+}
+
+estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
   delta <- 1 - square_diff / (2 * gamma_0)
   delta <- sapply(delta, function(x) max(0, x))
   rap <- -log(delta) / dists

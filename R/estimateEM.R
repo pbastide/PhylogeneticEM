@@ -67,7 +67,9 @@ estimateEM <- function(phylo,
                        method.variance = c("simple"), 
                        method.init = c("default", "lasso"),
                        method.init.alpha = c("default", "estimation"),
-                       method.init.alpha.estimation = c("regression", "median"),
+                       method.init.alpha.estimation = c("regression", 
+                                                        "regression.MM", 
+                                                        "median"),
                        nbr_of_shifts = 0,
                        random.root = TRUE,
                        stationnary.root = TRUE,
@@ -90,7 +92,12 @@ estimateEM <- function(phylo,
                                        var.root = 10^(3),
                                        selection.strength = 10^(3)),
                        var.init.root = 1,
-                       methods.segmentation = c("max_costs_0", "lasso", "same_shifts", "same_shifts_same_values", "best_single_move", "lasso_one_move"),
+                       methods.segmentation = c("max_costs_0", 
+                                                "lasso", 
+                                                "same_shifts", 
+                                                "same_shifts_same_values",
+                                                "best_single_move", 
+                                                "lasso_one_move"),
                        check.tips.names = FALSE,
                        times_shared = NULL, # These can be specified to save time
                        distances_phylo = NULL, 
@@ -197,10 +204,15 @@ estimateEM <- function(phylo,
                                                   known.selection.strength = known.selection.strength,
                                                   alpha_known = alpha_known,
                                                   init.var.root = var.init.root,
-                                                  method.init.alpha.estimation = method.init.alpha.estimation)
+                                                  method.init.alpha.estimation = method.init.alpha.estimation,
+                                                  tol = tol,
+                                                  h_tree = h_tree)
   init.var.root <- init.a.g$gamma_0
-  if (!alpha_known) {
-    init.selection.strength <- mean(init.a.g$alpha_0)
+  if (!alpha_known && (sum(is.finite(init.a.g$alpha_0)) != 0)) {
+    ## Only if not all NAs ot infinite
+    alphas_0 <- init.a.g$alpha_0
+    alphas_0[is.infinite(alphas_0)] <- NA
+    init.selection.strength <- mean(alphas_0, na.rm = TRUE)
   } else {
     init.selection.strength <- known.selection.strength
   }
@@ -532,7 +544,9 @@ estimateEM_several_K.OUsr <- function(phylo,
 estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
                                     alpha_known = FALSE, alpha = 0,
                                     method.init.alpha = "estimation",
-                                    method.init.alpha.estimation = c("regression", "median"),
+                                    method.init.alpha.estimation = c("regression",
+                                                                     "regression.MM",
+                                                                     "median"),
                                     Nbr_It_Max = 1000,
                                     ...) {
   time <- system.time(
