@@ -723,7 +723,7 @@ estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
                    dists = dists)
   set.seed(18051220)
   low_bound = c(gam = gamma_0/5,
-                     t_half = 0)
+                     t_half = 0.01 * h_tree)
   up_bound = c(gam = 5 * gamma_0,
                     t_half = 10 * h_tree)
   fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
