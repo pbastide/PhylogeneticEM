@@ -416,8 +416,13 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = compute_times_c
                                            BM = compute_variance_covariance.BM,
                                            OU = compute_variance_covariance.OU)
     # Initialize Sigma with default parameters
-    params.default <- init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, var.root.init = var.root.init)
-    Sigma <- compute_variance_covariance(times_shared=times_shared, distances_phylo=distances_phylo, params_old=params.default)
+    params.default <- init.EM.default(selection.strength.init = selection.strength.init, 
+                                      random.init = random.init,
+                                      stationnary.root.init = stationnary.root.init,
+                                      var.root.init = var.root.init)
+    Sigma <- compute_variance_covariance(times_shared = times_shared,
+                                         distances_phylo = distances_phylo,
+                                         params_old = params.default)
     Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
     # Cholesky
     Sig_chol <- chol(Sigma_YY)

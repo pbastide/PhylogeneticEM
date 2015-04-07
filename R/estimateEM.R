@@ -242,11 +242,11 @@ estimateEM <- function(phylo,
                          edges.init = init_edges,
                          ...)
   params <- params_init
-  params$root.state <- test.root.state(root.state=params$root.state, 
-                                       process=process, 
-                                       optimal.value=params$optimal.value,
-                                       variance=params$variance, 
-                                       selection.strength=params$selection.strength)
+  params$root.state <- test.root.state(root.state = params$root.state, 
+                                       process = process, 
+                                       optimal.value = params$optimal.value,
+                                       variance = params$variance, 
+                                       selection.strength = params$selection.strength)
   attr(params, "ntaxa")  <- ntaxa
   params_old <- NULL
   ## Iteration
