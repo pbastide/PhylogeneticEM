@@ -666,13 +666,13 @@ init.alpha.gamma.estimation <- function(phylo,
   cor_hat <- NULL # estimations from trilpets of pairs corelations
   square_diff <- NULL # (Y_i-Y_j)^2
   dists <- NULL # corresponding phylogenetic distances between pairs
-  hat_gam <- rep(0, length(edges_shifts)+1)
-  hat_gam_mad <- rep(0, length(edges_shifts)+1)
+  hat_gam <- rep(NA, length(edges_shifts)+1)
+  hat_gam_mad <- rep(NA, length(edges_shifts)+1)
   for (grp in 0:length(edges_shifts)) {
     tips <- which(tips_groups==grp)
-    hat_gam[grp+1] <- var(Y_data[tips])
-    hat_gam_mad[grp+1] <- mad(Y_data[tips])
     if (length(tips) > 1){
+      hat_gam[grp+1] <- var(Y_data[tips])
+      hat_gam_mad[grp+1] <- mad(Y_data[tips])
       Z <- outer(Y_data[tips], Y_data[tips], function(x,y){x-y} )
       square_diff <- c(square_diff, (Z[upper.tri(Z)])^2)
       Z <- distances_phylo[tips,tips]
@@ -682,8 +682,8 @@ init.alpha.gamma.estimation <- function(phylo,
   ## Estimation of gamma
   gamma_0 <- rep(NA, length.out = length(method.init.alpha.estimation) + 2)
   names(gamma_0) <- c("var", "mad", method.init.alpha.estimation)
-  gamma_0["var"] <- mean(hat_gam, na.rm=TRUE) # Simple variance
-  gamma_0["mad"] <- median(hat_gam_mad, na.rm=TRUE) # MAD
+  gamma_0["var"] <- mean(hat_gam, na.rm = TRUE) # Simple variance
+  gamma_0["mad"] <- median(hat_gam_mad, na.rm = TRUE) # MAD
                
   ## Estimation of alpha
   # Supress couple "too far away"
