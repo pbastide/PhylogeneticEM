@@ -729,8 +729,13 @@ estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree)
                    tol = tol_t_half,
                    control = nls.control(tol = tol_t_half,
                                          maxiter = 100))
+  gamma_0_M <- unname(coef(fit.rob)["gam"])
+  if (gamma_0_M < 0){
+    return(list(alpha_0 = NA,
+                gamma_0 = NA))
+  }
   return(list(alpha_0 = log(2) / unname(coef(fit.rob)["t_half"]),
-              gamma_0 = unname(coef(fit.rob)["gam"])))
+              gamma_0 = gamma_0_M))
 }
 
 estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
@@ -749,8 +754,13 @@ estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
                    lower = low_bound,
                    upper = up_bound,
                    method = "MM")
+  gamma_0_M <- unname(coef(fit.rob)["gam"])
+  if (gamma_0_M < 0){
+    return(list(alpha_0 = NA,
+                gamma_0 = NA))
+  }
   return(list(alpha_0 = log(2) / unname(coef(fit.rob)["t_half"]),
-              gamma_0 = unname(coef(fit.rob)["gam"])))
+              gamma_0 = gamma_0_M))
 }
 
 estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
