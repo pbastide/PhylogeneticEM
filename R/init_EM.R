@@ -672,7 +672,7 @@ init.alpha.gamma.estimation <- function(phylo,
     tips <- which(tips_groups==grp)
     if (length(tips) > 1){
       hat_gam[grp+1] <- var(Y_data[tips])
-      hat_gam_mad[grp+1] <- mad(Y_data[tips])
+      hat_gam_mad[grp+1] <- mad(Y_data[tips])^2
       Z <- outer(Y_data[tips], Y_data[tips], function(x,y){x-y} )
       square_diff <- c(square_diff, (Z[upper.tri(Z)])^2)
       Z <- distances_phylo[tips,tips]
