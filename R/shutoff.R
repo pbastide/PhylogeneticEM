@@ -40,7 +40,7 @@
 # REVISIONS:
 # 22/05/14 - Initial release
 ##
-shutoff.EM.BM <- function(params_old, params, tol) {
+shutoff.EM.BM <- function(params_old, params, tol, ...) {
   if (params_old$root.state$random) {
     return(shutoff.EM.BM.randroot(params_old,params,tol))
   } else {
@@ -48,7 +48,7 @@ shutoff.EM.BM <- function(params_old, params, tol) {
   }
 }
 
-shutoff.EM.BM.randroot <- function(params_old, params, tol){
+shutoff.EM.BM.randroot <- function(params_old, params, tol, ...){
   if (abs(params_old$variance-params$variance)<tol$variance &&
         abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
         abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root) {
@@ -58,7 +58,7 @@ shutoff.EM.BM.randroot <- function(params_old, params, tol){
   }
 }
 
-shutoff.EM.BM.fixedroot <- function(params_old, params, tol){
+shutoff.EM.BM.fixedroot <- function(params_old, params, tol, ...){
   if (abs(params_old$variance-params$variance)<tol$variance &&
         abs(params_old$root.state$value.root-params$root.state$value.root)<tol$value.root) {
     return(TRUE)
@@ -67,7 +67,7 @@ shutoff.EM.BM.fixedroot <- function(params_old, params, tol){
   }
 }
 
-shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life){
+shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life, ...){
   if (stationnary.root && shifts_at_nodes && alpha_known) {
     return(shutoff.EM.OU.specialCase)
   } else if (stationnary.root && shifts_at_nodes && tol_half_life) {
@@ -79,7 +79,7 @@ shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known, tol_ha
   }
 }
 
-shutoff.EM.OU.specialCase <- function(params_old, params, tol){
+shutoff.EM.OU.specialCase <- function(params_old, params, tol, ...){
   if (abs(params_old$variance-params$variance)<tol$variance &&
         abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
         abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root) {
@@ -89,7 +89,7 @@ shutoff.EM.OU.specialCase <- function(params_old, params, tol){
   }
 }
 
-shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha <- function(params_old, params, tol){
+shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha <- function(params_old, params, tol, ...){
   if (abs(params_old$variance-params$variance)<tol$variance &&
         abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
         abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root &&

@@ -253,11 +253,13 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
        "Unit", cex = lastPP$cex,
        pos = 2)
   # Plot beta_0
-  nodelabels(text = round(params$optimal.value, 2), 
-             node = ntaxa + 1,
-             bg = bg_beta_0,
-             cex = lastPP$cex,
-             adj = adj)
+  if (!is.null(params$optimal.value)){
+    nodelabels(text = round(params$optimal.value, 2), 
+               node = ntaxa + 1,
+               bg = bg_beta_0,
+               cex = lastPP$cex,
+               adj = adj)
+  }
   # Plot shifts
   if ( !is.null(params$shifts$edges) ) {
     edgelabels_home(text = round(params$shifts$values,2), 

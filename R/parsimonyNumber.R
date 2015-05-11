@@ -698,6 +698,7 @@ equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
   clusters <- clusters_from_shifts_ism(phylo, shifts_edges, ...) + 1
   regime_allocs <- extract.enumerate_parsimony(enumerate_parsimony(phylo, clusters))
   eq_shifts_edges <- apply(regime_allocs, 1, allocate_shifts_from_regimes, phylo = phylo)
+  if (length(shifts_edges) == 1) eq_shifts_edges <- matrix(eq_shifts_edges, nrow = 1) # Deal with dimentions
   return(eq_shifts_edges)
 }
 
