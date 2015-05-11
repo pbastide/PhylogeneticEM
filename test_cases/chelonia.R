@@ -256,35 +256,6 @@ plot_equivalent_shifts.actual(tree, shifts_wie_all_edges, eq_shifts_values_wie, 
 save.image(paste0(PATH, "estimation_OUwie", ".RData"))
 
 ###############################################################################
-## Bayou (see GitHub tutorial)
-###############################################################################
-# Data
-library(bayou)
-data(chelonia)
-tree <- chelonia$phy
-dat <- chelonia$dat
-SE <- 0.05
-# Prior
-prior <- make.prior(tree, dists=list(dalpha="dhalfcauchy", dsig2="dhalfcauchy",dsb="dsb", dk="cdpois", dtheta="dnorm"), param=list(dalpha=list(scale=1), dsig2=list(scale=1), dk=list(lambda=15, kmax=200), dsb=list(bmax=1,prob=1), dtheta=list(mean=mean(dat), sd=2)))
-# MCMC
-par(mfrow=c(2,3))
-fit1 <- bayou.mcmc(tree, dat, SE=SE, model="OU", prior, ngen=10000, new.dir=TRUE, plot.freq=2000, ticker.freq=1000)
-# chain
-chain <- load.bayou(fit1, save.Rdata=FALSE, cleanup=TRUE)
-chain <- set.burnin(chain, 0.3)
-# sumary
-bayou_sum <- summary(chain)
-plot(chain)
-# plot
-par(mfrow=c(1,1))
-plotSimmap.mcmc(tree, chain, burnin=0.3, circle=TRUE, fsize=0.4)
-phenogram.density(tree, dat, chain=chain, burnin=0.3, pp.cutoff=0.3)
-# marginal likelihood
-ss <- steppingstone(Bk=seq(0,1,length.out=5), chain, tree, dat, SE=SE, prior=prior, new.dir=TRUE, ngen=10000)
-ss <- set.burnin(ss, 0.3)
-plot(ss)
-
-###############################################################################
 ## Summary
 ###############################################################################
 load(paste0(PATH, "estimation", name, ".RData"))
@@ -295,21 +266,24 @@ EM_select <- list(Nbr_shifts = length(estimations[[K_select]]$shifts$edges),
                   lnL = estimations[[K_select]]$log_likelihood,
                   alpha = estimations[[K_select]]$alpha_estim,
                   half_life = log(2)/estimations[[K_select]]$alpha_estim,
-                  sigma = 2 * estimations[[K_select]]$alpha_estim * estimations[[K_select]]$gamma_estim)
+                  sigma = 2 * estimations[[K_select]]$alpha_estim * estimations[[K_select]]$gamma_estim,
+                  gamma = estimations[[K_select]]$gamma_estim)
 
 EM_habitat <- list(Nbr_shifts = length(estimations[[K_true]]$shifts$edges),
                   Nbr_regimes = length(estimations[[K_true]]$shifts$edges) + 1,
                   lnL = estimations[[K_true]]$log_likelihood,
                   alpha = estimations[[K_true]]$alpha_estim,
                   half_life = log(2)/estimations[[K_true]]$alpha_estim,
-                  sigma = 2 * estimations[[K_true]]$alpha_estim * estimations[[K_select]]$gamma_estim)
+                  sigma = 2 * estimations[[K_true]]$alpha_estim * estimations[[K_select]]$gamma_estim,
+                  gamma = estimations[[K_select]]$gamma_estim)
 
 OU_habitat <- list(Nbr_shifts = Nbr_shifts_OUwie,
                    Nbr_regimes = 4,
                    lnL = res_OUwie$loglik,
                    alpha = res_OUwie$solution["alpha", 1],
                    half_life = log(2)/res_OUwie$solution["alpha", 1],
-                   sigma = res_OUwie$solution["sigma.sq", 1])
+                   sigma = res_OUwie$solution["sigma.sq", 1],
+                   gamma = res_OUwie$solution["sigma.sq", 1]/(2*res_OUwie$solution["alpha", 1]))
 
 Summary <- cbind(OU_habitat, EM_habitat, EM_select)
 
