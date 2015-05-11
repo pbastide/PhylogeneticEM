@@ -205,7 +205,7 @@ for (i in 1:length(alpha_grid)){
   simests_alpha_known[[i]] <- estimations_several_K_alpha_known(tree, data, K_max, known_alpha)
 }
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "alpha_unknown.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "several_tries.RData"))
 
 ###############################################################################
 ## Baraud Giraud Huet
