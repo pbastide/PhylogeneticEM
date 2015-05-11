@@ -48,12 +48,16 @@ init.EM.default <- function(process){
   }
 }
 
-init.EM.default.BM <- function(variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, ...) {
+init.EM.default.BM <- function(variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, nbr_of_shifts = length(edges.init), ...) {
   if (random.init) {
     value.root.init <- NA
   } else {
     exp.root.init <- NA
     var.root.init <- NA
+  }
+  # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
+  if (is.null(edges.init) && (nbr_of_shifts != 0)){
+    edges.init <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
   }
   params_init=list(variance=variance.init,
                    root.state=list(random=random.init,
@@ -66,7 +70,7 @@ init.EM.default.BM <- function(variance.init=1, random.init=TRUE, value.root.ini
   return(params_init)
 }
 
-init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.root.init=TRUE, value.root.init=1, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, ...) {
+init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.root.init=TRUE, value.root.init=1, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, nbr_of_shifts = length(edges.init), ...) {
   if (random.init) {
     value.root.init <- NA
     if (stationary.root.init) {
@@ -76,6 +80,10 @@ init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.roo
   } else {
     exp.root=NA
     var.root=NA
+  }
+  # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
+  if (is.null(edges.init) && (nbr_of_shifts != 0)){
+    edges.init <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
   }
   params_init=list(variance=variance.init,
                    root.state=list(random=random.init,

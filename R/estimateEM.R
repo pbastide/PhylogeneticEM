@@ -208,23 +208,25 @@ estimateEM <- function(phylo,
                                                   tol = tol,
                                                   h_tree = h_tree)
   init.var.root <- mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
-  if (!alpha_known && (sum(is.finite(init.a.g$alpha_0)) != 0)) {
-    ## Only if not all NAs ot infinite
-    init.selection.strength <- mean(init.a.g$alpha_0[is.finite(init.a.g$alpha_0)])
+  if (!alpha_known) {
+    if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
+      ## Only if not all NAs ot infinite
+      init.selection.strength <- mean(init.a.g$alpha_0[is.finite(init.a.g$alpha_0)])
+    }
   } else {
     init.selection.strength <- known.selection.strength
   }
-  # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
-  if (!exists("edges.init") || is.null(edges.init)){
-    if (nbr_of_shifts != 0){
-      init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
-    }
-    else {
-      init_edges <- NULL
-    }
-  } else {
-    init_edges <- edges.init
-  }
+#   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
+#   if (!exists("edges.init") || is.null(edges.init)){
+#     if (nbr_of_shifts != 0){
+#       init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
+#     }
+#     else {
+#       init_edges <- NULL
+#     }
+#   } else {
+#     init_edges <- edges.init
+#   }
 # Initialization per se
   params_init <- init.EM(phylo = phylo,
                          Y_data = Y_data,
@@ -239,7 +241,6 @@ estimateEM <- function(phylo,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
                          T_tree = T_tree,
-                         edges.init = init_edges,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 
