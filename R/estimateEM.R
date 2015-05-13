@@ -111,7 +111,13 @@ estimateEM <- function(phylo,
   
   ## Choose process #########################################
   process <- match.arg(process)
-  if (alpha_known) process <- check.selection.strength(process, known.selection.strength, eps)
+  if ((process == "OU") && alpha_known){
+    process <- check.selection.strength(process, known.selection.strength, eps)
+    random.root = FALSE
+  }
+  if ((process == "BM") && random.root){
+    warning("The Process is BM with random root : model selection won't work.")
+  }
   # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
@@ -128,9 +134,9 @@ estimateEM <- function(phylo,
 #   compute_MaxCompleteLogLik <- switch(process, 
 #                                       BM = compute_MaxCompleteLogLik.BM,
 #                                       OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
-  conditional_expectation_log_likelihood <- switch(process, 
-                                                   BM = conditional_expectation_log_likelihood.BM,
-                                                   OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))
+#   conditional_expectation_log_likelihood <- switch(process, 
+#                                                    BM = conditional_expectation_log_likelihood.BM,
+#                                                    OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))
 
   ## init alpha #########################################
   method.init.alpha  <- match.arg(method.init.alpha)
@@ -593,6 +599,10 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
   X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
 #  X$raw_results <- results_estim_EM
+  if (is.null(params$selection.strength)){# Handle BM case
+    params$selection.strength <- NA
+    params_init$selection.strength <- NA
+  }
   X$summary <- data.frame(
     ## Estimated Parameters
     "alpha_estim" = params$selection.strength,

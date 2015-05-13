@@ -48,7 +48,7 @@ init.EM.default <- function(process){
   }
 }
 
-init.EM.default.BM <- function(variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, nbr_of_shifts = length(edges.init), ...) {
+init.EM.default.BM <- function(variance.init=1, random.init=FALSE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, nbr_of_shifts = length(edges.init), ...) {
   if (random.init) {
     value.root.init <- NA
   } else {
@@ -501,8 +501,8 @@ init.alpha.OU <- function(method.init.alpha){
 }
 
 init.alpha.gamma.BM <- function(method.init.alpha){
-  return(function(var.init.root, ...) return(list(alpha_0 = 0,
-                                                  gamma_0 = var.init.root)))
+  return(function(init.var.root, ...) return(list(alpha_0 = 0,
+                                                  gamma_0 = init.var.root)))
 }
 
 init.alpha.gamma.OU <- function(method.init.alpha){
