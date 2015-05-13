@@ -307,6 +307,22 @@ p <- p + theme(axis.text = element_text(size = 12),
 )
 p
 
+summary_all <- extract_data_frame(simests_all)
+p <- ggplot(summary_all, aes(x = K_try, y = time, color = as.factor(alpha)))
+p <- p + geom_line()
+# p <- p + geom_vline(xintercept = K_true)
+p <- p + labs(x = "K",
+              y = "Time (s)")
+p <- p + scale_x_discrete(labels = signif(unique(summary_alpha_known$alpha_estim), 2))
+p <- p + scale_y_continuous(breaks = unique(summary_alpha_known$K_select))
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
 # ll_plot <- melt(simest$results_summary[,c("K_try", "log_likelihood", "crit_ll", "pen_ll")],
 #                 id.vars = "K_try",
 #                 variable.name = "score",
