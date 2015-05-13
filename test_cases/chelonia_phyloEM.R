@@ -138,7 +138,7 @@ estimations_several_K <- function(tree, data, K_max, order = TRUE){
 simest_0_to_max <- estimations_several_K(tree, data, K_max, order = TRUE)
 simest_max_to_0 <- estimations_several_K(tree, data, K_max, order = FALSE)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "alpha_unknown.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_unknown.RData"))
 
 ###############################################################################
 ## Alpha known
@@ -205,11 +205,12 @@ for (i in 1:length(alpha_grid)){
   simests_alpha_known[[i]] <- estimations_several_K_alpha_known(tree, data, K_max, known_alpha)
 }
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "several_tries.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_several_tries.RData"))
 
 ###############################################################################
 ## Baraud Giraud Huet
 ###############################################################################
+load(paste0(PATH, "migale/", data_type, "_estimation_K_max=", K_max, "_several_tries.RData"))
 
 ## Compute penalty and criteria for each set of parameters
 penalty <- function(K_try, complexity, ntaxa){
@@ -234,21 +235,54 @@ add_crit_and_pen <- function(z){
   z$crit_ll <- criteria(z$log_likelihood,
                         z$pen_ll)
   z$K_select <- z$K_try[which.min(z$crit_ll)]
+  z$ll_select <- z$log_likelihood[which.min(z$crit_ll)]
   return(z)
 }
 
-simest$results_summary <- add_crit_and_pen(simest$results_summary)
+add_K_select_to_list <- function(simest){
+  simest$results_summary <- add_crit_and_pen(simest$results_summary)
+  simest$K_select <- unique(simest$results_summary$K_select)
+  simest$params_select <- simest$params_estim[[paste(simest$K_select)]]
+  return(simest)
+}
 
-crit_min <- subset(simest$results_summary, crit_ll == min(crit_ll))
+fun <- function(z){
+  z$results_summary$alpha <- signif(z$results_summary$alpha_estim, 2)
+  return(z) 
+}
 
-p <- ggplot(simest$results_summary, aes(x = K_try, y = crit_ll))
-p <- p + geom_point()
-p <- p + geom_point(data = crit_min, aes(x = K_try, y = crit_ll, size = 5))
+simest_0_to_max <- add_K_select_to_list(simest_0_to_max)
+simest_0_to_max$results_summary$alpha <- "K-1"
+simest_max_to_0 <- add_K_select_to_list(simest_max_to_0)
+simest_max_to_0$results_summary$alpha <- "K+1"
+simests_alpha_known <- lapply(simests_alpha_known, add_K_select_to_list)
+simests_alpha_known <- lapply(simests_alpha_known, fun)
+
+simests_all <- simests_alpha_known
+simests_all[["K-1"]] <- simest_0_to_max
+simests_all[["K+1"]] <- simest_max_to_0
+
+###################################################################
+## Plots log likelihood
+###################################################################
+extract_data_frame <- function(simests){
+  dd <- do.call(rbind, simests)
+  results_summary <- as.data.frame(do.call(rbind, dd[,"results_summary"]))
+  return(results_summary)
+}
+
+summary_alpha_known <- extract_data_frame(simests_all[c(1, 3, 5, 7, 10, 13, 14)])
+p <- ggplot(summary_alpha_known, aes(x = K_try, y = log_likelihood, color = as.factor(alpha)))
+p <- p + geom_line()
+# p <- p + geom_point(data = crit_min, aes(x = K_try, y = crit_ll, size = 5))
+p <- p + geom_point(aes(x = K_select, y = ll_select, color = as.factor(alpha), size = 5))
 # p <- p + geom_vline(xintercept = K_true)
 p <- p + labs(x = "K",
               y = "Log Likelihood")
 p <- p + scale_size(name = "", labels = "Min")
-p <- p + scale_x_continuous(breaks = c(0, 5, 10, 20, 30))
+p <- p + scale_color_discrete(name = expression(alpha))
+#                               labels = unique(summary_alpha_known$alpha)
+p <- p + scale_x_continuous(breaks = c(0, 5, 10, 15, 20))
 p <- p + theme_bw()
 p <- p + theme(axis.text = element_text(size = 12),
                strip.text = element_text(size = 12)
@@ -257,31 +291,67 @@ p <- p + theme(axis.text = element_text(size = 12),
 )
 p
 
-ll_plot <- melt(simest$results_summary[,c("K_try", "log_likelihood", "crit_ll", "pen_ll")],
-                id.vars = "K_try",
-                variable.name = "score",
-                value.name = "value")
-ll_min_plot <- melt(crit_min[,c("K_try", "log_likelihood", "crit_ll", "pen_ll")],
-                    id.vars = "K_try", 
-                    variable.name = "score",
-                    value.name = "value")
-
-## Plot Likelihood
-p <- ggplot(ll_plot, aes(x = K_try, y = value, color = score))
+summary_alpha_known <- extract_data_frame(simests_alpha_known)
+p <- ggplot(summary_alpha_known, aes(x = as.factor(alpha_estim), y = K_select))
 p <- p + geom_point()
-p <- p + geom_point(data = ll_min_plot, aes(x = K_try, y = value, color = score, size = 5))
 # p <- p + geom_vline(xintercept = K_true)
-p <- p + labs(x = "K",
-              y = "Log Likelihood")
+p <- p + labs(x = expression(alpha),
+              y = "K select")
+p <- p + scale_x_discrete(labels = signif(unique(summary_alpha_known$alpha_estim), 2))
+p <- p + scale_y_continuous(breaks = unique(summary_alpha_known$K_select))
 p <- p + theme_bw()
-p <- p + scale_size(name = "", labels = "Min")
-p <- p + scale_x_continuous(breaks = c(0, 1, 16))
 p <- p + theme(axis.text = element_text(size = 12),
                strip.text = element_text(size = 12)
                ##legend.position = c(0, 1),
                ##legend.justification = c(0, 1)
 )
 p
+
+# ll_plot <- melt(simest$results_summary[,c("K_try", "log_likelihood", "crit_ll", "pen_ll")],
+#                 id.vars = "K_try",
+#                 variable.name = "score",
+#                 value.name = "value")
+# ll_min_plot <- melt(crit_min[,c("K_try", "log_likelihood", "crit_ll", "pen_ll")],
+#                     id.vars = "K_try", 
+#                     variable.name = "score",
+#                     value.name = "value")
+# 
+# ## Plot Likelihood
+# p <- ggplot(ll_plot, aes(x = K_try, y = value, color = score))
+# p <- p + geom_point()
+# p <- p + geom_point(data = ll_min_plot, aes(x = K_try, y = value, color = score, size = 5))
+# # p <- p + geom_vline(xintercept = K_true)
+# p <- p + labs(x = "K",
+#               y = "Log Likelihood")
+# p <- p + theme_bw()
+# p <- p + scale_size(name = "", labels = "Min")
+# p <- p + scale_x_continuous(breaks = c(0, 1, 16))
+# p <- p + theme(axis.text = element_text(size = 12),
+#                strip.text = element_text(size = 12)
+#                ##legend.position = c(0, 1),
+#                ##legend.justification = c(0, 1)
+# )
+# p
+
+##########################################################
+## Plot Processes
+##########################################################
+nbrSol <- length(simests_all)
+nbrLignes <- (nbrSol %/% 3) + 1
+if (nbrSol %% 3 == 0) nbrLignes <- nbrLignes - 1
+scr <- split.screen(c(nbrLignes, 3))
+for (sol in 1:(nbrSol)) {
+  ## Plot
+  screen(scr[sol])
+  plot.data.process.actual(Y.state = data,
+                           phylo = tree, 
+                           params = simests_all[[sol]]$params_select,
+                           adj = 2,
+                           automatic_colors = TRUE)
+  legend("topleft", legend = unique(simests_all[[sol]]$results_summary$alpha), cex = 0.5)
+}
+close.screen(all.screens = TRUE)
+
 
 ###########################################################
 # Summary results

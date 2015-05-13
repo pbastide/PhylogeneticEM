@@ -80,6 +80,7 @@ axisPhylo()
 library(OUwie)
 PATH <- "../Results/Chelonia/"
 
+ntaxa <- length(tree$tip.label)
 ## format data for OUwie
 treeWIE <- tree
 treeWIE$node.label <- ParSols[1,(length(tree$tip.label)+1):dim(ParSols)[2]]
@@ -94,8 +95,8 @@ res_OUwie_BM <- OUwie(phy = treeWIE,
                       data = dataWIE,
                       model = "BM1")
 
-save.image(paste0(PATH, "estimation_OUwie", ".RData"))
-rm(vv, treeWIE, dataWIE, res_OUwie)
+save.image(paste0(PATH, "chelonia_OUwie", ".RData"))
+#rm(vv, treeWIE, dataWIE, res_OUwie)
 
 ## Equivalent solutions
 times_shared <- compute_times_ca(tree)
@@ -130,6 +131,7 @@ shifts_eq <- mapply(fun, alply(eq_shifts_edges_wie, 2), alply(eq_shifts_values_w
 
 betas_eq <- mapply( function(beta_0, shifts) compute_betas(tree, beta_0, shifts), as.list(eq_shifts_values_wie$betas_0), shifts_eq)
 
-plot_equivalent_shifts.actual(tree, shifts_wie_all_edges, eq_shifts_values_wie, use.edge.length = FALSE, adj = 0)
+plot_equivalent_shifts.actual(tree, eq_shifts_edges_wie, eq_shifts_values_wie, use.edge.length = FALSE, adj = 0)
 
-save.image(paste0(PATH, "estimation_OUwie", ".RData"))
+save.image(paste0(PATH, "chelonia_OUwie", ".RData"))
+# save.image(paste0(PATH, "estimation_OUwie", ".RData"))
