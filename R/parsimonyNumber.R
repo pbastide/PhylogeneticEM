@@ -839,7 +839,7 @@ plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values,
   
 }
 
-plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_values, ...){
+plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_values, numbering = FALSE, ...){
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% 3) + 1
   if (nbrSol %% 3 == 0) nbrLignes <- nbrLignes - 1
@@ -858,6 +858,9 @@ plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_valu
     ## Plot
     screen(scr[sol])
     plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2, quant.root = 0.7, ...)
+    if(numbering){
+      legend("topleft", legend = sol, cex = 0.8, x.intersp = 0)
+    }
   }
   close.screen(all.screens = TRUE)
 }
