@@ -48,7 +48,7 @@ init.EM.default <- function(process){
   }
 }
 
-init.EM.default.BM <- function(variance.init=1, random.init=FALSE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, nbr_of_shifts = length(edges.init), ...) {
+init.EM.default.BM <- function(variance.init=1, random.init=FALSE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, nbr_of_shifts = length(edges.init), phylo = NULL, ...) {
   if (random.init) {
     value.root.init <- NA
   } else {
@@ -70,7 +70,7 @@ init.EM.default.BM <- function(variance.init=1, random.init=FALSE, value.root.in
   return(params_init)
 }
 
-init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.root.init=TRUE, value.root.init=1, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, nbr_of_shifts = length(edges.init), ...) {
+init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.root.init=TRUE, value.root.init=1, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, nbr_of_shifts = length(edges.init), phylo = NULL, ...) {
   if (random.init) {
     value.root.init <- NA
     if (stationary.root.init) {
@@ -452,7 +452,9 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared = compute_times_c
     return(init.EM.default(selection.strength.init = selection.strength.init, 
                            random.init = random.init, 
                            stationnary.root.init = stationnary.root.init, 
-                           edges.init = edges.init, ...))
+                           edges.init = edges.init,
+                           nbr_of_shifts = nbr_of_shifts,
+                           phylo = phylo, ...))
   } else { 
     E0.gauss <- fit$E0.gauss
     shifts.gauss <- fit$shifts.gauss
