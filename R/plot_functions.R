@@ -140,7 +140,6 @@ plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normali
 }
 
 ## add a parameter frac to deplace the position of the label on the edge
-## frac must be a power of 2
 edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
                              pch = NULL, thermo = NULL, pie = NULL,
                              piecol = NULL, col = "black", bg = "lightgreen",
@@ -159,20 +158,20 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
   }
   if (lastPP$type == "phylogram") {
     if (lastPP$direction %in% c("rightwards", "leftwards")) {
-      XX <- lastPP$xx[subedge[, 1]] + lastPP$xx[subedge[, 2]]
+      XX <- (lastPP$xx[subedge[, 1]] + lastPP$xx[subedge[, 2]])/2
       if (beg) XX <- lastPP$xx[subedge[, 1]]
       YY <- lastPP$yy[subedge[, 2]]
     }
     else {
       XX <- lastPP$xx[subedge[, 2]]
-      YY <- lastPP$yy[subedge[, 1]] + lastPP$yy[subedge[, 2]]
+      YY <- (lastPP$yy[subedge[, 1]] + lastPP$yy[subedge[, 2]])/2
       if (beg) YY <- lastPP$yy[subedge[, 1]]
     }
   }
   else {
-    XX <- lastPP$xx[subedge[, 1]] + lastPP$xx[subedge[, 2]]
+    XX <- (lastPP$xx[subedge[, 1]] + lastPP$xx[subedge[, 2]])/2
     if (beg) XX <- lastPP$xx[subedge[, 1]]
-    YY <- lastPP$yy[subedge[, 1]] + lastPP$yy[subedge[, 2]]
+    YY <- (lastPP$yy[subedge[, 1]] + lastPP$yy[subedge[, 2]])/2
     if (beg) YY <- lastPP$yy[subedge[, 1]]
   }
   if (!is.null(date)) 
@@ -182,11 +181,15 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 }
 
 plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
-                                     adj = 1, bg_shifts = "chocolate4",
+                                     adj.root = 1, adj.nodes = 0,
+                                     bg_shifts = "chocolate4",
                                      bg_beta_0 = "chocolate4", quant.root = 0.25,
                                      color_characters = "black",
                                      color_edges = "black",
-                                     automatic_colors = FALSE, ...){
+                                     automatic_colors = FALSE,
+                                     regime_boxes = FALSE,
+                                     alpha.border = 70,
+                                     value_in_box = TRUE, ...){
   ntaxa <- length(phylo$tip.label)
   if (normalize){
     norm <- max(abs(Y.state))
@@ -253,21 +256,78 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
        "Unit", cex = lastPP$cex,
        pos = 2)
   # Plot beta_0
-  if (!is.null(params$optimal.value)){
-    nodelabels(text = round(params$optimal.value, 2), 
-               node = ntaxa + 1,
-               bg = bg_beta_0,
-               cex = lastPP$cex,
-               adj = adj)
+  if (value_in_box){ # Write value of shift in the box
+    if (!is.null(params$optimal.value)){
+      nodelabels(text = round(params$optimal.value, 1), 
+                 node = ntaxa + 1,
+                 bg = bg_beta_0,
+                 cex = 7/10*lastPP$cex,
+                 adj = adj.root)
+    }
+    # Plot shifts
+    if ( !is.null(params$shifts$edges) ) {
+      edgelabels_home(text = round(params$shifts$values, 1), 
+                      edge = params$shifts$edges, 
+                      bg = bg_shifts,
+                      cex = 7/10*lastPP$cex,
+                      beg = TRUE,
+                      adj = adj.nodes)
+    }
+  } else { # Color code for shifts values
+    values <- c(params$optimal.value, params$shifts$values)
+    indPos <- which(values > 0)
+    indNeg <- which(values < 0)
+    indNull <- which(values == 0)
+    nbrColPos <- sum(indPos)
+    nbrColNeg <- sum(indNeg)
+    nbrColNull <- sum(indNull)
+    palettePos <- colorRampPalette(c("orangered","red"))(nbrColPos)
+    paletteNeg <- colorRampPalette(c("blue","lightblue"))(nbrColNeg)
+    col_shifts <- rep(NA, length(values))
+    col_shifts[indPos] <- palettePos[cut(values[indPos], nbrColPos)]
+    col_shifts[indNeg] <- paletteNeg[cut(values[indNeg], nbrColNeg)]
+    col_shifts[indNull] <- "white"
+    if (!is.null(params$optimal.value)){
+      nodelabels(text = "", 
+                 node = ntaxa + 1,
+                 frame = "circle",
+                 cex = 0.5*lastPP$cex,
+                 bg = col_shifts[1])
+    }
+    col_shifts <- col_shifts[-1]
+    # Plot shifts
+    if ( !is.null(params$shifts$edges) ) {
+      edgelabels_home(text = rep("", length(col_shifts)),
+                 edge = params$shifts$edges, 
+                 frame = "circle",
+                 cex = 0.5*lastPP$cex,
+                 bg = col_shifts,
+                 beg = TRUE)
+    }
   }
-  # Plot shifts
-  if ( !is.null(params$shifts$edges) ) {
-    edgelabels_home(text = round(params$shifts$values,2), 
-                    edge = params$shifts$edges, 
-                    bg = bg_shifts,
-                    cex = 8/10*lastPP$cex,
-                    beg = TRUE,
-                    adj = 0)
+  ## Boxes aroud regimes
+  if (regime_boxes){
+    nodes_regimes <- allocate_regimes_from_shifts(phylo,
+                                                  params$shifts$edges)
+    tips_regimes <- nodes_regimes[1:ntaxa]
+    all_regimes <- 1:max(tips_regimes)
+    for (reg in all_regimes){
+      groupe <- which(tips_regimes == reg)
+      prac <- getMRCA(phylo, groupe)
+      if(is.null(prac)){
+        prac_fa <- groupe # If only one tip in the group
+        edge <- which(phylo$edge[,2]==prac_fa)
+      } else {
+        edge <- which(phylo$edge[,2]==prac)
+        prac_fa <- phylo$edge[edge,1]
+      }
+      rect(lastPP$xx[prac_fa] + 0.5 * phylo$edge.length[edge],
+           lastPP$yy[min(groupe)] - 0.5,
+           x.lim.max + 2,
+           lastPP$yy[max(groupe)] + 0.5,
+           lwd = 2,
+           border = paste0("#000000", alpha.border))
+    }
   }
 }
 
