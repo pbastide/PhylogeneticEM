@@ -22,17 +22,18 @@ prior <- make.prior(tree,
                                dtheta=list(mean=3.5, sd=1.5)))
 # MCMC
 par(mfrow=c(2,3))
-fit1 <- bayou.mcmc(tree,
-                   dat,
-                   SE=SE,
-                   model="OU",
-                   prior,
-                   ngen=500000,
-                   new.dir="../Results/Chelonia",
-                   plot.freq=NULL,
-                   ticker.freq=10000)
+time_fit_1 <- system.time(fit1 <- bayou.mcmc(tree,
+                                             dat,
+                                             SE=SE,
+                                             model="OU",
+                                             prior,
+                                             ngen=500000,
+                                             new.dir="../Results/Chelonia",
+                                             plot.freq=NULL,
+                                             ticker.freq=10000))
 # chain
-chain <- load.bayou(fit1, save.Rdata = TRUE, file = paste0(PATH, "bayou_chain_1.rds"), cleanup=TRUE)
+chain <- load.bayou(fit1, save.Rdata = TRUE,
+                    file = paste0(PATH, "bayou_chain_1.rds"), cleanup=TRUE)
 chain <- set.burnin(chain, 0.3)
 # sumary
 bayou_sum <- summary(chain)
@@ -42,54 +43,57 @@ par(mfrow=c(1,1))
 plotSimmap.mcmc(tree, chain, burnin=0.3, circle=TRUE, fsize=0.4)
 phenogram.density(tree, dat, chain=chain, burnin=0.3, pp.cutoff=0.3)
 # Other chain for convergence
-fit2 <- bayou.mcmc(tree,
-                   dat, 
-                   SE=SE,
-                   model="OU", 
-                   prior, 
-                   ngen=500000, 
-                   new.dir=TRUE, 
-                   plot.freq=NULL, 
-                   ticker.freq=10000)
+time_fit_2  <- system.time(fit2 <- bayou.mcmc(tree,
+                                              dat, 
+                                              SE=SE,
+                                              model="OU", 
+                                              prior, 
+                                              ngen=500000, 
+                                              new.dir=TRUE, 
+                                              plot.freq=NULL, 
+                                              ticker.freq=10000))
 chain2 <- load.bayou(fit2, save.Rdata = TRUE, file = paste0(PATH, "bayou_chain_2.rds"), cleanup=TRUE)
 chain2 <- set.burnin(chain2, 0.3)
 # Gelman's R statistic
-RlnL <- gelman.R("lnL", chain1=chain, chain2=chain2, plot=TRUE, type="n", ylim=c(0.9, 2))
-Ralpha <- gelman.R("alpha", chain1=chain, chain2=chain2, plot=TRUE, type="n", ylim=c(0.9, 2))
-Rsig2 <- gelman.R("sig2", chain1=chain, chain2=chain2, plot=TRUE, type="n", ylim=c(0.9, 2))
+time_gelman1 <- system.time(RlnL <- gelman.R("lnL", chain1=chain, chain2=chain2, plot=TRUE, type="n", ylim=c(0.9, 2)))
+time_gelman2 <- system.time(Ralpha <- gelman.R("alpha", chain1=chain, chain2=chain2, plot=TRUE, type="n", ylim=c(0.9, 2)))
+time_gelman3 <- system.time(Rsig2 <- gelman.R("sig2", chain1=chain, chain2=chain2, plot=TRUE, type="n", ylim=c(0.9, 2)))
+time_gelman <- time_gelman1 + time_gelman2 + time_gelman3
 # Position of shifts
 L1 <- Lposterior(chain,tree, burnin=0.3)
 L2 <- Lposterior(chain2,tree, burnin=0.3)
 plot(L1$pp,L2$pp, xlim=c(0,1), ylim=c(0,1), xlab="Chain 1", ylab="Chain 2")
 curve(1*x, add=TRUE, lty=2)
 # Another chain for fun
-fit3 <- bayou.mcmc(tree,
-                   dat, 
-                   SE=SE,
-                   model="OU", 
-                   prior, 
-                   ngen=500000, 
-                   new.dir=TRUE, 
-                   plot.freq=NULL, 
-                   ticker.freq=10000)
+time_fit_3 <- system.time(fit3 <- bayou.mcmc(tree,
+                                             dat, 
+                                             SE=SE,
+                                             model="OU", 
+                                             prior, 
+                                             ngen=500000, 
+                                             new.dir=TRUE, 
+                                             plot.freq=NULL, 
+                                             ticker.freq=10000))
 chain3 <- load.bayou(fit3, save.Rdata = TRUE, file = paste0(PATH, "bayou_chain_3.rds"), cleanup=TRUE)
 chain3 <- set.burnin(chain3, 0.3)
 # Combine chains
 chains <- combine.chains(chain, chain2, burnin.prop=0.3)
 chains <- set.burnin(chains, 0)
+bayou_sum_all <- summary(chains)
+plot(chains)
 # plot
 par(mfrow=c(1,1))
 plotSimmap.mcmc(tree, chains, burnin=0.3, circle=TRUE, fsize=0.4)
 phenogram.density(tree, dat, chain=chains, burnin=0.3, pp.cutoff=0.3)
 # marginal likelihood
-ss <- steppingstone(Bk=seq(0,1,length.out=5),
-                    chains, 
-                    tree, 
-                    dat, 
-                    SE=SE, 
-                    prior=prior, 
-                    new.dir=TRUE,
-                    ngen=10000)
+time_marginal_ll <- system.time(ss <- steppingstone(Bk=seq(0,1,length.out=5),
+                                                    chains, 
+                                                    tree, 
+                                                    dat, 
+                                                    SE=SE, 
+                                                    prior=prior, 
+                                                    new.dir=TRUE,
+                                                    ngen=10000))
 ss <- set.burnin(ss, 0.3)
 ss
 plot(ss)
@@ -102,6 +106,7 @@ OU_bayou <- list(Nbr_shifts = median(chains$k),
                  alpha = median(chains$alpha),
                  half_life = median(log(2)/chains$alpha),
                  sigma = median(chains$sig2),
-                 gamma = median(chains$sig2/(2*chains$alpha)))
+                 gamma = median(chains$sig2/(2*chains$alpha)),
+                 time = (time_fit_1 + time_fit_2 + time_gelman + time_marginal_ll)[3])
 
 save.image(paste0(PATH, "chelonia_bayou_res.RData"))
