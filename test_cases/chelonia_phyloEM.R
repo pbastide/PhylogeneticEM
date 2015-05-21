@@ -259,6 +259,8 @@ simest_0_to_max <- add_K_select_to_list(simest_0_to_max)
 simest_0_to_max$results_summary$alpha <- "K-1"
 simest_max_to_0 <- add_K_select_to_list(simest_max_to_0)
 simest_max_to_0$results_summary$alpha <- "K+1"
+simest_alpha_unknown <- list("K-1" = simest_0_to_max,
+                             "K+1" = simest_max_to_0)
 simests_alpha_known <- c(simests_alpha_known, simests_alpha_known_bis)
 simests_alpha_known <- lapply(simests_alpha_known, add_K_select_to_list)
 simests_alpha_known <- lapply(simests_alpha_known, fun)
@@ -281,6 +283,26 @@ extract_data_frame <- function(simests){
 ## Some ll plots
 summary_alpha_known <- extract_data_frame(simests_all[c(21:30, 101)])
 p <- ggplot(summary_alpha_known, aes(x = K_try, y = log_likelihood, color = as.factor(alpha), group = as.factor(alpha)))
+p <- p + geom_line()
+# p <- p + geom_point(data = crit_min, aes(x = K_try, y = crit_ll, size = 5))
+p <- p + geom_point(aes(x = K_select, y = ll_select, color = as.factor(alpha), size = 5))
+# p <- p + geom_vline(xintercept = K_true)
+p <- p + labs(x = "K",
+              y = "Log Likelihood")
+p <- p + scale_size(name = "", labels = "Min")
+p <- p + scale_color_discrete(name = expression(alpha))
+#                               labels = unique(summary_alpha_known$alpha)
+p <- p + scale_x_continuous(breaks = c(0, 5, 10, 15, 20))
+p <- p + theme_bw()
+p <- p + theme(axis.text = element_text(size = 12),
+               strip.text = element_text(size = 12)
+               ##legend.position = c(0, 1),
+               ##legend.justification = c(0, 1)
+)
+p
+
+summary_alpha_unknown <- extract_data_frame(simest_alpha_unknown)
+p <- ggplot(summary_alpha_unknown, aes(x = K_try, y = log_likelihood, color = as.factor(alpha), group = as.factor(alpha)))
 p <- p + geom_line()
 # p <- p + geom_point(data = crit_min, aes(x = K_try, y = crit_ll, size = 5))
 p <- p + geom_point(aes(x = K_select, y = ll_select, color = as.factor(alpha), size = 5))
@@ -369,29 +391,41 @@ select_grid <- function(simests, alpha_grid){
                           summarize,
                           log_likelihood = max(log_likelihood),
                           pen_ll = unique(pen_ll),
-                          crit_ll = min(crit_ll))
+                          crit_ll = min(crit_ll),
+                          alpha = "max_grid")
   K_select <- which.min(summary_max_ll$crit_ll) - 1
+  summary_max_ll$K_select <- K_select
+  summary_max_ll$ll_select <- summary_max_ll$log_likelihood[which.min(summary_max_ll$crit_ll)]
   index_select <- which(summary_alpha_known$crit_ll == min(summary_max_ll$crit_ll))
   index_select <- which(alpha_grid == summary_alpha_known[index_select, "alpha_estim"])
   params_select <- simests[[index_select]]$params_estim[[K_select + 1]]
-  ## Compute Total time needed to compute all the grid
-  time_total <- sum(summary_alpha_known$time)
-  attr(params_select, "total_time") <- time_total
-  return(params_select)
+  return(list(summary_max_ll = summary_max_ll,
+              params_select = params_select,
+              total_time = sum(summary_alpha_known$time),
+              simest_select = simests[[index_select]]))
 }
 
-params_select_grid_fine <- select_grid(simests_all[14:113], alpha_grid[14:113])
-params_select_grid_grosse <- select_grid(simests_all[c(14, seq(23, 113, 10))], alpha_grid[c(14, seq(23, 113, 10))])
+max_ll_params_fine <- select_grid(simests_all[14:113], alpha_grid[14:113])
+max_ll_params_grosse <- select_grid(simests_all[c(14, seq(23, 113, 10))], alpha_grid[c(14, seq(23, 113, 10))])
+max_ll_params_tres_grosse <- select_grid(simests_all[c(seq(23, 113, 20))], alpha_grid[c(seq(23, 113, 20))])
+max_ll_params_enorme <- select_grid(simests_all[c(23, 63, 103)], alpha_grid[c(23, 63, 103)])
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
-                         params = params_select,
+                         params = max_ll_params_fine$params_select,
                          adj = 2,
                          automatic_colors = TRUE)
 
 ## Selected alpha ll vs unknown alpha
-summary_alpha_known <- extract_data_frame(simests_all[c(index_select, 122, 123)])
-p <- ggplot(summary_alpha_known, aes(x = K_try, y = log_likelihood, color = as.factor(alpha), group = as.factor(alpha)))
+summary_grid_EM <- rbind(max_ll_select_grid$summary_max_ll,
+                         extract_data_frame(simest_alpha_unknown)[,c("K_try",
+                                                                     "log_likelihood",
+                                                                     "pen_ll",
+                                                                     "crit_ll",
+                                                                     "alpha",
+                                                                     "K_select",
+                                                                     "ll_select")])
+p <- ggplot(summary_grid_EM, aes(x = K_try, y = log_likelihood, color = as.factor(alpha), group = as.factor(alpha)))
 p <- p + geom_line()
 # p <- p + geom_point(data = crit_min, aes(x = K_try, y = crit_ll, size = 5))
 p <- p + geom_point(aes(x = K_select, y = ll_select, color = as.factor(alpha), size = 5))
@@ -401,7 +435,7 @@ p <- p + labs(x = "K",
 p <- p + scale_size(name = "", labels = "Min")
 p <- p + scale_color_discrete(name = expression(alpha))
 #                               labels = unique(summary_alpha_known$alpha)
-p <- p + scale_x_continuous(breaks = c(0, 5, 10, 15, 20))
+p <- p + scale_x_continuous(breaks = c(0, 1, 2, 5, 10, 20))
 p <- p + theme_bw()
 p <- p + theme(axis.text = element_text(size = 12),
                strip.text = element_text(size = 12)
@@ -435,10 +469,17 @@ p
 ##########################################################
 ## Study of Variance
 ##########################################################
-simest_select <- simests_all[[index_select]]
+simest_select <- max_ll_params_grosse$simest_select
+params_select <- max_ll_params_grosse$params_select
+
 clusters <- clusters_from_shifts_ism(tree, 
                                      params_select$shifts$edges,
                                      subtree.list)
+
+# Isolée : Graptemys_nigrinoda tortue des états-unis
+
+
+
 ## Actualized Tree Matrix
 T_tree <- incidence.matrix(tree)
 ac_tree <- incidence_matrix_actualization_factors(tree = tree, 
@@ -449,8 +490,7 @@ T_tree_ac <- T_tree * ac_tree
 Delta <- shifts.list_to_vector(tree, params_select$shifts)
 m_Y <- T_tree_ac %*% Delta + params_select$optimal.value
 ## Y
-Y <- simest_select$Y_data
-gamma <- simest_select$params_estim[[paste(K_select_all)]]$root.state$var.root
+Y <- data
 ## Sigma
 Sigma <- compute_variance_covariance.OU(times_shared = times_shared,
                                         distances_phylo = distances_phylo,
@@ -474,6 +514,7 @@ E_p <- Y_p - m_Y_p
 plot(m_Y_p, E_p)
 lines(m_Y_p, rep(0, ntaxa), col = "red")
 
+qqnorm(y = E_p)
 qqline(y = E_p)
 
 # Prédictions/vraies normalisées
@@ -486,17 +527,22 @@ points(m_Y, col = "red")
 
 ## Leverage
 U <- T_tree_ac[, params_select$shifts$edges]
-colnames(U) <- params_select$shifts$edges
+U <- cbind(rep(1, dim(U)[1]), U)
+colnames(U) <- c("root", params_select$shifts$edges)
 
 fit1 <- lm(Y ~ U)
 summary(fit1)
 plot(fit1)
 
-fit2 <- lm(Y_p ~ L_inv %*% U)
+fit2 <- lm(Y_p ~ L_inv %*% U - 1)
 summary(fit2)
 plot(fit2)
 
-m_Y_p_bis <- fit2$fitted.values + fit2$coefficients[1]
+leverages <- hatvalues(fit2)
+
+m_Y_p_bis <- L_inv %*% U %*% fit2$coefficients
+
+cbind(m_Y_p, m_Y_p_bis)
 
 ##########################################################
 ## Plot Processes
@@ -525,21 +571,24 @@ close.screen(all.screens = TRUE)
 # K_select <- unique(simest$results_summary$K_select)
 # params_select <- simest$params_estim[[paste(K_select)]]
 # summary_select <- subset(simest$results_summary, K_try == K_select)
-summary_alpha_known <- extract_data_frame(simests_all)
-K_select_all <- which.min(summary_max_ll$crit_ll) - 1
-index_select <- which(summary_alpha_known$crit_ll == min(summary_max_ll$crit_ll))
-index_select <- which(alpha_grid == summary_alpha_known[index_select, "alpha_estim"])
-params_select <- simests_all[[index_select]]$params_estim[[K_select_all]]
-summary_select <- simests_all[[index_select]]$results_summary[K_select_all +1, ]
 
-OU_EMselect <- list(Nbr_shifts = K_select_all,
-                 Nbr_regimes = K_select_all + 1,
-                 lnL = summary_select$log_likelihood,
-                 MlnL = NA,
-                 alpha = summary_select$alpha_estim,
-                 half_life = log(2)/summary_select$alpha_estim,
-                 sigma = 2*summary_select$alpha_estim*summary_select$gamma_estim,
-                 gamma = summary_select$gamma_estim)
+# summary_alpha_known <- extract_data_frame(simests_all)
+# K_select_all <- which.min(summary_max_ll$crit_ll) - 1
+# index_select <- which(summary_alpha_known$crit_ll == min(summary_max_ll$crit_ll))
+# index_select <- which(alpha_grid == summary_alpha_known[index_select, "alpha_estim"])
+# params_select <- simests_all[[index_select]]$params_estim[[K_select_all]]
+# summary_select <- simests_all[[index_select]]$results_summary[K_select_all +1, ]
+
+params_select <- max_ll_params_grosse$params_select
+OU_EMselect <- list(Nbr_shifts = length(params_select$shifts$edges),
+                    Nbr_regimes = length(params_select$shifts$edges) + 1,
+                    lnL = attr(params_select, "log_likelihood")[1],
+                    MlnL = NA,
+                    alpha = params_select$selection.strength,
+                    half_life = log(2)/params_select$selection.strength,
+                    sigma = params_select$variance,
+                    gamma = params_select$root.state$var.root,
+                    time = max_ll_params_grosse$total_time)
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 

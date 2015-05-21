@@ -32,6 +32,12 @@ source("R/partitionsNumber.R")
 source("R/model_selection.R")
 
 ###################################################
+## Path quantities
+###################################################
+data_type <- "chelonia"
+K_max <- 20
+
+###################################################
 ## Import or generate data
 ###################################################
 
@@ -301,7 +307,7 @@ simests_all[["K-1"]] <- simest_0_to_max
 simests_all[["K+1"]] <- simest_max_to_0
 simests_all[["reg"]] <- simest_init_reg
 
-alpha_grid <- c(alpha_grid, -1, -2)
+# alpha_grid <- c(alpha_grid, -1, -2)
 
 ###################################################################
 ## Plots log likelihood
@@ -400,15 +406,20 @@ select_grid <- function(simests, alpha_grid){
   params_select <- simests[[index_select]]$params_estim[[K_select + 1]]
   return(list(summary_max_ll = summary_max_ll,
               params_select = params_select,
-              total_time = sum(summary_alpha_known$time)))
+              total_time = sum(summary_alpha_known$time),
+              simest_select = simests[[index_select]]))
 }
 
-max_ll_select_grid <- select_grid(simests_all[-c(1, 13, 14, 15)], alpha_grid[-c(1)])
+max_ll_select_grid <- select_grid(simests_all[2:length(alpha_grid)], alpha_grid[2:length(alpha_grid)])
 params_select <- max_ll_select_grid$params_select
+
+## Chelonia only (smaller grid)
+max_ll_params_tres_grosse <- select_grid(simests_all[c(11, seq(21, 109, 20))], alpha_grid[c(11, seq(21, 109, 20))])
+params_select_tres_grosse <- max_ll_params_tres_grosse$params_select
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
-                         params = params_select,
+                         params = params_select_tres_grosse,
                          automatic_colors = TRUE)
 
 summary_grid_EM <- rbind(max_ll_select_grid$summary_max_ll,
