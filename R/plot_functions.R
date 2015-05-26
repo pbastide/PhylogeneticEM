@@ -189,7 +189,8 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
                                      automatic_colors = FALSE,
                                      regime_boxes = FALSE,
                                      alpha.border = 70,
-                                     value_in_box = TRUE, ...){
+                                     value_in_box = TRUE,
+                                     margin_plot = c(0,0,0,0), ...){
   ntaxa <- length(phylo$tip.label)
   if (normalize){
     norm <- max(abs(Y.state))
@@ -213,7 +214,7 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
                                                 start = 0, v = 0.5))
   }
   ## Plot
-  par(mar = c(0,0,0,0), omi = c(0,0,0,0))
+  par(mar = margin_plot, omi = margin_plot)
   # Take care of the root
   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   # Plot tree
@@ -275,6 +276,13 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
     }
   } else { # Color code for shifts values
     values <- c(params$optimal.value, params$shifts$values)
+#     map2color <- function(x, pal, limits = NULL) {
+#       if (is.null(limits)) limits = range(x)
+#       pal(100)[findInterval(x,
+#                             seq(limits[1], limits[2], length.out = 100 + 1),
+#                             all.inside = TRUE)]
+#     }
+#     col_shifts <- map2color(values, shifts.pal, limits = NULL)
     indPos <- which(values > 0)
     indNeg <- which(values < 0)
     indNull <- which(values == 0)
