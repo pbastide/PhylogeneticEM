@@ -34,8 +34,10 @@ source("R/model_selection.R")
 ###################################################
 ## Path quantities
 ###################################################
-data_type <- "chelonia"
-K_max <- 20
+data_type <- "bimac"
+K_max <- 5
+
+load(paste0(PATH, data_type, "_PhyloEM.RData"))
 
 ###################################################
 ## Import or generate data
@@ -414,12 +416,12 @@ max_ll_select_grid <- select_grid(simests_all[2:length(alpha_grid)], alpha_grid[
 params_select <- max_ll_select_grid$params_select
 
 ## Chelonia only (smaller grid)
-max_ll_params_tres_grosse <- select_grid(simests_all[c(11, seq(21, 109, 20))], alpha_grid[c(11, seq(21, 109, 20))])
-params_select_tres_grosse <- max_ll_params_tres_grosse$params_select
+# max_ll_params_tres_grosse <- select_grid(simests_all[c(11, seq(21, 109, 20))], alpha_grid[c(11, seq(21, 109, 20))])
+# params_select_tres_grosse <- max_ll_params_tres_grosse$params_select
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
-                         params = params_select_tres_grosse,
+                         params = params_select,
                          automatic_colors = TRUE)
 
 summary_grid_EM <- rbind(max_ll_select_grid$summary_max_ll,
@@ -517,15 +519,18 @@ close.screen(all.screens = TRUE)
 # params_select <- simests_all[[index_select]]$params_estim[[K_select_all]]
 # summary_select <- simests_all[[index_select]]$results_summary[K_select_all +1, ]
 
+## Bimac only (init fait son job)
+params_select <- simest_init_reg$params_select
+
 OU_EMselect <- list(Nbr_shifts = length(params_select$shifts$edges),
                     Nbr_regimes = length(params_select$shifts$edges) + 1,
                     lnL = attr(params_select, "log_likelihood")[1],
-                    MlnL = NA,
+                    MlnL = NaN,
                     alpha = params_select$selection.strength,
                     half_life = log(2)/params_select$selection.strength,
                     sigma = params_select$variance,
                     gamma = params_select$root.state$var.root,
-                    time = max_ll_select_grid$total_time)
+                    time = sum(simest_init_reg$results_summary$time))
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
@@ -558,6 +563,10 @@ plot.data.process.actual(Y.state = data,
 #                          automatic_colors = TRUE)
 
 save.image(paste0(PATH, data_type, "_PhyloEM.RData"))
+save(tree, data, alpha_grid, simest_init_reg, times_shared, K_max,
+     #max_ll_params_tres_grosse, params_select_tres_grosse, # chelonia only
+     params_select, OU_EMselect,
+     file = paste0(PATH, data_type, "_PhyloEM_summary.RData"))
 
 ########################################################################
 ## Equivalent Solutions 
@@ -579,73 +588,3 @@ eq_shifts_values_K_select <- equivalent_shifts_values(tree,
                                                       T_tree_ac = T_tree_ac)
 
 plot_equivalent_shifts.actual(tree, eq_shifts_edges_K_select, eq_shifts_values_K_select, use.edge.length = FALSE, adj = 0)
-
-###########################################################################
-## Other Guesses
-###########################################################################
-simest2 <- estimation_wrapper.OUsr(1, 
-                                   phylo = tree, 
-                                   Y_data = data, 
-                                   times_shared = times_shared, 
-                                   distances_phylo = distances_phylo,
-                                   subtree.list = subtree.list,
-                                   T_tree = T_tree,
-                                   alpha_known = FALSE)
-
-plot.data.process.actual(Y.state = data,
-                         phylo = tree, 
-                         params = simest2$params,
-                         adj = 2,
-                         automatic_colors = TRUE)
-
-simest3 <- estimation_wrapper.OUsr(2, 
-                                   phylo = tree, 
-                                   Y_data = data, 
-                                   times_shared = times_shared, 
-                                   distances_phylo = distances_phylo,
-                                   subtree.list = subtree.list,
-                                   T_tree = T_tree,
-                                   alpha_known = FALSE,
-                                   method.init.alpha = "default",
-                                   exp.root.init = simest$results_summary[21, "beta_0_estim"],
-                                   var.init.root = simest$results_summary[21, "gamma_estim"],
-                                   init.selection.strength = simest$results_summary[21, "alpha_estim"],
-                                   method.init = "default",
-                                   edges.init = c(77, 382),
-                                   relativeTimes.init = c(0,0))
-
-plot.data.process.actual(Y.state = data,
-                         phylo = tree, 
-                         params = simest3$params,
-                         adj = 2,
-                         automatic_colors = TRUE)
-
-simest4 <- estimation_wrapper.OUsr(2, 
-                                   phylo = tree, 
-                                   Y_data = data, 
-                                   times_shared = times_shared, 
-                                   distances_phylo = distances_phylo,
-                                   subtree.list = subtree.list,
-                                   T_tree = T_tree,
-                                   alpha_known = FALSE,
-                                   method.init.alpha = "default",
-                                   optimal.value.init = simest$results_summary[3, "beta_0_estim"],
-                                   var.init.root = simest$results_summary[3, "gamma_estim"],
-                                   init.selection.strength = simest$results_summary[3, "alpha_estim"],
-                                   method.init = "default",
-                                   edges.init = c(47,382),
-                                   relativeTimes.init = c(0,0),
-                                   tol_h_l = 10^(-3))
-
-simest5 <- estimation_wrapper.OUsr(2, 
-                                   phylo = tree, 
-                                   Y_data = data, 
-                                   times_shared = times_shared, 
-                                   distances_phylo = distances_phylo,
-                                   subtree.list = subtree.list,
-                                   T_tree = T_tree,
-                                   alpha_known = TRUE,
-                                   alpha = log(2)/17.6,
-                                   method.init = "default",
-                                   edges.init = c(47,382),
-                                   relativeTimes.init = c(0,0))

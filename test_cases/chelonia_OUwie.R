@@ -87,15 +87,28 @@ treeWIE$node.label <- ParSols[1,(length(tree$tip.label)+1):dim(ParSols)[2]]
 dataWIE <- chel_df[ ,c("species", "habitat", "length")]
 dataWIE$length <- log(dataWIE$length)
 
-res_OUwie <- OUwie(phy = treeWIE,
-                   data = dataWIE,
-                   model = "OUM")
+time_OUwie <- system.time(res_OUwie <- OUwie(phy = treeWIE,
+                                             data = dataWIE,
+                                             model = "OUM"))
 
-res_OUwie_BM <- OUwie(phy = treeWIE,
-                      data = dataWIE,
-                      model = "BM1")
+time_BMwie <- system.time(res_OUwie_BM <- OUwie(phy = treeWIE,
+                                                data = dataWIE,
+                                                model = "BM1"))
+
+OU_wie <- list(Nbr_shifts = Nbr_shifts_OUwie,
+               Nbr_regimes = 4,
+               lnL = res_OUwie$loglik,
+               MlnL = NaN,
+               alpha = res_OUwie$solution["alpha", 1],
+               half_life = log(2)/res_OUwie$solution["alpha", 1],
+               sigma = res_OUwie$solution["sigma.sq", 1],
+               gamma = res_OUwie$solution["sigma.sq", 1]/(2 * res_OUwie$solution["alpha", 1]),
+               time = unname(time_OUwie[3]))
 
 save.image(paste0(PATH, "chelonia_OUwie", ".RData"))
+save(chel_df, clusters, Nbr_ParSols, ParSols, Nbr_shifts_OUwie,
+     colors_habitat, colors_regimes,
+     OU_wie, file = paste0(PATH, "chelonia_OUwie_summary", ".RData"))
 #rm(vv, treeWIE, dataWIE, res_OUwie)
 
 ## Equivalent solutions

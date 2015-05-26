@@ -81,9 +81,13 @@ chains <- combine.chains(chain, chain2, burnin.prop=0.3)
 chains <- set.burnin(chains, 0)
 bayou_sum_all <- summary(chains)
 plot(chains)
-# plot
+### plot
 par(mfrow=c(1,1))
-plotSimmap.mcmc(tree, chains, burnin=0.3, circle=TRUE, fsize=0.4)
+load(paste0(PATH, "chelonia_surface_summary.RData"))
+tree$maps <- surfaceMapping$maps
+tree <- reorderSimmap(tree, "postorder")
+colors <- surfaceMapping$colors
+plotbayou <- plotSimmap.mcmc(tree, chains, burnin=0, circle=TRUE, ftype = "off", legend = FALSE, colors = colors)
 phenogram.density(tree, dat, chain=chains, burnin=0.3, pp.cutoff=0.3)
 # marginal likelihood
 time_marginal_ll <- system.time(ss <- steppingstone(Bk=seq(0,1,length.out=5),
@@ -107,6 +111,7 @@ OU_bayou <- list(Nbr_shifts = median(chains$k),
                  half_life = median(log(2)/chains$alpha),
                  sigma = median(chains$sig2),
                  gamma = median(chains$sig2/(2*chains$alpha)),
-                 time = (time_fit_1 + time_fit_2 + time_gelman + time_marginal_ll)[3])
+                 time = unname((time_fit_1 + time_fit_2 + time_gelman + time_marginal_ll)[3]))
 
 save.image(paste0(PATH, "chelonia_bayou_res.RData"))
+save(OU_bayou, chains, file = paste0(PATH, "chelonia_bayou_summary.RData"))
