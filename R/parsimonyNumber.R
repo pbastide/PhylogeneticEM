@@ -839,12 +839,23 @@ plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values,
   
 }
 
-plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_values, numbering = FALSE, ...){
+plot_equivalent_shifts.actual <- function(phylo,
+                                          eq_shifts_edges,
+                                          eq_shifts_values,
+                                          numbering = FALSE,
+                                          colors_tips = NULL, ...){
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% 3) + 1
   if (nbrSol %% 3 == 0) nbrLignes <- nbrLignes - 1
   nbrShifts <- dim(eq_shifts_edges)[1]
-  colors <- c("black", rainbow(nbrShifts))
+  ## Colors
+  if (is.null(colors_tips)){
+    colors <- c("black", rainbow(nbrShifts, start = 0, v = 0.5))
+    cor_col_reg <- as.factor(colors)
+    levels(cor_col_reg) <- 0:nbrShifts
+  } else {
+    colors <- unique(colors_tips)
+  }
   scr <- split.screen(c(nbrLignes, 3))
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
@@ -854,10 +865,31 @@ plot_equivalent_shifts.actual <- function(phylo, eq_shifts_edges, eq_shifts_valu
                                  relativeTimes = rep(0, nbrShifts)))
     ## Regimes
     regimes <- allocate_regimes_from_shifts(phylo, eq_shifts_edges[, sol])
+    regimes <- as.factor(regimes)
+    cor_col_reg <- cbind(unique(regimes[1:ntaxa]), colors)
+    levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
     edges_regimes <- regimes[phylo$edge[,2]]
+    ## Shifts Colors
+    makeLighter = function(..., saut=100) {
+      alpha = floor(255*alpha)  
+      newColor = col2rgb(col=unlist(list(...)), alpha=FALSE)
+      .makeTransparent = function(col, alpha) {
+        rgb(red=col[1] + saut, green=col[2] + saut, blue=col[3] + saut, maxColorValue=255)
+      }
+      newColor = apply(newColor, 2, .makeTransparent, alpha=alpha)
+      return(newColor)
+    }
+    box_col <- as.vector(edges_regimes)
+    box_col <- makeLighter(box_col)
+    box_col_shifts <- box_col[params$shifts$edges]
+    beta_0_col <- box_col[which(!(box_col %in% box_col_shifts))[1]]
     ## Plot
     screen(scr[sol])
-    plot.process.actual(0, 0, phylo, params, bg_shifts = colors[1 + 1:nbrShifts], edge.color = colors[1 + edges_regimes], bg_beta_0 = "white", edge.width = 2, quant.root = 0.7, ...)
+    plot.process.actual(0, 0, phylo, params,
+                        bg_shifts = box_col_shifts,
+                        edge.color = as.vector(edges_regimes),
+                        bg_beta_0 = beta_0_col,
+                        edge.width = 2, quant.root = 0.7, ...)
     if(numbering){
       legend("topleft", legend = sol, cex = 0.8, x.intersp = 0)
     }
