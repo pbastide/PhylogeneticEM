@@ -180,7 +180,9 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
              piecol, col, bg, horiz, width, height, ...)
 }
 
-plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
+plot.data.process.actual <- function(Y.state, phylo, params,
+                                     #norm = max(abs(Y.state)),
+                                     imposed.scale = Y.state,
                                      adj.root = 1, adj.nodes = 0,
                                      bg_shifts = "chocolate4",
                                      bg_beta_0 = "chocolate4", quant.root = 0.25,
@@ -192,13 +194,15 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
                                      value_in_box = TRUE,
                                      margin_plot = c(0,0,0,0), ...){
   ntaxa <- length(phylo$tip.label)
-  if (normalize){
-    norm <- max(abs(Y.state))
-  } else {
-    norm <- 1
-  }
-  Y.state <- Y.state / norm
-  unit <- 1/norm
+#   if (normalize){
+#     norm <- max(abs(Y.state))
+#   } else {
+#     norm <- 1
+#   }
+  imp.scale  <- c(min(0, min(imposed.scale)),
+                  max(imposed.scale))
+  Y.state <- Y.state # / norm
+  unit <- 1 # / norm
   ## Automatic colors
   if (automatic_colors){
     nodes_regimes <- allocate_regimes_from_shifts(phylo,
@@ -233,7 +237,7 @@ plot.data.process.actual <- function(Y.state, phylo, params, normalize = TRUE,
   available_x <- x.lim.max - pos_last_tip
   offset <- available_x/8
   ell <- available_x - offset # lenght for the plot of the character
-  mult <- ell / (max(Y.state) - min(0, min(Y.state)))
+  mult <- ell / (imp.scale[2] - imp.scale[1])
   Y.plot <- mult * Y.state
   unit <- mult * unit
   minY <- min(Y.plot)
