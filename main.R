@@ -54,8 +54,8 @@ plot(tree, type="cladogram", use.edge.length=FALSE, show.tip.label=FALSE)
 ## Plot BM on branches
 ########################
 rm(list=ls())
-setwd("/Users/paulb/Dropbox/These/Code") # Dossier de travail (Mac)
-setwd("/home/bastide/Dropbox/These/Code/Phylogenetic-EM") # Dossier de travail (Ubuntu)
+# setwd("/Users/paulb/Dropbox/These/Code") # Dossier de travail (Mac)
+# setwd("/home/bastide/Dropbox/These/Code/Phylogenetic-EM") # Dossier de travail (Ubuntu)
 library(ape)
 library(phytools)
 source("R/simulate.R")
@@ -89,15 +89,27 @@ for (i in 1:nrow(cw$edge)) {
 ## get the starting and ending points of each edge for plotting
 H <- nodeHeights(tree)
 ## plot the simulation
-col <- c("black", "blue", "red")
+col <- rainbow(length(X), start = 0, s = 0.5, v = 0.8)
+col <- col[c(1, 3, 5, 7, 2, 4, 6, 8)]
 plot(H[1, 1], X[[1]][1], ylim = range(X), xlim = range(H), xlab = "time", ylab = "phenotype")
 for (i in 1:length(X)){
-  lines(H[i, 1]:H[i, 2], X[[i]], col=col[(i %% 3)+1]); points(H[i,1], X[[i]][1], col="black", pch=19)
+  lines(H[i, 1]:H[i, 2], X[[i]], col=col[i])
+  points(H[i,1], X[[i]][1], col="black", pch=19)
 }
 ## add tip labels if desired
 yy <- sapply(1:length(tree$tip.label), function(x, y) which(x == y), y = cw$edge[,2])
 yy <- sapply(yy, function(x, y) y[[x]][length(y[[x]])], y = X)
 text(x = max(H)+20, y = yy, cw$tip.label)
+text(H[1, 1] - 20, X[[1]][1], "R")
+## Plot tree with colors
+plot(tree, edge.color = col, edge.width = 3, no.margin = TRUE,
+     y.lim = c(0.7, 5), x.lim = c(0, 850.4207))
+lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+arrows(lastPP$xx[6], lastPP$yy[9] + 0.1, lastPP$xx[9], lastPP$yy[9] + 0.1, lwd = 2, code =3)
+text((lastPP$xx[6] + lastPP$xx[9])/2, lastPP$yy[9] + 0.2, expression(t[A][B]))
+arrows(lastPP$xx[6], lastPP$yy[1] - 0.1, lastPP$xx[1], lastPP$yy[1] - 0.1, lwd = 2, code =3)
+text((lastPP$xx[6] + lastPP$xx[1])/2, lastPP$yy[1] - 0.2, expression(t))
+text(lastPP$xx[6] - 20, lastPP$yy[6], "R")
 
 ####################################
 ## Test of function simulate with no shift
