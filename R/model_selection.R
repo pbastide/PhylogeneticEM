@@ -99,7 +99,7 @@ penalty_BirgeMassart_shape2 <- function(K, model_complexity, C = 2.5){
 
 penalty_BaraudGiraudHuet_likelihood <- function(K, model_complexity, ntaxa, 
                                                 C = 1.1){
-  Delta <- log(model_complexity) + log(K + 1)
+  Delta <- log(model_complexity) + log(K + 2)
   res <- LINselect::penalty(Delta, n = ntaxa, p = 2 * ntaxa - 2, K = C)
   return(ntaxa * log(1 + res/(ntaxa - K)))
 }
