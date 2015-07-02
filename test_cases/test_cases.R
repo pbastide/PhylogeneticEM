@@ -34,10 +34,23 @@ source("R/model_selection.R")
 ###################################################
 ## Path quantities
 ###################################################
-data_type <- "bimac"
-K_max <- 5
+data_type <- "bimac" # chelonia bimac
+K_max <- 5 # 20 5 
 
 load(paste0(PATH, data_type, "_PhyloEM.RData"))
+
+source("R/simulate.R")
+source("R/estimateEM.R")
+source("R/init_EM.R")
+source("R/E_step.R")
+source("R/M_step.R")
+source("R/shutoff.R")
+source("R/generic_functions.R")
+source("R/shifts_manipulations.R")
+source("R/plot_functions.R")
+source("R/parsimonyNumber.R")
+source("R/partitionsNumber.R")
+source("R/model_selection.R")
 
 ###################################################
 ## Import or generate data
@@ -415,7 +428,7 @@ select_grid <- function(simests, alpha_grid){
 max_ll_select_grid <- select_grid(simests_all[2:length(alpha_grid)], alpha_grid[2:length(alpha_grid)])
 params_select <- max_ll_select_grid$params_select
 
-## Chelonia only (smaller grid)
+# # Chelonia only (smaller grid)
 # max_ll_params_tres_grosse <- select_grid(simests_all[c(11, seq(21, 109, 20))], alpha_grid[c(11, seq(21, 109, 20))])
 # params_select_tres_grosse <- max_ll_params_tres_grosse$params_select
 
@@ -529,8 +542,14 @@ OU_EMselect <- list(Nbr_shifts = length(params_select$shifts$edges),
                     alpha = params_select$selection.strength,
                     half_life = log(2)/params_select$selection.strength,
                     sigma = params_select$variance,
-                    gamma = params_select$root.state$var.root,
-                    time = sum(simest_init_reg$results_summary$time))
+                    gamma = params_select$root.state$var.root)#,
+                    # time = sum(simest_init_reg$results_summary$time))
+
+## Computation times
+# Chelonia
+OU_EMselect$time <- max_ll_params_tres_grosse$total_time
+# Bimac
+OU_EMselect$time <- sum(simest_init_reg$results_summary$time)
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
