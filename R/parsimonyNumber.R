@@ -843,10 +843,11 @@ plot_equivalent_shifts.actual <- function(phylo,
                                           eq_shifts_edges,
                                           eq_shifts_values,
                                           numbering = FALSE,
-                                          colors_tips = NULL, ...){
+                                          colors_tips = NULL,
+                                          nbr_col = 3, ...){
   nbrSol <- dim(eq_shifts_edges)[2]
-  nbrLignes <- (nbrSol %/% 3) + 1
-  if (nbrSol %% 3 == 0) nbrLignes <- nbrLignes - 1
+  nbrLignes <- (nbrSol %/% nbr_col) + 1
+  if (nbrSol %% nbr_col == 0) nbrLignes <- nbrLignes - 1
   nbrShifts <- dim(eq_shifts_edges)[1]
   ## Colors
   if (is.null(colors_tips)){
@@ -856,7 +857,7 @@ plot_equivalent_shifts.actual <- function(phylo,
   } else {
     colors <- unique(colors_tips)
   }
-  scr <- split.screen(c(nbrLignes, 3))
+  scr <- split.screen(c(nbrLignes, nbr_col))
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
     params <- list(optimal.value = eq_shifts_values$betas_0[sol],
@@ -891,7 +892,13 @@ plot_equivalent_shifts.actual <- function(phylo,
                         bg_beta_0 = beta_0_col,
                         edge.width = 2, quant.root = 0.7, ...)
     if(numbering){
-      legend("topleft", legend = sol, cex = 0.8, x.intersp = 0)
+      legend("topleft",
+             legend = sol,
+             cex = 1,
+             bty = "n",
+             text.font = 4)
+#              x.intersp = 0,
+#              y.intersp = 0)
     }
   }
   close.screen(all.screens = TRUE)
