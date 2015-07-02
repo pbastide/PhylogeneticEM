@@ -192,15 +192,15 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      regime_boxes = FALSE,
                                      alpha.border = 70,
                                      value_in_box = TRUE,
-                                     margin_plot = c(0,0,0,0), ...){
+                                     margin_plot = c(0,0,0,0),
+                                     color_shifts_regimes = FALSE,
+                                     shifts_regimes = NULL, ...){
   ntaxa <- length(phylo$tip.label)
 #   if (normalize){
 #     norm <- max(abs(Y.state))
 #   } else {
 #     norm <- 1
 #   }
-  imp.scale  <- c(min(0, min(imposed.scale)),
-                  max(imposed.scale))
   Y.state <- Y.state # / norm
   unit <- 1 # / norm
   ## Automatic colors
@@ -222,44 +222,52 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   # Take care of the root
   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   # Plot tree
-  h_p <- max(node.depth.edgelength(phylo))
-  x.lim.max <- h_p + h_p/5
-  y.lim.min <- -ntaxa/10
-  y.lim.max <- ntaxa + ntaxa/10
-  plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
-       x.lim = c(0, x.lim.max), 
-       y.lim = c(y.lim.min, y.lim.max),
-       edge.color = as.vector(color_edges), ...)
-  # Plot data at tips
+  if (is.null(Y.state)){
+    plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
+         edge.color = as.vector(color_edges), ...)
+    lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+  } else {
+    imp.scale  <- c(min(0, min(imposed.scale)),
+                    max(imposed.scale))
+    h_p <- max(node.depth.edgelength(phylo))
+    x.lim.max <- h_p + h_p/5
+    y.lim.min <- -ntaxa/10
+    y.lim.max <- ntaxa + ntaxa/10
+    plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
+         x.lim = c(0, x.lim.max), 
+         y.lim = c(y.lim.min, y.lim.max),
+         edge.color = as.vector(color_edges), ...)
+    # Plot data at tips
     # length available for character plotting
-  lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
-  pos_last_tip <- max(lastPP$xx)
-  available_x <- x.lim.max - pos_last_tip
-  offset <- available_x/8
-  ell <- available_x - offset # lenght for the plot of the character
-  mult <- ell / (imp.scale[2] - imp.scale[1])
-  Y.plot <- mult * Y.state
-  unit <- mult * unit
-  minY <- min(Y.plot)
-  maxY <- max(Y.plot)
-  eccart_g <- -min(minY, 0) + offset
+    lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+    pos_last_tip <- max(lastPP$xx)
+    available_x <- x.lim.max - pos_last_tip
+    offset <- available_x/8
+    ell <- available_x - offset # lenght for the plot of the character
+    mult <- ell / (imp.scale[2] - imp.scale[1])
+    Y.plot <- mult * Y.state
+    unit <- mult * unit
+    minY <- min(Y.plot)
+    maxY <- max(Y.plot)
+    eccart_g <- -min(minY, 0) + offset
     # 0 bar
-  segments(pos_last_tip + eccart_g, y.lim.min,
-           pos_last_tip + eccart_g, y.lim.max - ntaxa/10,
-           lty = 3)
-  text(pos_last_tip + eccart_g, y.lim.max - 2*ntaxa/30,
-       "0", cex = lastPP$cex)
+    segments(pos_last_tip + eccart_g, y.lim.min,
+             pos_last_tip + eccart_g, y.lim.max - ntaxa/10,
+             lty = 3)
+    text(pos_last_tip + eccart_g, y.lim.max - 2*ntaxa/30,
+         "0", cex = lastPP$cex)
     # characters
-  segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa],
-           pos_last_tip + eccart_g + Y.plot, lastPP$yy[1:ntaxa],
-           col = as.vector(color_characters))
+    segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa],
+             pos_last_tip + eccart_g + Y.plot, lastPP$yy[1:ntaxa],
+             col = as.vector(color_characters))
     # unit length
-  segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
-           pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
-           lwd = 2)
-  text(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
-       "Unit", cex = lastPP$cex,
-       pos = 2)
+    segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
+             pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
+             lwd = 2)
+    text(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
+         "Unit", cex = lastPP$cex,
+         pos = 2)
+  }
   # Plot beta_0
   if (value_in_box){ # Write value of shift in the box
     if (!is.null(params$optimal.value)){
@@ -277,6 +285,21 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                       cex = 7/10*lastPP$cex,
                       beg = TRUE,
                       adj = adj.nodes)
+    }
+    if (color_shifts_regimes){ # Shift has one color for each regime
+      nodes_regimes  <-  compute_betas(tree, 
+                                       params$optimal.value,
+                                       params$shifts)
+      color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
+      levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
+                                                start = 0, v = 0.5))
+      col_shifts <- as.vector(color_edges[params$shifts$edges])
+      edgelabels_home(text = rep("", length(col_shifts)),
+                      edge = params$shifts$edges, 
+                      frame = "circle",
+                      cex = 0.5*lastPP$cex,
+                      bg = col_shifts,
+                      beg = TRUE)
     }
   } else { # Color code for shifts values
     values <- c(params$optimal.value, params$shifts$values)
@@ -335,7 +358,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       }
       rect(lastPP$xx[prac_fa] + 0.5 * phylo$edge.length[edge],
            lastPP$yy[min(groupe)] - 0.5,
-           x.lim.max + 2,
+           lastPP$x.lim[2] + 2,
            lastPP$yy[max(groupe)] + 0.5,
            lwd = 2,
            border = paste0("#000000", alpha.border))
