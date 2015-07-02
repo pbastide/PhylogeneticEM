@@ -13,6 +13,87 @@ load("data/Several_Trees.RData")
 ###########################################################################
 
 #############################
+## Plot tree for parsimony figures
+tree <- read.tree(text="(((C,(T,T)),C),(A,A));")
+ntaxa <- 6
+clusters_tips <- c(1, 2, 2, 1, 0, 0)
+colors_tip <- as.factor(clusters_tips)
+levels(colors_tip) <- c("black", "gray", "white")
+
+shifts_pars_1 <- c(1, 4)
+colors_shifts_pars_1 <- c("gray", "white")
+clusters_nodes_pars_1 <- allocate_regimes_from_shifts(tree, shifts_pars_1)
+clusters_nodes_pars_1 <- as.factor(clusters_nodes_pars_1[(ntaxa + 1):(2*ntaxa - 1)])
+levels(clusters_nodes_pars_1) <- c("black", "gray", "white")
+plot(tree, 
+     type = "cladogram",
+     show.tip.label = FALSE,
+     edge.width = 10,
+     no.margin = TRUE,
+     direction = "downwards")
+tiplabels(text = rep("", ntaxa),
+          frame = "circle",
+          cex = 1.5,
+          bg = as.vector(colors_tip))
+nodelabels(text = rep("", ntaxa-1),
+                frame = "circle",
+                cex = 1.5,
+                bg = as.vector(clusters_nodes_pars_1))
+edgelabels(text = rep("         ", 2),
+           edge = shifts_pars_1,
+           cex = 1,
+           bg = colors_shifts_pars_1)
+
+shifts_pars_2 <- c(4, 8)
+colors_shifts_pars_2 <- c("white", "black")
+clusters_pars_2 <- allocate_regimes_from_shifts(tree, shifts_pars_2)
+clusters_nodes_pars_2 <- as.factor(clusters_pars_2[(ntaxa + 1):(2*ntaxa - 1)])
+levels(clusters_nodes_pars_2) <- c("gray", "white", "black")
+plot(tree, 
+     type = "cladogram",
+     show.tip.label = FALSE,
+     edge.width = 10,
+     no.margin = TRUE,
+     direction = "downwards")
+tiplabels(text = rep("", ntaxa),
+          frame = "circle",
+          cex = 1.5,
+          bg = as.vector(colors_tip))
+nodelabels(text = rep("", ntaxa-1),
+           frame = "circle",
+           cex = 1.5,
+           bg = as.vector(clusters_nodes_pars_2))
+edgelabels(text = rep("         ", 2),
+           edge = shifts_pars_2,
+           cex = 1,
+           bg = colors_shifts_pars_2)
+
+shifts_non_pars <- c(1, 3, 7)
+colors_shifts_non_pars <- c("white", "gray", "gray")
+clusters_non_pars <- allocate_regimes_from_shifts(tree, shifts_non_pars)
+clusters_nodes_non_pars <- as.factor(clusters_non_pars[(ntaxa + 1):(2*ntaxa - 1)])
+levels(clusters_nodes_non_pars) <- c("black", "white")
+plot(tree, 
+     type = "cladogram",
+     show.tip.label = FALSE,
+     edge.width = 10,
+     no.margin = TRUE,
+     direction = "downwards")
+tiplabels(text = rep("", ntaxa),
+          frame = "circle",
+          cex = 1.5,
+          bg = as.vector(colors_tip))
+nodelabels(text = rep("", ntaxa-1),
+           frame = "circle",
+           cex = 1.5,
+           bg = as.vector(clusters_nodes_non_pars))
+edgelabels(text = rep("         ", 3),
+           edge = shifts_non_pars,
+           cex = 1,
+           bg = colors_shifts_non_pars)
+
+
+#############################
 ## Test of several miscelaneous functions
 #############################
 
