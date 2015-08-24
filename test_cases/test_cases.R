@@ -34,8 +34,8 @@ source("R/model_selection.R")
 ###################################################
 ## Path quantities
 ###################################################
-data_type <- "bimac" # chelonia bimac
-K_max <- 5 # 20 5 
+data_type <- "chelonia" # chelonia bimac
+K_max <- 20 # 20 5 
 
 load(paste0(PATH, data_type, "_PhyloEM.RData"))
 
@@ -500,6 +500,55 @@ p
 ##########################################################
 ## Plot Processes
 ##########################################################
+take_grid <- function(simests, alpha_grid, K_take){
+  summary_alpha_known <- extract_data_frame(simests)
+  summary_max_ll <- ddply(summary_alpha_known,
+                          .(K_try),
+                          summarize,
+                          log_likelihood = max(log_likelihood),
+                          pen_ll = unique(pen_ll),
+                          crit_ll = min(crit_ll),
+                          alpha = "max_grid")
+  index_take <- which(summary_alpha_known$crit_ll == summary_max_ll$crit_ll[K_take + 1])
+  index_take <- which(alpha_grid == summary_alpha_known[index_take, "alpha_estim"])
+  params_take <- simests[[index_take]]$params_estim[[K_take + 1]]
+  return(list(summary_max_ll = summary_max_ll,
+              params_take = params_take,
+              total_time = sum(summary_alpha_known$time),
+              simest_take = simests[[index_take]]))
+}
+
+max_ll_take_grid <- take_grid(simests_all[2:length(alpha_grid)],
+                              alpha_grid[2:length(alpha_grid)],
+                              K_take = 3)
+params_3 <- max_ll_take_grid$params_take
+
+plot.data.process.actual(Y.state = data,
+                         phylo = tree, 
+                         params = params_3,
+                         automatic_colors = TRUE)
+
+max_ll_take_grid <- take_grid(simests_all[2:length(alpha_grid)],
+                              alpha_grid[2:length(alpha_grid)],
+                              K_take = 16)
+params_16 <- max_ll_take_grid$params_take
+
+plot.data.process.actual(Y.state = data,
+                         phylo = tree, 
+                         params = params_16,
+                         automatic_colors = TRUE)
+
+max_ll_take_grid <- take_grid(simests_all[2:length(alpha_grid)],
+                              alpha_grid[2:length(alpha_grid)],
+                              K_take = 17)
+params_17 <- max_ll_take_grid$params_take
+
+plot.data.process.actual(Y.state = data,
+                         phylo = tree, 
+                         params = params_17,
+                         automatic_colors = TRUE)
+
+
 simests_plot <- simests_all[c(11:20, 101)]
 nbrSol <- length(simests_plot)
 nbrLignes <- (nbrSol %/% 3) + 1
@@ -558,6 +607,37 @@ plot.data.process.actual(Y.state = data,
                          adj.nodes = 0,
                          automatic_colors = TRUE)
 
+## Solutions ofr fixed values of K
+OU_EM3 <- list(Nbr_shifts = length(params_3$shifts$edges),
+                    Nbr_regimes = length(params_3$shifts$edges) + 1,
+                    lnL = attr(params_3, "log_likelihood")[1],
+                    MlnL = NaN,
+                    alpha = params_3$selection.strength,
+                    half_life = log(2)/params_3$selection.strength,
+                    sigma = params_3$variance,
+                    gamma = params_3$root.state$var.root)
+OU_EM3$time <- max_ll_params_tres_grosse$total_time
+
+OU_EM16 <- list(Nbr_shifts = length(params_16$shifts$edges),
+               Nbr_regimes = length(params_16$shifts$edges) + 1,
+               lnL = attr(params_16, "log_likelihood")[1],
+               MlnL = NaN,
+               alpha = params_16$selection.strength,
+               half_life = log(2)/params_16$selection.strength,
+               sigma = params_16$variance,
+               gamma = params_16$root.state$var.root)
+OU_EM16$time <- max_ll_params_tres_grosse$total_time
+
+OU_EM17 <- list(Nbr_shifts = length(params_17$shifts$edges),
+                Nbr_regimes = length(params_17$shifts$edges) + 1,
+                lnL = attr(params_17, "log_likelihood")[1],
+                MlnL = NaN,
+                alpha = params_17$selection.strength,
+                half_life = log(2)/params_17$selection.strength,
+                sigma = params_17$variance,
+                gamma = params_17$root.state$var.root)
+OU_EM17$time <- max_ll_params_tres_grosse$total_time
+
 # K_true <- 16
 # # params_true <- simest$params_estim[[paste(K_true)]]
 # # summary_true <- subset(simest$results_summary, K_try == K_true)
@@ -583,7 +663,8 @@ plot.data.process.actual(Y.state = data,
 
 save.image(paste0(PATH, data_type, "_PhyloEM.RData"))
 save(tree, data, alpha_grid, simest_init_reg, times_shared, K_max,
-     #max_ll_params_tres_grosse, params_select_tres_grosse, # chelonia only
+     max_ll_params_tres_grosse, params_select_tres_grosse, # chelonia only
+     params_3, OU_EM3, params_16, OU_EM16, params_17, OU_EM17, # chelonia only
      params_select, OU_EMselect,
      file = paste0(PATH, data_type, "_PhyloEM_summary.RData"))
 
