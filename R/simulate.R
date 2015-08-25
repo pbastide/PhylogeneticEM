@@ -19,49 +19,77 @@
 ## Here are functions used to simulate a process on the tree
 ## Dependencies : generic_functions.R
 ###############################################################################
+
 ##
-# simulate (phylo, root.state = list(random=FALSE,value.root,exp.root,var.root), process = c("BM", "OU"), shifts = list(edges=NULL,values=NULL,relativeTimes=NULL), ...)
-# PARAMETERS:
-# @phylo (tree) Input tree
-# @root.state (list) state of the root :
-# random : random state (TRUE) or deterministic state (FALSE)
-# value.root : if deterministic, value of the character at the root
-# exp.root : if random, expectation of the character at the root
-# var.root : if random, variance of the character at the root
-# @process (string) Random process to simulate. Possible values :
-# "BM" : Brownian Motion
-# "OU" : Ornstein-Uhlenbeck
-# @shifts (list) position and values of the shifts :
-# edges : vector of id of edges where the shfts are
-# values : vector of same dimension of values of the shifts on the edges
-# relativeTimes : vector of same dimension of relative time of the shift form the parent node of edges
-# @... other parameters : parameters of the process :
-# for BM : variance
-# for OU : variance, optimal.value, selection.strength
-# RETURNS:
-# (matrix) Each row i contains a vector of values computed for node i :
-# BM : simulated state, expected value
-# OU : simulated state, expected value, optimal value
-# DEPENDENCIES:
-# init, update, correspondanceEdges (, extract.simulate), check.selection.strength
-# PURPOSE:
-# Simulate a random process on the tree phylo. Return the simulated and expected values of all tips and nodes.
-# NOTES:
-# none
-# REVISIONS:
-# 16/05/14 - Initial release
-# 20/05/14 - Gestion of edges (function correspondanceEdges)
-# 21/05/14 - extraction of the recursion
-# 16/06/14 - check.selection.strength
+#' @title Simulate a Stochastic Process on a tree
+#'
+#' @description
+#' \code{simulate} simulate a stochastic process on a tree.
+#'
+#' @param phylo: Input tree.
+#' @param process: choose BM or OU process
+#' @param p: dimention of the trait simulated
+#' @param root.state (list): state of the root, with:
+#'     random : random state (TRUE) or deterministic state (FALSE)
+#'     value.root : if deterministic, value of the character at the root
+#'     exp.root : if random, expectation of the character at the root
+#'     var.root : if random, variance of the character at the root (pxp matrix)
+#' @param shifts (list) position and values of the shifts :
+#'     edges : vector of the K id of edges where the shifts are
+#'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
+#'     relativeTimes : vector of dimension K of relative time of the shift from the
+#'     parentnode of edges
+#' @param eps: tolerance for the value of the norm 1 of the selection strength matrix for OU
+#' @param variance: variance-covariance matrix size p x p 
+#' @param selection.strenght: matrix of selection strength size p x p (OU)
+#' @param optimal.value: vector of p optimal values at the root (OU)
+#'     
+#' @return paramSimu: array p x nNodes x 2 (BM) or p x nNodes x 3 (OU). For each trait t, 
+#' 1 <= t <= p, paramSimu[t, , ] has tree columns, containing respectively the simulated state,
+#'  expected value and optimal value for all the nodes.
+#' 
+#' 16/05/14 - Initial release
+#' 20/05/14 - Gestion of edges (function correspondanceEdges)
+#' 21/05/14 - extraction of the recursion
+#' 16/06/14 - check.selection.strength
+#' 24/08/15 - Multivariate
 ##
-simulate <- function(phylo, process = c("BM", "OU"), root.state = list(random=FALSE, stationary.root=FALSE, value.root, exp.root, var.root), shifts = list(edges=NULL,values=NULL,relativeTimes=NULL), eps=10^(-6), selection.strength=NULL, variance=NULL, optimal.value=NULL) {
+
+simulate <- function(phylo,
+                     process = c("BM", "OU"),
+                     p = 1,
+                     root.state = list(random = FALSE, 
+                                       stationary.root = FALSE, 
+                                       value.root, 
+                                       exp.root,
+                                       var.root),
+                     shifts = list(edges = NULL,
+                                   values = NULL,
+                                   relativeTimes = NULL),
+                     eps=10^(-6),
+                     selection.strength = NULL,
+                     variance = NULL,
+                     optimal.value = NULL) {
+  library(MASS)
+  ## Check Dimensions
+  parameters <- check_dimensions(p, root.state, shifts,
+                                 variance, selection.strength, optimal.value)
+  root.state <- parameters$root.state
+  shifts <- parameters$shifts
+  variance <- parameters$variance
+  selection.strength <- parameters$selection.strength
+  optimal.value <- parameters$optimal.value
+  ## Reorder tree
   phy <- reorder(phylo, order = "cladewise")
-  ## Trace edges
+  # Trace edges
   shifts_ordered <- shifts
-  shifts_ordered$edges <- correspondanceEdges(edges=shifts$edges,from=phylo,to=phy)
+  shifts_ordered$edges <- correspondanceEdges(edges = shifts$edges,
+                                              from = phylo, to = phy)
   ## Set branch stochastic process
   process <- match.arg(process)
-  process <- check.selection.strength(process=process, selection.strength=selection.strength, eps=eps) # if OU, check if selection.strength is not too low.
+  process <- check.selection.strength(process = process,
+                                      selection.strength = selection.strength,
+                                      eps = eps) # if OU, check if selection.strength is not too low.
   init <- switch(process,
                  BM = init.simulate.BM,
                  OU = init.simulate.OU)
@@ -69,102 +97,138 @@ simulate <- function(phylo, process = c("BM", "OU"), root.state = list(random=FA
                        BM = update.simulate.BM,
                        OU = update.simulate.OU)
   ## Check root
-  root.state <- test.root.state(root.state=root.state,
-                                process=process,
-                                eps=eps,
-                                variance=variance,
-                                selection.strength=selection.strength,
-                                optimal.value=optimal.value)
+  root.state <- test.root.state(root.state = root.state,
+                                process = process,
+                                eps = eps,
+                                variance = variance,
+                                selection.strength = selection.strength,
+                                optimal.value = optimal.value)
   ## Initialisation and setting root state
   ntaxa <- length(phy$tip.label)
-  paramSimu <- init(phy=phy,
-                    root.state=root.state,
-                    optimal.value=optimal.value)
+  paramSimu <- init(phy = phy,
+                    p = p,
+                    root.state = root.state,
+                    optimal.value = optimal.value)
   ## Tree recursion
-  paramSimu <- recursionDown(phy=phy,
-                             params=paramSimu,
-                             updateDown=updateDown,
-                             shifts=shifts_ordered,
-                             variance=variance,
-                             eps=eps,
-                             selection.strength=selection.strength)
+  paramSimu <- recursionDown(phy = phy,
+                             params = paramSimu,
+                             updateDown = updateDown,
+                             subset_node = subset_node.simulate,
+                             allocate_subset_node = allocate_subset_node.simulate,
+                             shifts = shifts_ordered,
+                             variance = variance,
+                             eps = eps,
+                             selection.strength = selection.strength,
+                             stationnary_variance = compute_stationnary_variance(variance,
+                                                                          selection.strength))
   attr(paramSimu, "ntaxa") <- ntaxa
   return(paramSimu)
 }
 
 ##
-# init.simulate.StateAndExp (phy, root.state = list(random=FALSE,value.root,exp.root,var.root))
-# PARAMETERS:
-# @phy (tree) Input tree
-# @root.state (list) state of the root : (see note above)
-# RETURNS:
-# (matrix) Matrix with as many rows as the cumulated number of tips and nodes in the tree phy, and 2 columns. Each row 1<=i<=ntaxa contains a vector of values computed for tip i. All other rows are set to NAs
-# DEPENDENCIES:
-# none
-# PURPOSE:
-# Initialize the matrix used in simulate, with simulated and expected values of the root node.
-# NOTES:
-# none
-# REVISIONS:
-# 16/05/14 - Initial release
+#' @title Iteration allocation
+#'
+#' @description
+#' \code{allocate_subset_node.simulate} slice the data correctly and allocate the right part.
+#' To be used in function UpdateDown.
+#'
+#' @param node: node on which to slice
+#' @param array: structure to be sliced
+#' @param value: value to be attributed to the slice
+#'     
+#' @return array: array p x nNodes x 2 (BM), with slice corresponding to node filled with value
+#'  
 ##
-init.simulate.StateAndExp <- function(phy,root.state){
+
+allocate_subset_node.simulate <- function(node, array, value){
+  array[, node, ] <- value
+  return(array)
+}
+
+subset_node.simulate <- function(node, array){
+  return(array[, node, , drop = F])
+}
+
+
+##
+#' @title Initialize state and expectation matrices
+#'
+#' @param phy: Input tree.
+#' @param p: dimension of the trait simulated
+#' @param root.state (list): state of the root, with:
+#'     random : random state (TRUE) or deterministic state (FALSE)
+#'     value.root : if deterministic, value of the character at the root
+#'     exp.root : if random, expectation of the character at the root
+#'     var.root : if random, variance of the character at the root (pxp matrix)
+#'     
+#' @return paramSimu: array p x nNodes x 2 (BM), filled with NAs.
+#' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated states and root
+#' expectarions for all the traits.
+#'  
+##
+
+init.simulate.StateAndExp <- function(phy, p, root.state){
   ntaxa <- length(phy$tip.label)
-  paramSimu <- matrix(NA,nrow=1 + nrow(phy$edge),ncol=2)
+  paramSimu <- array(NA, dim = c(p, 1 + nrow(phy$edge), 2))
   if (!root.state$random) { # The root is not random
-    paramSimu[ntaxa + 1,] <- c(root.state$value.root,
-                               root.state$value.root)
-  } else { # The value of the root is random N(exp.root,var.root)
-    paramSimu[ntaxa + 1,] <- c(root.state$exp.root + sqrt(root.state$var.root)*rnorm(1),
-                               root.state$exp.root)
+    paramSimu <- allocate_subset_node.simulate(ntaxa + 1, paramSimu,
+                                               cbind(root.state$value.root,
+                                                     root.state$value.root))
+  } else { # The value of the root is random N(exp.root, var.root)
+    paramSimu <- allocate_subset_node.simulate(ntaxa + 1, paramSimu,
+                                               cbind(mvrnorm(1, mu = root.state$exp.root,
+                                                             Sigma = root.state$var.root),
+                                                     root.state$exp.root))
   }
   return(paramSimu)
 }
 
+
 ##
-# init.simulate.BM (phy, root.state = list(random=FALSE,value.root,exp.root,var.root))
-# PARAMETERS:
-# @phy (tree) Input tree
-# @root.state (list) state of the root (see note above)
-# @... other parameters : parameters of the process (see note above)
-# RETURNS:
-# (matrix) Matrix with as many rows as the cumulated number of tips and nodes in the tree phy, and 2 columns. Row number ntaxa+1 (root) contains a vector of values computed for the root node. All other rows are set to NAs
-# DEPENDENCIES:
-# initStateAndExp
-# PURPOSE:
-# Initialize the matrix used in simulate, with simulated and expected values of the root node.
-# NOTES:
-# none
-# REVISIONS:
-# 16/05/14 - Initial release
+#' @title Initialize BM
+#'
+#' @param phy: Input tree.
+#' @param root.state (list): state of the root, with:
+#'     random : random state (TRUE) or deterministic state (FALSE)
+#'     value.root : if deterministic, value of the character at the root
+#'     exp.root : if random, expectation of the character at the root
+#'     var.root : if random, variance of the character at the root (pxp matrix)
+#'     
+#' @return paramSimu: array p x nNodes x 2 (BM), filled with NAs.
+#' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated states and root
+#' expectarions for all the traits.
+#'  
 ##
-init.simulate.BM <- function(phy,root.state,...){
-  return(init.simulate.StateAndExp(phy,root.state))
+
+init.simulate.BM <- function(phy, p, root.state,...){
+  return(init.simulate.StateAndExp(phy, p, root.state))
 }
 
 ##
-# init.simulate.OU (phy, root.state = list(random=FALSE,value.root,exp.root,var.root))
-# PARAMETERS:
-# @phy (tree) Input tree
-# @root.state (list) state of the root (see note above)
-# @... other parameters : parameters of the process (see note above)
-# RETURNS:
-# (matrix) Matrix with as many rows as the cumulated number of tips and nodes in the tree phy, and 2 columns. Row number ntaxa+1 (root) contains a vector of values computed for the root node. All other rows are set to NAs
-# DEPENDENCIES:
-# initStateAndExp
-# PURPOSE:
-# Initialize the matrix used in simulate, with simulated and expected values of the root node, and optimal value of the root node
-# NOTES:
-# none
-# REVISIONS:
-# 16/05/14 - Initial release
+#' @title Initialize state and expectation matrices
+#'
+#' @param phy: Input tree.
+#' @param p: dimension of the trait simulated
+#' @param root.state (list): state of the root, with:
+#'     random : random state (TRUE) or deterministic state (FALSE)
+#'     value.root : if deterministic, value of the character at the root
+#'     exp.root : if random, expectation of the character at the root
+#'     var.root : if random, variance of the character at the root (pxp matrix)
+#'     
+#' @return paramSimu: array p x nNodes x 3, filled with NAs.
+#' Slice paramSimu[, ntaxa + 1, ] (array p x 3) is initialized with simulated states, root
+#' expectations, and optimal values for all the traits.
+#'  
 ##
-init.simulate.OU <- function(phy, root.state, optimal.value, ...){
-  paramSimu <- init.simulate.StateAndExp(phy,root.state)
+
+init.simulate.OU <- function(phy, p, root.state, optimal.value, ...){
+  paramSimu <- array(NA, dim = c(p, 1 + nrow(phy$edge), 3))
+  paramSimu[, , c(1,2)] <- init.simulate.StateAndExp(phy, p, root.state)
   ntaxa <- length(phy$tip.label)
-  beta <- rep(NA, length = 1 + nrow(phy$edge)) # selection strength
-  beta[ntaxa + 1] <- optimal.value
-  paramSimu <- cbind(paramSimu,beta)
+  beta <- array(NA, dim = c(p, 1 + nrow(phy$edge))) # selection strength
+  beta[ , ntaxa + 1] <- optimal.value
+  paramSimu[, , 3] <- beta
+  return(paramSimu)
 }
 
 ##
@@ -187,9 +251,16 @@ init.simulate.OU <- function(phy, root.state, optimal.value, ...){
 # 16/05/14 - Initial release
 ##
 update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance, ...){
-  shiftsIndex <- which(shifts$edges==edgeNbr) # If no shifts = NULL, and sum = 0
-  return(c( ancestral[1] + sum(shifts$values[shiftsIndex]) + sqrt(length*variance) * rnorm(1),
-            ancestral[2] + sum(shifts$values[shiftsIndex]) ) )
+  shiftsIndex <- shifts$edges == edgeNbr
+  if (!any(shiftsIndex)){
+    shiftsValues <- rep(0, dim(shifts$values)[1])
+  } else {
+    shiftsValues <- shifts$values[, shiftsIndex]
+  }
+  return(cbind(ancestral[, , 1, drop = F] + mvrnorm(1,
+                                        mu = shiftsValues,
+                                        Sigma = length*variance),
+               ancestral[, , 2, drop = F] + shiftsValues))
 }
 
 ##
@@ -208,14 +279,29 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance, ...
 # REVISIONS:
 # 16/05/14 - Initial release
 ##
-update.simulate.OU <- function(edgeNbr, ancestral, length, shifts, variance, selection.strength, ...){
+update.simulate.OU <- function(edgeNbr, ancestral,
+                               length, shifts, selection.strength, stationnary_variance, ...){
   shiftsIndex <- which(shifts$edges==edgeNbr) # If no shifts = NULL, and sum = 0
-  beta <- ancestral[3] + sum(shifts$values[shiftsIndex])
-  ee <- exp(-selection.strength*length)
-  ss <- sum(shifts$values[shiftsIndex]*( 1-exp( -selection.strength * length * (1-shifts$relativeTimes[shiftsIndex]) ) ))
-  SimExp <- c( ancestral[3]*(1-ee) + ancestral[1]*ee + ss + sqrt(variance*(1-ee^2)/(2*selection.strength))*rnorm(1),
-               ancestral[3]*(1-ee) + ancestral[2]*ee + ss )
-  return(c(SimExp,beta))
+  if (length(shiftsIndex) == 0){
+    r <- 0
+  } else {
+    r <- shifts$relativeTimes[shiftsIndex]
+  }
+  beta <- ancestral[, , 3] + sum(shifts$values[shiftsIndex])
+  ee_d <- expm(-selection.strength * length * (1-r))
+  ee_p <- expm(-selection.strength * length * r)
+  ee <- expm(-selection.strength * length)
+  I <- diag(1, dim(selection.strength))
+  plus_exp <- (I - ee_d) %*% beta + (I - ee_p) %*% ancestral[ , , 3]
+  Sim <- mvrnorm(1,
+                 mu = ee %*% ancestral[ , , 1] + plus_exp,
+                 Sigma = stationnary_variance - ee %*% stationnary_variance %*% ee)
+  Exp <- ee %*% ancestral[ , , 2] + plus_exp
+  child <- ancestral
+  child[, , 1] <- array(Sim, dim = c(3, 1, 1))
+  child[, , 2] <- array(Exp, dim = c(3, 1, 1))
+  child[, , 3] <- array(beta, dim = c(3, 1, 1))
+  return(child)
 }
 
 ##
@@ -237,7 +323,9 @@ update.simulate.OU <- function(edgeNbr, ancestral, length, shifts, variance, sel
 # 28/05/14 - Add optimal.values
 # 02/06/14 - Case where optimal.value is asked for a BM (retrun NULL)
 ##
-extract.simulate <- function(paramSimu, where=c("tips","nodes"), what=c("states","expectations","optimal.values")){
+extract.simulate <- function(paramSimu,
+                             where=c("tips", "nodes"),
+                             what=c("states", "expectations", "optimal.values")){
   where <- match.arg(where)
   what <- match.arg(what)
   ntaxa <- attr(paramSimu,"ntaxa")
@@ -256,6 +344,6 @@ extract.simulate <- function(paramSimu, where=c("tips","nodes"), what=c("states"
   if (col > dim(paramSimu)[2] ){
     return(NULL) # Case of optimal.value asked for a BM
   } else {
-    return(paramSimu[rows,col])
+    return(paramSimu[, rows, col])
   }
 }

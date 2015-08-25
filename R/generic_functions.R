@@ -148,19 +148,35 @@ scale.tree <- function(phylo){
 #'
 #'21/05/14 - Initial release
 ##
-recursionDown <- function(phy, params, updateDown, ...) {
+recursionDown <- function(phy, params, updateDown,
+                          subset_node = NULL, allocate_subset_node = NULL, ...) {
   if (attr(phy,"order") != "cladewise") stop("The tree must be in cladewise order")
+  ## Choose function to subset
+  if (is.null(subset_node)){
+    subset_node <- subset_node.default
+    allocate_subset_node <- allocate_subset_node.default
+  }
   ## Tree recursion from root to tips
   for (e in 1:nrow(phy$edge)) {
     edge <- phy$edge[e, ]
     length <- phy$edge.length[e]
     parent <- edge[1]
     daughter <- edge[2]
-    params[daughter,] <- updateDown(edgeNbr = e,
-                                    ancestral = params[parent,],
-                                    length = length, ...)
+    params <- allocate_subset_node(daughter, params,
+                                   updateDown(edgeNbr = e,
+                                              ancestral = subset_node(parent, params),
+                                              length = length, ...))
   }
   return(params)
+}
+
+allocate_subset_node.default <- function(node, matrix, value){
+  matrix[node, ] <- value
+  return(matrix)
+}
+
+subset_node.default <- function(node, matrix){
+  return(matrixmatrix[node, ])
 }
 
 ##
@@ -290,11 +306,11 @@ rtree.comb <- function(n){
 #'
 #'16/06/14 - Initial release
 ##
-check.selection.strength <- function(process, selection.strength=NA, eps=10^(-6), ...){
+check.selection.strength <- function(process, selection.strength = NA, eps = 10^(-6), ...){
   if (process == "BM") {
     return("BM")
-  } else if (abs(selection.strength) < eps) {
-    warning(paste("The selection strength is too low (alpha<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
+  } else if (sum(abs(selection.strength)) < eps) {
+    warning(paste("The selection strength is too low (1-norm<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
     return("BM")
   } else {
     return("OU")
@@ -365,14 +381,67 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
     warning("As root state is supposed fixed, the root cannot be at its stationary state. root.state$stationary.root is set to FALSE")
     root.state$stationary.root <- FALSE
   }
-  if (root.state$stationary.root &&
-        (!isTRUE(all.equal(root.state$exp.root, optimal.value)) ||
-           !isTRUE(all.equal(root.state$var.root, variance/(2 * selection.strength))))) {
-    warning("As root is supposed to be at stationary distribution, mu=beta and gamma2=sigma2/(2*alpha)")
+#   if (root.state$stationary.root &&
+#         (!isTRUE(all.equal(root.state$exp.root, optimal.value)) ||
+#            !isTRUE(all.equal(root.state$var.root, variance/(2 * selection.strength))))) {
+#     warning("As root is supposed to be at stationary distribution, mu=beta and gamma2=sigma2/(2*alpha)")
+#     root.state$exp.root <- optimal.value
+#     root.state$var.root <- variance/(2 * selection.strength)
+#   }
+  root.state <- coherence_stationnary_case(root.state, optimal.value,
+                                           variance, selection.strength)
+  return(root.state)
+}
+
+coherence_stationnary_case <- function(root.state, optimal.value,
+                                       variance, selection.strength){
+  if (!isTRUE(all.equal(root.state$exp.root, optimal.value))){
     root.state$exp.root <- optimal.value
-    root.state$var.root <- variance/(2 * selection.strength)
+    warning("As root is supposed to be in stationnary case, root expectation was set to be equal to optimal value.")
+  }
+  
+  root_var_expected <- compute_stationnary_variance(variance, selection.strength)
+  if(!isTRUE(all.equal(root.state$var.root, root_var_expected))){
+    root.state$var.root <- root_var_expected
+    warning("As the root is supposed to be in stationnary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
   }
   return(root.state)
+}
+
+compute_stationnary_variance <- function(variance, selection.strength){
+  if (is.null(selection.strength)) return(NA)
+  if (dim(variance)[1] == 1){
+    return(variance / (2 * selection.strength))
+  } else {
+    variance_vec <- as.vector(variance)
+    kro_sum_A <- kronecker_sum(selection.strength, selection.strength)
+    kro_sum_A_inv <- solve(kro_sum_A)
+    root_var_vec <- kro_sum_A_inv%*%variance_vec
+    return(matrix(root_var_vec, dim(variance)))
+  }
+}
+
+compute_variance_from_stationnary <- function(var.root, selection.strength){
+  if (dim(var.root)[1] == 1){
+    return(var.root * (2 * selection.strength))
+  } else {
+    var.root_vec <- as.vector(var.root)
+    kro_sum_A <- kronecker_sum(selection.strength, selection.strength)
+    variance_vec <- kro_sum_A%*%var.root_vec
+    return(matrix(variance_vec, dim(var.root)))
+  }
+}
+
+kronecker_sum <- function(M, N){
+  if (!is.matrix(M) || !is.matrix(N))
+    stop("Entries of Kronecker sum must be matrices")
+  if ((length(dim(M)) != 2) || (length(dim(N)) != 2)) 
+    stop("Entries of Kronecker sum must be matrices")
+  if ((dim(M)[1] != dim(M)[2]) || (dim(N)[1] != dim(N)[2]))
+    stop("Entries of Kronecker sum must be squared matrice.")
+  m <- dim(M)[1]; Im <- diag(1, m, m)
+  n <- dim(N)[1]; In <- diag(1, n, n)
+  return(kronecker(M, Im) + kronecker(In, N))
 }
 
 ##
@@ -405,4 +474,85 @@ log_likelihood.OU <- function(Y, phylo, params, ...) {
                                       Sigma = moments$Sigma,
                                       Sigma_YY_inv = moments$Sigma_YY_inv)
   return(LL)
+}
+
+##
+#' @title Check dimensions of the parameters
+#'
+#' @description
+#' \code{check_dimensions} checks dimensions of the parameters. If wrong, throw an error.
+#'
+#' @param p: dimention of the trait simulated
+#' @param root.state (list): state of the root, with:
+#'     random : random state (TRUE) or deterministic state (FALSE)
+#'     value.root : if deterministic, value of the character at the root
+#'     exp.root : if random, expectation of the character at the root
+#'     var.root : if random, variance of the character at the root
+#' @param shifts (list) position and values of the shifts :
+#'     edges : vector of the K id of edges where the shifts are
+#'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
+#'     relativeTimes : vector of dimension K of relative time of the shift from the
+#'     parentnode of edges
+#' @param variance: variance-covariance matrix size p x p 
+#' @param selection.strenght: matrix of selection strength size p x p (OU)
+#' @param optimal.value: vector of p optimal values at the root (OU)
+#'     
+#' @return Nothing
+#' 
+#' 25/08/15 - Multivariate
+##
+
+check_dimensions <- function(p,
+                             root.state, shifts, variance,
+                             selection.strength, optimal.value){
+  root.state <- check_dimensions.root.state(p, root.state)
+  shifts <- check_dimensions.shifts(p, shifts)
+  variance <- check_dimensions.matrix(p, p, variance, "variance")
+  if (!is.null(selection.strength))
+    selection.strength <- check_dimensions.matrix(p, p, selection.strength, "selection strength")
+  if (!is.null(optimal.value))
+    optimal.value <- check_dimensions.vector(p, optimal.value, "optimal value")
+  
+  return(params = list(root.state = root.state,
+                       shifts = shifts,
+                       variance = variance,
+                       selection.strength = selection.strength,
+                       optimal.value = optimal.value))
+}
+
+check_dimensions.matrix <- function(p, q, matrix, name = "matrix"){
+  if (p == 1){
+    if (is.vector(matrix) && length(matrix) != q) 
+      stop(paste0(matrix, " should be a scalar in dimension q = ", q, "."))
+    dim(matrix) <- c(1, q)
+  }
+  if (!all(dim(matrix) == c(p, q))) 
+    stop(paste0("Dimensions of ", matrix, " matrix do not match"))
+  return(matrix)
+}
+
+check_dimensions.vector <- function(p, v, name = "vector"){
+  if (!is.vector(v)) stop(paste0(name, " should be a vector."))
+  if (length(v) != p) 
+    stop(paste0("Dimensions of ", name, " do not match"))
+  return(v)
+}
+
+check_dimensions.root.state <- function(p, root.state){
+  if (root.state$random){
+    root.state$exp.root <- check_dimensions.vector(p, root.state$exp.root, "Root Expectation")
+    root.state$var.root <- check_dimensions.matrix(p, p, root.state$var.root, "root variance")
+  } else {
+    root.state$value.root <- check_dimensions.vector(p, root.state$value.root, "Root Value")
+  }
+  return(root.state)
+}
+
+check_dimensions.shifts <- function(p, shifts){
+  K <- length(shifts$edges)
+  shifts$values <- check_dimensions.matrix(p, K, shifts$values, "shifts values")
+  if (sum(shifts$relativeTimes) == 0) # If all zero, re-formate
+    shifts$relativeTimes <- rep(0, K)
+  shifts$relativeTimes <- check_dimensions.vector(K, shifts$relativeTimes, "shifts relative Times")
+  return(shifts)
 }

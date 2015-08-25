@@ -208,7 +208,11 @@ var.stationary  <- variance/(2*selection.strength)
 root.state <- list(random=TRUE,stationary.root=TRUE, value.root=3,exp.root=exp.stationary,var.root=var.stationary)
 shifts = list(edges=c(18),values=c(6),relativeTimes=c(0))
 paramsSimu <- list(variance=variance, optimal.value=optimal.value, selection.strength=selection.strength, shifts=shifts, root.state=root.state)
-X1 <- simulate(tree, root.state, process = "OU", variance=variance, optimal.value=optimal.value, selection.strength=selection.strength, shifts=shifts)
+
+X1 <- simulate(tree, root.state = root.state, process = "BM", variance = variance, shifts = shifts)
+
+X1 <- simulate(tree, root.state = root.state, process = "OU", variance=variance, optimal.value=optimal.value, selection.strength=selection.strength, shifts=shifts)
+
 plot(tree)
 X1.tips <- extract.simulate(X1,"tips","states")
 X1.nodes <- extract.simulate(X1,"nodes","states")
@@ -246,6 +250,60 @@ qqnorm(M%*%X.tips[1,]); qqline(M%*%X.tips[1,])
 
 library(mvnormtest)
 mshapiro.test(X.tips)
+
+############################
+## Multivariate
+############################
+
+set.seed(586)
+tree <- rtree(20)
+TreeType <- "_rtree(20)"
+plot(tree); edgelabels()
+
+p <- 3
+variance <- matrix(0.5, p, p)
+optimal.value <- c(-3, 5, 0)
+selection.strength <- diag(3, p, p)
+exp.stationary <- optimal.value
+var.stationary  <- compute_stationnary_variance(variance, selection.strength)
+root.state <- list(random = TRUE,
+                   stationary.root = TRUE,
+                   value.root = 3,
+                   exp.root = exp.stationary,
+                   var.root = var.stationary)
+shifts = list(edges = c(18, 32),
+              values=cbind(c(4, -10, 0),
+                           c(4, -10, 0)),
+              relativeTimes = 0)
+paramsSimu <- list(variance = variance,
+                   optimal.value = optimal.value,
+                   selection.strength = selection.strength,
+                   shifts = shifts,
+                   root.state = root.state)
+
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "OU",
+               variance = variance,
+               optimal.value = optimal.value,
+               selection.strength = selection.strength,
+               shifts = shifts)
+
+plot(tree)
+X1.tips <- extract.simulate(X1,"tips","states")
+X1.nodes <- extract.simulate(X1,"nodes","states")
+tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
+nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
+plot.process("Plot_sim_OU_shift", TreeType, X1.tips, X1.nodes, tree, process="OU", paramsSimu=paramsSimu)
+
 
 ###########################
 ## Test of function simulate with shifts
