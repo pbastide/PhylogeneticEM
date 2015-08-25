@@ -223,7 +223,7 @@ test_that("test.root.state", {
   optimal.value <- rep(2, p) 
   selection.strength <- matrix(3, 1, 1)
   variance <- as.matrix(5, p, p)
-  var.root <- compute_root_variance(variance, selection.strength)
+  var.root <- compute_stationnary_variance(variance, selection.strength)
   root.state_correct <- list(random = TRUE,
                              stationary.root = TRUE, 
                              value.root = NA,
