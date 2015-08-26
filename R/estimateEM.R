@@ -311,7 +311,7 @@ estimateEM <- function(phylo,
                         shifts_old = params_old$shifts, 
                         subtree.list = subtree.list)
     attr(params, "ntaxa")  <- ntaxa
-    attr(params, "dim")  <- p
+    attr(params, "p")  <- p
     ## Number of shifts that changed position ?
     number_new_shifts <- c(number_new_shifts,
                            sum(!(params$shifts$edges %in% params_old$shifts$edges)))

@@ -266,7 +266,6 @@ mshapiro.test(X.tips)
 ############################
 ## Multivariate Simulate
 ############################
-
 set.seed(586)
 ntaxa <- 20
 tree <- rtree(ntaxa)
@@ -342,6 +341,87 @@ for (l in 1:p){
 tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
 nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
 plot.process("Plot_sim_OU_shift", TreeType, X1.tips, X1.nodes, tree, process="OU", paramsSimu=paramsSimu)
+
+#######################################
+## Test of EM - BM - Multivariate
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 50
+tree <- rtree(ntaxa)
+plot(tree); edgelabels()
+
+## Parameters
+p <- 3
+variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+
+root.state <- list(random = FALSE,
+                   value.root = c(1, -1, 3),
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts = list(edges = c(9, 66),
+              values=cbind(c(4, -10, -6),
+                           c(2, 2, 2)),
+              relativeTimes = 0)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state)
+
+## Simulate Process
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+Y_data <- extract.simulate(X1,"tips","states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value <- paramsSimu$optimal.value[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 2,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
+
+# Estimate parameters from the data
+# tol <- list(variance = 10^(-4),
+#             value.root = 10^(-4),
+#             exp.root = 10^(-4),
+#             var.root = 10^(-4))
+# params_algo_EM <- list(process=process, tol=tol, method.variance="simple", method.init="default", nbr_of_shifts=1)
+results_estim_EM <- estimateEM(phylo = tree,
+                               Y_data = Y_data,
+                               process = "BM",
+                               method.init = "default",
+                               Nbr_It_Max = 500,
+                               nbr_of_shifts = 2,
+                               random.root = FALSE)
+results_estim_EM
+params_estim_EM <- results_estim_EM$params
+Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
+
+# Plot the reconstructed states
+plot.process("Plot_reconstructed", TreeType, Y_data, Z_reconstructed, tree, process = process, paramsSimu=paramsSimu, paramsEstimate=params_estim_EM, estimate=TRUE, params_algo_EM=params_algo_EM, directory="Results/Miscellaneous_Evals/")
+save.process("Data_reconstructed",TreeType, XX, process, paramsSimu=paramsSimu, paramsEstimate=params_estim_EM, estimate=TRUE, directory="Results/Miscellaneous_Evals/")
+
+# Simulate a process with estimated parameters
+XX_sim <- simulate(tree, root.state=params_estim_EM$root.state, process = "BM", variance=params_estim_EM$variance)
+plot(tree)
+Y_sim <- extract.simulate(XX_sim, what="states", where="tips")
+Z_sim <- extract.simulate(XX_sim,"nodes","states")
+tiplabels(pch = 19, cex = abs(Y_sim)/mean(abs(Y_sim)), col = ifelse(Y_sim >= 0, "orangered", "lightblue"))
+nodelabels(pch = 19, cex = abs(Z_sim)/mean(abs(Z_sim)), col = ifelse(Z_sim >= 0, "orangered", "lightblue"))
 
 
 ###########################
