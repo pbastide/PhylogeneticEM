@@ -66,11 +66,16 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_inv) {
   ## Mean
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   m_Z <- extract.simulate(sim, where="nodes", what="expectations")
-  conditional_law_X$optimal.values <- c(extract.simulate(sim, where="tips", what="optimal.values"), extract.simulate(sim, where="nodes", what="optimal.values")) # NULL if BM
+  conditional_law_X$optimal.values <- c(extract.simulate(sim,
+                                                         where="tips",
+                                                         what="optimal.values"),
+                                        extract.simulate(sim,
+                                                         where="nodes",
+                                                         what="optimal.values")) # NULL if BM
   ## Variance Covariance
   Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ")
   Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ")
-  temp <- Sigma_YZ%*%Sigma_YY_inv
+  temp <- Sigma_YZ %*% Sigma_YY_inv
   conditional_law_X$expectations <- c(Y_data, m_Z + temp%*%(Y_data-m_Y))
   conditional_variance_covariance <- Sigma_ZZ - temp%*%t(Sigma_YZ)
   conditional_law_X$variances <- c(rep(0, ntaxa), diag(conditional_variance_covariance))
@@ -78,33 +83,32 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_inv) {
   return(conditional_law_X)
 }
 
+
 ##
-# extract.variance_covariance (struct, what=c("YY","YZ","ZZ"))
-# PARAMETERS:
-#            @struct (matrix) structural matrix of size ntaxa+nNode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
-#            @what (string) what to extract :
-#                 "YY" : sub-matrix of tips (ntaxa first lines and columns)
-#                 "YZ" : sub matrix tips x nodes (nNodes last rows and ntaxa first columns)
-#                 "ZZ" : sub matrix of nodes (nNodes last rows and columns)
-# RETURNS:
-#            (matrix) : sub-matrix of the entry matrix corresponding to the wanted values
-# DEPENDENCIES:
-#            none
-# PURPOSE:
-#            Extract the right sub matrix
-# NOTES:
-#            none
-# REVISIONS:
-#            22/05/14 - Initial release
+#' @title Extract sub-matrices of variance.
+#'
+#' @description
+#' \code{extract.variance_covariance} return the adequate sub-matrix.
+#' 
+#' @param struct structural matrix of size (ntaxa+nNode)*p, result 
+#' of function \code{compute_variance_covariance}
+#' @param what: sub-matrix to be extracted:
+#'                "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
+#'                "YZ" : sub matrix tips x nodes (p*nNodes last rows and p*ntaxa first columns)
+#'                "ZZ" : sub matrix of nodes (p*nNodes last rows and columns)
+#' 
+#' @return sub-matrix of variance covariance.
+#' 
 ##
 extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
   ntaxa <- attr(struct, "ntaxa")
+  p <- attr(struct, "p")
   if (what=="YY") {
-    return(struct[1:ntaxa,1:ntaxa])
+    return(struct[1:(p * ntaxa), 1:(p * ntaxa)])
   } else if (what=="YZ") {
-    return(struct[(ntaxa+1):(dim(struct)[1]),1:ntaxa])
+    return(struct[(p * ntaxa + 1):(dim(struct)[1]), 1:(p * ntaxa)])
   } else if (what=="ZZ") {
-    return(struct[(ntaxa+1):(dim(struct)[1]),(ntaxa+1):(dim(struct)[2])])
+    return(struct[(p * ntaxa + 1):(dim(struct)[1]),(p * ntaxa + 1):(dim(struct)[2])])
   }
 }
 
@@ -135,28 +139,37 @@ extract.covariance_parents<- function(phylo, struct){
 }
 
 ##
-# compute_variance_covariance.BM (times_shared, params_old, ...) 
-# PARAMETERS:
-#            @times_shared (matrix) : times of shared ancestry, result of function compute_times_ca (see note above)
-#            @params_old (list) : old parameters to be used in the E step
-# RETURNS:
-#            (matrix) : matrix of variance covariance for the BM
-# DEPENDENCIES:
-#            compute_times_ca
-# PURPOSE:
-#            Compute variance covariance matrix in the case of the BM
-# NOTES:
-#            none
-# REVISIONS:
-#            22/05/14 - Initial release
+#' @title Complete variance covariance matrix for BM
+#'
+#' @description
+#' \code{compute_variance_covariance.BM} computes the (n+m)*p squared variance covariance
+#' matrix of vec(X).
+#'
+#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#'  \code{compute_times_ca}
+#'  @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return matrix of variance covariance for the BM
+#' 
 ##
 compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
-  J <- matrix(1, nrow=dim(times_shared)[1], ncol=dim(times_shared)[2])
-  if (params_old$root.state$random) {
-    return(params_old$root.state$var.root * J + params_old$variance * times_shared)
+  p <- nrow(params_old$shifts$values)
+  if (p == 1){ # Dimension 1 (next would also work, but slightly faster)
+    J <- matrix(1, nrow = dim(times_shared)[1], ncol = dim(times_shared)[2])
+    varr <- params_old$variance * times_shared
+    if (params_old$root.state$random) {
+      varr <- varr + params_old$root.state$var.root * J
+    }
   } else {
-    return(params_old$variance * times_shared)
+    varr <- kronecker(times_shared, params_old$variance)
+    if (params_old$root.state$random) {
+      varr <- varr + kronecker(diag(1, dim(times_shared)), 
+                               params_old$root.state$var.root)
+    }
   }
+  attr(varr, "p") <- p
+  attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
+  return(varr)
 }
 
 compute_variance_covariance.OU <- function(times_shared, distances_phylo, params_old, ...) {
@@ -201,7 +214,11 @@ compute_variance_covariance.OU <- function(times_shared, distances_phylo, params
 #' @return Sigma_YY_inv inverse of vairance matrix of the data
 #' 29/09/14 - Initial release
 ##
-compute_mean_variance.simple <- function (phylo, times_shared, distances_phylo, process=c("BM","OU"), params_old, ...) {
+compute_mean_variance.simple <- function (phylo,
+                                          times_shared,
+                                          distances_phylo,
+                                          process=c("BM","OU"),
+                                          params_old, ...) {
   ## Choose process 
   process  <- match.arg(process)
   compute_variance_covariance  <- switch(process, 
@@ -209,7 +226,8 @@ compute_mean_variance.simple <- function (phylo, times_shared, distances_phylo, 
                                          OU = compute_variance_covariance.OU)
   ## Mean
   sim <- simulate(phylo = phylo, 
-                  process = process, 
+                  process = process,
+                  p = attr(params_old, "p"),
                   root.state = params_old$root.state, 
                   shifts = params_old$shifts, 
                   variance = params_old$variance, 
@@ -251,7 +269,9 @@ compute_mean_variance.simple <- function (phylo, times_shared, distances_phylo, 
 compute_mahalanobis_distance.simple <- function(phylo, Y_data, sim, Sigma_YY_inv){
   ntaxa <- length(phylo$tip.label)
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
-  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data-m_Y)
+  m_Y <- as.vector(m_Y)
+  Y_data <- as.vector(Y_data)
+  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
   return(MD)
 }
 
@@ -285,7 +305,9 @@ compute_log_likelihood.simple <- function(phylo, Y_data, sim, Sigma, Sigma_YY_in
   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   LL <- ntaxa * log(2*pi) + logdetSigma_YY
-  LL <- LL + t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data-m_Y)
+  m_Y_vec <- as.vector(m_Y)
+  Y_data_vec <- as.vector(Y_data)
+  LL <- LL + t(Y_data_vec - m_Y_vec) %*% Sigma_YY_inv %*% (Y_data_vec - m_Y_vec)
   return(-LL/2)
 }
 
