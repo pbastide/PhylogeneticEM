@@ -218,7 +218,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                                 start = 0, v = 0.5))
   }
   ## Plot
-  par(mar = margin_plot, omi = margin_plot)
+  if (!is.null(margin_plot)) par(mar = margin_plot, omi = margin_plot)
   # Take care of the root
   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   # Plot tree

@@ -1,13 +1,25 @@
 rm(list=ls())
-#setwd("/Users/paulb/Dropbox/These/Code") # Dossier de travail (Mac)
-setwd("/home/bastide/Dropbox/These/Code") # Dossier de travail (Ubuntu)
-library(ape)
-library(combinat) # For function partitionNumber in the general case
-library(glmnet) # For Lasso initialization
-#library(phylolm)
-source("R/functions.R")
 
-load("data/Several_Trees.RData")
+library(ape)
+library(plyr)
+library(quadrupen)
+library(combinat) # For alpha prior robust estimation
+library(robustbase) # For robust fitting of alpha
+library(TreeSim)
+
+library(testthat)
+
+source("R/simulate.R")
+source("R/estimateEM.R")
+source("R/init_EM.R")
+source("R/E_step.R")
+source("R/M_step.R")
+source("R/shutoff.R")
+source("R/generic_functions.R")
+source("R/shifts_manipulations.R")
+source("R/plot_functions.R")
+source("R/parsimonyNumber.R")
+source("R/partitionsNumber.R")
 
 ###########################################################################
 ###########################################################################
@@ -252,11 +264,12 @@ library(mvnormtest)
 mshapiro.test(X.tips)
 
 ############################
-## Multivariate
+## Multivariate Simulate
 ############################
 
 set.seed(586)
-tree <- rtree(20)
+ntaxa <- 20
+tree <- rtree(ntaxa)
 TreeType <- "_rtree(20)"
 plot(tree); edgelabels()
 
@@ -272,8 +285,8 @@ root.state <- list(random = TRUE,
                    exp.root = exp.stationary,
                    var.root = var.stationary)
 shifts = list(edges = c(18, 32),
-              values=cbind(c(4, -10, 0),
-                           c(4, -10, 0)),
+              values=cbind(c(4, -10, 3),
+                           c(-5, 5, 0)),
               relativeTimes = 0)
 paramsSimu <- list(variance = variance,
                    optimal.value = optimal.value,
@@ -298,8 +311,34 @@ X1 <- simulate(tree,
                shifts = shifts)
 
 plot(tree)
-X1.tips <- extract.simulate(X1,"tips","states")
+X1.tips <- extract.simulate(X1,"tips","expe")
 X1.nodes <- extract.simulate(X1,"nodes","states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value <- paramsSimu$optimal.value[l]
+  plot.data.process.actual(Y.state = X1.tips[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 2,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value <- paramsSimu$optimal.value[l]
+  plot(tree)
+  tiplabels(text = round(X1.tips[l,], 2))
+  edgelabels_home(text = round(params$shifts$values, 1), edge = params$shifts$edges)
+  nodelabels(text = round(params$optimal.value, 1), node = ntaxa + 1)
+}
+
 tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
 nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
 plot.process("Plot_sim_OU_shift", TreeType, X1.tips, X1.nodes, tree, process="OU", paramsSimu=paramsSimu)

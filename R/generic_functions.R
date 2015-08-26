@@ -148,12 +148,17 @@ scale.tree <- function(phylo){
 #'
 #'21/05/14 - Initial release
 ##
-recursionDown <- function(phy, params, updateDown,
-                          subset_node = NULL, allocate_subset_node = NULL, ...) {
+recursionDown <- function(phy, params, updateDown, ...) {
   if (attr(phy,"order") != "cladewise") stop("The tree must be in cladewise order")
   ## Choose function to subset
-  if (is.null(subset_node)){
+  if (hasArg(subset_node)){
+    subset_node <- list(...)[["subset_node"]]
+  } else {
     subset_node <- subset_node.default
+  }
+  if (hasArg(allocate_subset_node)){
+    allocate_subset_node <- list(...)[["allocate_subset_node"]]
+  } else {
     allocate_subset_node <- allocate_subset_node.default
   }
   ## Tree recursion from root to tips
@@ -176,7 +181,7 @@ allocate_subset_node.default <- function(node, matrix, value){
 }
 
 subset_node.default <- function(node, matrix){
-  return(matrixmatrix[node, ])
+  return(matrix[node, ])
 }
 
 ##
