@@ -258,3 +258,29 @@ test_that("test.root.state", {
                                      selection.strength = selection.strength)
   expect_that(root.state_test, equals(root.state_correct))
 })
+
+test_that("check data",{
+  p <- 4
+  ntaxa <- 236
+  
+  set.seed(1958)
+  tree <- rtree(ntaxa)
+  
+  ## Missing names
+  Y_data <- matrix(1, p, ntaxa)
+  expect_that(check_data(tree, Y_data, TRUE), gives_warning())
+  
+  ## Wrong dimensions
+  Y_data <- matrix(1, ntaxa, p)
+  expect_that(check_data(tree, Y_data, TRUE), throws_error())
+  
+  ## Reordering
+  Y_data <- matrix(1, p, ntaxa)
+  colnames(Y_data) <- tree$tip.label
+  expect_that(check_data(tree, Y_data, TRUE), equals(Y_data))
+  
+  colnames(Y_data) <- sample(tree$tip.label, ntaxa)
+  expect_that(check_data(tree, Y_data, TRUE), equals(Y_data[ , tree$tip.label]))
+  expect_that(check_data(tree, Y_data, TRUE), gives_warning())
+  expect_that(check_data(tree, Y_data, FALSE), equals(Y_data))
+})

@@ -183,22 +183,8 @@ estimateEM <- function(phylo,
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(times_shared)[1:ntaxa])
 
-  ## Check that the vector of data is in the correct order #####################
-  if (length(Y_data) != length(phylo$tip.label)){
-    stop("The data vector has not the same length as the number of taxa.")
-  }
-  if (check.tips.names && (is.null(phylo$tip.label) || is.null(names(Y_data)))){
-    warning("The vector of data and/or the tips of the phylogeny are not named. Could not check for consistency : please make sure that you gave them in the right order.")
-  } else {
-    if (!all(phylo$tip.label == names(Y_data))){
-      correspondances <- match(phylo$tip.label, names(Y_data))
-      if (length(unique(correspondances)) != length(phylo$tip.label)){
-        stop("The names of the data vector do not match the tip labels.")
-      }
-      warning("The vector of data was not sorted in the correct order, when compared with the tips label. I am re-ordering the vector of data.")
-      Y_data <- Y_data[correspondances]
-    }
-  }
+  ## Check that the vector of data is in the correct order and dimensions ################
+  Y_data <- check_data(phylo, Y_data, check.tips.names)
   ## Initialization
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
@@ -650,4 +636,46 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
   }
   X$edge.quality <- edge.quality
   return(X)
+}
+
+
+##
+#' @title Test the format of data entry.
+#'
+#' @description
+#' \code{check_data} tests if the data matrix has the right format, and if it is correctly
+#' ordered to match the tips names.
+#'
+#' @param phylo a phylogenetic tree
+#' @param Y_data matrix of data at the tips (pxntaxa)
+#' @param check.tips.names (bool) wether to check the tips names or not
+#' 
+#' @return Y_data a re-ordered matrix of data (if necessary)
+#'
+##
+
+check_data <- function(phylo, Y_data, check.tips.names){
+  if (is.vector(Y_data)){
+    p <- 1
+  } else {
+    p <- nrow(Y_data)
+  }
+  if (ncol(Y_data) != length(phylo$tip.label)){
+    stop("The data matrix should have as many columns as the number of taxa (p x ntaxa).")
+  }
+  if (check.tips.names){
+    if((is.null(phylo$tip.label) || is.null(colnames(Y_data)))){
+      warning("The columns of data matrix and/or the tips of the phylogeny are not named. Could not check for consistency : please make sure that you gave them in the right order.")
+    } else {
+      if (!all(phylo$tip.label == colnames(Y_data))){
+        correspondances <- match(phylo$tip.label, colnames(Y_data))
+        if (length(unique(correspondances)) != length(phylo$tip.label)){
+          stop("The names of the column data matrix do not match the tip labels.")
+        }
+        warning("The vector of data was not sorted in the correct order, when compared with the tips label. I am re-ordering the vector of data.")
+        Y_data <- Y_data[ , correspondances]
+      }
+    }
+  }
+  return(as.matrix(Y_data))
 }

@@ -281,7 +281,7 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance, ...
 ##
 update.simulate.OU <- function(edgeNbr, ancestral,
                                length, shifts, selection.strength, stationnary_variance, ...){
-  shiftsIndex <- which(shifts$edges==edgeNbr) # If no shifts = NULL, and sum = 0
+  shiftsIndex <- which(shifts$edges == edgeNbr) # If no shifts = NULL, and sum = 0
   if (length(shiftsIndex) == 0){
     r <- 0
   } else {

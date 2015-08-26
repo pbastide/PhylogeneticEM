@@ -37,7 +37,7 @@ test_that("Mean of the BM", {
 
 test_that("Mean of the OU", {
   set.seed(1899)
-  ntaxa <- 64
+  ntaxa <- 32
   tree <- rcoal(ntaxa)
   
   ## Simulate Process
