@@ -287,7 +287,7 @@ update.simulate.OU <- function(edgeNbr, ancestral,
   } else {
     r <- shifts$relativeTimes[shiftsIndex]
   }
-  beta <- ancestral[, , 3] + sum(shifts$values[shiftsIndex])
+  beta <- ancestral[, , 3] + rowSums(shifts$values[, shiftsIndex, drop = F])
   ee_d <- expm(-selection.strength * length * (1-r))
   ee_p <- expm(-selection.strength * length * r)
   ee <- expm(-selection.strength * length)
@@ -295,8 +295,9 @@ update.simulate.OU <- function(edgeNbr, ancestral,
   plus_exp <- (I - ee_d) %*% beta + (I - ee_p) %*% ancestral[ , , 3]
   Sim <- mvrnorm(1,
                  mu = ee %*% ancestral[ , , 1] + plus_exp,
-                 Sigma = stationnary_variance - ee %*% stationnary_variance %*% ee)
+                 Sigma = stationnary_variance - ee %*% stationnary_variance %*% t(ee))
   Exp <- ee %*% ancestral[ , , 2] + plus_exp
+  Exp <- as.matrix(Exp)
   child <- ancestral
   child[, , 1] <- array(Sim, dim = c(3, 1, 1))
   child[, , 2] <- array(Exp, dim = c(3, 1, 1))
