@@ -509,9 +509,9 @@ log_likelihood.OU <- function(Y, phylo, params, ...) {
 
 check_dimensions <- function(p,
                              root.state, shifts, variance,
-                             selection.strength, optimal.value){
+                             selection.strength = NULL, optimal.value = NULL){
   root.state <- check_dimensions.root.state(p, root.state)
-  shifts <- check_dimensions.shifts(p, shifts)
+  if (!is.null(unlist(shifts))) shifts <- check_dimensions.shifts(p, shifts)
   variance <- check_dimensions.matrix(p, p, variance, "variance")
   if (!is.null(selection.strength))
     selection.strength <- check_dimensions.matrix(p, p, selection.strength, "selection strength")

@@ -185,6 +185,8 @@ estimateEM <- function(phylo,
 
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
+  ## Find dimension
+  p <- nrow(Y_data)
   ## Initialization
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
@@ -200,13 +202,15 @@ estimateEM <- function(phylo,
                                                   tol = tol,
                                                   h_tree = h_tree)
   init.var.root <- mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
-  if (!alpha_known) {
-    if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
-      ## Only if not all NAs ot infinite
-      init.selection.strength <- mean(init.a.g$alpha_0[is.finite(init.a.g$alpha_0)])
+  if (process == "OU"){
+    if(!alpha_known) {
+      if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
+        ## Only if not all NAs ot infinite
+        init.selection.strength <- mean(init.a.g$alpha_0[is.finite(init.a.g$alpha_0)])
+      }
+    } else {
+      init.selection.strength <- known.selection.strength
     }
-  } else {
-    init.selection.strength <- known.selection.strength
   }
 #   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
 #   if (!exists("edges.init") || is.null(edges.init)){
@@ -233,6 +237,7 @@ estimateEM <- function(phylo,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
                          T_tree = T_tree,
+                         subtree.list = subtree.list,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 

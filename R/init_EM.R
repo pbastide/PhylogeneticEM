@@ -41,14 +41,26 @@
 #            28/05/14 - Add OU
 ##
 init.EM.default <- function(process){
-  if (process=="BM"){
+  if (process == "BM"){
     return(init.EM.default.BM)
-  } else if (process=="OU"){
+  } else if (process == "OU"){
     return(init.EM.default.OU)
   }
 }
 
-init.EM.default.BM <- function(variance.init=1, random.init=FALSE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, nbr_of_shifts = length(edges.init), phylo = NULL, ...) {
+init.EM.default.BM <- function(phylo = NULL,
+                               Y_data = matrix(NA, 1, length(phylo$tip.label)),
+                               variance.init = matrix(1, nrow(Y_data), nrow(Y_data)),
+                               random.init = FALSE,
+                               value.root.init = rep(0, nrow(Y_data)),
+                               exp.root.init = rep(1, nrow(Y_data)),
+                               var.root.init = matrix(1, nrow(Y_data), nrow(Y_data)),
+                               edges.init = NULL,
+                               values.init = NULL,
+                               relativeTimes.init = NULL,
+                               nbr_of_shifts = length(edges.init),
+                               subtree.list = NULL, ...) {
+  p <- nrow(Y_data)
   if (random.init) {
     value.root.init <- NA
   } else {
@@ -59,14 +71,18 @@ init.EM.default.BM <- function(variance.init=1, random.init=FALSE, value.root.in
   if (is.null(edges.init) && (nbr_of_shifts != 0)){
     edges.init <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
   }
-  params_init=list(variance=variance.init,
-                   root.state=list(random=random.init,
-                                   value.root=value.root.init,
-                                   exp.root=exp.root.init,
-                                   var.root=var.root.init),
-                   shifts=list(edges=edges.init,
-                               values=values.init,
-                               relativeTimes=relativeTimes.init))
+  params_init = list(variance = variance.init,
+                     root.state = list(random = random.init,
+                                       value.root = value.root.init,
+                                       exp.root = exp.root.init,
+                                       var.root = var.root.init),
+                     shifts = list(edges = edges.init,
+                                   values = values.init,
+                                   relativeTimes = relativeTimes.init))
+  params_init <- check_dimensions(p,
+                                  params_init$root.state,
+                                  params_init$shifts,
+                                  params_init$variance)
   return(params_init)
 }
 
