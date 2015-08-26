@@ -251,12 +251,8 @@ init.simulate.OU <- function(phy, p, root.state, optimal.value, ...){
 # 16/05/14 - Initial release
 ##
 update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance, ...){
-  shiftsIndex <- shifts$edges == edgeNbr
-  if (!any(shiftsIndex)){
-    shiftsValues <- rep(0, dim(shifts$values)[1])
-  } else {
-    shiftsValues <- shifts$values[, shiftsIndex]
-  }
+  shiftsIndex <- which(shifts$edges == edgeNbr) # If no shifts = NULL, and sum = 0
+  shiftsValues <- rowSums(shifts$values[, shiftsIndex, drop = F])
   return(cbind(ancestral[, , 1, drop = F] + mvrnorm(1,
                                         mu = shiftsValues,
                                         Sigma = length*variance),

@@ -50,13 +50,13 @@ init.EM.default <- function(process){
 
 init.EM.default.BM <- function(phylo = NULL,
                                Y_data = matrix(NA, 1, length(phylo$tip.label)),
-                               variance.init = matrix(1, nrow(Y_data), nrow(Y_data)),
+                               variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
                                random.init = FALSE,
                                value.root.init = rep(0, nrow(Y_data)),
                                exp.root.init = rep(1, nrow(Y_data)),
-                               var.root.init = matrix(1, nrow(Y_data), nrow(Y_data)),
+                               var.root.init = diag(1, nrow(Y_data), nrow(Y_data)),
                                edges.init = NULL,
-                               values.init = NULL,
+                               values.init = matrix(0, nrow(Y_data), length(edges.init)),
                                relativeTimes.init = NULL,
                                nbr_of_shifts = length(edges.init),
                                subtree.list = NULL, ...) {
