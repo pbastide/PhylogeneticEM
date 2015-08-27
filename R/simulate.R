@@ -54,7 +54,7 @@
 # 21/05/14 - extraction of the recursion
 # 16/06/14 - check.selection.strength
 ##
-simulate <- function(phylo, process = c("BM", "OU"), root.state = list(random=FALSE, stationary.root=FALSE, value.root, exp.root, var.root), shifts = list(edges=NULL,values=NULL,relativeTimes=NULL), eps=10^(-6), selection.strength=NULL, variance=NULL, optimal.value=NULL) {
+simulate <- function(phylo, process = c("BM", "OU", "StudentOU"), root.state = list(random=FALSE, stationary.root=FALSE, value.root, exp.root, var.root), shifts = list(edges=NULL,values=NULL,relativeTimes=NULL), eps=10^(-6), selection.strength=NULL, variance=NULL, optimal.value=NULL, df = 1) {
   phy <- reorder(phylo, order = "cladewise")
   ## Trace edges
   shifts_ordered <- shifts
@@ -64,10 +64,12 @@ simulate <- function(phylo, process = c("BM", "OU"), root.state = list(random=FA
   process <- check.selection.strength(process=process, selection.strength=selection.strength, eps=eps) # if OU, check if selection.strength is not too low.
   init <- switch(process,
                  BM = init.simulate.BM,
-                 OU = init.simulate.OU)
+                 OU = init.simulate.OU,
+                 StudentOU = init.simulate.OU)
   updateDown <- switch(process,
                        BM = update.simulate.BM,
-                       OU = update.simulate.OU)
+                       OU = update.simulate.OU,
+                       StudentOU = update.simulate.StudentOU)
   ## Check root
   root.state <- test.root.state(root.state=root.state,
                                 process=process,
@@ -87,7 +89,8 @@ simulate <- function(phylo, process = c("BM", "OU"), root.state = list(random=FA
                              shifts=shifts_ordered,
                              variance=variance,
                              eps=eps,
-                             selection.strength=selection.strength)
+                             selection.strength=selection.strength,
+                             df = df)
   attr(paramSimu, "ntaxa") <- ntaxa
   return(paramSimu)
 }
@@ -214,6 +217,16 @@ update.simulate.OU <- function(edgeNbr, ancestral, length, shifts, variance, sel
   ee <- exp(-selection.strength*length)
   ss <- sum(shifts$values[shiftsIndex]*( 1-exp( -selection.strength * length * (1-shifts$relativeTimes[shiftsIndex]) ) ))
   SimExp <- c( ancestral[3]*(1-ee) + ancestral[1]*ee + ss + sqrt(variance*(1-ee^2)/(2*selection.strength))*rnorm(1),
+               ancestral[3]*(1-ee) + ancestral[2]*ee + ss )
+  return(c(SimExp,beta))
+}
+
+update.simulate.StudentOU <- function(edgeNbr, ancestral, length, shifts, variance, selection.strength, df, ...){
+  shiftsIndex <- which(shifts$edges==edgeNbr) # If no shifts = NULL, and sum = 0
+  beta <- ancestral[3] + sum(shifts$values[shiftsIndex])
+  ee <- exp(-selection.strength*length)
+  ss <- sum(shifts$values[shiftsIndex]*( 1-exp( -selection.strength * length * (1-shifts$relativeTimes[shiftsIndex]) ) ))
+  SimExp <- c( ancestral[3]*(1-ee) + ancestral[1]*ee + ss + sqrt(variance*(1-ee^2)/(2*selection.strength))*rt(1, df),
                ancestral[3]*(1-ee) + ancestral[2]*ee + ss )
   return(c(SimExp,beta))
 }
