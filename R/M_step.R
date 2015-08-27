@@ -47,37 +47,60 @@
 #   }
 # }
 
-compute_M.BM <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, random.root, ...) {
+compute_M.BM <- function(phylo,
+                         Y_data,
+                         conditional_law_X,
+                         nbr_of_shifts,
+                         random.root,
+                         variance_old, ...) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
-  params <- init.EM.default.BM(random.init = random.root, ...)
+  params <- init.EM.default.BM(random.init = random.root, p = nrow(Y_data), ...)
   ## Actualization of the root
   if (params$root.state$random) {
     params$root.state$value.root <- NA
-    params$root.state$exp.root <- conditional_law_X$expectations[ntaxa+1]
-    params$root.state$var.root <- conditional_law_X$variances[ntaxa+1]
+    params$root.state$exp.root <- conditional_law_X$expectations[ , ntaxa + 1]
+    params$root.state$var.root <- get_variance_node(ntaxa + 1,
+                                                    conditional_law_X$variances)
   } else {
-    params$root.state$value.root <- conditional_law_X$expectations[ntaxa+1]
+    params$root.state$value.root <- conditional_law_X$expectations[ , ntaxa + 1]
     params$root.state$exp.root <- NA
     params$root.state$var.root <- NA
   }
   ## Segmentation
-  diff_exp <- compute_diff_exp.BM(phylo=phylo, 
-                                  conditional_law_X=conditional_law_X)
-  costs0 <- 1/(phylo$edge.length) * diff_exp^2
-  seg <- segmentation.BM(nbr_of_shifts=nbr_of_shifts, 
-                         costs0=costs0,
-                         diff_exp=diff_exp)
+  diff_exp <- compute_diff_exp.BM(phylo = phylo, 
+                                  conditional_law_X = conditional_law_X)
+  costs0 <- compute_costs_0.simple(phylo, diff_exp, variance_old)
+  seg <- segmentation.BM(nbr_of_shifts = nbr_of_shifts, 
+                         costs0 = costs0,
+                         diff_exp = diff_exp)
   params$shifts <- seg$shifts
   edges_max <- seg$edges_max
   ## Variance
-  var_diff <- compute_var_diff.BM(phylo=phylo, 
-                                  conditional_law_X=conditional_law_X)
-  params$variance <- compute_var_M.BM(phylo=phylo,
-                                      var_diff=var_diff,
-                                      costs0=costs0,
-                                      edges_max=edges_max)
+  var_diff <- compute_var_diff.BM(phylo = phylo, 
+                                  conditional_law_X = conditional_law_X)
+  params$variance <- compute_var_M.BM(phylo = phylo,
+                                      var_diff = var_diff,
+                                      diff_exp = diff_exp,
+                                      edges_max = edges_max)
   return(params)
+}
+
+compute_costs_0.simple <- function(phylo, diff_exp, variance_old){
+  p <- nrow(diff_exp)
+  if (p == 1){
+    costs0 <- diff_exp^2
+  } else {
+    ## Compute inverse of variance
+    R_inv <- solve(variance_old)
+    ## Compute Mahalanobis norms
+    nEdges <- nrow(phylo$edge)
+    costs0 <- rep(NA, nEdges)
+    for (i in 1:nEdges){
+      costs0[i] <- t(diff_exp[, i]) %*% R_inv %*% diff_exp[, i]
+    }
+  }
+  return(1/(phylo$edge.length) * costs0)
 }
 
 compute_M.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
@@ -205,27 +228,25 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
 ################################################################
 
 ##
-# compute_diff_exp (phylo, Y_data, conditional_law_X)
-# PARAMETERS:
-#            @phylo (tree) imput tree
-#            @Y_data (vector) : vector indicating the data at the tips
-#            @conditional_law_X (list) result of compute_E (see note above)
-# RETURNS:
-#            (vector) entry i is Y_i-E[Z_pa(i)|Y] if i is a tip, and E[Z_i|Y]-E[Z_pa(i)|Y] if i is a node
-# DEPENDENCIES:
-#            none
-# PURPOSE:
-#            compute differences of conditionnal expectations
-# NOTES:
-#            none
-# REVISIONS:
-#            22/05/14 - Initial release
+#' @title Compute differences of expectations between node and parent.
+#'
+#' @description
+#' \code{compute_diff_exp} compute the differences of conditional expectations between all the
+#' nodes and their parents.
+#'
+#' @param phylo a phylogenetic tree
+#' @param conditional_law_X result of function \code{compute_E}
+#' 
+#' @return matrix p x nEdges containing, for each edge e finishing at node i,
+#' the quantity E[Z_i|Y]-E[Z_pa(i)|Y].
+#'
 ##
 compute_diff_exp.BM <- function(phylo, conditional_law_X) {
-  diff_exp <- rep(NA, nrow(phylo$edge))
-  daughters <- phylo$edge[,2]
-  parents <- phylo$edge[,1]
-  diff_exp <- conditional_law_X$expectations[daughters] - conditional_law_X$expectations[parents]
+  diff_exp <- matrix(NA, nrow(conditional_law_X$expectations), nrow(phylo$edge))
+  daughters <- phylo$edge[ , 2]
+  parents <- phylo$edge[ , 1]
+  diff_exp <- conditional_law_X$expectations[ , daughters, drop = F] 
+                - conditional_law_X$expectations[ , parents, drop = F]
   return(diff_exp)
 }
 
@@ -238,26 +259,31 @@ compute_diff_exp.OU <- function(phylo, conditional_law_X, selection.strength) {
 }
 
 ##
-# compute_var_diff (phylo, conditional_law_X)
-# PARAMETERS:
-#            @phylo (tree) imput tree
-#            @conditional_law_X (list) result of compute_E (see note above)
-# RETURNS:
-#            (vector) entry i is Var[Z_pa(i)|Y] if i is a tip, and Var[Z_i-Z_pa(i)|Y] if i is a node
-# DEPENDENCIES:
-#            none
-# PURPOSE:
-#            compute conditionnal variances of differences
-# NOTES:
-#            none
-# REVISIONS:
-#            22/05/14 - Initial release
+#' @title Compute variances of differences between nodes and parents.
+#'
+#' @description
+#' \code{compute_var_diff} computes variances of differences between all the
+#' nodes and their parents.
+#'
+#' @param phylo a phylogenetic tree
+#' @param conditional_law_X result of function \code{compute_E}
+#' 
+#' @return matrix p x p*nEdges containing, for each edge e finishing at node i,
+#' the quantity Var[Z_i-Z_pa(i)|Y].
+#'
 ##
 compute_var_diff.BM <- function(phylo, conditional_law_X) {
-  var_diff <- rep(NA, nrow(phylo$edge))
+  p <- nrow(conditional_law_X$expectations)
+  nEdges <- nrow(phylo$edge)
+  var_diff <- matrix(NA, p, p*nEdges)
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
-  var_diff <- conditional_law_X$variances[daughters] + conditional_law_X$variances[parents] - 2 * conditional_law_X$covariances[daughters]
+  for (e in 1:nEdges){
+    range_e <- ((e - 1) * p + 1):(e * p)
+    var_diff[1:p, range_e] <- get_variance_node(daughters[e], conditional_law_X$variances)
+                          + get_variance_node(parents[e], conditional_law_X$variances)
+                          - 2 * get_variance_node(daughters[e], conditional_law_X$covariances)
+  }
   return(var_diff)
 }
 
@@ -271,6 +297,30 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
 }
 
 ##
+#' @title Compute weighted sum of var_diff
+#'
+#' @description
+#' \code{compute_sum_var_diff} computes sum_{e edge} ell_j * Var[X_j - X_pa(j) | Y]
+#'
+#' @param phylo a phylogenetic tree
+#' @param var_diff result of function \code{compute_var_diff.BM}
+#' 
+#' @return matrix p x p
+#'
+##
+compute_sum_var_diff <- function(phylo, var_diff){
+  p <- nrow(var_diff)
+  if (p == 1){
+    return(matrix(sum(var_diff * 1/phylo$edge.length)))
+  } else {
+    nEdges <- ncol(var_diff) / p
+    vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
+    arr <- array(vv, dim = c(p, p, nEdges))
+    return(apply(arr, 1, rowSums))
+  }
+}
+
+##
 #' @title Computation of the variance.
 #'
 #' @description
@@ -281,18 +331,19 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
 #' computation of the maximum of likelihood in the variance is simple.
 #'
 #' @param phylo Tree
-#' @param var_diff variances of diferences
-#' @param costs0 Cost of each edge
-#' @param edges_max Edges where the shifts occur
+#' @param var_diff variances of differences result of function \code{compute_var_diff.BM}
+#' @param diff_exp differences of expectations result of function \code{compute_diff_exp.BM}
+#' @param edges_max Edges where the shifts occur result of function \code{segmentation.BM}
 #' 
-#' @return a double : the computed variance
-#'
-#'02/06/14 - Initial release
+#' @return a p x p matrix : the computed variance
 ##
-compute_var_M.BM <- function(phylo, var_diff, costs0, edges_max){
+compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max){
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
-  return(1/(ntaxa + nNodes-1) * ( sum(1/(phylo$edge.length) * var_diff) + sum( costs0[-edges_max]) ))
+  p <- nrow(var_diff)
+  varr <- compute_sum_var_diff(phylo, var_diff)
+  expp <- diff_exp[, -edges_max, drop = F] %*% diag(1/phylo$edge.length[-edges_max]) %*% t(diff_exp[, -edges_max, drop = F])
+  return(1/(ntaxa + nNodes - 1) * (varr + expp))
 }
 
 compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.strength, conditional_root_variance){
@@ -524,16 +575,20 @@ conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_
 #'02/06/14 - Initial release
 ##
 segmentation.BM <- function(nbr_of_shifts, costs0, diff_exp){
-  if (nbr_of_shifts>0) {
+  if (nbr_of_shifts > 0) {
     edges_max <- order(-costs0)[1:nbr_of_shifts]
     edges <- edges_max
-    values <- diff_exp[edges_max]
+    values <- diff_exp[ , edges_max, drop = F]
     relativeTimes <- rep(0,length(edges_max))
-    shifts=list(edges=edges, values=values, relativeTimes=relativeTimes)
-    return(list(edges_max=edges_max, shifts=shifts))
+    shifts <- list(edges = edges,
+                   values = values,
+                   relativeTimes = relativeTimes)
+    return(list(edges_max = edges_max,
+                shifts = shifts))
   } else {
-    edges_max <- length(costs0)+1
-    return(list(edges_max=edges_max, shifts=NULL))
+    edges_max <- length(costs0) + 1
+    return(list(edges_max = edges_max,
+                shifts = NULL))
   }
 }
 

@@ -308,7 +308,8 @@ estimateEM <- function(phylo,
                         eps = eps,
                         methods.segmentation = methods.segmentation,
                         beta_0_old = params_old$optimal.value,
-                        shifts_old = params_old$shifts, 
+                        shifts_old = params_old$shifts,
+                        variance_old = params_old$variance,
                         subtree.list = subtree.list)
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p")  <- p
@@ -664,6 +665,7 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
 check_data <- function(phylo, Y_data, check.tips.names){
   if (is.vector(Y_data)){
     p <- 1
+    Y_data <- matrix(Y_data, 1, length(Y_data))
   } else {
     p <- nrow(Y_data)
   }

@@ -161,6 +161,28 @@ extract.variance_nodes<- function(phylo, struct){
 }
 
 ##
+#' @title Get variance matrix of a node
+#'
+#' @description
+#' \code{get_variance_node} returns the conditional variance of a node, or the conditional
+#' corariance of a node and its parent.
+#' 
+#' @param vars matrix of size p x p*(ntaxa+nNodes) result of funtion \code{compute_E.simple},
+#' entry "variances" or "covariances".
+#' @param node for which to extract the matrix.
+#' 
+#' @return sub-matrix of variance for the node.
+#' 
+##
+
+get_variance_node <- function(node, vars){
+  p <- nrow(vars)
+  nN <- ncol(vars) / p
+  range <- ((node - 1) * p + 1):(node * p)
+  return(vars[1:p, range, drop = F])
+}
+
+##
 #' @title Complete variance covariance matrix for BM
 #'
 #' @description
@@ -177,9 +199,9 @@ extract.variance_nodes<- function(phylo, struct){
 compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
   p <- nrow(params_old$shifts$values)
   if (p == 1){ # Dimension 1 (next would also work, but slightly faster)
-    J <- matrix(1, nrow = dim(times_shared)[1], ncol = dim(times_shared)[2])
-    varr <- params_old$variance * times_shared
+    varr <- as.vector(params_old$variance) * times_shared
     if (params_old$root.state$random) {
+      J <- matrix(1, nrow = dim(times_shared)[1], ncol = dim(times_shared)[2])
       varr <- varr + params_old$root.state$var.root * J
     }
   } else {

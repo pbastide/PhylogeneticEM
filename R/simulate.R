@@ -329,7 +329,7 @@ extract.simulate <- function(paramSimu,
   if (where=="tips") {
     rows <- 1:ntaxa
   } else if (where=="nodes") {
-    rows <- (ntaxa+1):nrow(paramSimu)
+    rows <- (ntaxa+1):dim(paramSimu)[2]
   }
   if (what=="states") {
     col <- 1
