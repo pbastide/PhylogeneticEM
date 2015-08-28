@@ -310,6 +310,7 @@ estimateEM <- function(phylo,
                         beta_0_old = params_old$optimal.value,
                         shifts_old = params_old$shifts,
                         variance_old = params_old$variance,
+                        mu_old = params_old$root.state$value.root,
                         subtree.list = subtree.list)
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p")  <- p
