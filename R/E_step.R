@@ -53,7 +53,7 @@
 #' values beta(t_j)
 #' 
 ##
-compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_inv) {
+compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   nNodes <- tree$Nnode
@@ -73,15 +73,18 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_inv) {
   ## Variance Covariance
   Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ")
   Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ")
-  temp <- Sigma_YZ %*% Sigma_YY_inv
+#  temp <- Sigma_YZ %*% Sigma_YY_inv
+  temp <- Sigma_YZ %*% Sigma_YY_chol_inv
   Y_data_vec <- as.vector(Y_data)
   m_Y_vec <- as.vector(m_Y)
   m_Z_vec <- as.vector(m_Z)
   conditional_law_X$expectations <- cbind(Y_data,
-                                          m_Z + matrix(temp %*% (Y_data_vec - m_Y_vec),
+                                          m_Z + matrix(temp %*% crossprod(Sigma_YY_chol_inv,
+                                                                          (Y_data_vec - m_Y_vec)),
                                                        nrow = p))
-  conditional_variance_covariance <- Sigma_ZZ - temp %*% t(Sigma_YZ)
-  attr(conditional_variance_covariance, "p") <- p
+#  conditional_variance_covariance <- Sigma_ZZ - temp %*% t(Sigma_YZ)
+  conditional_variance_covariance <- Sigma_ZZ - tcrossprod(temp)
+  attr(conditional_variance_covariance, "p_dim") <- p
   conditional_law_X$variances <- cbind(matrix(0, p, p*ntaxa),
                                    extract.variance_nodes(phylo,
                                                           conditional_variance_covariance))
@@ -110,7 +113,7 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_inv) {
 ##
 extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
   ntaxa <- attr(struct, "ntaxa")
-  p <- attr(struct, "p")
+  p <- attr(struct, "p_dim")
   if (what=="YY") {
     return(struct[1:(p * ntaxa), 1:(p * ntaxa)])
   } else if (what=="YZ") {
@@ -138,21 +141,21 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
 ##
 extract.covariance_parents<- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
-  p <- attr(struct, "p")
-  cov <- matrix(NA, p, p * (dim(phylo$edge)[1] - ntaxa + 1))
+  p <- attr(struct, "p_dim")
+  cov <- Matrix(NA, p, p * (dim(phylo$edge)[1] - ntaxa + 1))
   for (i in (ntaxa + 2):(dim(phylo$edge)[1] + 1)) {
     pa <- getAncestor(phylo,i)
     range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
     range_pa <- ((pa - ntaxa - 1) * p + 1):((pa - ntaxa) * p)
-    cov[1:p, range_i] <- struct[range_i, range_pa]
+    cov[1:p, range_i] <- struct[range_i, range_pa] + struct[range_pa, range_i]
   }
   return(cov)
 }
 
 extract.variance_nodes<- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
-  p <- attr(struct, "p")
-  varr <- matrix(NA, p, p * (dim(phylo$edge)[1] - ntaxa + 1))
+  p <- attr(struct, "p_dim")
+  varr <- Matrix(NA, p, p * (dim(phylo$edge)[1] - ntaxa + 1))
   for (i in (ntaxa + 1):(dim(phylo$edge)[1] + 1)) {
     range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
     varr[1:p, range_i] <- struct[range_i, range_i]
@@ -207,11 +210,11 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
   } else {
     varr <- kronecker(times_shared, params_old$variance)
     if (params_old$root.state$random) {
-      varr <- varr + kronecker(diag(1, dim(times_shared)), 
+      varr <- varr + kronecker(as(diag(1, dim(times_shared)), "symmetricMatrix"), 
                                params_old$root.state$var.root)
     }
   }
-  attr(varr, "p") <- p
+  attr(varr, "p_dim") <- p
   attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
   return(varr)
 }
@@ -255,7 +258,9 @@ compute_variance_covariance.OU <- function(times_shared, distances_phylo, params
 #'  parameters
 #' @return Sigma matrix of variance covariance, result of function 
 #' \code{compute_variance_covariance}
-#' @return Sigma_YY_inv inverse of vairance matrix of the data
+#' #@return Sigma_YY_inv inverse of vairance matrix of the data
+#' @return Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
+#'  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)
 #' 29/09/14 - Initial release
 ##
 compute_mean_variance.simple <- function (phylo,
@@ -271,7 +276,7 @@ compute_mean_variance.simple <- function (phylo,
   ## Mean
   sim <- simulate(phylo = phylo, 
                   process = process,
-                  p = attr(params_old, "p"),
+                  p = attr(params_old, "p_dim"),
                   root.state = params_old$root.state, 
                   shifts = params_old$shifts, 
                   variance = params_old$variance, 
@@ -282,8 +287,10 @@ compute_mean_variance.simple <- function (phylo,
                                        distances_phylo = distances_phylo,
                                        params_old = params_old)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
-  Sigma_YY_inv <- solve(Sigma_YY)
-  return(list(sim = sim, Sigma = Sigma, Sigma_YY_inv = Sigma_YY_inv))
+  Sigma_YY_chol <- chol(Sigma_YY)
+  Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, diag(ncol(Sigma_YY_chol)))
+  #Sigma_YY_inv <- chol2inv(Sigma_YY_chol)
+  return(list(sim = sim, Sigma = Sigma, Sigma_YY_chol_inv = Sigma_YY_chol_inv))
 }
 
 #####################################################################
@@ -310,12 +317,13 @@ compute_mean_variance.simple <- function (phylo,
 #' 
 #' @return squared Mahalanobis distance between data and mean at the tips.
 ##
-compute_mahalanobis_distance.simple <- function(phylo, Y_data, sim, Sigma_YY_inv){
+compute_mahalanobis_distance.simple <- function(phylo, Y_data, sim, Sigma_YY_chol_inv){
   ntaxa <- length(phylo$tip.label)
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   m_Y <- as.vector(m_Y)
   Y_data <- as.vector(Y_data)
-  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
+#  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
+  MD <- tcrossprod(t(Y_data - m_Y) %*% Sigma_YY_chol_inv)
   return(MD)
 }
 
@@ -343,7 +351,7 @@ compute_mahalanobis_distance.simple <- function(phylo, Y_data, sim, Sigma_YY_inv
 #' 
 #' 29/09/14 - Initial release
 ##
-compute_log_likelihood.simple <- function(phylo, Y_data, sim, Sigma, Sigma_YY_inv){
+compute_log_likelihood.simple <- function(phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv){
   ntaxa <- length(phylo$tip.label)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
@@ -351,7 +359,8 @@ compute_log_likelihood.simple <- function(phylo, Y_data, sim, Sigma, Sigma_YY_in
   LL <- ntaxa * log(2*pi) + logdetSigma_YY
   m_Y_vec <- as.vector(m_Y)
   Y_data_vec <- as.vector(Y_data)
-  LL <- LL + t(Y_data_vec - m_Y_vec) %*% Sigma_YY_inv %*% (Y_data_vec - m_Y_vec)
+#  LL <- LL + t(Y_data_vec - m_Y_vec) %*% Sigma_YY_inv %*% (Y_data_vec - m_Y_vec)
+  LL <- LL + tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
   return(-LL/2)
 }
 

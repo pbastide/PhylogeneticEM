@@ -98,11 +98,14 @@ compute_costs_0.simple <- function(phylo, diff_exp, variance_old){
     costs0 <- diff_exp^2
   } else {
     ## Compute inverse of variance
-    R_inv <- solve(variance_old)
+    R_chol <- chol(variance_old)
+    R_chol_inv <- backsolve(R_chol, diag(ncol(R_chol)))
+#    R_inv <- solve(variance_old)
     ## Compute Mahalanobis norms
     costs0 <- ncol(diff_exp)
     for (i in 1:ncol(diff_exp)){
-      costs0[i] <- t(diff_exp[, i]) %*% R_inv %*% diff_exp[, i]
+      costs0[i] <- tcrossprod(t(diff_exp[, i]) %*% R_chol_inv)
+#      costs0[i] <- t(diff_exp[, i]) %*% R_inv %*% diff_exp[, i]
     }
   }
   return(1/(phylo$edge.length) * costs0)
@@ -265,8 +268,7 @@ compute_diff_exp.BM <- function(phylo, conditional_law_X, random.root, mu_old) {
   diff_exp <- matrix(NA, nrow(conditional_law_X$expectations), nrow(phylo$edge))
   daughters <- phylo$edge[ , 2]
   parents <- phylo$edge[ , 1]
-  diff_exp <- conditional_law_X$expectations[ , daughters, drop = F] 
-              - conditional_law_X$expectations[ , parents, drop = F]
+  diff_exp <- conditional_law_X$expectations[ , daughters, drop = F] - conditional_law_X$expectations[ , parents, drop = F]
   if (!random.root){
     ntaxa = length(phylo$tip.label)
     root_edges <- which(parents == ntaxa + 1)
@@ -305,14 +307,12 @@ compute_diff_exp.OU <- function(phylo, conditional_law_X, selection.strength) {
 compute_var_diff.BM <- function(phylo, conditional_law_X) {
   p <- nrow(conditional_law_X$expectations)
   nEdges <- nrow(phylo$edge)
-  var_diff <- matrix(NA, p, p*nEdges)
+  var_diff <- Matrix(NA, p, p*nEdges)
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
   for (e in 1:nEdges){
     range_e <- ((e - 1) * p + 1):(e * p)
-    var_diff[1:p, range_e] <- get_variance_node(daughters[e], conditional_law_X$variances)
-                          + get_variance_node(parents[e], conditional_law_X$variances)
-                          - 2 * get_variance_node(daughters[e], conditional_law_X$covariances)
+    var_diff[1:p, range_e] <- get_variance_node(daughters[e], conditional_law_X$variances) + get_variance_node(parents[e], conditional_law_X$variances) - get_variance_node(daughters[e], conditional_law_X$covariances)
   }
   return(var_diff)
 }
@@ -341,12 +341,12 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
 compute_sum_var_diff <- function(phylo, var_diff){
   p <- nrow(var_diff)
   if (p == 1){
-    return(matrix(sum(var_diff * 1/phylo$edge.length)))
+    return(Matrix(sum(var_diff * 1/phylo$edge.length)))
   } else {
     nEdges <- ncol(var_diff) / p
     vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
     arr <- array(vv, dim = c(p, p, nEdges))
-    return(apply(arr, 1, rowSums))
+    return(as(apply(arr, 1, rowSums), "symmetricMatrix"))
   }
 }
 
@@ -372,7 +372,12 @@ compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max){
   nNodes <- phylo$Nnode
   p <- nrow(var_diff)
   varr <- compute_sum_var_diff(phylo, var_diff)
-  expp <- diff_exp[, -edges_max, drop = F] %*% diag(1/phylo$edge.length[-edges_max]) %*% t(diff_exp[, -edges_max, drop = F])
+  lengths_ed <- phylo$edge.length
+  root_edges <- which(phylo$edge[,1] == ntaxa + 1)
+  if (length(root_edges) == 2){
+    lengths_ed[root_edges[1]] <- sum(lengths_ed[root_edges])
+  }
+  expp <- as(tcrossprod(diff_exp[, -edges_max, drop = F] %*% sqrt(diag(1/lengths_ed[-edges_max]))), "symmetricMatrix")
   return(1/(ntaxa + nNodes - 1) * (varr + expp))
 }
 

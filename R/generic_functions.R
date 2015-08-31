@@ -93,7 +93,7 @@ compute_times_ca <- function(phy) {
   prac <- mrca(phy,full=TRUE)
   times_ca <- matrix(times[prac],dim(prac))
   attr(times_ca, "ntaxa") <- length(phy$tip.label)
-  return(times_ca)
+  return(as(times_ca, "symmetricMatrix"))
 }
 
 ##
@@ -114,7 +114,7 @@ compute_times_ca <- function(phy) {
 compute_dist_phy <- function(phy) {
   dist_phy <- dist.nodes(phy)
   attr(dist_phy, "ntaxa") <- length(phy$tip.label)
-  return(dist_phy)
+  return(as(dist_phy, "symmetricMatrix"))
 }
 
 scale.tree <- function(phylo){
@@ -359,6 +359,7 @@ test.root.state.BM <- function(root.state, ...) {
   if (root.state$random && !is.na(root.state$value.root)) {
     warning("As root state is supposed random, its value is not defined and set to NA")
     root.state$value.root <- NA
+    root.state$var.root <- as(root.state$var.root, "symmetricMatrix")
   }
   if (!root.state$random && (!is.na(root.state$exp.root) || !is.na(root.state$exp.root))) {
     warning("As root state is supposed fixed, its expectation and variance are not defined and set to NA")
@@ -372,6 +373,7 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
   if (root.state$random && !is.na(root.state$value.root)) {
     warning("As root state is supposed random, its value is not defined and set to NA")
     root.state$value.root <- NA
+    root.state$var.root <- as(root.state$var.root, "symmetricMatrix")
   }
   if (!root.state$random && (!is.na(root.state$exp.root) || !is.na(root.state$exp.root))) {
     warning("As root state is supposed fixed, its expectation and variance are not defined and set to NA")
@@ -407,7 +409,7 @@ coherence_stationnary_case <- function(root.state, optimal.value,
   
   root_var_expected <- compute_stationnary_variance(variance, selection.strength)
   if(!isTRUE(all.equal(root.state$var.root, root_var_expected))){
-    root.state$var.root <- root_var_expected
+    root.state$var.root <- as(root_var_expected, "symmetricMatrix")
     warning("As the root is supposed to be in stationnary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
   }
   return(root.state)
@@ -513,6 +515,7 @@ check_dimensions <- function(p,
   root.state <- check_dimensions.root.state(p, root.state)
   if (!is.null(unlist(shifts))) shifts <- check_dimensions.shifts(p, shifts)
   variance <- check_dimensions.matrix(p, p, variance, "variance")
+  variance <- as(variance, "symmetricMatrix")
   if (!is.null(selection.strength))
     selection.strength <- check_dimensions.matrix(p, p, selection.strength, "selection strength")
   if (!is.null(optimal.value))

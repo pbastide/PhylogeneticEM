@@ -76,7 +76,7 @@ simulate <- function(phylo,
                                  variance, selection.strength, optimal.value)
   root.state <- parameters$root.state
   shifts <- parameters$shifts
-  variance <- parameters$variance
+  variance <- as(parameters$variance, "symmetricMatrix")
   selection.strength <- parameters$selection.strength
   optimal.value <- parameters$optimal.value
   ## Reorder tree

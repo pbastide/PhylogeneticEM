@@ -147,7 +147,7 @@ test_that("test.root.state", {
   root.state_correct <- list(random = TRUE,
                           value.root = NA,
                           exp.root = 2,
-                          var.root = as.matrix(5, 1, 1))
+                          var.root = as(as.matrix(5, 1, 1), "symmetricMatrix"))
   
   root.state_test <- test.root.state(root.state_test, "BM")
   expect_that(root.state_test, equals(root.state_correct))
@@ -182,7 +182,7 @@ test_that("test.root.state", {
                              stationary.root = TRUE, 
                              value.root = NA,
                              exp.root = 2,
-                             var.root = as.matrix(5, 1, 1))
+                             var.root = as(as.matrix(5, 1, 1), "symmetricMatrix"))
   
   root.state_test <- test.root.state(root.state_test, "OU",
                                      optimal.value = optimal.value,
@@ -205,7 +205,7 @@ test_that("test.root.state", {
                           stationary.root = TRUE, 
                           value.root = NA,
                           exp.root = rep(2, p),
-                          var.root = as.matrix(5, p, p))
+                          var.root = as(as.matrix(5, p, p), "symmetricMatrix"))
   
   root.state_test <- test.root.state(root.state_test, "OU",
                                      optimal.value = optimal.value,
@@ -228,7 +228,7 @@ test_that("test.root.state", {
                              stationary.root = TRUE, 
                              value.root = NA,
                              exp.root = rep(2, p),
-                             var.root = var.root)
+                             var.root = as(var.root, "symmetricMatrix"))
   
   root.state_test <- test.root.state(root.state_test, "OU",
                                      optimal.value = optimal.value,
@@ -250,7 +250,7 @@ test_that("test.root.state", {
                              stationary.root = TRUE, 
                              value.root = NA,
                              exp.root = rep(5, p),
-                             var.root = as.matrix(5, p, p))
+                             var.root = as(as.matrix(5, p, p), "symmetricMatrix"))
   
   root.state_test <- test.root.state(root.state_test, "OU",
                                      optimal.value = optimal.value,

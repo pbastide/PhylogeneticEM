@@ -246,7 +246,7 @@ estimateEM <- function(phylo,
                                        variance = params$variance, 
                                        selection.strength = params$selection.strength)
   attr(params, "ntaxa")  <- ntaxa
-  attr(params, "p")  <- p
+  attr(params, "p_dim")  <- p
   params_old <- NULL
   ## Iteration
   Nbr_It <- 0
@@ -270,20 +270,20 @@ estimateEM <- function(phylo,
                                              Y_data = Y_data,
                                              sim = moments$sim,
                                              Sigma = moments$Sigma,
-                                             Sigma_YY_inv = moments$Sigma_YY_inv)
+                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
     attr(params_old, "log_likelihood") <- log_likelihood
     ## Compute Mahalanobis norm between data and mean at tips
     maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
                                                    Y_data = Y_data,
                                                    sim = moments$sim,
-                                                   Sigma_YY_inv = moments$Sigma_YY_inv)
+                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
     attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
     ## E step
     conditional_law_X <- compute_E(phylo = phylo,
                                    Y_data = Y_data,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
-                                   Sigma_YY_inv = moments$Sigma_YY_inv)
+                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
     #   ## Log likelihood as the sum of conditional + entropy
     #         H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
     #         CLL <- conditional_expectation_log_likelihood(phylo = phylo,
@@ -313,7 +313,7 @@ estimateEM <- function(phylo,
                         mu_old = params_old$root.state$value.root,
                         subtree.list = subtree.list)
     attr(params, "ntaxa")  <- ntaxa
-    attr(params, "p")  <- p
+    attr(params, "p_dim")  <- p
     ## Number of shifts that changed position ?
     number_new_shifts <- c(number_new_shifts,
                            sum(!(params$shifts$edges %in% params_old$shifts$edges)))
@@ -346,14 +346,14 @@ estimateEM <- function(phylo,
                                            Y_data = Y_data,
                                            sim = moments$sim,
                                            Sigma = moments$Sigma,
-                                           Sigma_YY_inv = moments$Sigma_YY_inv)
+                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
   attr(params, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
   ## Compute Mahalanobis norm between data and mean at tips
   maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
                                                  Y_data = Y_data,
                                                  sim = moments$sim,
-                                                 Sigma_YY_inv = moments$Sigma_YY_inv)
+                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
   attr(params, "mahalanobis_distance_data_mean") <- maha_data_mean
   ## Mean at tips with estimated parameters
   m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")

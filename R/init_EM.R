@@ -83,6 +83,8 @@ init.EM.default.BM <- function(phylo = NULL,
                                   params_init$root.state,
                                   params_init$shifts,
                                   params_init$variance)
+  params_init$root.state <- test.root.state(params_init$root.state, "BM")
+  params_init$variance <- as(params_init$variance, "symmetricMatrix")
   return(params_init)
 }
 

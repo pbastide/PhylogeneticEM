@@ -347,8 +347,8 @@ plot.process("Plot_sim_OU_shift", TreeType, X1.tips, X1.nodes, tree, process="OU
 #######################################
 ## Tree
 set.seed(18850706)
-ntaxa <- 50
-tree <- rtree(ntaxa)
+ntaxa <- 64
+tree <- rcoal(ntaxa)
 plot(tree); edgelabels()
 
 ## Parameters
@@ -360,7 +360,7 @@ root.state <- list(random = FALSE,
                    exp.root = NA,
                    var.root = NA)
 
-shifts = list(edges = c(9, 66),
+shifts = list(edges = c(10, 57),
               values=cbind(c(4, -10, -6),
                            c(2, 2, 2)),
               relativeTimes = 0)
