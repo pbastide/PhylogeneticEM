@@ -88,7 +88,7 @@ init.EM.default.BM <- function(phylo = NULL,
   return(params_init)
 }
 
-init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.root.init=TRUE, value.root.init=1, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, nbr_of_shifts = length(edges.init), phylo = NULL, ...) {
+init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.root.init=TRUE, value.root.init=1, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, nbr_of_shifts = length(edges.init), phylo = NULL, subtree.list = NULL, ...) {
   if (random.init) {
     value.root.init <- NA
     if (stationary.root.init) {
@@ -426,7 +426,7 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
 #'18/06/14 - Initial release
 #'06/10/14 - Externalization of function lasso
 ##
-init.EM.lasso <- function(phylo, Y_data, process, times_shared = compute_times_ca(phylo), distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, T_tree = incidence.matrix(phylo), ...) {
+init.EM.lasso <- function(phylo, Y_data, process, times_shared = compute_times_ca(phylo), distances_phylo, nbr_of_shifts, use_sigma=TRUE, variance.init=1, random.init=TRUE, value.root.init=0, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, T_tree = incidence.matrix(phylo), subtree.list = NULL, ...) {
   ntaxa <- length(phylo$tip.label)
   init.EM.default <- init.EM.default(process)
   ## Actualization of incidence matrix
