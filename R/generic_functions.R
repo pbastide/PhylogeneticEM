@@ -424,7 +424,9 @@ compute_stationnary_variance <- function(variance, selection.strength){
     kro_sum_A <- kronecker_sum(selection.strength, selection.strength)
     kro_sum_A_inv <- solve(kro_sum_A)
     root_var_vec <- kro_sum_A_inv%*%variance_vec
-    return(matrix(root_var_vec, dim(variance)))
+    gamma <- matrix(root_var_vec, dim(variance))
+    if (!isSymmetric(gamma)) stop("Error in computation of stationnary variance: matrix computed was not symmetric.")
+    return(forceSymmetric(gamma))
   }
 }
 
@@ -513,7 +515,8 @@ check_dimensions <- function(p,
                              root.state, shifts, variance,
                              selection.strength = NULL, optimal.value = NULL){
   root.state <- check_dimensions.root.state(p, root.state)
-  if (!is.null(unlist(shifts))) shifts <- check_dimensions.shifts(p, shifts)
+  #if (!is.null(unlist(shifts)))
+  shifts <- check_dimensions.shifts(p, shifts)
   variance <- check_dimensions.matrix(p, p, variance, "variance")
   variance <- as(variance, "symmetricMatrix")
   if (!is.null(selection.strength))
@@ -529,6 +532,7 @@ check_dimensions <- function(p,
 }
 
 check_dimensions.matrix <- function(p, q, matrix, name = "matrix"){
+  if (is.null(matrix)) matrix <- matrix(0, p, q)
   if (p == 1){
     if (is.vector(matrix) && length(matrix) != q) 
       stop(paste0(matrix, " should be a scalar in dimension q = ", q, "."))
@@ -550,6 +554,7 @@ check_dimensions.root.state <- function(p, root.state){
   if (root.state$random){
     root.state$exp.root <- check_dimensions.vector(p, root.state$exp.root, "Root Expectation")
     root.state$var.root <- check_dimensions.matrix(p, p, root.state$var.root, "root variance")
+    root.state$var.root <- as(root.state$var.root, "symmetricMatrix")
   } else {
     root.state$value.root <- check_dimensions.vector(p, root.state$value.root, "Root Value")
   }

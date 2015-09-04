@@ -91,7 +91,7 @@ estimateEM <- function(phylo,
                                        exp.root = 10^(3), 
                                        var.root = 10^(3),
                                        selection.strength = 10^(3)),
-                       var.init.root = 1,
+                       var.init.root = diag(1, nrow(Y_data)),
                        methods.segmentation = c("max_costs_0", 
                                                 "lasso", 
                                                 "same_shifts", 
@@ -200,8 +200,9 @@ estimateEM <- function(phylo,
                                                   init.var.root = var.init.root,
                                                   method.init.alpha.estimation = method.init.alpha.estimation,
                                                   tol = tol,
-                                                  h_tree = h_tree)
-  init.var.root <- mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
+                                                  h_tree = h_tree,
+                                                  random.root = random.root)
+  init.var.root <- init.a.g$gamma_0 # mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
   if (process == "OU"){
     if(!alpha_known) {
       if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
@@ -363,7 +364,7 @@ estimateEM <- function(phylo,
   if (Neq > 1) message("There are some equivalent solutions to the solution found.")
   ## Result
   result <- list(params = params, 
-                 ReconstructedNodesStates = conditional_law_X$expectations[(ntaxa+1):length(conditional_law_X$expectations)],
+                 ReconstructedNodesStates = conditional_law_X$expectations[ , (ntaxa+1):ncol(conditional_law_X$expectations)],
                  ReconstructedTipsStates = m_Y_estim,
                  params_old = params_old, 
                  params_init = params_init,

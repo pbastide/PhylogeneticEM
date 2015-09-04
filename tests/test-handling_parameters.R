@@ -11,7 +11,7 @@ test_that("check_dimensions.root.state ", {
                              stationary.root = TRUE, 
                              value.root = 3,
                              exp.root = 2,
-                             var.root = matrix(5, 1, 1))
+                             var.root = Matrix(5, 1, 1))
   
   root.state_test <- check_dimensions.root.state(1, root.state_test)
   expect_that(root.state_test, equals(root.state_correct))

@@ -66,7 +66,7 @@ compute_M.BM <- function(phylo,
   seg <- segmentation.BM(nbr_of_shifts = nbr_of_shifts, 
                          costs0 = costs0,
                          diff_exp = diff_exp)
-  params$shifts <- seg$shifts
+  params$shifts <- check_dimensions.shifts(p, seg$shifts)
   edges_max <- seg$edges_max
   ## Actualization of the root
   if (params$root.state$random) {
@@ -120,7 +120,7 @@ compute_root_value.BM <- function(phylo,
   parents <- phylo$edge[ , 1]
   root_edges <- which(parents == ntaxa + 1)
   deltas <- matrix(0, p, nEdges)
-  deltas <- shifts.list_to_matrix(phylo, shifts)
+  deltas <- shifts.list_to_matrix(phylo, shifts, p)
   mu <- rowSums(1/(phylo$edge.length[root_edges]) * (expectations[ , daughters[root_edges], drop = F] - deltas[, root_edges, drop = F]))
   mu <- mu / sum(phylo$edge.length[root_edges])
   return(mu)

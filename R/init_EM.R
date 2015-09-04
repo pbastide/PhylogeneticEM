@@ -68,8 +68,14 @@ init.EM.default.BM <- function(phylo = NULL,
     var.root.init <- NA
   }
   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
-  if (is.null(edges.init) && (nbr_of_shifts != 0)){
-    edges.init <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
+  if (length(edges.init) < nbr_of_shifts){
+    missing <- nbr_of_shifts - length(edges.init)
+    edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
+  }
+  # If not enought values, complete with 0s
+  if (ncol(values.init) < nbr_of_shifts){
+    missing <- nbr_of_shifts - ncol(values.init)
+    values.init <- cbind(values.init, rep(0, p))
   }
   params_init = list(variance = variance.init,
                      root.state = list(random = random.init,
@@ -100,8 +106,14 @@ init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.roo
     var.root=NA
   }
   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
-  if (is.null(edges.init) && (nbr_of_shifts != 0)){
-    edges.init <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
+  if (length(edges.init) < nbr_of_shifts){
+    missing <- nbr_of_shifts - length(edges.init)
+    edges.init <- sample_shifts_edges(phylo, missing, part.list = subtree.list)
+  }
+  # If not enought values, complete with 0s
+  if (ncol(values.init) < nbr_of_shifts){
+    missing <- nbr_of_shifts - ncol(values.init)
+    values.init <- cbind(values.init, rep(0, p))
   }
   params_init=list(variance=variance.init,
                    root.state=list(random=random.init,
@@ -521,8 +533,16 @@ init.alpha.OU <- function(method.init.alpha){
 }
 
 init.alpha.gamma.BM <- function(method.init.alpha){
-  return(function(init.var.root, ...) return(list(alpha_0 = 0,
-                                                  gamma_0 = init.var.root)))
+  fun <- function(random.root, init.var.root, ...){
+    if (random.root){ 
+      gamma_0 <- init.var.root
+    } else {
+      gamma_0 <- NULL
+    }
+    return(list(alpha_0 = NULL,
+                gamma_0 = gamma_0))
+  }
+  return(fun)
 }
 
 init.alpha.gamma.OU <- function(method.init.alpha){

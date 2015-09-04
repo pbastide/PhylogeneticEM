@@ -211,7 +211,7 @@ is.finite.params.OU.stationnary.root_AND_shifts_at_nodes <- function(params) {
 #'16/07/14 - Initial release
 ##
 is.in.ranges <- function(p, min, max){
-  if (any(p < min) || any(p > max)){
+  if (any(abs(p) < min) || any(abs(p) > max)){
     return(FALSE)
   } else {
     return(TRUE)
