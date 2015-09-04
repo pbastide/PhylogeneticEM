@@ -31,7 +31,8 @@
 #' Must be applied to least-square crierion.
 #' This penalty should be calibrated using the slope heuristic.
 #'
-#' @param K the dimension of the model
+#' @param K the number of shifts
+#' @param p the dimention of the data
 #' @param model_complexity the complexity of the set of models with dimention K
 #' @param B a non-negative constant. Default is 0.1 
 #' (as suggested in Cleymen Lebarbier 2015)
@@ -39,9 +40,23 @@
 #' @return value of the penalty
 #'
 ##
-penalty_BirgeMassart_shape1 <- function(K, model_complexity, B = 0.1){
+penalty_BirgeMassart_shape1 <- function(K, p, model_complexity, B = 0.1){
   if (B <= 0) stop("Constant B in penalty shape 1 must be non-negative.")
-  return((sqrt(K) + sqrt(2 * B * K + 2 * log(model_complexity)))^2)
+  #return((sqrt(K) + sqrt(2 * B * K + 2 * log(model_complexity)))^2)
+  return((K + 1) * p * (1 + sqrt(2) * sqrt(B + 1/((K + 1) * p) * log(model_complexity)))^2)
+}
+
+model_selection_BM1 <- function(res, C.BM1, ...){
+  p <- nrow(res$Y_data)
+  pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try, p, res$results_summary$complexity, C.BM1)
+  data_capushe <- data.frame(names = res$results_summary$K_try, 
+                             pen_shape = pen_shape,
+                             complexity = res$results_summary$complexity,
+                             contrast = -res$results_summary$log_likelihood)
+  cap_res <- capushe(data_capushe)
+  DDSE_results <- DDSE(data_capushe)
+  Djump_results <- Djump(data_capushe)
+  return(res)
 }
 
 ##
@@ -57,7 +72,8 @@ penalty_BirgeMassart_shape1 <- function(K, model_complexity, B = 0.1){
 #' Must be applied to least-square crierion.
 #' This penalty should be calibrated using the slope heuristic.
 #'
-#' @param K the dimension of the model.
+#' @param K the number of shifts
+#' @param p the dimension of the data
 #' @param model_complexity the complexity of the set of models with dimention K.
 #' @param C a non-negative constant. Default is 2.5 
 #' (as suggested in Lebarbier 2005)
@@ -66,9 +82,10 @@ penalty_BirgeMassart_shape1 <- function(K, model_complexity, B = 0.1){
 #'
 ##
 
-penalty_BirgeMassart_shape2 <- function(K, model_complexity, C = 2.5){
+penalty_BirgeMassart_shape2 <- function(K, p, model_complexity, C = 2.5){
   if (C <= 0) stop("Constant C in penalty shape 2 must be non-negative.")
-  return(C*K + log(model_complexity))
+  #return(C*K + log(model_complexity))
+  return(C * (K + 1) + log(model_complexity))
 }
 
 ##

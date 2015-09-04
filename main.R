@@ -20,12 +20,14 @@ source("R/shifts_manipulations.R")
 source("R/plot_functions.R")
 source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
+source("R/model_selection.R")
 
 ###########################################################################
 ###########################################################################
 
 #############################
 ## Plot tree for parsimony figures
+#############################
 tree <- read.tree(text="(((C,(T,T)),C),(A,A));")
 ntaxa <- 6
 clusters_tips <- c(1, 2, 2, 1, 0, 0)
@@ -343,13 +345,13 @@ nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered
 plot.process("Plot_sim_OU_shift", TreeType, X1.tips, X1.nodes, tree, process="OU", paramsSimu=paramsSimu)
 
 #######################################
-## Test of EM - BM - Multivariate
+## Test of EM - BM - Multivariate 
 #######################################
 ## Tree
 set.seed(18850706)
 ntaxa <- 64
 tree <- rcoal(ntaxa)
-plot(tree); edgelabels()
+plot(tree, use.edge.length = FALSE); edgelabels()
 
 ## Parameters
 p <- 3
@@ -384,25 +386,25 @@ par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
   params <- paramsSimu
   params$shifts$values <- paramsSimu$shifts$values[l, ]
-  params$optimal.value <- paramsSimu$optimal.value[l]
+  params$optimal.value <- paramsSimu$root.state$value.root[l]
   plot.data.process.actual(Y.state = Y_data[l, ],
                            phylo = tree, 
                            params = params,
-                           adj.root = 2,
+                           adj.root = 0,
                            automatic_colors = TRUE,
                            margin_plot = NULL,
                            cex = 2)
 }
 
-par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
-for (l in 1:p){
-  X1.tips <- Y_data[l, ]
-  X1.nodes <- Z_data[l, ]
-  plot(tree, show.tip.label = FALSE)
-  tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
-  nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
-  edgelabels(shifts$values[l, ], shifts$edges)
-}
+# par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+# for (l in 1:p){
+#   X1.tips <- Y_data[l, ]
+#   X1.nodes <- Z_data[l, ]
+#   plot(tree, show.tip.label = FALSE)
+#   tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
+#   nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
+#   edgelabels(shifts$values[l, ], shifts$edges)
+# }
 
 # Estimate parameters from the data
 # tol <- list(variance = 10^(-4),
@@ -418,12 +420,115 @@ t1 <- system.time(results_estim_EM <- estimateEM(phylo = tree,
                                Nbr_It_Max = 500,
                                nbr_of_shifts = 2,
                                random.root = FALSE))
+res <- format_output(results_estim_EM, phylo = tree, time = t1)
+results_estim_EM$params
+
+res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
+
+# Test : why is LL decreasing ?
+tt <- system.time(results_estim_EM <- estimateEM(phylo = tree, 
+                                                 Y_data = Y_data, 
+                                                 process = "BM", 
+                                                 method.variance = "simple", 
+                                                 method.init = "default",
+                                                 method.init.alpha = "default",
+                                                 nbr_of_shifts = 5,
+                                                 random.root = FALSE,
+                                                 stationnary.root = FALSE,
+                                                 alpha_known = TRUE,
+                                                 known.selection.strength = 0,
+                                                 init.selection.strength = res$params_estim[["4"]]$selection.strength,
+                                                 var.init.root = res$params_estim[["4"]]$root.state$var.root,
+                                                 exp.root.init = res$params_estim[["4"]]$root.state$exp.root,
+                                                 variance.init = res$params_estim[["4"]]$variance,
+                                                 value.root.init = res$params_estim[["4"]]$root.state$value.root,
+                                                 edges.init = res$params_estim[["4"]]$shifts$edges,
+                                                 values.init = res$params_estim[["4"]]$shifts$values,
+                                                 #relativeTimes.init = res$params_estim[["4"]]$params$shifts$relativeTimes,
+                                                 methods.segmentation = "lasso"))
+
+params_estim_EM <- results_estim_EM$params
+Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
+
+# Plot the reconstructed states
+
+#######################################
+## Test of EM - BM - Multivariate - No shift
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 64
+tree <- rcoal(ntaxa)
+plot(tree, use.edge.length = FALSE); edgelabels()
+
+## Parameters
+p <- 3
+variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+
+root.state <- list(random = FALSE,
+                   value.root = c(1, -1, 3),
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts <- NULL
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state)
+
+## Simulate Process
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_data <- extract.simulate(X1,"nodes","states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value <- paramsSimu$root.state$value.root[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
+set.seed(17920920)
+t1 <- system.time(results_estim_EM <- estimateEM(phylo = tree,
+                                                 Y_data = Y_data,
+                                                 process = "BM",
+                                                 method.init = "default",
+                                                 Nbr_It_Max = 500,
+                                                 nbr_of_shifts = 0,
+                                                 random.root = FALSE))
+res <- format_output(results_estim_EM, phylo = tree, time = t1)
 results_estim_EM$params
 
 params_estim_EM <- results_estim_EM$params
 Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
 
 # Plot the reconstructed states
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- params_estim_EM
+  params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
+  params$optimal.value <- round(params_estim_EM$root.state$value.root[l], 2)
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
 
 #######################################
 ## Test of EM - BM - Multivariate - Big
@@ -449,7 +554,7 @@ root.state <- list(random = FALSE,
                    exp.root = NA,
                    var.root = NA)
 
-shifts = list(edges = c(3, 92, 181),
+shifts = list(edges = c(3, 93, 181),
               values=cbind(c(5, 5, 5, 5, 5, 5),
                            c(-1, -2, -3, 1, 2, 3),
                            c(0.1, 0.1, 0, 0, -5, -5)),
@@ -458,6 +563,8 @@ shifts = list(edges = c(3, 92, 181),
 paramsSimu <- list(variance = variance,
                    shifts = shifts,
                    root.state = root.state)
+
+paramsSimu
 
 ## Simulate Process
 set.seed(1344)
@@ -469,20 +576,31 @@ X1 <- simulate(tree,
                shifts = shifts)
 
 Y_data <- extract.simulate(X1,"tips","states")
+Z_data <- extract.simulate(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
   params <- paramsSimu
   params$shifts$values <- paramsSimu$shifts$values[l, ]
-  params$optimal.value <- paramsSimu$optimal.value[l]
+  params$optimal.value <- paramsSimu$root.state$value.root[l]
   plot.data.process.actual(Y.state = Y_data[l, ],
                            phylo = tree, 
                            params = params,
-                           adj.root = 2,
+                           adj.root = 0,
                            automatic_colors = TRUE,
                            margin_plot = NULL,
                            cex = 2)
 }
+
+# par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+# for (l in 1:p){
+#   X1.tips <- Y_data[l, ]
+#   X1.nodes <- Z_data[l, ]
+#   plot(tree, show.tip.label = FALSE)
+#   tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
+#   nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
+#   edgelabels(shifts$values[l, ], shifts$edges)
+# }
 
 
 # Estimate parameters from the data
@@ -513,12 +631,107 @@ for (l in 1:p){
   plot.data.process.actual(Y.state = Y_data[l, ],
                            phylo = tree, 
                            params = params,
-                           adj.root = 2,
+                           adj.root = 0,
                            automatic_colors = TRUE,
                            margin_plot = NULL,
                            cex = 2)
 }
 
+#######################################
+## Test of EM - BM - Multivariate - Random Root
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 64
+tree <- rcoal(ntaxa)
+plot(tree, use.edge.length = FALSE); edgelabels()
+
+## Parameters
+p <- 3
+variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+
+root.state <- list(random = TRUE,
+                   value.root = NA,
+                   exp.root = c(1, -1, 3),
+                   var.root = matrix(0.1, p, p) + diag(0.1, p, p))
+
+shifts = list(edges = c(10, 57),
+              values=cbind(c(4, -10, -6),
+                           c(2, 2, 2)),
+              relativeTimes = 0)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state)
+
+## Simulate Process
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_data <- extract.simulate(X1,"nodes","states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value <- paramsSimu$root.state$exp.root[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  X1.tips <- Y_data[l, ]
+  X1.nodes <- Z_data[l, ]
+  plot(tree, show.tip.label = FALSE)
+  tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
+  nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
+  edgelabels(shifts$values[l, ], shifts$edges)
+}
+
+# Estimate parameters from the data
+# tol <- list(variance = 10^(-4),
+#             value.root = 10^(-4),
+#             exp.root = 10^(-4),
+#             var.root = 10^(-4))
+# params_algo_EM <- list(process=process, tol=tol, method.variance="simple", method.init="default", nbr_of_shifts=1)
+set.seed(17920920)
+t1 <- system.time(results_estim_EM <- estimateEM(phylo = tree,
+                                                 Y_data = Y_data,
+                                                 process = "BM",
+                                                 method.init = "default",
+                                                 Nbr_It_Max = 500,
+                                                 nbr_of_shifts = 2,
+                                                 random.root = TRUE))
+results_estim_EM$params
+
+params_estim_EM <- results_estim_EM$params
+Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
+
+# Plot the reconstructed states
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- params_estim_EM
+  params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
+  params$optimal.value <- params_estim_EM$root.state$exp.root[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
 
 ###########################
 ## Test of function simulate with shifts

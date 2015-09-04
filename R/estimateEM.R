@@ -383,6 +383,138 @@ estimateEM <- function(phylo,
 }
 
 ##
+#' @title Run the EM for several values of K
+#'
+#' @description
+#' \code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
+#' for all values of K between 0 and K_max.
+#'
+#' @details
+#' The EM is fisrt launched for K=0, with alpha and gamma estimated. The
+#' estimated values of alpha, gamma and beta_0 found by this fisrt EM are then
+#' used as initialisation parameters for all the other runs of the EM for other
+#' K.
+#' The EMs are parralelized thanks to packages \code{foreach} and 
+#' \code{doParallel}.
+#' WARNING : this code only work of OU with stationnary root, on an ultrametric
+#' tree.
+#' 
+#'
+#' @param results_estim_EM output of function \code{estimateEM}
+#' @param time to run the function
+#' 
+#' @return summary a data frame with K_max lines, and columns:
+#'    - alpha_estim the estimated selection strength
+#'    - gamma_estim the estimated root variance
+#'    - beta_0_estim the estimated value of root optumum
+#'    - EM_steps number of iterations needed before convergence
+#'    - DV_estim has the EM diverged ?
+#'    - CV_estim has the EM converged ?
+#'    - log_likelihood log likelihood of the data using the estimated parameters
+#'    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+#' and the estimated means at the tips
+#'    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+#' mahalanobis_distance_data_mean * gamma_estim.
+#'    - mean_number_new_shifts the mean number of shifts that changed over the 
+#' iterations of the EM
+#'    - number_equivalent_solutions the number of equivalent solutions to 
+#' the solution found.
+#'    - K_try the number of shifts allowed.
+#'    - complexity the complexity for K_try
+#'    - time the CPU time needed.
+#' @return params a list of infered parameters
+#' @return params_init a list of initial paramters
+#' @return alpha_0 initial values of alpha
+#' @return gmma_0 initial values of gamma
+#' @return Zhat reconstructed node states
+#' @return m_Y_estim reconstructed tip states
+#' @return edge.quality for each edge, relative number of iterations in which they
+#'  were present.
+#'
+##
+format_output <- function(results_estim_EM, phylo, time = NA){
+  params <- results_estim_EM$params
+  params_init <- results_estim_EM$params_history['0']$'0'
+  X <- NULL
+  X$params <- params
+  X$params_init <- params_init
+  X$alpha_0 <- results_estim_EM$alpha_0
+  if (!is.null(X$alpha_0)) names(X$alpha_0) <- paste0("alpha_0_", names(X$alpha_0))
+  X$gamma_0 <- results_estim_EM$gamma_0
+  if (!is.null(X$gamma_0)) names(X$gamma_0) <- paste0("gamma_0_", names(X$gamma_0))
+  X$Zhat <- results_estim_EM$ReconstructedNodesStates
+  X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
+  #  X$raw_results <- results_estim_EM
+  if (is.null(params$selection.strength)){# Handle BM case
+    params$selection.strength <- NA
+    params_init$selection.strength <- NA
+  }
+  K_t <- length(params$shifts$edges)
+  X$summary <- data.frame(
+    ## Estimated Parameters
+    "alpha_estim" = params$selection.strength,
+    "gamma_estim" = params$root.state$var.root,
+    "beta_0_estim" = params$root.state$exp.root,
+    "log_likelihood" = attr(params, "log_likelihood")[1],
+    "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
+    #"least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
+    ## Convergence Monitoring Quantities
+    "EM_steps" = attr(results_estim_EM, "Nbr_It"),
+    "DV_estim" = attr(results_estim_EM, "Divergence"),
+    "CV_estim" = (attr(results_estim_EM, "Nbr_It") != 1000) && !attr(results_estim_EM, "Divergence"),
+    "mean_number_new_shifts" = mean(results_estim_EM$number_new_shifts),
+    ## Other useful informations
+    "number_equivalent_solutions" = results_estim_EM$number_equivalent_solutions,
+    "K_try" = K_t,
+    "complexity" = extract.partitionsNumber(partitionsNumber(phylo, K_t + 1)),
+    "time" = time["elapsed"],
+    ## Initial Estimated Parameters
+    "alpha_estim_init" = params_init$selection.strength,
+    "gamma_estim_init" = params_init$root.state$var.root,
+    "beta_0_estim_init" = params_init$root.state$exp.root,
+    "log_likelihood_init" = attr(params_init, "log_likelihood")[1],
+    "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean")
+    #"least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
+  )
+  X$summary <- as.data.frame(c(X$summary, X$alpha_0))
+  X$summary <- as.data.frame(c(X$summary, X$gamma_0))
+  ## Compute edge quality
+  extract.edges <- function(x) {
+    z <- unlist(lapply(x, function(y) y$shifts$edges))
+    if (!is.null(z)) z <- matrix(z, nrow = K_t)      
+    return(z)
+  }
+  selected.edges <- extract.edges(results_estim_EM$params_history)
+  compute.quality <- function(i) {
+    res <- 0 + (selected.edges == i)
+    return(mean(colSums(res)))
+  }
+  if (K_t != 0){
+    edge.quality <- unlist(lapply(params$shifts$edges, compute.quality))
+    names(edge.quality) <- params$shifts$edges
+  } else {
+    edge.quality <- NA
+  }
+  X$edge.quality <- edge.quality
+  return(X)
+}
+
+format_output_several_K <- function(res_sev_K, out){
+  dd <- do.call(rbind, res_sev_K)
+  df <- do.call(rbind, dd[ , "summary"])
+  df <- as.data.frame(df)
+  ## Results
+  out$results_summary <- df
+  out$params_estim <- dd[, "params"]
+  out$params_init_estim <- dd[, "params_init"]
+  out$alpha_0 <- dd[,"alpha_0" == colnames(dd)]
+  out$Zhat <- dd[, "Zhat"]
+  out$m_Y_estim <- dd[, "m_Y_estim"]
+  out$edge.quality <- dd[, "edge.quality"]
+  return(out)
+}
+
+##
 #' @title Maximal number of shifts allowed
 #'
 #' @description
@@ -403,6 +535,160 @@ estimateEM <- function(phylo,
 compute_K_max <- function(ntaxa, kappa = 0.9){
   if (kappa >= 1) stop("For K_max computation, one must have kappa < 1")
   return(min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+}
+
+PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
+                    order = TRUE,
+                    method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
+                    C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                    method.variance = "simple",
+                    method.init = "default",
+                    method.init.alpha = "default",
+                    method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
+                    methods.segmentation = c("lasso", "best_single_move"),
+                    alpha_known = FALSE,
+                    random.root = TRUE,
+                    stationnary.root = TRUE,
+                    alpha = 0,
+                    check.tips.names = FALSE,
+                    progress.bar = TRUE,
+                    ...){
+  ## Check that the vector of data is in the correct order and dimensions ################
+  Y_data <- check_data(phylo, Y_data, check.tips.names)
+  p <- nrow(Y_data)
+  ## Model Selection
+  method.selection  <- match.arg(method.selection)
+  model_selection  <- switch(method.selection, 
+                             BirgeMassart1 = model_selection_BM1,
+                             BirgeMassart2 = model_selection_BM2,
+                             BHG = model_selection_BGH)
+  if (p > 1 && method.selection == "BGH") stop("BGH is not implemented for multivariate data")
+  if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart1") library(capushe)
+  ## Fixed quantities
+  times_shared <- compute_times_ca(phylo)
+  distances_phylo <- compute_dist_phy(phylo)
+  subtree.list <- enumerate_tips_under_edges(phylo)
+  T_tree <- incidence.matrix(phylo)
+  ## Set up
+  X <- list(Y_data = Y_data,
+            K_try = 0:K_max,
+            ntaxa = ntaxa)
+  XX <- vector('list', K_max + 1)
+  names(XX) <- X$K_try
+  # First estim
+  if (order){
+    K_first <- 0
+    K_last <- K_max
+    next_it <- function(K_t) { return(K_t + 1) }
+    prev_it <- function(K_t) { return(K_t - 1) }
+  } else {
+    K_first <- K_max
+    K_last <- 0
+    next_it <- function(K_t) { return(K_t - 1) }
+    prev_it <- function(K_t) { return(K_t + 1) }
+  }
+  ## Progress Bar
+  if(progress.bar) pb <- txtProgressBar(min = 0, max = K_max + 1, style = 3)
+  ## First
+  XX[[paste0(K_first)]] <- estimateEM_wrapper_scratch(phylo = phylo,
+                                                      Y_data = Y_data,
+                                                      process = process,
+                                                      K_t = K_first,
+                                                      method.variance = method.variance,
+                                                      random.root = random.root,
+                                                      stationnary.root = stationnary.root,
+                                                      alpha_known = alpha_known,
+                                                      alpha = alpha,
+                                                      methods.segmentation = methods.segmentation,
+                                                      times_shared = times_shared, 
+                                                      disItances_phylo = distances_phylo,
+                                                      subtree.list = subtree.list,
+                                                      T_tree = T_tree, 
+                                                      ...)
+  # update progress bar
+  if(progress.bar) setTxtProgressBar(pb, 1); counter <- 2;
+  ## Iterations
+  for (K_t in (next_it(K_first)):(K_last)){
+    XX[[paste0(K_t)]] <- estimateEM_wrapper(use_previous)(phylo = phylo,
+                                                          Y_data = Y_data,
+                                                          process = process,
+                                                          K_t = K_t,
+                                                          prev = XX[[paste0(prev_it(K_t))]],
+                                                          method.variance = method.variance,
+                                                          random.root = random.root,
+                                                          stationnary.root = stationnary.root,
+                                                          alpha_known = alpha_known,
+                                                          alpha = alpha,
+                                                          methods.segmentation = methods.segmentation,
+                                                          times_shared = times_shared, 
+                                                          disItances_phylo = distances_phylo,
+                                                          subtree.list = subtree.list,
+                                                          T_tree = T_tree, 
+                                                          ...)
+    if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
+  }
+  ## Formate results
+  X <- format_output_several_K(XX, X)
+  ## Model Selection
+ ## Do something
+  return(X)
+}
+
+estimateEM_wrapper <- function(use_previous){
+  if (use_previous) return(estimateEM_wrapper_previous)
+  return(estimateEM_wrapper_scratch)
+}
+
+estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
+                                        method.variance,
+                                        random.root, stationnary.root,
+                                        alpha_known, alpha,
+                                        methods.segmentation,
+                                        ...){
+  tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
+                                                   Y_data = Y_data, 
+                                                   process = process, 
+                                                   method.variance = method.variance, 
+                                                   method.init = "default",
+                                                   method.init.alpha = "default",
+                                                   nbr_of_shifts = K_t,
+                                                   random.root = random.root,
+                                                   stationnary.root = stationnary.root,
+                                                   alpha_known = alpha_known,
+                                                   known.selection.strength = alpha,
+                                                   init.selection.strength = prev$alpha_estim,
+                                                   var.init.root = prev$params$root.state$var.root,
+                                                   exp.root.init = prev$params$root.state$exp.root,
+                                                   variance.init = prev$params$variance,
+                                                   value.root.init = prev$params$root.state$value.root,
+                                                   edges.init = prev$params$shifts$edges,
+                                                   #values.init = prev$params$shifts$values,
+                                                   #relativeTimes.init = prev$params$shifts$relativeTimes,
+                                                   methods.segmentation = methods.segmentation,
+                                                   ...))
+  return(format_output(results_estim_EM, phylo, tt))
+}
+
+estimateEM_wrapper_scratch <- function(phylo, Y_data, process, K_t,
+                                       method.variance,
+                                       random.root, stationnary.root,
+                                       alpha_known, alpha,
+                                       methods.segmentation,
+                                       ...){
+  tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
+                                                   Y_data = Y_data, 
+                                                   process = process, 
+                                                   method.variance = method.variance, 
+                                                   method.init = "default",
+                                                   method.init.alpha = "default",
+                                                   nbr_of_shifts = K_t,
+                                                   random.root = random.root,
+                                                   stationnary.root = stationnary.root,
+                                                   alpha_known = alpha_known,
+                                                   known.selection.strength = alpha,
+                                                   methods.segmentation = methods.segmentation,
+                                                   ...))
+  return(format_output(results_estim_EM, phylo, tt))
 }
 
 ##
@@ -583,71 +869,9 @@ estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
                                                    selection.strength = 10^(4)),
                                    methods.segmentation = c("lasso", "best_single_move"), ...)
   )
-  params <- results_estim_EM$params
-  params_init <- results_estim_EM$params_history['0']$'0'
-  X <- NULL
-  X$params = params
-  X$params_init <- params_init
-  X$alpha_0 <- results_estim_EM$alpha_0
-  names(X$alpha_0) <- paste0("alpha_0_", names(X$alpha_0))
-  X$gamma_0 <- results_estim_EM$gamma_0
-  names(X$gamma_0) <- paste0("gamma_0_", names(X$gamma_0))
-  X$Zhat <- results_estim_EM$ReconstructedNodesStates
-  X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
-#  X$raw_results <- results_estim_EM
-  if (is.null(params$selection.strength)){# Handle BM case
-    params$selection.strength <- NA
-    params_init$selection.strength <- NA
-  }
-  X$summary <- data.frame(
-    ## Estimated Parameters
-    "alpha_estim" = params$selection.strength,
-    "gamma_estim" = params$root.state$var.root,
-    "beta_0_estim" = params$root.state$exp.root,
-    "log_likelihood" = attr(params, "log_likelihood")[1],
-    "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
-    "least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
-    ## Convergence Monitoring Quantities
-    "EM_steps" = attr(results_estim_EM, "Nbr_It"),
-    "DV_estim" = attr(results_estim_EM, "Divergence"),
-    "CV_estim" = (attr(results_estim_EM, "Nbr_It") != 1000) && !attr(results_estim_EM, "Divergence"),
-    "mean_number_new_shifts" = mean(results_estim_EM$number_new_shifts),
-    ## Other useful informations
-    "number_equivalent_solutions" = results_estim_EM$number_equivalent_solutions,
-    "K_try" = K_t,
-    "complexity" = extract.partitionsNumber(partitionsNumber(phylo, K_t + 1)),
-    "time" = time["elapsed"],
-    ## Initial Estimated Parameters
-     "alpha_estim_init" = params_init$selection.strength,
-     "gamma_estim_init" = params_init$root.state$var.root,
-     "beta_0_estim_init" = params_init$root.state$exp.root,
-     "log_likelihood_init" = attr(params_init, "log_likelihood")[1],
-     "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean"),
-     "least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
-  )
-  X$summary <- as.data.frame(c(X$summary, X$alpha_0))
-  X$summary <- as.data.frame(c(X$summary, X$gamma_0))
-  ## Compute edge quality
-  extract.edges <- function(x) {
-    z <- unlist(lapply(x, function(y) y$shifts$edges))
-    if (!is.null(z)) z <- matrix(z, nrow = K_t)      
-    return(z)
-  }
-  selected.edges <- extract.edges(results_estim_EM$params_history)
-  compute.quality <- function(i) {
-    res <- 0 + (selected.edges == i)
-    return(mean(colSums(res)))
-  }
-  if (K_t != 0){
-    edge.quality <- unlist(lapply(params$shifts$edges, compute.quality))
-    names(edge.quality) <- params$shifts$edges
-  } else {
-    edge.quality <- NA
-  }
-  X$edge.quality <- edge.quality
+  X <- format_output(results_estim_EM)
   return(X)
 }
-
 
 ##
 #' @title Test the format of data entry.
