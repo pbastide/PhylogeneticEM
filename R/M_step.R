@@ -59,13 +59,19 @@ compute_M.BM <- function(phylo,
   params <- init.EM.default.BM(random.init = random.root, p = nrow(Y_data), ...)
   ## Segmentation
   diff_exp <- compute_diff_exp.BM(phylo = phylo, 
-                                  conditional_law_X = conditional_law_X, 
-                                  random.root = random.root,
-                                  mu_old = mu_old)
-  costs0 <- compute_costs_0.simple(phylo, diff_exp, variance_old)
+                                  conditional_law_X = conditional_law_X)
+  ## Transform diff_exp and lengths if root fixed
+  trans <- compute_transformed_diff_exp_0.BM(phylo, random.root,
+                                                     diff_exp, mu_old)
+  diff_exp_trans <- trans$diff_exp
+  lengths_ed <- trans$lengths_ed
+  costs0 <- compute_costs_0.simple(phylo = phylo,
+                                   diff_exp = diff_exp_trans,
+                                   variance_old = variance_old,
+                                   lengths_ed = lengths_ed)
   seg <- segmentation.BM(nbr_of_shifts = nbr_of_shifts, 
                          costs0 = costs0,
-                         diff_exp = diff_exp)
+                         diff_exp = diff_exp_trans)
   params$shifts <- check_dimensions.shifts(p, seg$shifts)
   edges_max <- seg$edges_max
   ## Actualization of the root
@@ -82,17 +88,18 @@ compute_M.BM <- function(phylo,
     params$root.state$var.root <- NA
   }
   ## Variance
-  #### handle binary case !!!
   var_diff <- compute_var_diff.BM(phylo = phylo, 
                                   conditional_law_X = conditional_law_X)
   params$variance <- compute_var_M.BM(phylo = phylo,
                                       var_diff = var_diff,
                                       diff_exp = diff_exp,
-                                      edges_max = edges_max)
+                                      edges_max = edges_max,
+                                      random.root = random.root,
+                                      mu = params$root.state$value.root)
   return(params)
 }
 
-compute_costs_0.simple <- function(phylo, diff_exp, variance_old){
+compute_costs_0.simple <- function(phylo, diff_exp, variance_old, lengths_ed){
   p <- nrow(diff_exp)
   if (p == 1){
     costs0 <- diff_exp^2
@@ -102,13 +109,32 @@ compute_costs_0.simple <- function(phylo, diff_exp, variance_old){
     R_chol_inv <- backsolve(R_chol, diag(ncol(R_chol)))
 #    R_inv <- solve(variance_old)
     ## Compute Mahalanobis norms
-    costs0 <- ncol(diff_exp)
+    costs0 <- rep(NA, ncol(diff_exp))
     for (i in 1:ncol(diff_exp)){
       costs0[i] <- tcrossprod(t(diff_exp[, i]) %*% R_chol_inv)
 #      costs0[i] <- t(diff_exp[, i]) %*% R_inv %*% diff_exp[, i]
     }
   }
-  return(1/(phylo$edge.length) * costs0)
+  return(1/lengths_ed * costs0)
+}
+
+compute_transformed_diff_exp_0.BM <- function(phylo, random.root, diff_exp, mu_old){
+  lengths_ed <- phylo$edge.length
+  if(!random.root){
+    ntaxa = length(phylo$tip.label)
+    parents <- phylo$edge[,1]
+    root_edges <- which(parents == ntaxa + 1)
+    if (length(root_edges) == 2){ # Root has only two descendants
+#      diff_exp[, root_edges[1]] <- conditional_law_X$expectations[ , daughters[root_edges[1]], drop = F] - conditional_law_X$expectations[ , daughters[root_edges[2]], drop = F]
+      diff_exp[, root_edges[1]] <- diff_exp[, root_edges[1]] - diff_exp[, root_edges[2]]
+      diff_exp[ , root_edges[2]] <- 0
+      lengths_ed[root_edges[1]] <- sum(lengths_ed[root_edges])
+    } else {
+      diff_exp[, root_edges] <- diff_exp[, root_edges] - mu_old
+    }
+  }
+  return(list(diff_exp = diff_exp,
+              lengths_ed = lengths_ed))
 }
 
 compute_root_value.BM <- function(phylo,
@@ -122,7 +148,7 @@ compute_root_value.BM <- function(phylo,
   deltas <- matrix(0, p, nEdges)
   deltas <- shifts.list_to_matrix(phylo, shifts, p)
   mu <- rowSums(1/(phylo$edge.length[root_edges]) * (expectations[ , daughters[root_edges], drop = F] - deltas[, root_edges, drop = F]))
-  mu <- mu / sum(phylo$edge.length[root_edges])
+  mu <- mu / sum(1/phylo$edge.length[root_edges])
   return(mu)
 }
 
@@ -264,21 +290,11 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
 #' the quantity E[Z_i|Y]-E[Z_pa(i)|Y].
 #'
 ##
-compute_diff_exp.BM <- function(phylo, conditional_law_X, random.root, mu_old) {
+compute_diff_exp.BM <- function(phylo, conditional_law_X) {
   diff_exp <- matrix(NA, nrow(conditional_law_X$expectations), nrow(phylo$edge))
   daughters <- phylo$edge[ , 2]
   parents <- phylo$edge[ , 1]
   diff_exp <- conditional_law_X$expectations[ , daughters, drop = F] - conditional_law_X$expectations[ , parents, drop = F]
-  if (!random.root){
-    ntaxa = length(phylo$tip.label)
-    root_edges <- which(parents == ntaxa + 1)
-    if (length(root_edges) == 2){ # Root has only two descendants
-      diff_exp[ , root_edges[2]] <- 0
-      diff_exp[, root_edges[1]] <- conditional_law_X$expectations[ , daughters[root_edges[1]], drop = F] - conditional_law_X$expectations[ , daughters[root_edges[2]], drop = F]
-    } else {
-      diff_exp[root_edges] <- diff_exp[root_edges] - mu_old
-    }
-  }
   return(diff_exp)
 }
 
@@ -367,17 +383,16 @@ compute_sum_var_diff <- function(phylo, var_diff){
 #' 
 #' @return a p x p matrix : the computed variance
 ##
-compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max){
+compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max, random.root, mu){
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   p <- nrow(var_diff)
   varr <- compute_sum_var_diff(phylo, var_diff)
-  lengths_ed <- phylo$edge.length
-  root_edges <- which(phylo$edge[,1] == ntaxa + 1)
-  if (length(root_edges) == 2){
-    lengths_ed[root_edges[1]] <- sum(lengths_ed[root_edges])
+  if (!random.root){ ## If root not random, substract root value
+    root_edges <- which(phylo$edge[,1] == ntaxa + 1)
+    diff_exp[, root_edges] <- diff_exp[, root_edges] - mu
   }
-  expp <- as(tcrossprod(diff_exp[, -edges_max, drop = F] %*% sqrt(diag(1/lengths_ed[-edges_max]))), "symmetricMatrix")
+  expp <- as(tcrossprod(diff_exp[, -edges_max, drop = F] %*% sqrt(diag(1/phylo$edge.length[-edges_max]))), "symmetricMatrix")
   return(1/(ntaxa + nNodes - 1) * (varr + expp))
 }
 
