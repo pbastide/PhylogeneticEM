@@ -362,6 +362,7 @@ estimateEM <- function(phylo,
   clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1) message("There are some equivalent solutions to the solution found.")
+  attr(params, "Neq") <- Neq
   ## Result
   result <- list(params = params, 
                  ReconstructedNodesStates = conditional_law_X$expectations[ , (ntaxa+1):ncol(conditional_law_X$expectations)],
@@ -562,6 +563,10 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                              BirgeMassart1 = model_selection_BM1,
                              BirgeMassart2 = model_selection_BM2,
                              BHG = model_selection_BGH)
+  assign_selected_model<- switch(method.selection, 
+                                 BirgeMassart1 = assign_selected_model_capushe,
+                                 BirgeMassart2 = assign_selected_model_capushe,
+                                 BHG = assign_selected_model_BGH)
   if (p > 1 && method.selection == "BGH") stop("BGH is not implemented for multivariate data")
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart1") library(capushe)
   ## Fixed quantities
@@ -630,7 +635,14 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   ## Formate results
   X <- format_output_several_K(XX, X)
   ## Model Selection
- ## Do something
+  selection <- try(model_selection(X, C.BM1 = C.BM1))
+  if (inherits(selection, "try-error")){
+    warning("Model Selection Failled")
+  } else {
+    X <- selection
+    X$params_select <- X$params_estim[[X$K_select]]
+    if (attr(X$params_select, "Neq") > 1) message("There are some equivalent solutions to the set of shifts selected.")
+  }
   return(X)
 }
 
@@ -662,7 +674,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
                                                    variance.init = prev$params$variance,
                                                    value.root.init = prev$params$root.state$value.root,
                                                    edges.init = prev$params$shifts$edges,
-                                                   #values.init = prev$params$shifts$values,
+                                                   values.init = prev$params$shifts$values,
                                                    #relativeTimes.init = prev$params$shifts$relativeTimes,
                                                    methods.segmentation = methods.segmentation,
                                                    ...))

@@ -73,7 +73,12 @@ init.EM.default.BM <- function(phylo = NULL,
     edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
   }
   # If not enought values, complete with 0s
-  if (ncol(values.init) < nbr_of_shifts){
+  if (is.vector(values.init)){
+    n_shifts_provided <- length(values.init)
+  } else {
+    n_shifts_provided <- ncol(values.init)
+  }
+  if (n_shifts_provided < nbr_of_shifts){
     missing <- nbr_of_shifts - ncol(values.init)
     values.init <- cbind(values.init, rep(0, p))
   }

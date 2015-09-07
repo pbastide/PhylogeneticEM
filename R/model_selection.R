@@ -49,13 +49,31 @@ penalty_BirgeMassart_shape1 <- function(K, p, model_complexity, B = 0.1){
 model_selection_BM1 <- function(res, C.BM1, ...){
   p <- nrow(res$Y_data)
   pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try, p, res$results_summary$complexity, C.BM1)
+  ## Format data for capushe
   data_capushe <- data.frame(names = res$results_summary$K_try, 
                              pen_shape = pen_shape,
                              complexity = res$results_summary$complexity,
                              contrast = -res$results_summary$log_likelihood)
+  ## Capushe
   cap_res <- capushe(data_capushe)
-  DDSE_results <- DDSE(data_capushe)
-  Djump_results <- Djump(data_capushe)
+  ## Assign results
+  res$model_selection <- cap_res
+  res$results_summary$pen_shape <- pen_shape
+  res$results_summary$pen_DDSE <- 2*cap_res@DDSE@interval$interval["max"]*pen_shape
+  res$results_summary$pen_Djump <- cap_res@Djump@ModelHat$Kopt*pen_shape
+  res$results_summary$K_select_DDSE <- as.numeric(cap_res@DDSE@model)
+  res$results_summary$K_select_Djump <- as.numeric(cap_res@Djump@model) 
+  res$K_select <- cap_res@DDSE@model # Default: DDSE
+  return(res)
+}
+
+assign_selected_model_capushe <- function(res, cap_res){
+  res$results_summary$K_select <- as.numeric(cap_res@DDSE@model)
+  if (cap_res@DDSE@model != cap_res@Djump@model){
+    res$results_summary$K_select_DDSE <- as.numeric(cap_res@DDSE@model)
+    res$results_summary$K_select_Djump <- as.numeric(cap_res@Djump@model) 
+  }
+  res$results_summary$pen_shape
   return(res)
 }
 

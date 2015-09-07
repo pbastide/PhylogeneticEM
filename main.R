@@ -423,34 +423,48 @@ t1 <- system.time(results_estim_EM <- estimateEM(phylo = tree,
 res <- format_output(results_estim_EM, phylo = tree, time = t1)
 results_estim_EM$params
 
+set.seed(17920920)
 res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_BM_1.RData")
 
+############################################################################################
+## Analysis of crash - decreasing LL
+############################################################################################
+load(file = "../Results/Miscellaneous_Evals/Test_Multivariate_Decreasing_LL_2.RData")
+source("R/simulate.R")
+source("R/estimateEM.R")
+source("R/init_EM.R")
+source("R/E_step.R")
+source("R/M_step.R")
+source("R/shutoff.R")
+source("R/generic_functions.R")
+source("R/shifts_manipulations.R")
+source("R/plot_functions.R")
+source("R/parsimonyNumber.R")
+source("R/partitionsNumber.R")
+source("R/model_selection.R")
 # Test : why is LL decreasing ?
+set.seed(00080218)
 tt <- system.time(results_estim_EM <- estimateEM(phylo = tree, 
                                                  Y_data = Y_data, 
                                                  process = "BM", 
                                                  method.variance = "simple", 
                                                  method.init = "default",
                                                  method.init.alpha = "default",
-                                                 nbr_of_shifts = 5,
+                                                 nbr_of_shifts = 7,
                                                  random.root = FALSE,
                                                  stationnary.root = FALSE,
                                                  alpha_known = TRUE,
                                                  known.selection.strength = 0,
-                                                 init.selection.strength = res$params_estim[["4"]]$selection.strength,
-                                                 var.init.root = res$params_estim[["4"]]$root.state$var.root,
-                                                 exp.root.init = res$params_estim[["4"]]$root.state$exp.root,
-                                                 variance.init = res$params_estim[["4"]]$variance,
-                                                 value.root.init = res$params_estim[["4"]]$root.state$value.root,
-                                                 edges.init = res$params_estim[["4"]]$shifts$edges,
-                                                 values.init = res$params_estim[["4"]]$shifts$values,
+                                                 init.selection.strength = res$params_estim[["6"]]$selection.strength,
+                                                 var.init.root = res$params_estim[["6"]]$root.state$var.root,
+                                                 exp.root.init = res$params_estim[["6"]]$root.state$exp.root,
+                                                 variance.init = res$params_estim[["6"]]$variance,
+                                                 value.root.init = res$params_estim[["6"]]$root.state$value.root,
+                                                 edges.init = res$params_estim[["6"]]$shifts$edges,
+                                                 values.init = res$params_estim[["6"]]$shifts$values,
                                                  #relativeTimes.init = res$params_estim[["4"]]$params$shifts$relativeTimes,
                                                  methods.segmentation = "lasso"))
-
-params_estim_EM <- results_estim_EM$params
-Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
-
-# Plot the reconstructed states
 
 #######################################
 ## Test of EM - BM - Multivariate - No shift
