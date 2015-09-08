@@ -570,6 +570,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   distances_phylo <- compute_dist_phy(phylo)
   subtree.list <- enumerate_tips_under_edges(phylo)
   T_tree <- incidence.matrix(phylo)
+  h_tree <- max(diag(times_shared)[1:ntaxa])
   ## Set up
   X <- list(Y_data = Y_data,
             K_try = 0:K_max,
@@ -602,9 +603,10 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                                                       alpha = alpha,
                                                       methods.segmentation = methods.segmentation,
                                                       times_shared = times_shared, 
-                                                      disItances_phylo = distances_phylo,
+                                                      distances_phylo = distances_phylo,
                                                       subtree.list = subtree.list,
-                                                      T_tree = T_tree, 
+                                                      T_tree = T_tree,
+                                                      h_tree = h_tree,
                                                       ...)
   # update progress bar
   if(progress.bar) setTxtProgressBar(pb, 1); counter <- 2;
@@ -622,9 +624,10 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                                                           alpha = alpha,
                                                           methods.segmentation = methods.segmentation,
                                                           times_shared = times_shared, 
-                                                          disItances_phylo = distances_phylo,
+                                                          distances_phylo = distances_phylo,
                                                           subtree.list = subtree.list,
                                                           T_tree = T_tree, 
+                                                          h_tree = h_tree,
                                                           ...)
     if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
   }

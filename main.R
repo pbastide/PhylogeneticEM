@@ -732,6 +732,15 @@ results_estim_EM$params
 params_estim_EM <- results_estim_EM$params
 Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
 
+set.seed(17920920)
+res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6.RData")
+
+params_estim_EM <- res$params_select_DDSE_BM1
+
+plot(res$capushe_outputBM1, newwindow = F, ask = F)
+plot(res$capushe_outputBM2, newwindow = F, ask = F)
+
 # Plot the reconstructed states
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
