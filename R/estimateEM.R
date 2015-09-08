@@ -558,16 +558,12 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   p <- nrow(Y_data)
   ## Model Selection
-  method.selection  <- match.arg(method.selection)
-  model_selection  <- switch(method.selection, 
-                             BirgeMassart1 = model_selection_BM1,
-                             BirgeMassart2 = model_selection_BM2,
-                             BHG = model_selection_BGH)
-  assign_selected_model<- switch(method.selection, 
-                                 BirgeMassart1 = assign_selected_model_capushe,
-                                 BirgeMassart2 = assign_selected_model_capushe,
-                                 BHG = assign_selected_model_BGH)
-  if (p > 1 && method.selection == "BGH") stop("BGH is not implemented for multivariate data")
+  method.selection  <- match.arg(method.selection, several.ok = TRUE)
+  if (p > 1 && "BGH" %in% method.selection){
+    method.selection <- method.selection[-which(method.selection == "BGH")]
+    if (length(method.selection) == 0) stop("BGH is not implemented for multivariate data.")
+    warning("BGH is not implemented for multivariate data.")
+  }
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart1") library(capushe)
   ## Fixed quantities
   times_shared <- compute_times_ca(phylo)
@@ -635,13 +631,22 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   ## Formate results
   X <- format_output_several_K(XX, X)
   ## Model Selection
-  selection <- try(model_selection(X, C.BM1 = C.BM1))
-  if (inherits(selection, "try-error")){
-    warning("Model Selection Failled")
-  } else {
-    X <- selection
-    X$params_select <- X$params_estim[[X$K_select]]
-    if (attr(X$params_select, "Neq") > 1) message("There are some equivalent solutions to the set of shifts selected.")
+  model_selection <- function(one.method.selection){
+    mod_sel  <- switch(one.method.selection, 
+                       BirgeMassart1 = model_selection_BM1,
+                       BirgeMassart2 = model_selection_BM2,
+                       BGH = model_selection_BGH)
+    selection <- try(mod_sel(X, C.BM1 = C.BM1, C.BM2 = C.BM2, C.BGH = C.BGH))
+    if (inherits(selection, "try-error")){
+      warning(paste0("Model Selection ",  one.method.selection, " failled"))
+    } else {
+      X <- selection
+    }
+    return(X)
+  }
+  ## Selection(s)
+  for (meth.sel in method.selection){
+    X <- model_selection(meth.sel)
   }
   return(X)
 }

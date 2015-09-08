@@ -427,6 +427,102 @@ set.seed(17920920)
 res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
 save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_BM_1.RData")
 
+plot(res$capushe_outputBM1, newwindow = F, ask = F)
+plot(res$capushe_outputBM2, newwindow = F, ask = F)
+
+
+## Plot reconstructed states
+params_estim_EM <- res$params_select_Djump_BM1
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- params_estim_EM
+  params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
+  params$optimal.value <- round(params_estim_EM$root.state$value.root[l], 2)
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
+#######################################
+## Test of EM - BM - Multivariate- dim 1
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 64
+tree <- rcoal(ntaxa)
+plot(tree, use.edge.length = FALSE); edgelabels()
+
+## Parameters
+p <- 1
+variance <- 0.5
+
+root.state <- list(random = FALSE,
+                   value.root = 1,
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts = list(edges = c(10, 57),
+              values = cbind(2, 4),
+              relativeTimes = 0)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state)
+
+## Simulate Process
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_data <- extract.simulate(X1,"nodes","states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value <- paramsSimu$root.state$value.root[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
+set.seed(17920920)
+res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=1.RData")
+
+params_estim_EM <- res$params_select_BHG
+
+plot(res$capushe_outputBM1, newwindow = F, ask = F)
+plot(res$capushe_outputBM2, newwindow = F, ask = F)
+
+
+## Plot reconstructed states
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- params_estim_EM
+  params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
+  params$optimal.value <- round(params_estim_EM$root.state$value.root[l], 2)
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
 ############################################################################################
 ## Analysis of crash - decreasing LL
 ############################################################################################

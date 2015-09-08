@@ -341,6 +341,6 @@ extract.simulate <- function(paramSimu,
   if (col > dim(paramSimu)[3] ){
     return(NULL) # Case of optimal.value asked for a BM
   } else {
-    return(paramSimu[, rows, col])
+    return(matrix(paramSimu[, rows, col], nrow = dim(paramSimu)[1]))
   }
 }

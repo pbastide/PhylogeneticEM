@@ -48,7 +48,15 @@ penalty_BirgeMassart_shape1 <- function(K, p, model_complexity, B = 0.1){
 
 model_selection_BM1 <- function(res, C.BM1, ...){
   p <- nrow(res$Y_data)
-  pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try, p, res$results_summary$complexity, C.BM1)
+  pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try,
+                                           p,
+                                           res$results_summary$complexity,
+                                           C.BM1)
+  res <- model_selection_capushe(res, pen_shape, "BM1")
+  return(res)
+}
+
+model_selection_capushe <- function(res, pen_shape, name){
   ## Format data for capushe
   data_capushe <- data.frame(names = res$results_summary$K_try, 
                              pen_shape = pen_shape,
@@ -57,13 +65,16 @@ model_selection_BM1 <- function(res, C.BM1, ...){
   ## Capushe
   cap_res <- capushe(data_capushe)
   ## Assign results
-  res$model_selection <- cap_res
-  res$results_summary$pen_shape <- pen_shape
-  res$results_summary$pen_DDSE <- 2*cap_res@DDSE@interval$interval["max"]*pen_shape
-  res$results_summary$pen_Djump <- cap_res@Djump@ModelHat$Kopt*pen_shape
-  res$results_summary$K_select_DDSE <- as.numeric(cap_res@DDSE@model)
-  res$results_summary$K_select_Djump <- as.numeric(cap_res@Djump@model) 
-  res$K_select <- cap_res@DDSE@model # Default: DDSE
+  res[[paste0("capushe_output", name)]] <- cap_res
+  res$results_summary[[paste0("pen_shape", name)]]  <- pen_shape
+  # DDSE
+  pen_DDSE <- 2*cap_res@DDSE@interval$interval["max"]*pen_shape
+  crit_DDSE <- data_capushe$contrast + pen_DDSE
+  res <- assign_results_model_selection(res, pen_DDSE, crit_DDSE, paste0("DDSE_", name))
+  # Djump
+  pen_Djump <- cap_res@Djump@ModelHat$Kopt*pen_shape
+  crit_Djump <- data_capushe$contrast + pen_Djump
+  res <- assign_results_model_selection(res, pen_Djump, crit_Djump, paste0("Djump_", name))
   return(res)
 }
 
@@ -106,6 +117,16 @@ penalty_BirgeMassart_shape2 <- function(K, p, model_complexity, C = 2.5){
   return(C * (K + 1) + log(model_complexity))
 }
 
+model_selection_BM2 <- function(res, C.BM2, ...){
+  p <- nrow(res$Y_data)
+  pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try,
+                                           p,
+                                           res$results_summary$complexity,
+                                           C.BM2)
+  res <- model_selection_capushe(res, pen_shape, "BM2")
+  return(res)
+}
+
 ##
 #' @title Penalty function type Baraud Giraud Huet.
 #'
@@ -139,4 +160,31 @@ penalty_BaraudGiraudHuet_likelihood <- function(K, model_complexity, ntaxa,
   res <- LINselect::penalty(Delta, n = ntaxa, p = 2 * ntaxa - 2, K = C)
   res <- res[-1]
   return(ntaxa * log(1 + res/(ntaxa - K - 1)))
+}
+
+model_selection_BGH <- function(res, C.BGH, ...){
+  p <- nrow(res$Y_data)
+  ntaxa <- ncol(res$Y_data)
+  ## Penalty
+  pen <- 1/2 * penalty_BaraudGiraudHuet_likelihood(res$results_summary$K_try,
+                                                   res$results_summary$complexity,
+                                                   ntaxa,
+                                                   C.BGH)
+  ## Criterion
+  crit <- - res$results_summary$log_likelihood + pen
+  ## Assign results
+  res <- assign_results_model_selection(res, pen, crit, "BHG")
+  return(res)
+}
+
+assign_results_model_selection <- function(res, pen, crit, name){
+  name <- paste0("_", name)
+  res$results_summary[[paste0("pen", name)]] <- pen
+  res$results_summary[[paste0("crit", name)]] <- crit
+  K_select <- res$K_try[which.min(crit)]
+  res$results_summary[[paste0("K_select", name)]] <- K_select
+  res$K_select[[paste0("K_select", name)]] <- K_select
+  res[[paste0("params_select", name)]] <- res$params_estim[[paste(K_select)]]
+  if (attr(res[[paste0("params_select", name)]], "Neq") > 1) message("There are some equivalent solutions to the set of shifts selected by the BGH method.")
+  return(res)
 }
