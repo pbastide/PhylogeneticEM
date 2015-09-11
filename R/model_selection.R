@@ -173,7 +173,7 @@ model_selection_BGH <- function(res, C.BGH, ...){
   ## Criterion
   crit <- - res$results_summary$log_likelihood + pen
   ## Assign results
-  res <- assign_results_model_selection(res, pen, crit, "BHG")
+  res <- assign_results_model_selection(res, pen, crit, "BGH")
   return(res)
 }
 

@@ -56,6 +56,7 @@ compute_M.BM <- function(phylo,
                          mu_old, ...) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
+  p <- nrow(Y_data)
   params <- init.EM.default.BM(random.init = random.root, p = nrow(Y_data), ...)
   ## Segmentation
   diff_exp <- compute_diff_exp.BM(phylo = phylo, 
@@ -141,6 +142,7 @@ compute_root_value.BM <- function(phylo,
                                   expectations,
                                   shifts){
   ntaxa = length(phylo$tip.label)
+  p <- nrow(expectations)
   nEdges <- nrow(phylo$edge)
   daughters <- phylo$edge[ , 2]
   parents <- phylo$edge[ , 1]
