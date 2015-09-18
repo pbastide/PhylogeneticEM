@@ -641,7 +641,7 @@ for (l in 1:p){
 }
 
 #######################################
-## Test of EM - BM - Multivariate - Big
+## Test of EM - BM - Multivariate - 128 - 6
 #######################################
 ## Tree
 set.seed(18850706)

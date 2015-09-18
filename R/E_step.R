@@ -43,12 +43,12 @@
 #'                   "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
 #' fisrt columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
 #' of the nodes conditionned to the tips E[Z_j|Y]
-#'                   "variances" : matrix of size p x p*(ntaxa+nNodes) with p*ntaxa columns
-#' of zeros (tips) and conditional variance of the nodes conditionned to the tips 
+#'                   "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+#' matrices of zeros (tips) and conditional variance of the nodes conditionned to the tips 
 #' Var[Z_j|Y]
-#'                  "covariances" : matrix of size p x p*(ntaxa+nNodes) with p*ntaxa columns
-#' of zeros (tips) and conditional covariance of the nodes and their parents conditionned 
-#' to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
+#'                  "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+#' matrices of zeros (tips) and conditional covariance of the nodes and their parents
+#' conditionned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
 #'                   "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
 #' values beta(t_j)
 #' 
@@ -59,8 +59,8 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv) {
   nNodes <- tree$Nnode
   p <- nrow(Y_data)
   conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + nNodes), 
-                            variances = matrix(NA, p, p * (ntaxa + nNodes)), 
-                            covariances = matrix(NA, p, p * (ntaxa + nNodes)))
+                            variances = array(NA, c(p, p, ntaxa + nNodes)), 
+                            covariances = matrix(NA, c(p, p, ntaxa + nNodes)))
   ## Mean
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   m_Z <- extract.simulate(sim, where="nodes", what="expectations")
@@ -85,12 +85,12 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv) {
 #  conditional_variance_covariance <- Sigma_ZZ - temp %*% t(Sigma_YZ)
   conditional_variance_covariance <- Sigma_ZZ - tcrossprod(temp)
   attr(conditional_variance_covariance, "p_dim") <- p
-  conditional_law_X$variances <- cbind(matrix(0, p, p*ntaxa),
-                                   extract.variance_nodes(phylo,
-                                                          conditional_variance_covariance))
-  conditional_law_X$covariances <- cbind(matrix(0, p, p*ntaxa),
-                                         extract.covariance_parents(phylo,
-                                                                    conditional_variance_covariance))
+  conditional_law_X$variances <- array(c(array(0, c(p, p, ntaxa)),
+                                         extract.variance_nodes(phylo,
+                                                                conditional_variance_covariance)), c(p, p, ntaxa + nNodes))
+  conditional_law_X$covariances <- array(c(array(0, c(p, p, ntaxa)),
+                                           extract.covariance_parents(phylo,
+                                                                      conditional_variance_covariance)), c(p, p, ntaxa + nNodes))
   return(conditional_law_X)
 }
 
@@ -142,24 +142,50 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
 extract.covariance_parents<- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
-  cov <- Matrix(NA, p, p * (dim(phylo$edge)[1] - ntaxa + 1))
+  m <- dim(phylo$edge)[1] - ntaxa + 1
+  cov1 <- array(NA, c(p, p, m))
   for (i in (ntaxa + 2):(dim(phylo$edge)[1] + 1)) {
     pa <- getAncestor(phylo,i)
     range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
     range_pa <- ((pa - ntaxa - 1) * p + 1):((pa - ntaxa) * p)
-    cov[1:p, range_i] <- struct[range_i, range_pa] + struct[range_pa, range_i]
+    cov1[1:p, 1:p, i - ntaxa] <- as.matrix(struct[range_i, range_pa] + struct[range_pa, range_i])
   }
-  return(cov)
+  return(cov1)
+#   masque <- rep(c(rep(rep(c(T, F),
+#                           c(p, p * (m-1))),
+#                       p - 1),
+#                   rep(c(T, F),
+#                       c(p, p * m))),
+#                 m)[1:(p*m)^2]
+#   cov <- array(as.matrix(struct)[!masque], c(p, p, m))
+#   return(cov)
 }
 
 extract.variance_nodes<- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
-  varr <- Matrix(NA, p, p * (dim(phylo$edge)[1] - ntaxa + 1))
-  for (i in (ntaxa + 1):(dim(phylo$edge)[1] + 1)) {
-    range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
-    varr[1:p, range_i] <- struct[range_i, range_i]
-  }
+  m <- dim(phylo$edge)[1] - ntaxa + 1
+#   fun <- function(i){
+#     range <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
+#     return(struct[range, range])
+#   }
+#   aa <- sapply((ntaxa + 1):(dim(phylo$edge)[1] + 1), fun, simplify = "array")
+#   return(aa)
+  ##
+#   varr1 <- array(NA, c(p, p, m))
+#   for (i in (ntaxa + 1):(dim(phylo$edge)[1] + 1)) {
+#     range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
+#     varr1[1:p, 1:p, i - ntaxa] <- as.matrix(struct[range_i, range_i])
+#   }
+#   return(varr)
+  ##
+  masque <- rep(c(rep(rep(c(T, F),
+                          c(p, p * (m-1))),
+                      p - 1),
+                  rep(c(T, F),
+                      c(p, p * m))),
+                m)[1:(p*m)^2]
+  varr <- array(as.matrix(struct)[masque], c(p, p, m))
   return(varr)
 }
 
@@ -179,10 +205,11 @@ extract.variance_nodes<- function(phylo, struct){
 ##
 
 get_variance_node <- function(node, vars){
-  p <- nrow(vars)
-  nN <- ncol(vars) / p
-  range <- ((node - 1) * p + 1):(node * p)
-  return(vars[1:p, range, drop = F])
+  return(vars[, , node])
+#   p <- nrow(vars)
+#   nN <- ncol(vars) / p
+#   range <- ((node - 1) * p + 1):(node * p)
+#   return(vars[1:p, range, drop = F])
 }
 
 ##
