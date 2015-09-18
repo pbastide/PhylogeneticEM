@@ -285,6 +285,7 @@ estimateEM <- function(phylo,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+    rm(moments)
     #   ## Log likelihood as the sum of conditional + entropy
     #         H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
     #         CLL <- conditional_expectation_log_likelihood(phylo = phylo,
