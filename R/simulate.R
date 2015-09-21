@@ -295,9 +295,10 @@ update.simulate.OU <- function(edgeNbr, ancestral,
   Exp <- ee %*% ancestral[ , , 2] + plus_exp
   Exp <- as.matrix(Exp)
   child <- ancestral
-  child[, , 1] <- array(Sim, dim = c(3, 1, 1))
-  child[, , 2] <- array(Exp, dim = c(3, 1, 1))
-  child[, , 3] <- array(beta, dim = c(3, 1, 1))
+  p <- dim(ancestral)[1]
+  child[, , 1] <- array(Sim, dim = c(p, 1, 1))
+  child[, , 2] <- array(Exp, dim = c(p, 1, 1))
+  child[, , 3] <- array(beta, dim = c(p, 1, 1))
   return(child)
 }
 

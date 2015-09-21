@@ -99,7 +99,22 @@ init.EM.default.BM <- function(phylo = NULL,
   return(params_init)
 }
 
-init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.root.init=TRUE, value.root.init=1, exp.root.init=1, var.root.init=1, edges.init=NULL, values.init=NULL, relativeTimes.init=NULL, selection.strength.init=1, optimal.value.init=0, nbr_of_shifts = length(edges.init), phylo = NULL, subtree.list = NULL, ...) {
+init.EM.default.OU <- function(phylo = NULL,
+                               Y_data = matrix(NA, 1, length(phylo$tip.label)),
+                               p = nrow(Y_data),
+                               variance.init = diag(1, p, p),
+                               random.init = TRUE,
+                               stationary.root.init = TRUE,
+                               value.root.init = rep(1, p),
+                               exp.root.init = rep(1, p),
+                               var.root.init = diag(1, p, p),
+                               edges.init = NULL,
+                               values.init = matrix(0, p, length(edges.init)),
+                               relativeTimes.init = NULL,
+                               selection.strength.init=1,
+                               optimal.value.init=0,
+                               nbr_of_shifts = length(edges.init),
+                               subtree.list = NULL, ...) {
   if (random.init) {
     value.root.init <- NA
     if (stationary.root.init) {
@@ -113,24 +128,40 @@ init.EM.default.OU <- function(variance.init=1, random.init=TRUE, stationary.roo
   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
   if (length(edges.init) < nbr_of_shifts){
     missing <- nbr_of_shifts - length(edges.init)
-    edges.init <- sample_shifts_edges(phylo, missing, part.list = subtree.list)
+    edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
   }
   # If not enought values, complete with 0s
-  if (ncol(values.init) < nbr_of_shifts){
+  if (is.null(values.init) || is.vector(values.init)){
+    n_shifts_provided <- length(values.init)
+  } else {
+    n_shifts_provided <- ncol(values.init)
+  }
+  if (n_shifts_provided < nbr_of_shifts){
     missing <- nbr_of_shifts - ncol(values.init)
     values.init <- cbind(values.init, rep(0, p))
   }
-  params_init=list(variance=variance.init,
-                   root.state=list(random=random.init,
-                                   stationary.root=stationary.root.init,
-                                   value.root=value.root.init,
-                                   exp.root=exp.root.init,
-                                   var.root=var.root.init),
-                   shifts=list(edges=edges.init,
-                               values=values.init,
-                               relativeTimes=relativeTimes.init),
-                   selection.strength=selection.strength.init,
-                   optimal.value=optimal.value.init)
+  params_init=list(variance = variance.init,
+                   root.state = list(random = random.init,
+                                     stationary.root = stationary.root.init,
+                                     value.root = value.root.init,
+                                     exp.root = exp.root.init,
+                                     var.root = var.root.init),
+                   shifts = list(edges = edges.init,
+                                 values = values.init,
+                                 relativeTimes = relativeTimes.init),
+                   selection.strength = selection.strength.init,
+                   optimal.value = optimal.value.init)
+  params_init <- check_dimensions(p,
+                                  params_init$root.state,
+                                  params_init$shifts,
+                                  params_init$variance,
+                                  params_init$selection.strength,
+                                  params_init$optimal.value)
+  params_init$root.state <- test.root.state(params_init$root.state, "OU",
+                                            variance = variance.init,
+                                            selection.strength = selection.strength.init,
+                                            optimal.value = optimal.value.init)
+  params_init$variance <- as(params_init$variance, "symmetricMatrix")
   return(params_init)
 }
 

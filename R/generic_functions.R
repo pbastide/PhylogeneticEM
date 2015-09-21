@@ -418,7 +418,10 @@ coherence_stationnary_case <- function(root.state, optimal.value,
 compute_stationnary_variance <- function(variance, selection.strength){
   if (is.null(selection.strength)) return(NA)
   if (dim(variance)[1] == 1){
-    return(variance / (2 * selection.strength))
+    vv <- variance / (2 * selection.strength)
+    vv <- Matrix(vv)
+    vv <- as(vv, "symmetricMatrix")
+    return(vv)
   } else {
     variance_vec <- as.vector(variance)
     kro_sum_A <- kronecker_sum(selection.strength, selection.strength)

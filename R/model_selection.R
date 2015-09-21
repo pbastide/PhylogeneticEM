@@ -47,7 +47,7 @@ penalty_BirgeMassart_shape1 <- function(K, p, model_complexity, B = 0.1){
 }
 
 model_selection_BM1 <- function(res, C.BM1, ...){
-  p <- nrow(res$Y_data)
+  p <- nrow(res$params_estim$`0`$variance)
   pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try,
                                            p,
                                            res$results_summary$complexity,
@@ -118,7 +118,7 @@ penalty_BirgeMassart_shape2 <- function(K, p, model_complexity, C = 2.5){
 }
 
 model_selection_BM2 <- function(res, C.BM2, ...){
-  p <- nrow(res$Y_data)
+  p <- nrow(res$params_estim$`0`$variance)
   pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try,
                                            p,
                                            res$results_summary$complexity,
@@ -162,9 +162,8 @@ penalty_BaraudGiraudHuet_likelihood <- function(K, model_complexity, ntaxa,
   return(ntaxa * log(1 + res/(ntaxa - K - 1)))
 }
 
-model_selection_BGH <- function(res, C.BGH, ...){
-  p <- nrow(res$Y_data)
-  ntaxa <- ncol(res$Y_data)
+model_selection_BGH <- function(res, ntaxa, C.BGH, ...){
+  p <- nrow(res$params_estim$`0`$variance)
   ## Penalty
   pen <- 1/2 * penalty_BaraudGiraudHuet_likelihood(res$results_summary$K_try,
                                                    res$results_summary$complexity,
@@ -181,10 +180,10 @@ assign_results_model_selection <- function(res, pen, crit, name){
   name <- paste0("_", name)
   res$results_summary[[paste0("pen", name)]] <- pen
   res$results_summary[[paste0("crit", name)]] <- crit
-  K_select <- res$K_try[which.min(crit)]
+  K_select <- res$results_summary$K_try[which.min(crit)]
   res$results_summary[[paste0("K_select", name)]] <- K_select
   res$K_select[[paste0("K_select", name)]] <- K_select
   res[[paste0("params_select", name)]] <- res$params_estim[[paste(K_select)]]
-  if (attr(res[[paste0("params_select", name)]], "Neq") > 1) message("There are some equivalent solutions to the set of shifts selected by the BGH method.")
+  if (attr(res[[paste0("params_select", name)]], "Neq") > 1) message(paste0("There are some equivalent solutions to the set of shifts selected by the ", name, " method."))
   return(res)
 }

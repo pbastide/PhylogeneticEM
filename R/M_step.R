@@ -305,6 +305,7 @@ compute_diff_exp.OU <- function(phylo, conditional_law_X, selection.strength) {
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
   diff_exp <- conditional_law_X$expectations[daughters] - exp(-selection.strength * phylo$edge.length) * conditional_law_X$expectations[parents]
+  # diff_exp <- conditional_law_X$expectations[, daughters, drop = F] - exp(-selection.strength * phylo$edge.length) * conditional_law_X$expectations[, parents, drop = F]
   return(diff_exp)
 }
 
@@ -340,7 +341,7 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
   ee <- exp(- selection.strength * phylo$edge.length)
-  var_diff <- conditional_law_X$variances[daughters] + ee^2 * conditional_law_X$variances[parents] - 2 * ee * conditional_law_X$covariances[daughters]
+  var_diff <- conditional_law_X$variances[daughters] + ee^2 * conditional_law_X$variances[parents] - ee * conditional_law_X$covariances[daughters]
   return(var_diff)
 }
 
