@@ -603,7 +603,10 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
     XX <- vector('list', K_max + 1)
     names(XX) <- X$K_try
     ## Progress Bar
-    if(progress.bar) pb <- txtProgressBar(min = 0, max = K_max + 1, style = 3)
+    if(progress.bar){
+      message(paste0("Alpha ", alp))
+      pb <- txtProgressBar(min = 0, max = K_max + 1, style = 3)
+    }
     ## First
     XX[[paste0(K_first)]] <- estimateEM_wrapper_scratch(phylo = phylo,
                                                         Y_data = Y_data,
@@ -672,6 +675,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
     }
     ## Formate results
     X <- format_output_several_K(XX, X, alp)
+    save(X, file = paste0("Tmp_", K_t, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
   }
   ## Select max solution for each K
   X <- merge_max_grid_alpha(X, alpha)

@@ -70,7 +70,10 @@ init.EM.default.BM <- function(phylo = NULL,
   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
   if (length(edges.init) < nbr_of_shifts){
     missing <- nbr_of_shifts - length(edges.init)
-    edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
+    auth_edges <- which(!(1:nrow(phylo$edge) %in% edges.init))
+    new_edges <- sample(auth_edges, missing)
+    edges.init <- c(edges.init, new_edges)
+    # edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
   }
   # If not enought values, complete with 0s
   if (is.vector(values.init)){
@@ -128,7 +131,10 @@ init.EM.default.OU <- function(phylo = NULL,
   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
   if (length(edges.init) < nbr_of_shifts){
     missing <- nbr_of_shifts - length(edges.init)
-    edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
+    auth_edges <- which(!(1:nrow(phylo$edge) %in% edges.init))
+    new_edges <- sample(auth_edges, missing)
+    edges.init <- c(edges.init, new_edges)
+    # edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
   }
   # If not enought values, complete with 0s
   if (is.null(values.init) || is.vector(values.init)){
