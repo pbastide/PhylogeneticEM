@@ -813,9 +813,9 @@ l1 <- lineprof(results_estim_EM <- estimateEM(phylo = tree,
                                                  process = "BM",
                                                  method.init = "default",
                                                  Nbr_It_Max = 500,
-                                                 nbr_of_shifts = 3,
+                                                 nbr_of_shifts = 10,
                                                  random.root = FALSE))
-l1
+shine(l1)
 results_estim_EM$params
 
 params_estim_EM <- results_estim_EM$params

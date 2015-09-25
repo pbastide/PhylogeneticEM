@@ -203,6 +203,16 @@ plot.data.process.actual <- function(Y.state, phylo, params,
 #   }
   Y.state <- Y.state # / norm
   unit <- 1 # / norm
+  ## Root state
+  if (is.null(params$root.state)){
+    root.val <- params$optimal.value
+  } else {
+    if (params$root.state$random){
+      root.val <- params$root.state$exp.root
+    } else {
+      root.val <- params$root.state$value.root
+    }
+  }
   ## Automatic colors
   if (automatic_colors){
     nodes_regimes <- allocate_regimes_from_shifts(phylo,
@@ -271,7 +281,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   # Plot beta_0
   if (value_in_box){ # Write value of shift in the box
     if (!is.null(params$optimal.value)){
-      nodelabels(text = round(params$optimal.value, 1), 
+      nodelabels(text = round(root.val, 1), 
                  node = ntaxa + 1,
                  bg = bg_beta_0,
                  cex = 7/10*lastPP$cex,
@@ -288,7 +298,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     }
     if (color_shifts_regimes){ # Shift has one color for each regime
       nodes_regimes  <-  compute_betas(tree, 
-                                       params$optimal.value,
+                                       root.val,
                                        params$shifts)
       color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
       levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
@@ -302,7 +312,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                       beg = TRUE)
     }
   } else { # Color code for shifts values
-    values <- c(params$optimal.value, params$shifts$values)
+    values <- c(root.val, params$shifts$values)
 #     map2color <- function(x, pal, limits = NULL) {
 #       if (is.null(limits)) limits = range(x)
 #       pal(100)[findInterval(x,
@@ -322,7 +332,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     col_shifts[indPos] <- palettePos[cut(values[indPos], nbrColPos)]
     col_shifts[indNeg] <- paletteNeg[cut(values[indNeg], nbrColNeg)]
     col_shifts[indNull] <- "white"
-    if (!is.null(params$optimal.value)){
+    if (!is.null(root.val)){
       nodelabels(text = "", 
                  node = ntaxa + 1,
                  frame = "circle",
