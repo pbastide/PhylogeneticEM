@@ -726,6 +726,107 @@ for (l in 1:p){
                            cex = 2)
 }
 
+
+#######################################
+## Test of EM - BM - Multivariate - 16 - 3
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 16
+tree <- rcoal(ntaxa)
+plot(tree); edgelabels()
+
+## Parameters
+p <- 3
+variance <- matrix(0.1, p, p) + diag(0.2, p, p)
+
+root.state <- list(random = FALSE,
+                   value.root = c(1, 2, 3),
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts = list(edges = c(17),
+              values=cbind(c(5, 5, 5)),
+              relativeTimes = 0)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state)
+
+paramsSimu
+
+## Simulate Process
+set.seed(1344)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_data <- extract.simulate(X1,"nodes","states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$root.state$value.root <- paramsSimu$root.state$value.root[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
+## Missing Data
+data <- Y_data
+Y_data[1, 14] <- NA
+Y_data[2, 5] <- NA
+
+# Estimate parameters from the data
+set.seed(17920920)
+## Profiling
+library(lineprof)
+l1 <- lineprof(results_estim_EM <- estimateEM(phylo = tree,
+                                              Y_data = Y_data,
+                                              process = "BM",
+                                              method.init = "default",
+                                              Nbr_It_Max = 500,
+                                              nbr_of_shifts = 10,
+                                              random.root = FALSE))
+shine(l1)
+results_estim_EM$params
+
+params_estim_EM <- results_estim_EM$params
+Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
+
+set.seed(17920920)
+res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6.RData")
+
+params_estim_EM <- res$params_select_DDSE_BM1
+
+plot(res$capushe_outputBM1, newwindow = F, ask = F)
+plot(res$capushe_outputBM2, newwindow = F, ask = F)
+
+# Plot the reconstructed states
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- params_estim_EM
+  params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
+  params$optimal.value <- round(params_estim_EM$root.state$value.root[l], 2)
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2)
+}
+
 #######################################
 ## Test of EM - BM - Multivariate - 128 - 6
 #######################################

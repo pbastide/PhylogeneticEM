@@ -174,7 +174,7 @@ estimateEM <- function(phylo,
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
   method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
-
+  
   ## Fixed Quantities #########################################
   ntaxa <- length(phylo$tip.label)
   if (is.null(times_shared)) times_shared <- compute_times_ca(phylo)
@@ -185,6 +185,17 @@ estimateEM <- function(phylo,
 
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
+  
+  ## Missing Data #############################################
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  missing <- as.vector(is.na(Y_data))
+  Y_data_vec <- as.vector(Y_data)
+  Y_data_vec_known <- as.vector(Y_data[!missing])
+  # Vectorized Data Mask
+  masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
+  masque_data[1:(p*ntaxa)] <- !missing
+  
   ## Find dimension
   p <- nrow(Y_data)
   ## Initialization
@@ -266,25 +277,31 @@ estimateEM <- function(phylo,
                                      times_shared = times_shared,
                                      distances_phylo = distances_phylo,
                                      process = process,
-                                     params_old = params_old)
+                                     params_old = params_old,
+                                     masque_data = masque_data)
     log_likelihood <- compute_log_likelihood(phylo = phylo,
-                                             Y_data = Y_data,
+                                             Y_data_vec = Y_data_vec_known,
                                              sim = moments$sim,
                                              Sigma = moments$Sigma,
-                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                             missing = missing, 
+                                             masque_data = masque_data)
     attr(params_old, "log_likelihood") <- log_likelihood
     ## Compute Mahalanobis norm between data and mean at tips
     maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                   Y_data = Y_data,
+                                                   Y_data_vec = Y_data_vec_known,
                                                    sim = moments$sim,
-                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                   missing = missing)
     attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
     ## E step
     conditional_law_X <- compute_E(phylo = phylo,
-                                   Y_data = Y_data,
+                                   Y_data = Y_data_vec_known,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
-                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                   missing = missing,
+                                   masque_data = masque_data)
     rm(moments)
     if (process == "OU"){
       if (p > 1) stop("Multivariate OU not yet implemented.")
@@ -349,20 +366,24 @@ estimateEM <- function(phylo,
                                    times_shared = times_shared,
                                    distances_phylo = distances_phylo,
                                    process = process,
-                                   params_old = params)
+                                   params_old = params,
+                                   masque_data = masque_data)
   log_likelihood <- compute_log_likelihood(phylo = phylo,
-                                           Y_data = Y_data,
+                                           Y_data_vec = Y_data_vec_known,
                                            sim = moments$sim,
                                            Sigma = moments$Sigma,
-                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
-  attr(params, "log_likelihood") <- log_likelihood
+                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                           missing = missing,
+                                           masque_data = masque_data)
+  attr(params_old, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
   ## Compute Mahalanobis norm between data and mean at tips
   maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                 Y_data = Y_data,
+                                                 Y_data_vec = Y_data_vec_known,
                                                  sim = moments$sim,
-                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
-  attr(params, "mahalanobis_distance_data_mean") <- maha_data_mean
+                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                 missing = missing)
+  attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
   ## Mean at tips with estimated parameters
   m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")
   ## Number of equivalent solutions
