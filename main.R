@@ -788,6 +788,21 @@ Y_data[2, 5] <- NA
 
 # Estimate parameters from the data
 set.seed(17920920)
+results_estim_EM_missing <- estimateEM(phylo = tree,
+                               Y_data = Y_data,
+                               process = "BM",
+                               method.init = "default",
+                               Nbr_It_Max = 500,
+                               nbr_of_shifts = 1,
+                               random.root = FALSE)
+set.seed(17920920)
+results_estim_EM_non_missing <- estimateEM(phylo = tree,
+                               Y_data = data,
+                               process = "BM",
+                               method.init = "default",
+                               Nbr_It_Max = 500,
+                               nbr_of_shifts = 1,
+                               random.root = FALSE)
 ## Profiling
 library(lineprof)
 l1 <- lineprof(results_estim_EM <- estimateEM(phylo = tree,
@@ -914,7 +929,7 @@ l1 <- lineprof(results_estim_EM <- estimateEM(phylo = tree,
                                                  process = "BM",
                                                  method.init = "default",
                                                  Nbr_It_Max = 500,
-                                                 nbr_of_shifts = 10,
+                                                 nbr_of_shifts = 3,
                                                  random.root = FALSE))
 shine(l1)
 results_estim_EM$params

@@ -375,7 +375,7 @@ estimateEM <- function(phylo,
                                            Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
                                            missing = missing,
                                            masque_data = masque_data)
-  attr(params_old, "log_likelihood") <- log_likelihood
+  attr(params, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
   ## Compute Mahalanobis norm between data and mean at tips
   maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
@@ -383,7 +383,7 @@ estimateEM <- function(phylo,
                                                  sim = moments$sim,
                                                  Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
                                                  missing = missing)
-  attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
+  attr(params, "mahalanobis_distance_data_mean") <- maha_data_mean
   ## Mean at tips with estimated parameters
   m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")
   ## Number of equivalent solutions
