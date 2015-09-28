@@ -319,19 +319,22 @@ compute_diff_exp.OU <- function(phylo, conditional_law_X, selection.strength) {
 #' @param phylo a phylogenetic tree
 #' @param conditional_law_X result of function \code{compute_E}
 #' 
-#' @return matrix p x p*nEdges containing, for each edge e finishing at node i,
+#' @return array p x p x nEdges containing, for each edge e finishing at node i,
 #' the quantity Var[Z_i-Z_pa(i)|Y].
 #'
 ##
 compute_var_diff.BM <- function(phylo, conditional_law_X) {
   p <- nrow(conditional_law_X$expectations)
   nEdges <- nrow(phylo$edge)
-  var_diff <- Matrix(NA, p, p*nEdges)
+  var_diff <- array(NA, c(p, p, nEdges))
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
   for (e in 1:nEdges){
     range_e <- ((e - 1) * p + 1):(e * p)
-    var_diff[1:p, range_e] <- get_variance_node(daughters[e], conditional_law_X$variances) + get_variance_node(parents[e], conditional_law_X$variances) - get_variance_node(daughters[e], conditional_law_X$covariances)
+    dauvar <- get_variance_node(daughters[e], conditional_law_X$variances)
+    parvar <- get_variance_node(parents[e], conditional_law_X$variances)
+    daucov <- get_variance_node(daughters[e], conditional_law_X$covariances)
+    var_diff[1:p, 1:p, e] <- dauvar + parvar - daucov
   }
   return(var_diff)
 }
@@ -358,14 +361,16 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
 #'
 ##
 compute_sum_var_diff <- function(phylo, var_diff){
-  p <- nrow(var_diff)
+  p <- dim(var_diff)[1]
   if (p == 1){
     return(Matrix(sum(var_diff * 1/phylo$edge.length)))
   } else {
     nEdges <- ncol(var_diff) / p
-    vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
-    arr <- array(vv, dim = c(p, p, nEdges))
-    return(as(apply(arr, 1, rowSums), "symmetricMatrix"))
+    vv <- sweep(var_diff, MARGIN = 3, STATS = 1/rep(phylo$edge.length),
+                FUN = '*', check.margin = FALSE)
+    # vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
+    # arr <- array(vv, dim = c(p, p, nEdges))
+    return(as(apply(vv, 1, rowSums), "symmetricMatrix"))
   }
 }
 

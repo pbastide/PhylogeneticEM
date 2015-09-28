@@ -88,9 +88,10 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv) {
   conditional_law_X$variances <- array(c(array(0, c(p, p, ntaxa)),
                                          extract.variance_nodes(phylo,
                                                                 conditional_variance_covariance)), c(p, p, ntaxa + nNodes))
+  ttemmp <- extract.covariance_parents(phylo,
+                                       conditional_variance_covariance)
   conditional_law_X$covariances <- array(c(array(0, c(p, p, ntaxa)),
-                                           extract.covariance_parents(phylo,
-                                                                      conditional_variance_covariance)), c(p, p, ntaxa + nNodes))
+                                           ttemmp), c(p, p, ntaxa + nNodes))
   return(conditional_law_X)
 }
 
@@ -139,26 +140,37 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
 # REVISIONS:
 #            22/05/14 - Initial release
 ##
-extract.covariance_parents<- function(phylo, struct){
+extract.covariance_parents <- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
   m <- dim(phylo$edge)[1] - ntaxa + 1
-  cov1 <- array(NA, c(p, p, m))
-  for (i in (ntaxa + 2):(dim(phylo$edge)[1] + 1)) {
-    pa <- getAncestor(phylo,i)
-    range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
-    range_pa <- ((pa - ntaxa - 1) * p + 1):((pa - ntaxa) * p)
-    cov1[1:p, 1:p, i - ntaxa] <- as.matrix(struct[range_i, range_pa] + struct[range_pa, range_i])
+  # cov1 <- array(NA, c(p, p, m))
+  daughters <- phylo$edge[, 2]
+  parents <- phylo$edge[, 1]
+  masque <- daughters > ntaxa + 1
+  daughters <- daughters[masque]
+  parents <- parents[masque]
+  range_node <- function(node){
+    tmp <- sapply(node, function(z) ((z - ntaxa - 1) * p + 1):((z - ntaxa) * p))
+    return(as.vector(tmp))
   }
-  return(cov1)
-#   masque <- rep(c(rep(rep(c(T, F),
-#                           c(p, p * (m-1))),
-#                       p - 1),
-#                   rep(c(T, F),
-#                       c(p, p * m))),
-#                 m)[1:(p*m)^2]
-#   cov <- array(as.matrix(struct)[!masque], c(p, p, m))
-#   return(cov)
+  arr <- struct[range_node(daughters), range_node(parents)] + struct[range_node(parents), range_node(daughters)]
+  masque <- rep(c(rep(rep(c(T, F),
+                          c(p, p * (m - 2))),
+                      p - 1),
+                  rep(c(T, F),
+                      c(p, p * (m - 1)))),
+                m)[1:(p*m)^2]
+  arr <- array(as.matrix(arr)[masque], c(p, p, m - 1))
+  arr[, , daughters - ntaxa - 1] <- arr
+  arr <- array(c(rep(NA, p*p), arr), c(p, p, m))
+#   for (i in (ntaxa + 2):(dim(phylo$edge)[1] + 1)) {
+#     pa <- getAncestor(phylo,i)
+#     range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
+#     range_pa <- ((pa - ntaxa - 1) * p + 1):((pa - ntaxa) * p)
+#     cov1[1:p, 1:p, i - ntaxa] <- as.matrix(struct[range_i, range_pa] + struct[range_pa, range_i])
+#   }
+  return(arr)
 }
 
 extract.variance_nodes<- function(phylo, struct){
