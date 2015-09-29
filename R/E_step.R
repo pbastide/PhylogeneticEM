@@ -101,7 +101,7 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
   # Data
   var_tips <- array(0, c(p, p, ntaxa))
   if (nMiss > 0){
-    conditional_variance_covariance_tips <- diag(conditional_variance_covariance[index_missing, index_missing])
+    conditional_variance_covariance_tips <- diag(conditional_variance_covariance[index_missing, index_missing, drop = FALSE])
     missing_mat <- matrix(missing, nrow = p)
     missing_tips <- which(colSums(missing_mat) > 0)
     missing_chars <- which(missing)%%p
@@ -119,17 +119,18 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
   # Data
   cov_tips <- array(0, c(p, p, ntaxa))
   if (nMiss > 0){
-    conditional_variance_covariance_tips_nodes <- conditional_variance_covariance[!index_missing, index_missing]
-    conditional_variance_covariance_nodes_tips <- conditional_variance_covariance[index_missing,! index_missing]
+    conditional_variance_covariance_tips_nodes <- conditional_variance_covariance[!index_missing, index_missing, drop = FALSE]
+    # conditional_variance_covariance_nodes_tips <- conditional_variance_covariance[index_missing, !index_missing]
     missing_mat <- matrix(missing, nrow = p)
-    missing_tips <- which(colSums(missing_mat) > 0)
-    par_missing_tips <- c(getAncestor(phylo, missing_tips[1]), getAncestor(phylo, missing_tips[2]))
+    missing_tips <- (which(missing) - 1) %/% p + 1
+    par_missing_tips <- getAncestors(phylo, missing_tips)
     par_missing_tips <- par_missing_tips - ntaxa
     par_missing_tips <- sapply(par_missing_tips, function(z) (p * (z - 1) + 1):(p * z))
-    missing_chars <- which(missing)%%p
+    missing_chars <- (which(missing) - 1) %% p + 1
     for (i in 1:nMiss){
-      cov_tips[missing_chars[i], , missing_tips[i]] <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
-      cov_tips[, missing_chars[i], missing_tips[i]] <- conditional_variance_covariance_nodes_tips[i, par_missing_tips[, i]]
+      ccov <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
+      cov_tips[missing_chars[i], , missing_tips[i]] <- cov_tips[, missing_chars[i], missing_tips[i]] + ccov
+      cov_tips[, missing_chars[i], missing_tips[i]] <- cov_tips[, missing_chars[i], missing_tips[i]] + ccov
     }
   }
   # Nodes

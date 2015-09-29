@@ -39,6 +39,10 @@ getAncestor <- function(phy, x){
   i <- which(phy$edge[, 2] == x)
   return(phy$edge[i, 1])
 }
+getAncestors <- function(phy, x){
+  i <- match(x, phy$edge[, 2])
+  return(phy$edge[i, 1])
+}
 replaceInList <- function (x, FUN, ...) {
   if (is.list(x)) {
     for (i in seq_along(x)) {

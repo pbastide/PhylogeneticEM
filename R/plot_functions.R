@@ -237,8 +237,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
          edge.color = as.vector(color_edges), ...)
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
   } else {
-    imp.scale  <- c(min(0, min(imposed.scale)),
-                    max(imposed.scale))
+    imp.scale  <- c(min(0, min(imposed.scale, na.rm = TRUE)),
+                    max(imposed.scale, na.rm = TRUE))
     h_p <- max(node.depth.edgelength(phylo))
     x.lim.max <- h_p + h_p/5
     y.lim.min <- -ntaxa/10
@@ -257,8 +257,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     mult <- ell / (imp.scale[2] - imp.scale[1])
     Y.plot <- mult * Y.state
     unit <- mult * unit
-    minY <- min(Y.plot)
-    maxY <- max(Y.plot)
+    minY <- min(Y.plot, na.rm = TRUE)
+    maxY <- max(Y.plot, na.rm = TRUE)
     eccart_g <- -min(minY, 0) + offset
     # 0 bar
     segments(pos_last_tip + eccart_g, y.lim.min,

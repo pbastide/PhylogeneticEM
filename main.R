@@ -925,11 +925,11 @@ set.seed(17920920)
 ## Profiling
 library(lineprof)
 l1 <- lineprof(results_estim_EM <- estimateEM(phylo = tree,
-                                                 Y_data = Y_data,
+                                                 Y_data = Y_data_miss,
                                                  process = "BM",
                                                  method.init = "default",
                                                  Nbr_It_Max = 500,
-                                                 nbr_of_shifts = 3,
+                                                 nbr_of_shifts = 0,
                                                  random.root = FALSE))
 shine(l1)
 results_estim_EM$params
@@ -937,9 +937,19 @@ results_estim_EM$params
 params_estim_EM <- results_estim_EM$params
 Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
 
+## Mising data
+Y_data_miss <- Y_data
+set.seed(1122)
+nMiss <- 1 #floor(ntaxa * p / 10)
+chars <- sample(1:p, nMiss, replace = TRUE)
+tips <- sample(1:ntaxa, nMiss, replace = TRUE)
+for (i in 1:nMiss){
+  Y_data_miss[chars[i], tips[i]] <- NA
+}
+
 set.seed(17920920)
-res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6.RData")
+res <- PhyloEM(phylo = tree, Y_data = Y_data_miss, process = "BM", K_max = 10, random.root = FALSE)
+save.image(file = paste0("../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6_missing_", nMiss, ".RData"))
 
 params_estim_EM <- res$params_select_DDSE_BM1
 
