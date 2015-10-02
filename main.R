@@ -890,12 +890,25 @@ X1 <- simulate(tree,
 Y_data <- extract.simulate(X1,"tips","states")
 Z_data <- extract.simulate(X1,"nodes","states")
 
+## Mising data
+Y_data_miss <- Y_data
+set.seed(1122)
+nMiss <- floor(ntaxa * p / 100) * 5
+miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+chars <- (miss - 1) %% p + 1
+tips <- (miss - 1) %/% p + 1
+# chars <- sample(1:p, nMiss, replace = TRUE)
+# tips <- sample(1:ntaxa, nMiss, replace = TRUE)
+for (i in 1:nMiss){
+  Y_data_miss[chars[i], tips[i]] <- NA
+}
+
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
   params <- paramsSimu
   params$shifts$values <- paramsSimu$shifts$values[l, ]
   params$optimal.value <- paramsSimu$root.state$value.root[l]
-  plot.data.process.actual(Y.state = Y_data[l, ],
+  plot.data.process.actual(Y.state = Y_data_miss[l, ],
                            phylo = tree, 
                            params = params,
                            adj.root = 0,
@@ -929,7 +942,7 @@ l1 <- lineprof(results_estim_EM <- estimateEM(phylo = tree,
                                                  process = "BM",
                                                  method.init = "default",
                                                  Nbr_It_Max = 500,
-                                                 nbr_of_shifts = 0,
+                                                 nbr_of_shifts = 3,
                                                  random.root = FALSE))
 shine(l1)
 results_estim_EM$params
@@ -937,19 +950,13 @@ results_estim_EM$params
 params_estim_EM <- results_estim_EM$params
 Z_reconstructed <- results_estim_EM$ReconstructedNodesStates
 
-## Mising data
-Y_data_miss <- Y_data
-set.seed(1122)
-nMiss <- 1 #floor(ntaxa * p / 10)
-chars <- sample(1:p, nMiss, replace = TRUE)
-tips <- sample(1:ntaxa, nMiss, replace = TRUE)
-for (i in 1:nMiss){
-  Y_data_miss[chars[i], tips[i]] <- NA
-}
-
 set.seed(17920920)
 res <- PhyloEM(phylo = tree, Y_data = Y_data_miss, process = "BM", K_max = 10, random.root = FALSE)
 save.image(file = paste0("../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6_missing_", nMiss, ".RData"))
+
+Y_hat <- res$alpha_0$Yhat$`3`
+missi <- is.na(Y_data_miss)
+rbind(data = Y_data[missi], imput = Y_hat[missi])
 
 params_estim_EM <- res$params_select_DDSE_BM1
 
@@ -972,12 +979,12 @@ for (l in 1:p){
 }
 
 #######################################
-## Test of EM - BM - Multivariate - 512 - 6 - 3
+## Test of EM - BM - Multivariate - 256 - 6 - 3
 #######################################
 
 ## Tree
 set.seed(18850706)
-ntaxa <- 512
+ntaxa <- 256
 tree <- rcoal(ntaxa)
 # plot(tree); edgelabels()
 
@@ -996,7 +1003,7 @@ root.state <- list(random = FALSE,
                    exp.root = NA,
                    var.root = NA)
 
-shifts = list(edges = c(1, 151, 658),
+shifts = list(edges = c(229, 414, 2),
               values=cbind(rep(5, p),
                            rep(2, p),
                            c(0, 0, 0, 0, 0, -10)),
@@ -1023,7 +1030,7 @@ par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
   params <- paramsSimu
   params$shifts$values <- paramsSimu$shifts$values[l, ]
-  params$optimal.value <- paramsSimu$root.state$value.root[l]
+  params$root.state$value.root<- paramsSimu$root.state$value.root[l]
   plot.data.process.actual(Y.state = Y_data[l, ],
                            phylo = tree, 
                            params = params,
@@ -1042,22 +1049,46 @@ l1 <- lineprof(results_estim_EM <- estimateEM(phylo = tree,
                                               Y_data = Y_data,
                                               process = "BM",
                                               method.init = "default",
-                                              Nbr_It_Max = 500,
+                                              Nbr_It_Max = 10,
                                               nbr_of_shifts = 3,
                                               random.root = FALSE))
-l1
+shine(l1)
 
+set.seed(17920920)
 res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "BM", K_max = 10, random.root = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6_n=256.RData")
 
 
-plot(res$capushe_outputBM1@DDSE, newwindow = FALSE)
+## Mising data
+Y_data_miss <- Y_data
+set.seed(1122)
+nMiss <- floor(ntaxa * p / 100) * 5
+miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+chars <- (miss - 1) %% p + 1
+tips <- (miss - 1) %/% p + 1
+# chars <- sample(1:p, nMiss, replace = TRUE)
+# tips <- sample(1:ntaxa, nMiss, replace = TRUE)
+for (i in 1:nMiss){
+  Y_data_miss[chars[i], tips[i]] <- NA
+}
 
-params_estim_EM <- res$params_select_Djump_BM1
+set.seed(17920920)
+res <- PhyloEM(phylo = tree, Y_data = Y_data_miss, process = "BM", K_max = 10, random.root = FALSE)
+save.image(file = paste0("../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6_n=256_missing_", nMiss, ".RData"))
+
+nbr_shifts_selected <- length(res$alpha_max$params_select_DDSE_BM1$shifts$edges)
+Y_hat <- res$alpha_0$Yhat[[paste(nbr_shifts_selected)]]
+missi <- is.na(Y_data_miss)
+rbind(data = Y_data[missi], imput = Y_hat[missi])
+
+plot(res$alpha_max$capushe_outputBM1@DDSE, newwindow = FALSE)
+
+params_estim_EM <- res$alpha_max$params_select_Djump_BM1
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
   params <- params_estim_EM
   params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
-  params$optimal.value <- round(params_estim_EM$root.state$value.root[l], 2)
+  params$root.state$value.root <- round(params_estim_EM$root.state$value.root[l], 2)
   plot.data.process.actual(Y.state = Y_data[l, ],
                            phylo = tree, 
                            params = params,

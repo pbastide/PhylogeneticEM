@@ -104,7 +104,8 @@ estimateEM <- function(phylo,
                        subtree.list = NULL,
                        T_tree = NULL, 
                        h_tree = NULL,
-                       tol_half_life = TRUE, ...){
+                       tol_half_life = TRUE,
+                       warning_several_solutions = TRUE, ...){
   
   ## Check consistancy #########################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
@@ -389,13 +390,14 @@ estimateEM <- function(phylo,
   ## Number of equivalent solutions
   clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
-  if (Neq > 1) message("There are some equivalent solutions to the solution found.")
+  if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params, "Neq") <- Neq
   ## Result
   conditional_law_X$expectations <- matrix(conditional_law_X$expectations, nrow = p)
   result <- list(params = params, 
                  ReconstructedNodesStates = conditional_law_X$expectations[ , (ntaxa+1):ncol(conditional_law_X$expectations)],
-                 ReconstructedTipsStates = m_Y_estim,
+                 ReconstructedTipsStates = conditional_law_X$expectations[ , 1:ntaxa],
+                 m_Y_estim = m_Y_estim,
                  params_old = params_old, 
                  params_init = params_init,
                  alpha_0 = init.a.g$alpha_0,
@@ -473,7 +475,8 @@ format_output <- function(results_estim_EM, phylo, time = NA){
   X$gamma_0 <- results_estim_EM$gamma_0
   # if (!is.null(X$gamma_0)) names(X$gamma_0) <- paste0("gamma_0_", names(X$gamma_0))
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
-  X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
+  X$Yhat <- results_estim_EM$ReconstructedTipsStates
+  X$m_Y_estim <- results_estim_EM$m_Y_estim
   #  X$raw_results <- results_estim_EM
   if (is.null(params$selection.strength)){# Handle BM case
     params$selection.strength <- NA
@@ -540,6 +543,7 @@ format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
   out[[alpha]]$params_init_estim <- dd[, "params_init"]
   out[[alpha]]$alpha_0 <- dd[,"alpha_0" == colnames(dd)]
   out[[alpha]]$Zhat <- dd[, "Zhat"]
+  out[[alpha]]$Yhat <- dd[, "Yhat"]
   out[[alpha]]$m_Y_estim <- dd[, "m_Y_estim"]
   out[[alpha]]$edge.quality <- dd[, "edge.quality"]
   return(out)
@@ -646,6 +650,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                                                         subtree.list = subtree.list,
                                                         T_tree = T_tree,
                                                         h_tree = h_tree,
+                                                        warning_several_solutions = FALSE,
                                                         ...)
     pp <- check_dimensions(p,
                            XX[[paste0(K_first)]]$params$root.state,
@@ -680,6 +685,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                                                             subtree.list = subtree.list,
                                                             T_tree = T_tree, 
                                                             h_tree = h_tree,
+                                                            warning_several_solutions = FALSE,
                                                             ...)
       pp <- check_dimensions(p,
                              XX[[paste0(K_t)]]$params$root.state,
