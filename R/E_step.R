@@ -57,8 +57,8 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
                               missing, masque_data) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
-  nNodes <- tree$Nnode
-  p <- nrow(Y_data)
+  nNodes <- phylo$Nnode
+  p <- dim(sim)[1]
   nMiss <- sum(missing)
   # index_missing <- (nNodes * p + 1):(nNodes * p + nMiss)
   index_missing <- c(rep(TRUE, nMiss), rep(FALSE, nNodes * p))
@@ -101,13 +101,18 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
   # Data
   var_tips <- array(0, c(p, p, ntaxa))
   if (nMiss > 0){
-    conditional_variance_covariance_tips <- diag(conditional_variance_covariance[index_missing, index_missing, drop = FALSE])
-    missing_mat <- matrix(missing, nrow = p)
-    missing_tips <- which(colSums(missing_mat) > 0)
-    missing_chars <- which(missing)%%p
-    for (i in 1:nMiss){
-      var_tips[missing_chars[i], missing_chars[i], missing_tips[i]] <- conditional_variance_covariance_tips[i]
+    conditional_variance_covariance_tips <- conditional_variance_covariance[index_missing, index_missing, drop = FALSE]
+    # missing_mat <- matrix(missing, nrow = p)
+    missing_tips <- (which(missing) - 1) %/% p + 1
+    missing_chars <- (which(missing) - 1) %% p + 1
+    grpes_missing <- sapply(1:ntaxa, function(z) missing_tips == z)
+    for (i in 1:ntaxa){
+      tipgrp <- grpes_missing[, i]
+      var_tips[missing_chars[tipgrp], missing_chars[tipgrp], i] <- as.matrix(conditional_variance_covariance_tips[tipgrp, tipgrp])
     }
+#     for (i in 1:nMiss){
+#       var_tips[missing_chars[i], missing_chars[i], missing_tips[i]] <- conditional_variance_covariance_tips[i, ]
+#     }
   }
   # Nodes
   var_nodes <- extract.variance_nodes(phylo,
@@ -125,12 +130,14 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
     missing_tips <- (which(missing) - 1) %/% p + 1
     par_missing_tips <- getAncestors(phylo, missing_tips)
     par_missing_tips <- par_missing_tips - ntaxa
-    par_missing_tips <- sapply(par_missing_tips, function(z) (p * (z - 1) + 1):(p * z))
+    par_missing_tips <- sapply(par_missing_tips,
+                               function(z) (p * (z - 1) + 1):(p * z))
     missing_chars <- (which(missing) - 1) %% p + 1
     for (i in 1:nMiss){
-      ccov <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
-      cov_tips[missing_chars[i], , missing_tips[i]] <- cov_tips[, missing_chars[i], missing_tips[i]] + ccov
-      cov_tips[, missing_chars[i], missing_tips[i]] <- cov_tips[, missing_chars[i], missing_tips[i]] + ccov
+      cov_tips[missing_chars[i], , missing_tips[i]] <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
+#       ccov <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
+#       cov_tips[missing_chars[i], , missing_tips[i]] <- cov_tips[missing_chars[i], ,missing_tips[i]] + ccov
+#       cov_tips[, missing_chars[i], missing_tips[i]] <- cov_tips[, missing_chars[i], missing_tips[i]] + ccov
     }
   }
   # Nodes
@@ -202,7 +209,7 @@ extract.covariance_parents <- function(phylo, struct){
     tmp <- sapply(node, function(z) ((z - ntaxa - 1) * p + 1):((z - ntaxa) * p))
     return(as.vector(tmp))
   }
-  arr <- struct[range_node(daughters), range_node(parents)] + struct[range_node(parents), range_node(daughters)]
+  arr <- struct[range_node(daughters), range_node(parents)] # + struct[range_node(parents), range_node(daughters)]
   masque <- rep(c(rep(rep(c(T, F),
                           c(p, p * (m - 2))),
                       p - 1),

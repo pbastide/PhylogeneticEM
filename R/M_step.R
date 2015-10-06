@@ -330,11 +330,11 @@ compute_var_diff.BM <- function(phylo, conditional_law_X) {
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
   for (e in 1:nEdges){
-    range_e <- ((e - 1) * p + 1):(e * p)
+    # range_e <- ((e - 1) * p + 1):(e * p)
     dauvar <- get_variance_node(daughters[e], conditional_law_X$variances)
     parvar <- get_variance_node(parents[e], conditional_law_X$variances)
     daucov <- get_variance_node(daughters[e], conditional_law_X$covariances)
-    var_diff[1:p, 1:p, e] <- dauvar + parvar - daucov
+    var_diff[1:p, 1:p, e] <- dauvar + parvar - daucov - t(daucov)
   }
   return(var_diff)
 }
@@ -344,7 +344,7 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
   ee <- exp(- selection.strength * phylo$edge.length)
-  var_diff <- conditional_law_X$variances[daughters] + ee^2 * conditional_law_X$variances[parents] - ee * conditional_law_X$covariances[daughters]
+  var_diff <- conditional_law_X$variances[daughters] + ee^2 * conditional_law_X$variances[parents] - 2 * ee * conditional_law_X$covariances[daughters]
   return(var_diff)
 }
 
@@ -370,7 +370,9 @@ compute_sum_var_diff <- function(phylo, var_diff){
                 FUN = '*', check.margin = FALSE)
     # vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
     # arr <- array(vv, dim = c(p, p, nEdges))
-    return(as(apply(vv, 1, rowSums), "symmetricMatrix"))
+    res <- apply(vv, 1, rowSums)
+    if (!isSymmetric(res)) stop("Sum of variances should be symmetric. It is not.")
+    return(forceSymmetric(res))
   }
 }
 

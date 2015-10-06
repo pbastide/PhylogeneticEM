@@ -107,6 +107,7 @@ estimateEM <- function(phylo,
                        tol_half_life = TRUE,
                        warning_several_solutions = TRUE, ...){
   
+  ntaxa <- length(phylo$tip.label)
   ## Check consistancy #########################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
@@ -182,7 +183,7 @@ estimateEM <- function(phylo,
   if (is.null(distances_phylo)) distances_phylo <- compute_dist_phy(phylo)
   if (is.null(subtree.list)) subtree.list <- enumerate_tips_under_edges(phylo)
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
-  if (is.null(h_tree)) h_tree <- max(diag(times_shared)[1:ntaxa])
+  if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
 
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
@@ -190,6 +191,7 @@ estimateEM <- function(phylo,
   ## Missing Data #############################################
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
+  p <- nrow(Y_data)
   missing <- as.vector(is.na(Y_data))
   Y_data_vec <- as.vector(Y_data)
   Y_data_vec_known <- as.vector(Y_data[!missing])
@@ -297,7 +299,7 @@ estimateEM <- function(phylo,
     attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
     ## E step
     conditional_law_X <- compute_E(phylo = phylo,
-                                   Y_data = Y_data_vec_known,
+                                   Y_data_vec = Y_data_vec_known,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
@@ -591,6 +593,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   p <- nrow(Y_data)
+  ntaxa <- length(phylo$tip.label)
   ## Model Selection
   method.selection  <- match.arg(method.selection, several.ok = TRUE)
   if (p > 1 && "BGH" %in% method.selection){
@@ -606,7 +609,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   distances_phylo <- compute_dist_phy(phylo)
   subtree.list <- enumerate_tips_under_edges(phylo)
   T_tree <- incidence.matrix(phylo)
-  h_tree <- max(diag(times_shared)[1:ntaxa])
+  h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   ## First estim
   if (order){
     K_first <- 0
