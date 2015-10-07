@@ -237,8 +237,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
          edge.color = as.vector(color_edges), ...)
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
   } else {
-    imp.scale  <- c(min(0, min(imposed.scale)),
-                    max(imposed.scale))
+    imp.scale  <- c(min(0, min(imposed.scale, na.rm = TRUE)),
+                    max(imposed.scale, na.rm = TRUE))
     h_p <- max(node.depth.edgelength(phylo))
     x.lim.max <- h_p + h_p/5
     y.lim.min <- -ntaxa/10
@@ -257,8 +257,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     mult <- ell / (imp.scale[2] - imp.scale[1])
     Y.plot <- mult * Y.state
     unit <- mult * unit
-    minY <- min(Y.plot)
-    maxY <- max(Y.plot)
+    minY <- min(Y.plot, na.rm = TRUE)
+    maxY <- max(Y.plot, na.rm = TRUE)
     eccart_g <- -min(minY, 0) + offset
     # 0 bar
     segments(pos_last_tip + eccart_g, y.lim.min,
@@ -280,13 +280,11 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   }
   # Plot beta_0
   if (value_in_box){ # Write value of shift in the box
-    if (!is.null(params$optimal.value)){
-      nodelabels(text = round(root.val, 1), 
-                 node = ntaxa + 1,
-                 bg = bg_beta_0,
-                 cex = 7/10*lastPP$cex,
-                 adj = adj.root)
-    }
+    nodelabels(text = round(root.val, 1), 
+               node = ntaxa + 1,
+               bg = bg_beta_0,
+               cex = 7/10*lastPP$cex,
+               adj = adj.root)
     # Plot shifts
     if ( !is.null(params$shifts$edges) ) {
       edgelabels_home(text = round(params$shifts$values, 1), 

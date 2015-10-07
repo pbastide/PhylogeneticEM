@@ -53,11 +53,15 @@
 #' values beta(t_j)
 #' 
 ##
-compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv) {
+compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
+                              missing, masque_data) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
-  nNodes <- tree$Nnode
-  p <- nrow(Y_data)
+  nNodes <- phylo$Nnode
+  p <- dim(sim)[1]
+  nMiss <- sum(missing)
+  # index_missing <- (nNodes * p + 1):(nNodes * p + nMiss)
+  index_missing <- c(rep(TRUE, nMiss), rep(FALSE, nNodes * p))
   conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + nNodes), 
                             variances = array(NA, c(p, p, ntaxa + nNodes)), 
                             covariances = matrix(NA, c(p, p, ntaxa + nNodes)))
@@ -71,26 +75,76 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv) {
                                                          where="nodes",
                                                          what="optimal.values")) # NULL if BM
   ## Variance Covariance
-  Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ")
-  Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ")
+  Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ", masque_data)
+  Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ", masque_data)
 #  temp <- Sigma_YZ %*% Sigma_YY_inv
   temp <- Sigma_YZ %*% Sigma_YY_chol_inv
-  Y_data_vec <- as.vector(Y_data)
-  m_Y_vec <- as.vector(m_Y)
-  m_Z_vec <- as.vector(m_Z)
-  conditional_law_X$expectations <- cbind(Y_data,
-                                          m_Z + matrix(temp %*% crossprod(Sigma_YY_chol_inv,
-                                                                          (Y_data_vec - m_Y_vec)),
-                                                       nrow = p))
+  # Y_data_vec <- as.vector(Y_data)
+  m_Y_vec <- as.vector(m_Y)[!missing]
+  m_Z_vec <- c(as.vector(m_Y)[missing], as.vector(m_Z))
+  # Conditionnal expectation of unkonwn values
+  exp_Z_vec <- m_Z_vec + temp %*% crossprod(Sigma_YY_chol_inv,
+                                            (Y_data_vec - m_Y_vec))
+  expcond <- rep(NA, (nNodes + ntaxa) * p)
+  # Data
+  expcond[masque_data] <- Y_data_vec
+  # Missing Data and Nodes
+  expcond[!masque_data] <- as.vector(exp_Z_vec)
+  conditional_law_X$expectations <- matrix(expcond, nrow = p)
 #  conditional_variance_covariance <- Sigma_ZZ - temp %*% t(Sigma_YZ)
+  ## Variances
   conditional_variance_covariance <- Sigma_ZZ - tcrossprod(temp)
   attr(conditional_variance_covariance, "p_dim") <- p
-  conditional_law_X$variances <- array(c(array(0, c(p, p, ntaxa)),
-                                         extract.variance_nodes(phylo,
-                                                                conditional_variance_covariance)), c(p, p, ntaxa + nNodes))
-  conditional_law_X$covariances <- array(c(array(0, c(p, p, ntaxa)),
-                                           extract.covariance_parents(phylo,
-                                                                      conditional_variance_covariance)), c(p, p, ntaxa + nNodes))
+  conditional_variance_covariance_nodes <- conditional_variance_covariance[!index_missing, !index_missing]
+  attr(conditional_variance_covariance_nodes, "p_dim") <- p
+  ## Variances
+  # Data
+  var_tips <- array(0, c(p, p, ntaxa))
+  if (nMiss > 0){
+    conditional_variance_covariance_tips <- conditional_variance_covariance[index_missing, index_missing, drop = FALSE]
+    # missing_mat <- matrix(missing, nrow = p)
+    missing_tips <- (which(missing) - 1) %/% p + 1
+    missing_chars <- (which(missing) - 1) %% p + 1
+    grpes_missing <- sapply(1:ntaxa, function(z) missing_tips == z)
+    for (i in 1:ntaxa){
+      tipgrp <- grpes_missing[, i]
+      var_tips[missing_chars[tipgrp], missing_chars[tipgrp], i] <- as.matrix(conditional_variance_covariance_tips[tipgrp, tipgrp])
+    }
+#     for (i in 1:nMiss){
+#       var_tips[missing_chars[i], missing_chars[i], missing_tips[i]] <- conditional_variance_covariance_tips[i, ]
+#     }
+  }
+  # Nodes
+  var_nodes <- extract.variance_nodes(phylo,
+                                      conditional_variance_covariance_nodes)
+  conditional_law_X$variances <- array(c(var_tips,
+                                         var_nodes), c(p, p, ntaxa + nNodes))
+  
+  ## Co-Variances
+  # Data
+  cov_tips <- array(0, c(p, p, ntaxa))
+  if (nMiss > 0){
+    conditional_variance_covariance_tips_nodes <- conditional_variance_covariance[!index_missing, index_missing, drop = FALSE]
+    # conditional_variance_covariance_nodes_tips <- conditional_variance_covariance[index_missing, !index_missing]
+    missing_mat <- matrix(missing, nrow = p)
+    missing_tips <- (which(missing) - 1) %/% p + 1
+    par_missing_tips <- getAncestors(phylo, missing_tips)
+    par_missing_tips <- par_missing_tips - ntaxa
+    par_missing_tips <- sapply(par_missing_tips,
+                               function(z) (p * (z - 1) + 1):(p * z))
+    missing_chars <- (which(missing) - 1) %% p + 1
+    for (i in 1:nMiss){
+      cov_tips[missing_chars[i], , missing_tips[i]] <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
+#       ccov <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
+#       cov_tips[missing_chars[i], , missing_tips[i]] <- cov_tips[missing_chars[i], ,missing_tips[i]] + ccov
+#       cov_tips[, missing_chars[i], missing_tips[i]] <- cov_tips[, missing_chars[i], missing_tips[i]] + ccov
+    }
+  }
+  # Nodes
+  cov_nodes <- extract.covariance_parents(phylo,
+                                          conditional_variance_covariance_nodes)
+  conditional_law_X$covariances <- array(c(cov_tips,
+                                           cov_nodes), c(p, p, ntaxa + nNodes))
   return(conditional_law_X)
 }
 
@@ -107,19 +161,21 @@ compute_E.simple <- function (phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv) {
 #'                "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
 #'                "YZ" : sub matrix tips x nodes (p*nNodes last rows and p*ntaxa first columns)
 #'                "ZZ" : sub matrix of nodes (p*nNodes last rows and columns)
+#' @param missing; missing values of Y_data
 #' 
 #' @return sub-matrix of variance covariance.
 #' 
 ##
-extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
+extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
+                                        masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct, "p_dim")), rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) * attr(struct, "p_dim")))){
   ntaxa <- attr(struct, "ntaxa")
   p <- attr(struct, "p_dim")
   if (what=="YY") {
-    return(struct[1:(p * ntaxa), 1:(p * ntaxa)])
+    return(struct[masque_data, masque_data])
   } else if (what=="YZ") {
-    return(struct[(p * ntaxa + 1):(dim(struct)[1]), 1:(p * ntaxa)])
+    return(struct[!masque_data, masque_data])
   } else if (what=="ZZ") {
-    return(struct[(p * ntaxa + 1):(dim(struct)[1]),(p * ntaxa + 1):(dim(struct)[2])])
+    return(struct[!masque_data, !masque_data])
   }
 }
 
@@ -139,29 +195,40 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ")){
 # REVISIONS:
 #            22/05/14 - Initial release
 ##
-extract.covariance_parents<- function(phylo, struct){
+extract.covariance_parents <- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
   m <- dim(phylo$edge)[1] - ntaxa + 1
-  cov1 <- array(NA, c(p, p, m))
-  for (i in (ntaxa + 2):(dim(phylo$edge)[1] + 1)) {
-    pa <- getAncestor(phylo,i)
-    range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
-    range_pa <- ((pa - ntaxa - 1) * p + 1):((pa - ntaxa) * p)
-    cov1[1:p, 1:p, i - ntaxa] <- as.matrix(struct[range_i, range_pa] + struct[range_pa, range_i])
+  # cov1 <- array(NA, c(p, p, m))
+  daughters <- phylo$edge[, 2]
+  parents <- phylo$edge[, 1]
+  masque <- daughters > ntaxa + 1
+  daughters <- daughters[masque]
+  parents <- parents[masque]
+  range_node <- function(node){
+    tmp <- sapply(node, function(z) ((z - ntaxa - 1) * p + 1):((z - ntaxa) * p))
+    return(as.vector(tmp))
   }
-  return(cov1)
-#   masque <- rep(c(rep(rep(c(T, F),
-#                           c(p, p * (m-1))),
-#                       p - 1),
-#                   rep(c(T, F),
-#                       c(p, p * m))),
-#                 m)[1:(p*m)^2]
-#   cov <- array(as.matrix(struct)[!masque], c(p, p, m))
-#   return(cov)
+  arr <- struct[range_node(daughters), range_node(parents)] # + struct[range_node(parents), range_node(daughters)]
+  masque <- rep(c(rep(rep(c(T, F),
+                          c(p, p * (m - 2))),
+                      p - 1),
+                  rep(c(T, F),
+                      c(p, p * (m - 1)))),
+                m)[1:(p*m)^2]
+  arr <- array(as.matrix(arr)[masque], c(p, p, m - 1))
+  arr[, , daughters - ntaxa - 1] <- arr
+  arr <- array(c(rep(NA, p*p), arr), c(p, p, m))
+#   for (i in (ntaxa + 2):(dim(phylo$edge)[1] + 1)) {
+#     pa <- getAncestor(phylo,i)
+#     range_i <- ((i - ntaxa - 1) * p + 1):((i - ntaxa) * p)
+#     range_pa <- ((pa - ntaxa - 1) * p + 1):((pa - ntaxa) * p)
+#     cov1[1:p, 1:p, i - ntaxa] <- as.matrix(struct[range_i, range_pa] + struct[range_pa, range_i])
+#   }
+  return(arr)
 }
 
-extract.variance_nodes<- function(phylo, struct){
+extract.variance_nodes <- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
   m <- dim(phylo$edge)[1] - ntaxa + 1
@@ -303,7 +370,8 @@ compute_mean_variance.simple <- function (phylo,
                                           times_shared,
                                           distances_phylo,
                                           process=c("BM","OU"),
-                                          params_old, ...) {
+                                          params_old,
+                                          masque_data, ...) {
   ## Choose process 
   process  <- match.arg(process)
   compute_variance_covariance  <- switch(process, 
@@ -322,7 +390,7 @@ compute_mean_variance.simple <- function (phylo,
   Sigma <- compute_variance_covariance(times_shared = times_shared, 
                                        distances_phylo = distances_phylo,
                                        params_old = params_old)
-  Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
+  Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data = masque_data)
   Sigma_YY_chol <- chol(Sigma_YY)
   Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, diag(ncol(Sigma_YY_chol)))
   #Sigma_YY_inv <- chol2inv(Sigma_YY_chol)
@@ -353,13 +421,13 @@ compute_mean_variance.simple <- function (phylo,
 #' 
 #' @return squared Mahalanobis distance between data and mean at the tips.
 ##
-compute_mahalanobis_distance.simple <- function(phylo, Y_data, sim, Sigma_YY_chol_inv){
+compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
+                                                Sigma_YY_chol_inv, missing){
   ntaxa <- length(phylo$tip.label)
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
-  m_Y <- as.vector(m_Y)
-  Y_data <- as.vector(Y_data)
+  m_Y <- as.vector(m_Y)[!missing]
 #  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
-  MD <- tcrossprod(t(Y_data - m_Y) %*% Sigma_YY_chol_inv)
+  MD <- tcrossprod(t(Y_data_vec - m_Y) %*% Sigma_YY_chol_inv)
   return(MD)
 }
 
@@ -387,14 +455,15 @@ compute_mahalanobis_distance.simple <- function(phylo, Y_data, sim, Sigma_YY_cho
 #' 
 #' 29/09/14 - Initial release
 ##
-compute_log_likelihood.simple <- function(phylo, Y_data, sim, Sigma, Sigma_YY_chol_inv){
+compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
+                                          Sigma, Sigma_YY_chol_inv,
+                                          missing, masque_data){
   ntaxa <- length(phylo$tip.label)
-  Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
+  Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   LL <- ntaxa * log(2*pi) + logdetSigma_YY
-  m_Y_vec <- as.vector(m_Y)
-  Y_data_vec <- as.vector(Y_data)
+  m_Y_vec <- as.vector(m_Y)[!missing]
 #  LL <- LL + t(Y_data_vec - m_Y_vec) %*% Sigma_YY_inv %*% (Y_data_vec - m_Y_vec)
   LL <- LL + tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
   return(-LL/2)

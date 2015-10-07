@@ -104,8 +104,10 @@ estimateEM <- function(phylo,
                        subtree.list = NULL,
                        T_tree = NULL, 
                        h_tree = NULL,
-                       tol_half_life = TRUE, ...){
+                       tol_half_life = TRUE,
+                       warning_several_solutions = TRUE, ...){
   
+  ntaxa <- length(phylo$tip.label)
   ## Check consistancy #########################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
@@ -174,17 +176,29 @@ estimateEM <- function(phylo,
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
   method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
-
+  
   ## Fixed Quantities #########################################
   ntaxa <- length(phylo$tip.label)
   if (is.null(times_shared)) times_shared <- compute_times_ca(phylo)
   if (is.null(distances_phylo)) distances_phylo <- compute_dist_phy(phylo)
   if (is.null(subtree.list)) subtree.list <- enumerate_tips_under_edges(phylo)
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
-  if (is.null(h_tree)) h_tree <- max(diag(times_shared)[1:ntaxa])
+  if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
 
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
+  
+  ## Missing Data #############################################
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  p <- nrow(Y_data)
+  missing <- as.vector(is.na(Y_data))
+  Y_data_vec <- as.vector(Y_data)
+  Y_data_vec_known <- as.vector(Y_data[!missing])
+  # Vectorized Data Mask
+  masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
+  masque_data[1:(p*ntaxa)] <- !missing
+  
   ## Find dimension
   p <- nrow(Y_data)
   ## Initialization
@@ -266,25 +280,31 @@ estimateEM <- function(phylo,
                                      times_shared = times_shared,
                                      distances_phylo = distances_phylo,
                                      process = process,
-                                     params_old = params_old)
+                                     params_old = params_old,
+                                     masque_data = masque_data)
     log_likelihood <- compute_log_likelihood(phylo = phylo,
-                                             Y_data = Y_data,
+                                             Y_data_vec = Y_data_vec_known,
                                              sim = moments$sim,
                                              Sigma = moments$Sigma,
-                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                             missing = missing, 
+                                             masque_data = masque_data)
     attr(params_old, "log_likelihood") <- log_likelihood
     ## Compute Mahalanobis norm between data and mean at tips
     maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                   Y_data = Y_data,
+                                                   Y_data_vec = Y_data_vec_known,
                                                    sim = moments$sim,
-                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                   missing = missing)
     attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
     ## E step
     conditional_law_X <- compute_E(phylo = phylo,
-                                   Y_data = Y_data,
+                                   Y_data_vec = Y_data_vec_known,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
-                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                   missing = missing,
+                                   masque_data = masque_data)
     rm(moments)
     if (process == "OU"){
       if (p > 1) stop("Multivariate OU not yet implemented.")
@@ -349,32 +369,37 @@ estimateEM <- function(phylo,
                                    times_shared = times_shared,
                                    distances_phylo = distances_phylo,
                                    process = process,
-                                   params_old = params)
+                                   params_old = params,
+                                   masque_data = masque_data)
   log_likelihood <- compute_log_likelihood(phylo = phylo,
-                                           Y_data = Y_data,
+                                           Y_data_vec = Y_data_vec_known,
                                            sim = moments$sim,
                                            Sigma = moments$Sigma,
-                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                           missing = missing,
+                                           masque_data = masque_data)
   attr(params, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params
   ## Compute Mahalanobis norm between data and mean at tips
   maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                 Y_data = Y_data,
+                                                 Y_data_vec = Y_data_vec_known,
                                                  sim = moments$sim,
-                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
+                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                 missing = missing)
   attr(params, "mahalanobis_distance_data_mean") <- maha_data_mean
   ## Mean at tips with estimated parameters
   m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")
   ## Number of equivalent solutions
   clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
-  if (Neq > 1) message("There are some equivalent solutions to the solution found.")
+  if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params, "Neq") <- Neq
   ## Result
   conditional_law_X$expectations <- matrix(conditional_law_X$expectations, nrow = p)
   result <- list(params = params, 
                  ReconstructedNodesStates = conditional_law_X$expectations[ , (ntaxa+1):ncol(conditional_law_X$expectations)],
-                 ReconstructedTipsStates = m_Y_estim,
+                 ReconstructedTipsStates = conditional_law_X$expectations[ , 1:ntaxa],
+                 m_Y_estim = m_Y_estim,
                  params_old = params_old, 
                  params_init = params_init,
                  alpha_0 = init.a.g$alpha_0,
@@ -452,7 +477,8 @@ format_output <- function(results_estim_EM, phylo, time = NA){
   X$gamma_0 <- results_estim_EM$gamma_0
   # if (!is.null(X$gamma_0)) names(X$gamma_0) <- paste0("gamma_0_", names(X$gamma_0))
   X$Zhat <- results_estim_EM$ReconstructedNodesStates
-  X$m_Y_estim <- results_estim_EM$ReconstructedTipsStates
+  X$Yhat <- results_estim_EM$ReconstructedTipsStates
+  X$m_Y_estim <- results_estim_EM$m_Y_estim
   #  X$raw_results <- results_estim_EM
   if (is.null(params$selection.strength)){# Handle BM case
     params$selection.strength <- NA
@@ -519,6 +545,7 @@ format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
   out[[alpha]]$params_init_estim <- dd[, "params_init"]
   out[[alpha]]$alpha_0 <- dd[,"alpha_0" == colnames(dd)]
   out[[alpha]]$Zhat <- dd[, "Zhat"]
+  out[[alpha]]$Yhat <- dd[, "Yhat"]
   out[[alpha]]$m_Y_estim <- dd[, "m_Y_estim"]
   out[[alpha]]$edge.quality <- dd[, "edge.quality"]
   return(out)
@@ -566,6 +593,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   p <- nrow(Y_data)
+  ntaxa <- length(phylo$tip.label)
   ## Model Selection
   method.selection  <- match.arg(method.selection, several.ok = TRUE)
   if (p > 1 && "BGH" %in% method.selection){
@@ -581,7 +609,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   distances_phylo <- compute_dist_phy(phylo)
   subtree.list <- enumerate_tips_under_edges(phylo)
   T_tree <- incidence.matrix(phylo)
-  h_tree <- max(diag(times_shared)[1:ntaxa])
+  h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   ## First estim
   if (order){
     K_first <- 0
@@ -625,6 +653,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                                                         subtree.list = subtree.list,
                                                         T_tree = T_tree,
                                                         h_tree = h_tree,
+                                                        warning_several_solutions = FALSE,
                                                         ...)
     pp <- check_dimensions(p,
                            XX[[paste0(K_first)]]$params$root.state,
@@ -659,6 +688,7 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                                                             subtree.list = subtree.list,
                                                             T_tree = T_tree, 
                                                             h_tree = h_tree,
+                                                            warning_several_solutions = FALSE,
                                                             ...)
       pp <- check_dimensions(p,
                              XX[[paste0(K_t)]]$params$root.state,
