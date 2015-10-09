@@ -57,12 +57,12 @@
 estimateEM <- function(phylo, 
                        Y_data, 
                        process = c("BM","OU"), 
-                       tol=list(variance = 10^(-5), 
-                                value.root = 10^(-5), 
-                                exp.root = 10^(-5), 
-                                var.root = 10^(-5),
-                                selection.strength = 10^(-5),
-                                normalized_half_life = 10^(-5)),  
+                       tol=list(variance = 10^(-3), 
+                                value.root = 10^(-3), 
+                                exp.root = 10^(-3), 
+                                var.root = 10^(-3),
+                                selection.strength = 10^(-3),
+                                normalized_half_life = 10^(-3)),  
                        Nbr_It_Max = 500, 
                        method.variance = c("simple"), 
                        method.init = c("default", "lasso"),
@@ -81,16 +81,16 @@ estimateEM <- function(phylo,
                        max_selection.strength = 100,
                        use_sigma_for_lasso = TRUE,
                        max_triplet_number = 10000,
-                       min_params=list(variance = 10^(-3), 
-                                       value.root = -10^(3), 
-                                       exp.root = -10^(3), 
-                                       var.root = 10^(-3),
-                                       selection.strength = 10^(-3)),
-                       max_params=list(variance = 10^(3), 
-                                       value.root = 10^(3), 
-                                       exp.root = 10^(3), 
-                                       var.root = 10^(3),
-                                       selection.strength = 10^(3)),
+                       min_params=list(variance = 10^(-5), 
+                                       value.root = -10^(5), 
+                                       exp.root = -10^(5), 
+                                       var.root = 10^(-5),
+                                       selection.strength = 10^(-5)),
+                       max_params=list(variance = 10^(5), 
+                                       value.root = 10^(5), 
+                                       exp.root = 10^(5), 
+                                       var.root = 10^(5),
+                                       selection.strength = 10^(5)),
                        var.init.root = diag(1, nrow(Y_data)),
                        methods.segmentation = c("max_costs_0", 
                                                 "lasso", 
@@ -105,7 +105,8 @@ estimateEM <- function(phylo,
                        T_tree = NULL, 
                        h_tree = NULL,
                        tol_half_life = TRUE,
-                       warning_several_solutions = TRUE, ...){
+                       warning_several_solutions = TRUE,
+                       convergence_mode = c("relative", "absolute"), ...){
   
   ntaxa <- length(phylo$tip.label)
   ## Check consistancy #########################################
@@ -127,6 +128,9 @@ estimateEM <- function(phylo,
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
                         OU = shutoff.EM.OU(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life))
+  has_converged  <- switch(convergence_mode[1], 
+                           relative = has_converged_relative,
+                           absolute = has_converged_absolute)
   is.finite.params  <- switch(process, 
                               BM = is.finite.params.BM,
                               OU = is.finite.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
@@ -269,7 +273,7 @@ estimateEM <- function(phylo,
   #   CLL_history <- NULL
   number_new_shifts <- NULL
   while ( Nbr_It == 0 || # Initialisation
-            ( !shutoff.EM(params_old, params, tol, h_tree) && # Shutoff
+            ( !shutoff.EM(params_old, params, tol, has_converged, h_tree) && # Shutoff
                 is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
                 Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization

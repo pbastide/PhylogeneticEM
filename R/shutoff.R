@@ -40,27 +40,36 @@
 # REVISIONS:
 # 22/05/14 - Initial release
 ##
-shutoff.EM.BM <- function(params_old, params, tol, ...) {
+shutoff.EM.BM <- function(params_old, params, tol, has_converged, ...) {
   if (params_old$root.state$random) {
-    return(shutoff.EM.BM.randroot(params_old,params,tol))
+    return(shutoff.EM.BM.randroot(params_old,params, tol, has_converged))
   } else {
-    return(shutoff.EM.BM.fixedroot(params_old,params,tol))
+    return(shutoff.EM.BM.fixedroot(params_old,params, tol, has_converged))
   }
 }
 
-shutoff.EM.BM.randroot <- function(params_old, params, tol, ...){
-  if (all(abs(params_old$variance - params$variance) < tol$variance) &&
-      all(abs(params_old$root.state$exp.root - params$root.state$exp.root) < tol$exp.root) &&
-      all(abs(params_old$root.state$var.root - params$root.state$var.root) < tol$var.root)) {
+has_converged_absolute <- function(old, new, tol){
+  return(all(abs(old - new) < tol))
+}
+
+has_converged_relative <- function(old, new, tol){
+  return(all(c(abs((old[old != 0] - new[old != 0]) / old[old != 0]) < tol,
+               abs(old[old == 0] - new[old == 0]) < tol)))
+}
+
+shutoff.EM.BM.randroot <- function(params_old, params, tol, has_converged, ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root)) {
     return(TRUE)
   } else {
     return(FALSE)
   }
 }
 
-shutoff.EM.BM.fixedroot <- function(params_old, params, tol, ...){
-  if (all(abs(params_old$variance - params$variance) < tol$variance) &&
-      all(abs(params_old$root.state$value.root - params$root.state$value.root) < tol$value.root)) {
+shutoff.EM.BM.fixedroot <- function(params_old, params, tol, has_converged, ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$value.root, params$root.state$value.root, tol$value.root)) {
     return(TRUE)
   } else {
     return(FALSE)
@@ -79,31 +88,31 @@ shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known, tol_ha
   }
 }
 
-shutoff.EM.OU.specialCase <- function(params_old, params, tol, ...){
-  if (all(abs(params_old$variance - params$variance) < tol$variance) &&
-      all(abs(params_old$root.state$exp.root - params$root.state$exp.root) < tol$exp.root) &&
-      all(abs(params_old$root.state$var.root - params$root.state$var.root) < tol$var.root)) {
+shutoff.EM.OU.specialCase <- function(params_old, params, tol, has_converged, ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root)) {
     return(TRUE)
   } else {
     return(FALSE)
   }
 }
 
-shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha <- function(params_old, params, tol, ...){
-  if (all(abs(params_old$variance - params$variance) < tol$variance) &&
-      all(abs(params_old$root.state$exp.root - params$root.state$exp.root) < tol$exp.root) &&
-      all(abs(params_old$root.state$var.root - params$root.state$var.root) < tol$var.root) &&
-      all(abs(params_old$selection.strength - params$selection.strength) < tol$selection.strength)) {
+shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha <- function(params_old, params, tol, has_converged,  ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root) &&
+      has_converged(params_old$selection.strength, params$selection.strength, tol$selection.strength)) {
     return(TRUE)
   } else {
     return(FALSE)
   }
 }
 
-shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.half_life <- function(params_old, params, tol, h_tree){
-  if (all(abs(params_old$variance - params$variance) < tol$variance) &&
-      all(abs(params_old$root.state$exp.root - params$root.state$exp.root) < tol$exp.root) &&
-      all(abs(params_old$root.state$var.root - params$root.state$var.root) < tol$var.root) &&
+shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.half_life <- function(params_old, params, tol, has_converged, h_tree){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root) &&
       all(abs(log(2) / (h_tree * params_old$selection.strength) - log(2) / (h_tree * params$selection.strength)) < tol$normalized_half_life)) {
     return(TRUE)
   } else {
