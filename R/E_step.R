@@ -132,6 +132,7 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
     par_missing_tips <- par_missing_tips - ntaxa
     par_missing_tips <- sapply(par_missing_tips,
                                function(z) (p * (z - 1) + 1):(p * z))
+    par_missing_tips <- matrix(par_missing_tips, nrow = p)
     missing_chars <- (which(missing) - 1) %% p + 1
     for (i in 1:nMiss){
       cov_tips[missing_chars[i], , missing_tips[i]] <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
