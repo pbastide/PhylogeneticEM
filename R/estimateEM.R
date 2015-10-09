@@ -593,6 +593,8 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
                     alpha = "estimated",
                     check.tips.names = FALSE,
                     progress.bar = TRUE,
+                    estimates = NULL,
+                    save_step = TRUE,
                     ...){
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
@@ -614,102 +616,41 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
   subtree.list <- enumerate_tips_under_edges(phylo)
   T_tree <- incidence.matrix(phylo)
   h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
-  ## First estim
-  if (order){
-    K_first <- 0
-    K_last <- K_max
-    next_it <- function(K_t) { return(K_t + 1) }
-    prev_it <- function(K_t) { return(K_t - 1) }
+  if (!is.null(estimates)){
+    X <- estimates
   } else {
-    K_first <- K_max
-    K_last <- 0
-    next_it <- function(K_t) { return(K_t - 1) }
-    prev_it <- function(K_t) { return(K_t + 1) }
-  }
-  ## Set up
-  X <- list(Y_data = Y_data,
-            K_try = 0:K_max,
-            ntaxa = ntaxa)
-  for (alp in alpha){
     ## Set up
-    XX <- vector('list', K_max + 1)
-    names(XX) <- X$K_try
-    ## Progress Bar
-    if(progress.bar){
-      message(paste0("Alpha ", alp))
-      pb <- txtProgressBar(min = 0, max = K_max + 1, style = 3)
+    X <- list(Y_data = Y_data,
+              K_try = 0:K_max,
+              ntaxa = ntaxa)
+    for (alp in alpha){
+      ## Estimations
+      X <- Phylo_EM_sequencial(phylo = phylo,
+                               Y_data = Y_data,
+                               process = process,
+                               K_max = K_max,
+                               curent = X,
+                               use_previous = use_previous,
+                               order = order,
+                               method.variance = method.variance,
+                               method.init = method.init,
+                               method.init.alpha = method.init.alpha,
+                               method.init.alpha.estimation = method.init.alpha.estimation, 
+                               methods.segmentation = methods.segmentation,
+                               alpha_known = alpha_known,
+                               random.root = random.root,
+                               stationnary.root = stationnary.root,
+                               alp = alp,
+                               check.tips.names = check.tips.names,
+                               progress.bar = progress.bar,
+                               times_shared = times_shared,
+                               distances_phylo = distances_phylo,
+                               subtree.list = subtree.list,
+                               T_tree = T_tree,
+                               h_tree = h_tree,
+                               save_step = save_step,
+                               ...)
     }
-    ## First
-    XX[[paste0(K_first)]] <- estimateEM_wrapper_scratch(phylo = phylo,
-                                                        Y_data = Y_data,
-                                                        process = process,
-                                                        K_t = K_first,
-                                                        method.variance = method.variance,
-                                                        random.root = random.root,
-                                                        stationnary.root = stationnary.root,
-                                                        alpha_known = alpha_known,
-                                                        alpha = alp,
-                                                        method.init = method.init,
-                                                        method.init.alpha = method.init.alpha,
-                                                        methods.segmentation = methods.segmentation,
-                                                        times_shared = times_shared, 
-                                                        distances_phylo = distances_phylo,
-                                                        subtree.list = subtree.list,
-                                                        T_tree = T_tree,
-                                                        h_tree = h_tree,
-                                                        warning_several_solutions = FALSE,
-                                                        ...)
-    pp <- check_dimensions(p,
-                           XX[[paste0(K_first)]]$params$root.state,
-                           XX[[paste0(K_first)]]$params$shifts,
-                           XX[[paste0(K_first)]]$params$variance,
-                           XX[[paste0(K_first)]]$params$selection.strength,
-                           XX[[paste0(K_first)]]$params$optimal.value)
-    XX[[paste0(K_first)]]$params$root.state <- pp$root.state
-    XX[[paste0(K_first)]]$params$shifts <- pp$shifts
-    XX[[paste0(K_first)]]$params$variance <- pp$variance
-    XX[[paste0(K_first)]]$params$selection.strength <- pp$selection.strength
-    XX[[paste0(K_first)]]$params$optimal.value <- pp$optimal.value
-    # update progress bar
-    if(progress.bar) setTxtProgressBar(pb, 1); counter <- 2;
-    ## Iterations
-    for (K_t in (next_it(K_first)):(K_last)){
-      XX[[paste0(K_t)]] <- estimateEM_wrapper(use_previous)(phylo = phylo,
-                                                            Y_data = Y_data,
-                                                            process = process,
-                                                            K_t = K_t,
-                                                            prev = XX[[paste0(prev_it(K_t))]],
-                                                            method.variance = method.variance,
-                                                            random.root = random.root,
-                                                            stationnary.root = stationnary.root,
-                                                            alpha_known = alpha_known,
-                                                            alpha = alp,
-                                                            method.init = method.init,
-                                                            method.init.alpha = method.init.alpha,
-                                                            methods.segmentation = methods.segmentation,
-                                                            times_shared = times_shared, 
-                                                            distances_phylo = distances_phylo,
-                                                            subtree.list = subtree.list,
-                                                            T_tree = T_tree, 
-                                                            h_tree = h_tree,
-                                                            warning_several_solutions = FALSE,
-                                                            ...)
-      pp <- check_dimensions(p,
-                             XX[[paste0(K_t)]]$params$root.state,
-                             XX[[paste0(K_t)]]$params$shifts,
-                             XX[[paste0(K_t)]]$params$variance,
-                             XX[[paste0(K_t)]]$params$selection.strength,
-                             XX[[paste0(K_t)]]$params$optimal.value)
-      XX[[paste0(K_t)]]$params$root.state <- pp$root.state
-      XX[[paste0(K_t)]]$params$shifts <- pp$shifts
-      XX[[paste0(K_t)]]$params$variance <- pp$variance
-      XX[[paste0(K_t)]]$params$selection.strength <- pp$selection.strength
-      XX[[paste0(K_t)]]$params$optimal.value <- pp$optimal.value
-      if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
-    }
-    ## Formate results
-    X <- format_output_several_K(XX, X, alp)
-    save(X, file = paste0("Tmp_", K_t, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
   }
   ## Select max solution for each K
   X <- merge_max_grid_alpha(X, alpha)
@@ -733,6 +674,126 @@ PhyloEM <- function(phylo, Y_data, process, K_max, use_previous = TRUE,
     X <- model_selection(meth.sel)
   }
   return(X)
+}
+
+Phylo_EM_sequencial <- function(phylo, Y_data, process, K_max,
+                                curent = list(Y_data = Y_data,
+                                              K_try = 0:K_max,
+                                              ntaxa = length(phylo$tip.label)),
+                                use_previous = TRUE,
+                                order = TRUE,
+                                method.variance = "simple",
+                                method.init = "default",
+                                method.init.alpha = "default",
+                                method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
+                                methods.segmentation = c("lasso", "best_single_move"),
+                                alpha_known = FALSE,
+                                random.root = TRUE,
+                                stationnary.root = TRUE,
+                                alp = alp,
+                                check.tips.names = FALSE,
+                                progress.bar = TRUE,
+                                times_shared = NULL,
+                                distances_phylo = NULL,
+                                subtree.list = NULL,
+                                T_tree = NULL,
+                                h_tree = NULL,
+                                save_step = TRUE,
+                                ...){
+  p <- nrow(Y_data)
+  ntaxa <- length(phylo$tip.label)
+  ## First estim
+  if (order){
+    K_first <- 0
+    K_last <- K_max
+    next_it <- function(K_t) { return(K_t + 1) }
+    prev_it <- function(K_t) { return(K_t - 1) }
+  } else {
+    K_first <- K_max
+    K_last <- 0
+    next_it <- function(K_t) { return(K_t - 1) }
+    prev_it <- function(K_t) { return(K_t + 1) }
+  }
+  ## Set up
+  XX <- vector('list', K_max + 1)
+  names(XX) <- curent$K_try
+  ## Progress Bar
+  if(progress.bar){
+    message(paste0("Alpha ", alp))
+    pb <- txtProgressBar(min = 0, max = K_max + 1, style = 3)
+  }
+  ## First
+  XX[[paste0(K_first)]] <- estimateEM_wrapper_scratch(phylo = phylo,
+                                                      Y_data = Y_data,
+                                                      process = process,
+                                                      K_t = K_first,
+                                                      method.variance = method.variance,
+                                                      random.root = random.root,
+                                                      stationnary.root = stationnary.root,
+                                                      alpha_known = alpha_known,
+                                                      alpha = alp,
+                                                      method.init = method.init,
+                                                      method.init.alpha = method.init.alpha,
+                                                      methods.segmentation = methods.segmentation,
+                                                      times_shared = times_shared, 
+                                                      distances_phylo = distances_phylo,
+                                                      subtree.list = subtree.list,
+                                                      T_tree = T_tree,
+                                                      h_tree = h_tree,
+                                                      warning_several_solutions = FALSE,
+                                                      ...)
+  pp <- check_dimensions(p,
+                         XX[[paste0(K_first)]]$params$root.state,
+                         XX[[paste0(K_first)]]$params$shifts,
+                         XX[[paste0(K_first)]]$params$variance,
+                         XX[[paste0(K_first)]]$params$selection.strength,
+                         XX[[paste0(K_first)]]$params$optimal.value)
+  XX[[paste0(K_first)]]$params$root.state <- pp$root.state
+  XX[[paste0(K_first)]]$params$shifts <- pp$shifts
+  XX[[paste0(K_first)]]$params$variance <- pp$variance
+  XX[[paste0(K_first)]]$params$selection.strength <- pp$selection.strength
+  XX[[paste0(K_first)]]$params$optimal.value <- pp$optimal.value
+  # update progress bar
+  if(progress.bar) setTxtProgressBar(pb, 1); counter <- 2;
+  ## Iterations
+  for (K_t in (next_it(K_first)):(K_last)){
+    XX[[paste0(K_t)]] <- estimateEM_wrapper(use_previous)(phylo = phylo,
+                                                          Y_data = Y_data,
+                                                          process = process,
+                                                          K_t = K_t,
+                                                          prev = XX[[paste0(prev_it(K_t))]],
+                                                          method.variance = method.variance,
+                                                          random.root = random.root,
+                                                          stationnary.root = stationnary.root,
+                                                          alpha_known = alpha_known,
+                                                          alpha = alp,
+                                                          method.init = method.init,
+                                                          method.init.alpha = method.init.alpha,
+                                                          methods.segmentation = methods.segmentation,
+                                                          times_shared = times_shared, 
+                                                          distances_phylo = distances_phylo,
+                                                          subtree.list = subtree.list,
+                                                          T_tree = T_tree, 
+                                                          h_tree = h_tree,
+                                                          warning_several_solutions = FALSE,
+                                                          ...)
+    pp <- check_dimensions(p,
+                           XX[[paste0(K_t)]]$params$root.state,
+                           XX[[paste0(K_t)]]$params$shifts,
+                           XX[[paste0(K_t)]]$params$variance,
+                           XX[[paste0(K_t)]]$params$selection.strength,
+                           XX[[paste0(K_t)]]$params$optimal.value)
+    XX[[paste0(K_t)]]$params$root.state <- pp$root.state
+    XX[[paste0(K_t)]]$params$shifts <- pp$shifts
+    XX[[paste0(K_t)]]$params$variance <- pp$variance
+    XX[[paste0(K_t)]]$params$selection.strength <- pp$selection.strength
+    XX[[paste0(K_t)]]$params$optimal.value <- pp$optimal.value
+    if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
+  }
+  ## Formate results
+  curent <- format_output_several_K(XX, curent, alp)
+  if (save_step) save(curent, file = paste0("Tmp_", alp, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
+  return(curent)
 }
 
 merge_max_grid_alpha <- function(X, alpha){
