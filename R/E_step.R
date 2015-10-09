@@ -97,51 +97,35 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
   attr(conditional_variance_covariance, "p_dim") <- p
   conditional_variance_covariance_nodes <- conditional_variance_covariance[!index_missing, !index_missing]
   attr(conditional_variance_covariance_nodes, "p_dim") <- p
-  ## Variances
-  # Data
+  # Data tips
   var_tips <- array(0, c(p, p, ntaxa))
-  if (nMiss > 0){
-    conditional_variance_covariance_tips <- conditional_variance_covariance[index_missing, index_missing, drop = FALSE]
-    # missing_mat <- matrix(missing, nrow = p)
-    missing_tips <- (which(missing) - 1) %/% p + 1
-    missing_chars <- (which(missing) - 1) %% p + 1
-    grpes_missing <- sapply(1:ntaxa, function(z) missing_tips == z)
-    for (i in 1:ntaxa){
-      tipgrp <- grpes_missing[, i]
-      var_tips[missing_chars[tipgrp], missing_chars[tipgrp], i] <- as.matrix(conditional_variance_covariance_tips[tipgrp, tipgrp])
-    }
-#     for (i in 1:nMiss){
-#       var_tips[missing_chars[i], missing_chars[i], missing_tips[i]] <- conditional_variance_covariance_tips[i, ]
-#     }
-  }
-  # Nodes
-  var_nodes <- extract.variance_nodes(phylo,
-                                      conditional_variance_covariance_nodes)
-  conditional_law_X$variances <- array(c(var_tips,
-                                         var_nodes), c(p, p, ntaxa + nNodes))
-  
-  ## Co-Variances
-  # Data
   cov_tips <- array(0, c(p, p, ntaxa))
   if (nMiss > 0){
+    conditional_variance_covariance_tips <- conditional_variance_covariance[index_missing, index_missing, drop = FALSE]
     conditional_variance_covariance_tips_nodes <- conditional_variance_covariance[!index_missing, index_missing, drop = FALSE]
-    # conditional_variance_covariance_nodes_tips <- conditional_variance_covariance[index_missing, !index_missing]
-    missing_mat <- matrix(missing, nrow = p)
+    
     missing_tips <- (which(missing) - 1) %/% p + 1
-    par_missing_tips <- getAncestors(phylo, missing_tips)
+    missing_tips_uniques <- unique(missing_tips)
+    par_missing_tips <- getAncestors(phylo, missing_tips_uniques)
     par_missing_tips <- par_missing_tips - ntaxa
     par_missing_tips <- sapply(par_missing_tips,
                                function(z) (p * (z - 1) + 1):(p * z))
     par_missing_tips <- matrix(par_missing_tips, nrow = p)
     missing_chars <- (which(missing) - 1) %% p + 1
-    for (i in 1:nMiss){
-      cov_tips[missing_chars[i], , missing_tips[i]] <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
-#       ccov <- conditional_variance_covariance_tips_nodes[par_missing_tips[, i], i]
-#       cov_tips[missing_chars[i], , missing_tips[i]] <- cov_tips[missing_chars[i], ,missing_tips[i]] + ccov
-#       cov_tips[, missing_chars[i], missing_tips[i]] <- cov_tips[, missing_chars[i], missing_tips[i]] + ccov
+    grpes_missing <- sapply(1:ntaxa, function(z) missing_tips == z)
+    for (i in 1:length(missing_tips_uniques)){
+      tip <- missing_tips_uniques[i]
+      tipgrp <- grpes_missing[, tip]
+      var_tips[missing_chars[tipgrp], missing_chars[tipgrp], tip] <- as.matrix(conditional_variance_covariance_tips[tipgrp, tipgrp])
+      cov_tips[, missing_chars[tipgrp], tip] <- as.matrix(conditional_variance_covariance_tips_nodes[par_missing_tips[, i], tipgrp])
     }
   }
-  # Nodes
+  # Nodes - varariances
+  var_nodes <- extract.variance_nodes(phylo,
+                                      conditional_variance_covariance_nodes)
+  conditional_law_X$variances <- array(c(var_tips,
+                                         var_nodes), c(p, p, ntaxa + nNodes))
+  # Nodes - covariances
   cov_nodes <- extract.covariance_parents(phylo,
                                           conditional_variance_covariance_nodes)
   conditional_law_X$covariances <- array(c(cov_tips,
