@@ -240,3 +240,19 @@ for (l in 1:toy_p){
                            margin_plot = NULL,
                            cex = 2)
 }
+
+######################################################################
+## Pre-Processed EM ##################################################
+######################################################################
+load("../../../ericaceae_flowers/R_functions/ericaceae_migale_2015-10-10_00-09-12.RData")
+set.seed(17920920)
+res <- PhyloEM(phylo = subtree_traits,
+               Y_data = trait_matrix,
+               process = "BM",
+               K_max = 10,
+               random.root = FALSE,
+               tol = list(variance = 10^(-2), 
+                          value.root = 10^(-2)),
+               Nbr_It_Max = 100,
+               estimates = X)
+save.image(file = paste0("../Results/Test_Cases/trait_BM_fith_try.RData"))
