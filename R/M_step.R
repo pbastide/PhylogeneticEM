@@ -149,7 +149,7 @@ compute_root_value.BM <- function(phylo,
   root_edges <- which(parents == ntaxa + 1)
   deltas <- matrix(0, p, nEdges)
   deltas <- shifts.list_to_matrix(phylo, shifts, p)
-  mu <- rowSums(1/(phylo$edge.length[root_edges]) * (expectations[ , daughters[root_edges], drop = F] - deltas[, root_edges, drop = F]))
+  mu <- rowSums(sweep((expectations[ , daughters[root_edges], drop = F] - deltas[, root_edges, drop = F]), 2, 1/(phylo$edge.length[root_edges]), '*'))
   mu <- mu / sum(1/phylo$edge.length[root_edges])
   return(mu)
 }
@@ -402,7 +402,7 @@ compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max, random.root, 
     root_edges <- which(phylo$edge[,1] == ntaxa + 1)
     diff_exp[, root_edges] <- diff_exp[, root_edges] - mu
   }
-  expp <- as(tcrossprod(diff_exp[, -edges_max, drop = F] %*% sqrt(diag(1/phylo$edge.length[-edges_max]))), "symmetricMatrix")
+  expp <- as(tcrossprod(sweep(diff_exp[, -edges_max, drop = F], 2, sqrt(1/phylo$edge.length[-edges_max]), '*')), "symmetricMatrix")
   return(1/(ntaxa + nNodes - 1) * (varr + expp))
 }
 
