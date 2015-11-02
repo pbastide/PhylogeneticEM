@@ -298,29 +298,30 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
   return(varr)
 }
 
-compute_variance_covariance.OU <- function(times_shared, distances_phylo, params_old, ...) {
+compute_variance_covariance.scOU <- function(times_shared, distances_phylo, params_old, ...) {
   p <- nrow(params_old$shifts$values)
   if (is.null(p)) p <- 1
-  if (p == 1){
-    alpha <- as.vector(params_old$selection.strength)
-    sigma2 <- as.vector(params_old$variance)
-    Var <- sigma2/(2*alpha) * (1 - exp(- 2 * alpha * times_shared)) * exp(- alpha * distances_phylo)
-    if (!params_old$root.state$random) {
-      varr <- Var
-    } else if (params_old$root.state$stationary.root) {
-      varr <- sigma2/(2*alpha) * exp(- alpha * distances_phylo)
-    } else {
-      times_nodes <- list(diag(times_shared))
-      sum_times <- do.call('rbind',rep(times_nodes,length(diag(times_shared)))) + do.call('cbind',rep(times_nodes,length(diag(times_shared))))
-      gamma2 <- params_old$root.state$var.root
-      varr <- gamma2 * exp(- alpha * sum_times) + Var
-    }
-    attr(varr, "p_dim") <- 1
-    attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
-    return(varr)
+  alpha <- as.vector(params_old$selection.strength)
+  sigma2 <- params_old$variance
+  Var <-  kronecker((1 - exp(- 2 * alpha * times_shared)) * exp(- alpha * distances_phylo),
+                                                               sigma2 / (2 * alpha))
+  if (!params_old$root.state$random) {
+    varr <- Var
+  } else if (params_old$root.state$stationary.root) {
+    varr <- kronecker(exp(- alpha * distances_phylo),
+                      sigma2 / (2 * alpha))
   } else {
-    stop("compute_variance_covariance.OU not implemented for p > 1")
+    times_nodes <- list(diag(times_shared))
+    sum_times <- do.call('rbind',
+                         rep(times_nodes, length(diag(times_shared))))
+    sum_times <- sum_times + do.call('cbind',
+                                     rep(times_nodes, length(diag(times_shared))))
+    gamma2 <- params_old$root.state$var.root
+    varr <- kronecker(exp(- alpha * sum_times), gamma2) + Var
   }
+  attr(varr, "p_dim") <- p
+  attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
+  return(varr)
 }
 
 ##
@@ -354,14 +355,15 @@ compute_variance_covariance.OU <- function(times_shared, distances_phylo, params
 compute_mean_variance.simple <- function (phylo,
                                           times_shared,
                                           distances_phylo,
-                                          process=c("BM","OU"),
+                                          process=c("BM", "OU", "rBM", "scOU"),
                                           params_old,
                                           masque_data, ...) {
   ## Choose process 
   process  <- match.arg(process)
   compute_variance_covariance  <- switch(process, 
                                          BM = compute_variance_covariance.BM,
-                                         OU = compute_variance_covariance.OU)
+                                         OU = compute_variance_covariance.scOU,
+                                         scOU = compute_variance_covariance.scOU)
   ## Mean
   sim <- simulate(phylo = phylo, 
                   process = process,
