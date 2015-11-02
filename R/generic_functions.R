@@ -322,7 +322,7 @@ check.selection.strength <- function(process, selection.strength = NA, eps = 10^
     warning(paste("The selection strength is too low (1-norm<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
     return("BM")
   } else {
-    return("OU")
+    return(process)
   }
 }
 
@@ -385,8 +385,12 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
     root.state$var.root <- NA
   }
   if (is.null(root.state$stationary.root)) {
-    warning("root.state$stationary.root was not defined, and is now set to its default value (TRUE)")
-    root.state$stationary.root <- TRUE
+    warning("root.state$stationary.root was not defined, and is now set to its default value")
+    if (root.state$random){
+      root.state$stationary.root <- TRUE 
+    } else {
+      root.state$stationary.root <- FALSE
+    }
   }
   if (!root.state$random && root.state$stationary.root) {
     warning("As root state is supposed fixed, the root cannot be at its stationary state. root.state$stationary.root is set to FALSE")
@@ -406,17 +410,21 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
 
 coherence_stationnary_case <- function(root.state, optimal.value,
                                        variance, selection.strength){
-  if (!isTRUE(all.equal(root.state$exp.root, optimal.value))){
-    root.state$exp.root <- optimal.value
-    warning("As root is supposed to be in stationnary case, root expectation was set to be equal to optimal value.")
+  if (!root.state$stationary.root){
+    return(root.state) ## Do nothing
+  } else {
+    if (!isTRUE(all.equal(root.state$exp.root, optimal.value))){
+      root.state$exp.root <- optimal.value
+      warning("As root is supposed to be in stationnary case, root expectation was set to be equal to optimal value.")
+    }
+    
+    root_var_expected <- compute_stationnary_variance(variance, selection.strength)
+    if(!isTRUE(all.equal(root.state$var.root, root_var_expected))){
+      root.state$var.root <- as(root_var_expected, "symmetricMatrix")
+      warning("As the root is supposed to be in stationnary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
+    }
+    return(root.state)
   }
-  
-  root_var_expected <- compute_stationnary_variance(variance, selection.strength)
-  if(!isTRUE(all.equal(root.state$var.root, root_var_expected))){
-    root.state$var.root <- as(root_var_expected, "symmetricMatrix")
-    warning("As the root is supposed to be in stationnary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
-  }
-  return(root.state)
 }
 
 compute_stationnary_variance <- function(variance, selection.strength){
@@ -575,4 +583,65 @@ check_dimensions.shifts <- function(p, shifts){
     shifts$relativeTimes <- rep(0, K)
   shifts$relativeTimes <- check_dimensions.vector(K, shifts$relativeTimes, "shifts relative Times")
   return(shifts)
+}
+
+##
+#' @title Find a reasonable grid for alpha
+#' 
+#' @details Grid so that 
+#' ln(2)*quantile(d_ij)/factor_up_alpha < t_{1/2} < factor_down_alpha * ln(2) * h_tree
+#' Ensure that for alpha_min, it is almost a BM, and for alpha_max,
+#' almost all the tips are decorrelated.
+#'
+#' @param phy: phylogenetic tree
+#' @param alpha: a vector of values
+#' @param nbr_alpha: the number of elements in the grid
+#' @param factor_up_alpha: factor for up scalability
+#' @param factor_down_alpha: factor for down scalability
+#' @param quantile_low_distance: quantile for min distance
+#'     
+#' @return A grid of alpha
+#' 
+#' 25/08/15 - Multivariate
+##
+find_grid_alpha <- function(phy, alpha = NULL,
+                            nbr_alpha = 10,
+                            factor_up_alpha = 2, factor_down_alpha = 3,
+                            quantile_low_distance = 0.05,
+                            log_transform = TRUE, ...){
+  if (!is.null(alpha)) return(alpha)
+  dtips <- cophenetic(phy)
+  d_min <- quantile(dtips[dtips > 0], quantile_low_distance)
+  h_tree <- node.depth.edgelength(phy)[1]
+  alpha_min <- 1 / (factor_down_alpha * h_tree)
+  alpha_max <- factor_up_alpha / (2 * d_min)
+  if (log_transform){
+    return(c(0, exp(seq(log(alpha_min), log(alpha_max), length.out = nbr_alpha))))
+  }else {
+    return(c(0, seq(alpha_min, alpha_max, length.out = nbr_alpha)))
+  }
+}
+
+##
+#' @title Transform branch length for a re-scaled BM
+#'
+#' @param phylo: phylogenetic tree
+#' @param alpha: a vector of values
+#'     
+#' @return same phylogenetic tree, with transformed branch lengths
+#' 
+#' 25/08/15 - Multivariate
+##
+transform_branch_length <- function(phylo, alp){
+  if (alp == 0){
+    return(phylo)
+  } else {
+    nodes_depth <- node.depth.edgelength(phylo)
+    h_tree <- nodes_depth[1]
+    fun <- function(z){
+      return(1 / (2 * alp) * exp(- 2 * alp * h_tree) * (exp(2 * alp * nodes_depth[z[2]]) - exp(2 * alp * nodes_depth[z[1]])))
+    }
+    phylo$edge.length <- apply(phylo$edge, 1, fun)
+    return(phylo)
+  }
 }
