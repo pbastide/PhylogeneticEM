@@ -58,6 +58,10 @@ compute_M.BM <- function(phylo,
   ntaxa <- length(phylo$tip.label)
   p <- nrow(Y_data)
   params <- init.EM.default.BM(random.init = random.root, p = nrow(Y_data), ...)
+  ## Non-random root : diff_exp for children of root is just expectation 
+  if (!random.root){
+    conditional_law_X$expectations[, ntaxa + 1] <- rep(0, p)
+  }
   ## Segmentation
   diff_exp <- compute_diff_exp.BM(phylo = phylo, 
                                   conditional_law_X = conditional_law_X)
@@ -365,8 +369,8 @@ compute_sum_var_diff <- function(phylo, var_diff){
   if (p == 1){
     return(Matrix(sum(var_diff * 1/phylo$edge.length)))
   } else {
-    nEdges <- ncol(var_diff) / p
-    vv <- sweep(var_diff, MARGIN = 3, STATS = 1/rep(phylo$edge.length),
+    nEdges <- dim(var_diff)[3]
+    vv <- sweep(var_diff, MARGIN = 3, STATS = 1/phylo$edge.length,
                 FUN = '*', check.margin = FALSE)
     # vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
     # arr <- array(vv, dim = c(p, p, nEdges))
@@ -402,7 +406,9 @@ compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max, random.root, 
     root_edges <- which(phylo$edge[,1] == ntaxa + 1)
     diff_exp[, root_edges] <- diff_exp[, root_edges] - mu
   }
-  expp <- as(tcrossprod(sweep(diff_exp[, -edges_max, drop = F], 2, sqrt(1/phylo$edge.length[-edges_max]), '*')), "symmetricMatrix")
+  expp <- as(tcrossprod(sweep(diff_exp[, -edges_max, drop = F], 2,
+                              sqrt(1/phylo$edge.length[-edges_max]), '*')),
+             "symmetricMatrix")
   return(1/(ntaxa + nNodes - 1) * (varr + expp))
 }
 
