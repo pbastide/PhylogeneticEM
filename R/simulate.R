@@ -56,7 +56,7 @@
 ##
 
 simulate <- function(phylo,
-                     process = c("BM", "OU"),
+                     process = c("BM", "OU", "scOU"),
                      p = 1,
                      root.state = list(random = FALSE, 
                                        stationary.root = FALSE, 
@@ -71,6 +71,29 @@ simulate <- function(phylo,
                      variance = NULL,
                      optimal.value = NULL) {
   library(MASS)
+  ## Set branch stochastic process
+  process <- match.arg(process)
+  if (process == "scOU"){
+    # Use a OU (more efficient things can be done)
+    process <- "OU"
+    # Check selection strength
+     # scalar
+    if (is.null(dim(selection.strength))){
+      selection.strength <- selection.strength *  diag(rep(1, p))
+    }
+     # Matrix provided
+    zero_range <- function(x, tol = .Machine$double.eps ^ 0.5) {
+      if (length(x) == 1) return(TRUE)
+      x <- range(x) / mean(x)
+      isTRUE(all.equal(x[1], x[2], tolerance = tol))
+    }
+    if (!all(selection.strength[!diag(nrow(selection.strength))] == 0)){
+      stop("Process is said to be scalar OU, but selection strengh matrix is not diagonal.")
+    }
+    if (!zero_range(diag(selection.strength))){
+      stop("Process is said to be scalar OU, but selection strengh matrix is diagonal, but not scalar.")
+    }
+  }
   ## Check Dimensions
   parameters <- check_dimensions(p, root.state, shifts,
                                  variance, selection.strength, optimal.value)
@@ -79,6 +102,10 @@ simulate <- function(phylo,
   variance <- as(parameters$variance, "symmetricMatrix")
   selection.strength <- parameters$selection.strength
   optimal.value <- parameters$optimal.value
+  ## Optimal values
+  if (is.null(optimal.value) && process %in% c("OU", "scOU")){
+    stop("Optimal values for the OU simulation must be specified.")
+  }
   ## Reorder tree
   phy <- reorder(phylo, order = "cladewise")
   # Trace edges
@@ -109,6 +136,11 @@ simulate <- function(phylo,
                     p = p,
                     root.state = root.state,
                     optimal.value = optimal.value)
+  if (process %in% c("scOU", "OU")){
+    stationnary_variance <- compute_stationnary_variance(variance, selection.strength)
+  } else {
+    stationnary_variance <- NA
+  }
   ## Tree recursion
   paramSimu <- recursionDown(phy = phy,
                              params = paramSimu,
@@ -119,8 +151,7 @@ simulate <- function(phylo,
                              variance = variance,
                              eps = eps,
                              selection.strength = selection.strength,
-                             stationnary_variance = compute_stationnary_variance(variance,
-                                                                          selection.strength))
+                             stationnary_variance = stationnary_variance)
   attr(paramSimu, "ntaxa") <- ntaxa
   return(paramSimu)
 }
