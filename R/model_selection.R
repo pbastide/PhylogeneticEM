@@ -177,13 +177,21 @@ model_selection_BGH <- function(res, ntaxa, C.BGH, ...){
 }
 
 assign_results_model_selection <- function(res, pen, crit, name){
-  name <- paste0("_", name)
-  res$results_summary[[paste0("pen", name)]] <- pen
-  res$results_summary[[paste0("crit", name)]] <- crit
+  ## Fill result summary
+  res$results_summary[[paste0("pen_", name)]] <- pen
+  res$results_summary[[paste0("crit_", name)]] <- crit
   K_select <- res$results_summary$K_try[which.min(crit)]
-  res$results_summary[[paste0("K_select", name)]] <- K_select
-  res$K_select[[paste0("K_select", name)]] <- K_select
-  res[[paste0("params_select", name)]] <- res$params_estim[[paste(K_select)]]
-  if (attr(res[[paste0("params_select", name)]], "Neq") > 1) message(paste0("There are some equivalent solutions to the set of shifts selected by the ", name, " method."))
+  res$results_summary[[paste0("K_select_", name)]] <- K_select
+  res$K_select[[paste0("K_select_", name)]] <- K_select
+  ## Extract parameters and reconstructions
+  res[[paste0(name)]]$params_select <- res$params_estim[[paste(K_select)]]
+  res[[paste0(name)]]$Yhat <- res$Yhat[[paste(K_select)]]
+  res[[paste0(name)]]$Zhat <- res$Zhat[[paste(K_select)]]
+  res[[paste0(name)]]$Yvar <- res$Yvar[[paste(K_select)]]
+  res[[paste0(name)]]$Zvar <- res$Zvar[[paste(K_select)]]
+  if (attr(res[[paste0(name)]]$params_select, "Neq") > 1) {
+    message(paste0("There are some equivalent solutions to the set of shifts selected by the ",
+                   name, " method."))
+    }
   return(res)
 }
