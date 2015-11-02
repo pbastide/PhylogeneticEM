@@ -49,16 +49,67 @@ colnames(pca_corolla) <- c("species", "corolla.PC1", "corolla.PC2")
 dd <- merge(mean_linear_measures_length, pca_anthers, by = "species", all = TRUE) # Match: 4 !!
 traits_data <- merge(dd, pca_corolla, by = "species", all = TRUE)
 ## Drop NA (entire ligne is NA)
-traits_data <- traits_data[rowSums(is.na(traits_data)) < (dim(traits_data)[2]-1),]
-rownames(traits_data) <- traits_data[,1]
-percentage_missing <- sum(is.na(traits_data))/prod(dim(traits_data)) * 100
-## Check compatibility with the tree
-Overlap_traits <- name.check(tree, traits_data)
-subtree_traits <- drop.tip(tree, Overlap_traits$Tree.not.data)
-# Sort data in same order as tree
-match_traits <- match(subtree_traits$tip.label, rownames(traits_data))
-sortedData_traits <- traits_data[match_traits, -1]
-trait_matrix <- t(as.matrix(sortedData_traits))
+traits_data_all <- vector("list", 6)
+trait_matrix_all <- vector("list", 6)
+percentage_missing <- vector(length = 6)
+for (i in 1:6){ # i is the minimal number of non-NA trait
+  traits_data_all[[i]] <- traits_data[rowSums(is.na(traits_data)) < (dim(traits_data)[2] - i),]
+  rownames(traits_data_all[[i]]) <- traits_data_all[[i]][,1]
+  ## Check compatibility with the tree
+  Overlap_traits <- name.check(tree, traits_data_all[[i]])
+  subtree_traits <- drop.tip(tree, Overlap_traits$Tree.not.data)
+  # Sort data in same order as tree
+  match_traits <- match(subtree_traits$tip.label, rownames(traits_data_all[[i]]))
+  sortedData_traits <- traits_data_all[[i]][match_traits, -1]
+  trait_matrix_all[[i]] <- t(as.matrix(sortedData_traits))
+  percentage_missing[i] <- sum(is.na(trait_matrix_all[[i]]))/prod(dim(trait_matrix_all[[i]])) * 100
+}
+
+## Descriptive Statistics ########################################
+# Number of species
+plot(1:6, sapply(trait_matrix_all, function(z) dim(z)[2]),
+     xlab = "Min number of non-NA traits",
+     ylab = "Number of tips")
+
+# Percentage missing data
+plot(1:6, sapply(trait_matrix_all, function(z) sum(is.na(z))/prod(dim(z))),
+     xlab = "Min number of non-NA traits",
+     ylab = "Percentage of missing data")
+
+# Summary
+trait_matrix <- trait_matrix_all[[1]]
+summary(t(trait_matrix))
+
+# Zero values for lengths ?
+sum(trait_matrix[1, ] == 0, na.rm = TRUE)
+sum(trait_matrix[2, ] == 0, na.rm = TRUE)
+# Replace 0 with small value
+corrola_lg <- trait_matrix[1, ]
+nbrzeros <- sum(trait_matrix[1, ] == 0, na.rm = TRUE)
+histogram <- hist(corrola_lg, 1000, plot = FALSE)
+mean <- min(corrola_lg[corrola_lg > 0], na.rm = TRUE) / 10
+sd <- mean / 10
+corrola_lg[corrola_lg == 0] <- rnorm(nbrzeros, mean, sd)
+  
+# Histograms non transform
+par(mfrow = c(2, 3))
+for (i in 1:6){
+  hist(trait_matrix[i, ], 100, main = rownames(trait_matrix)[i])
+}
+# Histograms log transform
+par(mfrow = c(2, 3))
+for (i in 1:6){
+  hist(log(trait_matrix[i, ]), 100, main = paste0("log(", rownames(trait_matrix)[i], ")"))
+}
+# Histograms log transform only sizes
+par(mfrow = c(2, 3))
+for (i in 1:2){
+  hist(log(trait_matrix[i, ]), 100, main = paste0("log(", rownames(trait_matrix)[i], ")"))
+}
+for (i in 3:6){
+  hist(trait_matrix[i, ], 100, main = rownames(trait_matrix)[i])
+}
+par(mfrow = 1)
 
 ## EM ############################################################
 set.seed(17920920)
