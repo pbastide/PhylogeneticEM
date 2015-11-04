@@ -1360,8 +1360,11 @@ alpha_grid <- find_grid_alpha(tree,
                               quantile_low_distance = 0.001,
                               log_transform = TRUE)
 res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
-               random.root = FALSE, alpha = alpha_grid, save_step = FALSE)
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300.RData")
+               random.root = FALSE, alpha = alpha_grid, save_step = FALSE,
+               Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
+                                             value.root = 10^(-2),
+                                             log_likelihood = 10^(-2)))
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_bis.RData")
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
