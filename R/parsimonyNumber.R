@@ -732,13 +732,15 @@ equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
 ##
 equivalent_shifts_values <- function(phylo, 
                                      shifts, beta_0, 
-                                     eq_shifts_edges = equivalent_shifts_edges(phylo, shifts$edges), 
-                                     T_tree_ac ) {
+                                     eq_shifts_edges = equivalent_shifts_edges(phylo,
+                                                                               shifts$edges), 
+                                     T_tree_ac) {
   ## corresponding values at tips
   delta <- shifts.list_to_vector(phylo, shifts)
   m_Y <- T_tree_ac %*% delta + beta_0
   ## find the right coefficients for each combination of edges (! stationnary case)
-  shifts_and_beta <- apply(eq_shifts_edges, 2, find_shift_values, T_tree_ac = T_tree_ac, m_Y = m_Y)
+  shifts_and_beta <- apply(eq_shifts_edges, 2,
+                           find_shift_values, T_tree_ac = T_tree_ac, m_Y = m_Y)
   ## exclude NAs column (when qr.solve failed)
   shifts_and_beta <- t(na.omit(t(shifts_and_beta)))
   return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE],
@@ -766,7 +768,7 @@ equivalent_shifts_values <- function(phylo,
 #' values of the shifts.
 ##
 find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
-  mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[,shifts_edges]) # stationnary case assumption used here
+  mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[, shifts_edges]) # stationnary case assumption used here
   coefs <- try(qr.solve_exact(mat, m_Y), silent = TRUE)
   if (inherits(coefs, "try-error")){
     warning("Had a problem solving exactly the linear system.")
@@ -902,4 +904,42 @@ plot_equivalent_shifts.actual <- function(phylo,
     }
   }
   close.screen(all.screens = TRUE)
+}
+
+
+##
+#' @title Transform the shift values
+#'
+#' @description
+#' \code{transform_shifts_values} takes the shifts generating a given expectation structure
+#' given an OU with alpha = from, and gives back the equivelent shifts values that produce the
+#' same structure with an OU with alpha = to. If from or to is 0, then the process is supposed
+#' to be a BM.
+#' 
+#' 
+#' @param shifts the shifts on the original process
+#' @param from alpha value of the original process. If equals 0, then the original process is 
+#' taken to be a BM.
+#' @param to alpha value of the destination process
+#' @param phylo the phlogenetic tree (un-scaled)
+#' 
+##
+
+transform_shifts_values <- function(shifts, from = 0, to, phylo){
+  if (!is.ultrametric(phylo)) stop("The processes are not equivelent on a non-ultrametric tree.")
+  depths <- node.depth.edgelength(phylo)
+  h_tree <- depths[1]
+  parents <- phylo$edge[shifts$edges, 1]
+  times_parents <- depths[parents]
+  if (from == 0 && to == 0){
+    actualizations <- rep(1, length(times_parents))
+  } else if (from == 0){
+    actualizations <- 1 / (1 - exp(- to * (h_tree - times_parents)))
+  } else if (to == 0){
+    actualizations <- (1 - exp(- from * (h_tree - times_parents)))
+  } else {
+    actualizations <- (1 - exp(- from * (h_tree - times_parents))) / (1 - exp(- to * (h_tree - times_parents)))
+  }
+  shifts$values <- sweep(shifts$values, 2, actualizations, '*')
+  return(shifts)
 }
