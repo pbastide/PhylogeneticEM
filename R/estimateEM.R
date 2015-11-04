@@ -62,7 +62,8 @@ estimateEM <- function(phylo,
                                   exp.root = 10^(-3), 
                                   var.root = 10^(-3),
                                   selection.strength = 10^(-3),
-                                  normalized_half_life = 10^(-3)),  
+                                  normalized_half_life = 10^(-3),
+                                  log_likelihood = 10^(-3)),  
                        Nbr_It_Max = 500, 
                        method.variance = c("simple"), 
                        method.init = c("default", "lasso"),
@@ -106,7 +107,8 @@ estimateEM <- function(phylo,
                        h_tree = NULL,
                        tol_half_life = TRUE,
                        warning_several_solutions = TRUE,
-                       convergence_mode = c("relative", "absolute"), ...){
+                       convergence_mode = c("relative", "absolute"),
+                       check_convergence_likelihood = TRUE, ...){
   
   ntaxa <- length(phylo$tip.label)
   ## Check that the vector of data is in the correct order and dimensions ################
@@ -279,28 +281,37 @@ estimateEM <- function(phylo,
   params_history <- vector("list")#, Nbr_It_Max)
   #   CLL_history <- NULL
   number_new_shifts <- NULL
+  CV_log_lik <- TRUE
   while ( Nbr_It == 0 || # Initialisation
-            ( !shutoff.EM(params_old, params, tol, has_converged, h_tree) && # Shutoff
+            ( !(CV_log_lik && # CV of log-Likelihood ?
+              shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
                 is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
                 Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
-    ## Log likelihood
+    ## Log likelihood ################
+    # Check convergence of loglik ?
+    if (check_convergence_likelihood && Nbr_It > 1){
+      log_likelihood_old_old <- log_likelihood_old
+    }
     moments <- compute_mean_variance(phylo = phylo,
                                      times_shared = times_shared,
                                      distances_phylo = distances_phylo,
                                      process = process,
                                      params_old = params_old,
                                      masque_data = masque_data)
-    log_likelihood <- compute_log_likelihood(phylo = phylo,
-                                             Y_data_vec = Y_data_vec_known,
-                                             sim = moments$sim,
-                                             Sigma = moments$Sigma,
-                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                             missing = missing, 
-                                             masque_data = masque_data)
-    attr(params_old, "log_likelihood") <- log_likelihood
+    log_likelihood_old <- compute_log_likelihood(phylo = phylo,
+                                                 Y_data_vec = Y_data_vec_known,
+                                                 sim = moments$sim,
+                                                 Sigma = moments$Sigma,
+                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                 missing = missing, 
+                                                 masque_data = masque_data)
+    attr(params_old, "log_likelihood") <- log_likelihood_old
+    if (check_convergence_likelihood && Nbr_It > 1){
+      CV_log_lik <- has_converged_absolute(log_likelihood_old_old, log_likelihood_old, tol$log_likelihood)
+    }
     ## Compute Mahalanobis norm between data and mean at tips
     maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
                                                    Y_data_vec = Y_data_vec_known,
@@ -517,9 +528,11 @@ estimateEM <- function(phylo,
 ##
 format_output <- function(results_estim_EM, phylo, time = NA){
   params <- results_estim_EM$params
+  params_raw <- results_estim_EM$params_raw
   params_init <- results_estim_EM$params_history['0']$'0'
   X <- NULL
   X$params <- params
+  X$params_raw <- params_raw
   X$params_init <- params_init
   X$alpha_0 <- results_estim_EM$alpha_0
   if (!is.null(X$alpha_0)) names(X$alpha_0) <- paste0("alpha_0_", names(X$alpha_0))
@@ -593,6 +606,7 @@ format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
   alpha <- paste0("alpha_", alpha)
   out[[alpha]]$results_summary <- df
   out[[alpha]]$params_estim <- dd[, "params"]
+  out[[alpha]]$params_raw <- dd[, "params_raw"]
   out[[alpha]]$params_init_estim <- dd[, "params_init"]
   out[[alpha]]$alpha_0 <- dd[,"alpha_0" == colnames(dd)]
   out[[alpha]]$Zhat <- dd[, "Zhat"]
@@ -998,13 +1012,13 @@ estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
                                                    alpha_known = alpha_known,
                                                    known.selection.strength = alpha,
                                                    init.selection.strength = prev$alpha_estim,
-                                                   var.init.root = prev$params$root.state$var.root,
-                                                   exp.root.init = prev$params$root.state$exp.root,
-                                                   variance.init = prev$params$variance,
-                                                   value.root.init = prev$params$root.state$value.root,
-                                                   edges.init = prev$params$shifts$edges,
-                                                   values.init = prev$params$shifts$values,
-                                                   #relativeTimes.init = prev$params$shifts$relativeTimes,
+                                                   var.init.root = prev$params_raw$root.state$var.root,
+                                                   exp.root.init = prev$params_raw$root.state$exp.root,
+                                                   variance.init = prev$params_raw$variance,
+                                                   value.root.init = prev$params_raw$root.state$value.root,
+                                                   edges.init = prev$params_raw$shifts$edges,
+                                                   values.init = prev$params_raw$shifts$values,
+                                                   #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
                                                    methods.segmentation = methods.segmentation,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
