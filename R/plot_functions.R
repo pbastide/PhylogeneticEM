@@ -197,7 +197,9 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      color_shifts_regimes = FALSE,
                                      shifts_regimes = NULL,
                                      plot_ancestral_states = FALSE,
-                                     ancestral_states = NULL, ...){
+                                     ancestral_states = NULL,
+                                     imposed.scale.nodes = ancestral_states,
+                                     ...){
   ntaxa <- length(phylo$tip.label)
 #   if (normalize){
 #     norm <- max(abs(Y.state))
@@ -233,9 +235,11 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   ## Plot ancestral states ?
   if (plot_ancestral_states){
     library(phytools)
+    library(graphics)
     if (is.null(ancestral_states)){
       warning("Plot option clash: the ancestral states could not be plotted (please provide values).")
     } else {
+      imp.scale.nodes  <- range(c(imposed.scale, imposed.scale.nodes), na.rm = TRUE)
       map2color <- function(x, pal, limits = NULL) {
         if (is.null(limits)) {
           limits = range(x)
@@ -245,9 +249,10 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                          all.inside = TRUE)]
       }
       pal <- rev(palette(rainbow(1001, start = 0, end = 0.7)))
-      col_ancestral <- map2color(ancestral_states, pal, limits = NULL)
+      pal <- rev(palette(rainbow(1001, start = 0, end = 0.7)))
+      col_ancestral <- map2color(ancestral_states, pal = pal, limits = imp.scale.nodes)
       # If plotting ancestral, colors of the tips values to match colors of the palette
-      if (!is.null(Y.state)) color_characters <- map2color(Y.state, pal, limits = NULL)
+      if (!is.null(Y.state)) color_characters <- map2color(Y.state, pal, limits = imp.scale.nodes)
     }
   }
   ## Plot
@@ -306,7 +311,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     nodelabels(pch = 19, cex = 2, col = col_ancestral)
     leg <- 0.5 * node.depth.edgelength(phylo)[1]
     add.color.bar(leg, pal, title = "Trait Value",
-                  lims = range(ancestral_states),
+                  lims = imp.scale.nodes,
                   digits = 2, prompt = FALSE,
                   lwd = 4, outline = TRUE,
                   x = 0,
