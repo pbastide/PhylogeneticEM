@@ -152,7 +152,8 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
 #' 
 ##
 extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
-                                        masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct, "p_dim")), rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) * attr(struct, "p_dim")))){
+                                        masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct, "p_dim")),
+                                                        rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) * attr(struct, "p_dim")))){
   ntaxa <- attr(struct, "ntaxa")
   p <- attr(struct, "p_dim")
   if (what=="YY") {
@@ -298,30 +299,91 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
   return(varr)
 }
 
+##
+#' @title Matrix of tree-induced correlations for the BM
+#'
+#' @description
+#' \code{compute_tree_correlations_matrix.BM} returns times_shared its provided argument.
+#'
+#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#'  \code{compute_times_ca}
+#' 
+#' @return times_shared 
+##
+compute_tree_correlations_matrix.BM <- function(times_shared, params_old, ...) {
+  res <- times_shared
+  attr(res, "p_dim") <- nrow(params_old$shifts$values)
+  attr(res, "ntaxa") <- attr(params_old, "ntaxa")
+  return(times_shared)
+}
+
+##
+#' @title Complete variance covariance matrix for scOU
+#'
+#' @description
+#' \code{compute_variance_covariance.scOU} computes the (n+m)*p squared variance covariance
+#' matrix of vec(X).
+#'
+#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#'  \code{compute_times_ca}
+#'  @param distances_phylo (matrix) : phylogenetics distance, result of function 
+#' \code{compute_dist_phy}
+#'  @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return matrix of variance covariance for the scOU
+#' 
+##
 compute_variance_covariance.scOU <- function(times_shared, distances_phylo, params_old, ...) {
   p <- nrow(params_old$shifts$values)
   if (is.null(p)) p <- 1
   alpha <- as.vector(params_old$selection.strength)
   sigma2 <- params_old$variance
-  Var <-  kronecker((1 - exp(- 2 * alpha * times_shared)) * exp(- alpha * distances_phylo),
-                                                               sigma2 / (2 * alpha))
-  if (!params_old$root.state$random) {
-    varr <- Var
-  } else if (params_old$root.state$stationary.root) {
-    varr <- kronecker(exp(- alpha * distances_phylo),
-                      sigma2 / (2 * alpha))
-  } else {
+  S <- compute_tree_correlations_matrix.scOU(times_shared, distances_phylo, params_old, ...)
+  varr <- kronecker(S, sigma2 / (2 * alpha))
+  if (params_old$root.state$random && !params_old$root.state$stationary.root) {
     times_nodes <- list(diag(times_shared))
     sum_times <- do.call('rbind',
                          rep(times_nodes, length(diag(times_shared))))
     sum_times <- sum_times + do.call('cbind',
                                      rep(times_nodes, length(diag(times_shared))))
     gamma2 <- params_old$root.state$var.root
-    varr <- kronecker(exp(- alpha * sum_times), gamma2) + Var
+    varr <- kronecker(exp(- alpha * sum_times), gamma2) + varr
   }
   attr(varr, "p_dim") <- p
   attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
   return(varr)
+}
+
+##
+#' @title Matrix of tree-induced correlations for the scOU
+#'
+#' @description
+#' \code{compute_tree_correlations_matrix.scOU} computes the (n+m)x(m+n) matrix of correlations
+#' induced by the tree. It takes two cases in consideration: root fixed, or root in stationnary
+#' state.
+#'
+#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#'  \code{compute_times_ca}
+#'  @param distances_phylo (matrix) : phylogenetics distance, result of function 
+#' \code{compute_dist_phy}
+#'  @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return matrix of variance covariance for the scOU
+#' 
+##
+compute_tree_correlations_matrix.scOU <- function(times_shared, distances_phylo, params_old, ...) {
+  p <- nrow(params_old$shifts$values)
+  if (is.null(p)) p <- 1
+  alpha <- as.vector(params_old$selection.strength)
+  sigma2 <- params_old$variance
+  if (params_old$root.state$stationary.root) {
+    res <- exp(- alpha * distances_phylo)
+  } else {
+    res <-  (1 - exp(- 2 * alpha * times_shared)) * exp(- alpha * distances_phylo)
+  }
+  attr(res, "p_dim") <- p
+  attr(res, "ntaxa") <- attr(params_old, "ntaxa")
+  return(res)
 }
 
 ##
