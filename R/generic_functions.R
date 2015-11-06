@@ -438,7 +438,7 @@ compute_stationnary_variance <- function(variance, selection.strength){
     variance_vec <- as.vector(variance)
     kro_sum_A <- kronecker_sum(selection.strength, selection.strength)
     kro_sum_A_inv <- solve(kro_sum_A)
-    root_var_vec <- kro_sum_A_inv%*%variance_vec
+    root_var_vec <- kro_sum_A_inv %*% variance_vec
     gamma <- matrix(root_var_vec, dim(variance))
     if (!isSymmetric(gamma)) stop("Error in computation of stationnary variance: matrix computed was not symmetric.")
     return(forceSymmetric(gamma))

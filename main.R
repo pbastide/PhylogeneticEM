@@ -1237,7 +1237,7 @@ for (l in 1:p){
   plot.data.process.actual(Y.state = Y_data[l, ],
                            phylo = tree, 
                            params = params,
-                           imposed.scale = c(min(Y_data), max(Y_data)),
+                           # imposed.scale = c(min(Y_data), max(Y_data)),
                            adj.root = 0,
                            automatic_colors = TRUE,
                            margin_plot = NULL,
@@ -1245,9 +1245,9 @@ for (l in 1:p){
                            bg_shifts = "azure2",
                            bg_beta_0 = "azure2",
                            plot_ancestral_states = TRUE,
-                           ancestral_states = res$alpha_max$Djump_BM1$Zhat[l,],
-                           imposed.scale.node = c(min(res$alpha_max$Djump_BM1$Zhat),
-                                                  max(res$alpha_max$Djump_BM1$Zhat)))
+                           ancestral_states = res$alpha_max$DDSE_BM1$Zvar[l, l, ])
+                           # imposed.scale.node = c(min(res$alpha_max$Djump_BM1$Zhat),
+                                                  # max(res$alpha_max$Djump_BM1$Zhat)))
 }
 
 ## Mising data
@@ -1386,7 +1386,8 @@ rres <- res[-c(1, 2, 3, 15)]
 sapply(rres, function(z) z$results_summary$log_likelihood)
 
 ## Shifts values of the solution with the true alpha ?
-transform_shifts_values(res$alpha_max$BGH$params_select$shifts, res$alpha_max$BGH$params_select$selection.strength, alpha, tree)
+transform_shifts_values(res$alpha_max$BGH$params_select$shifts,
+                        res$alpha_max$BGH$params_select$selection.strength, alpha, tree)
 
 ## Log likelihood of the true parameters
 moments <- compute_mean_variance.simple(phylo = tree,
@@ -1456,6 +1457,115 @@ sapply(results_estim_EM$params_history, function(z) z$shifts$edges)
 sapply(results_estim_EM$params_history, function(z) z$shifts$values)
 # Right shifts and wrong values -> converges to wrong solution
 # Right shifts and right values -> converges right solution
+
+#######################################
+## Test of Rphylopars
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 64
+tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                        lambda = 0.1, mu = 0,
+                        age = 1, mrca = TRUE)[[1]]
+plot(tree); edgelabels()
+
+## Parameters
+p <- 3
+variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+
+root.state <- list(random = FALSE,
+                   value.root = c(0, 0, 1),
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts = list(edges = c(7, 92),
+              values=cbind(c(5, -5, 0),
+                           c(2, 2, 2)),
+              relativeTimes = 0)
+
+optimal.value <- c(0, 0, 1)
+
+h_tree <- max(diag(node.depth.edgelength(tree))[1:ntaxa])
+alpha <- log(2) / (0.2 * h_tree)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state,
+                   selection.strength = alpha,
+                   optimal.value = optimal.value)
+
+## Simulate Process
+set.seed(1344)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "scOU",
+               variance = variance,
+               shifts = shifts,
+               selection.strength = alpha,
+               optimal.value = optimal.value)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_states <- extract.simulate(X1,"nodes","states")
+
+## Mising data
+Y_data_miss <- Y_data
+set.seed(1122)
+nMiss <- floor(ntaxa * p / 100) * 20
+miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+chars <- (miss - 1) %% p + 1
+tips <- (miss - 1) %/% p + 1
+# chars <- sample(1:p, nMiss, replace = TRUE)
+# tips <- sample(1:ntaxa, nMiss, replace = TRUE)
+for (i in 1:nMiss){
+  Y_data_miss[chars[i], tips[i]] <- NA
+}
+
+## Rphylopars
+trait_data <- as.data.frame(t(Y_data_miss))
+trait_data[ , "species"] <- tree$tip.label
+fit_phylopars <- phylopars(trait_data,
+                           tree,
+                           model = "OUfixedRoot",
+                           pheno_error = FALSE,
+                           phylo_correlated = TRUE,
+                           REML = TRUE,
+                           optim_limit = 50,
+                           BM_first = TRUE,
+                           usezscores = TRUE)
+
+variance_estim_phylopars <- 2 * fit_phylopars$model * fit_phylopars$pars$Phylogenetic
+
+data_phylopars <- phylopars.predict(fit_phylopars)
+
+## try other simulation function
+library(mvMORPH)
+sim_mvmorph <- mvSIM(tree,
+                     nsim = 1,
+                     model = "OU1",
+                     param = list(mu = root.state$value.root,
+                                  sigma = variance,
+                                  alpha = diag(rep(alpha, p)),
+                                  ntraits = p,
+                                  root = FALSE))
+
+fit_mvmorph <- mvOU(tree, sim_mvmorph, model="OU1")
+
+trait_data <- as.data.frame(sim_mvmorph)
+trait_data[ , "species"] <- rownames(sim_mvmorph)
+fit_phylopars <- phylopars(trait_data,
+                           tree,
+                           model = "OUfixedRoot",
+                           pheno_error = FALSE,
+                           phylo_correlated = TRUE,
+                           REML = FALSE,
+                           optim_limit = 50,
+                           BM_first = TRUE,
+                           usezscores = TRUE)
+
+2 * fit_phylopars$model * fit_phylopars$pars$Phylogenetic
+
+data_phylopars <- phylopars.predict(fit_phylopars)
 
 #######################################
 ## Test of EM - BM - Multivariate - Random Root
