@@ -54,25 +54,28 @@ replaceInList <- function (x, FUN, ...) {
 }
 
 ##
-# correspondanceEdges (edges,from,to)
-# PARAMETERS:
-# @edges (vector) Vector of index of edges in the tree "from"
-# @from (tree) Initial tree
-# @to (tree) Destination tree, should be the same as tree "from", but with a different parametrization
-# RETURNS:
-# (vector) Vector of index of edges in the tree "to"
-# DEPENDENCIES:
-# none
-# PURPOSE:
-# If the parametrization of the tree is changed (when put to "cladewise"), make the same changes on the edges where the shifts occur.
-# NOTES:
-# none
-# REVISIONS:
-# 20/05/14 - Initial release
-# 26/05/14 - Simplification using match
+#' @title Correspondence between edges numbers
+#'
+#' @description
+#' \code{correspondenceEdges} takes edges numbers on an input tree, and gives back their
+#' corresponding numbers on the output tree.
+#'
+#' @param edges vector of index of edges in the tree "from"
+#' @param from initial input tree
+#' @param to aimed output tree
+#'
+#' @return vector of index of edges in the tree "to"
+#'
+#'26/05/14
 ##
-correspondanceEdges <- function(edges,from,to){
-  mm <- match(from$edge[,2],to$edge[,2])
+correspondenceEdges <- function(edges, from, to){
+  mm <- match(from$edge[, 2], to$edge[, 2])
+  newEdges <- mm[edges]
+  return(newEdges)
+}
+
+correspondanceEdges <- function(edges, from, to){
+  mm <- match(from$edge[, 2], to$edge[, 2])
   newEdges <- mm[edges]
   return(newEdges)
 }
