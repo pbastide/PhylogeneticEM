@@ -630,6 +630,24 @@ plot.data.process.actual(Y.state = Y_data,
                          plot_ancestral_states = TRUE,
                          ancestral_states = res$alpha_max$BGH$Zhat)
 
+## Test of tree transformation
+#tree <- reorder(tree, "pruningwise")
+tree_trans <- lapply(alpha_grid, function(z) transform_branch_length(tree, z))
+
+tree_trans_phylolm <- lapply(alpha_grid,
+                             function(z) transf.branch.lengths(tree,
+                                                               model = "OUfixedRoot",
+                                                               parameters = list(alpha = z)))
+
+cor_edges <- correspondenceEdges(1:length(tree$edge.length), tree, reorder(tree, "pruningwise"))
+
+eq <- logical(length(alpha_grid) - 1)
+for (i in 2:length(alpha_grid)){
+  eq[i - 1] <- all.equal(unname(tree_trans[[i]]$edge.length),
+                         unname(1 / (2 * alpha_grid[i]) * tree_trans_phylolm[[i]]$tree$edge.length[cor_edges]))
+}
+eq
+
 ############################################################################################
 ## Analysis of crash - decreasing LL
 ############################################################################################
