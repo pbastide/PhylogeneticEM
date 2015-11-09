@@ -284,7 +284,7 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
     varr <- as.vector(params_old$variance) * times_shared
     if (params_old$root.state$random) {
       J <- matrix(1, nrow = dim(times_shared)[1], ncol = dim(times_shared)[2])
-      varr <- varr + params_old$root.state$var.root * J
+      varr <- varr + as.vector(params_old$root.state$var.root) * J
     }
   } else {
     varr <- kronecker(times_shared, params_old$variance)

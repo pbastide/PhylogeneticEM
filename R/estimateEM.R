@@ -123,7 +123,8 @@ estimateEM <- function(phylo,
   ## Choose process #########################################
   process <- match.arg(process)
   original_process <- process
-  temp <- choose_process_EM(process, p, random.root, stationnary.root, alpha_known)
+  temp <- choose_process_EM(process, p, random.root, stationnary.root, alpha_known,
+                            known.selection.strength, eps)
   process <- temp$process
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
@@ -658,7 +659,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     check.tips.names = FALSE,
                     progress.bar = TRUE,
                     estimates = NULL,
-                    save_step = TRUE,
+                    save_step = FALSE,
                     ...){
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
@@ -1272,7 +1273,8 @@ check_data <- function(phylo, Y_data, check.tips.names){
   return(as.matrix(Y_data))
 }
 
-choose_process_EM <- function(process, p, random.root, stationnary.root, alpha_known){
+choose_process_EM <- function(process, p, random.root, stationnary.root, alpha_known,
+                              known.selection.strength = 1, eps = 10^(-3)){
   ## Reduce Process
   transform_scOU <- FALSE # Should we re-transform back the parameters to get an OU ?
   rescale_tree <- FALSE # Should we re-scale the tree ?

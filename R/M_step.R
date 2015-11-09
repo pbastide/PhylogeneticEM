@@ -250,6 +250,18 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   params$root.state$exp.root <- segs[[best.method.seg]]$beta_0
   params$optimal.value <- params$root.state$exp.root
   attr(params, "segmentation_algorithm_used") <- names(best.method.seg)
+  ## Dimensions
+  pp <- check_dimensions(1,
+                         params$root.state,
+                         params$shifts,
+                         params$variance,
+                         params$selection.strength,
+                         params$optimal.value)
+  params$root.state <- pp$root.state
+  params$shifts <- pp$shifts
+  params$variance <- pp$variance
+  params$selection.strength <- pp$selection.strength
+  params$optimal.value <- pp$optimal.value
   return(params)
 }
 
