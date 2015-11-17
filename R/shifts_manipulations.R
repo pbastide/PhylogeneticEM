@@ -301,7 +301,7 @@ shifts.matrix_to_list <- function(delta){
   edsh <- which(colSums(abs(delta)) != 0)
   if (length(edsh) > 0){
     shifts <- list(edges = edsh,
-                   values = delta[, edsh],
+                   values = delta[, edsh, drop = FALSE],
                    relativeTimes = rep(0, length(edsh)))
   } else {
     shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
@@ -744,4 +744,36 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
   s <- c(s1, s2)
   modes <- rbinom(K, 1, 0.5) + 1
   return(rnorm(K, mean = m[modes], sd = sqrt(s[modes])))
+}
+
+
+##
+#' @title Simmap format mapping from list of edges
+#'
+#' @description
+#' \code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a simmap
+#' formated tree, mapped with corresponding regimes.
+#' 
+#' @details
+#' Ancestral state is always 0, and other states are consecutive integers.
+#'
+#' @param tree : imput tree
+#' @param shifts_edges : shifts positions on the edges
+#' 
+#' @return tree a simmap object
+#'
+##
+shifts_to_simmap <- function(tree, shifts_edges){
+  ## Reorder tree (older shifts first)
+  phy <- reorder(tree, order = "cladewise")
+  # Trace edges
+  shifts_ordered <- correspondanceEdges(edges = shifts_edges,
+                                              from = tree, to = phy)
+  ## Find the parent nodes of each shift
+  daughters <- phy$edge[shifts_ordered, 2]
+  for (i in 1:length(daughters)){
+    tree <- paintSubTree(tree, daughters[i], state = i,
+                         anc.state="0", stem = TRUE)
+  }
+  return(tree)
 }
