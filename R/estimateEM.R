@@ -179,10 +179,10 @@ estimateEM <- function(phylo,
   ########## Initialization Method ############################################
   method.init  <- match.arg(method.init)
   # Lasso initialization for OU only works for stationnary root
-  if (!stationnary.root && (method.init == "lasso")){
-    method.init <- "default"
-    warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
-  }
+#   if (!stationnary.root && (method.init == "lasso")){
+#     method.init <- "default"
+#     warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+#   }
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
                      lasso = init.EM.lasso)
@@ -259,6 +259,8 @@ estimateEM <- function(phylo,
                          var.root.init = init.var.root,
                          T_tree = T_tree,
                          subtree.list = subtree.list,
+                         missing = missing,
+                         variance.init = variance.init,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 
