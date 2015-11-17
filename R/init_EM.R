@@ -1159,3 +1159,55 @@ estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
               gamma_0 = gamma_0))
 }
 
+
+##
+#' @title Initial imputation of missing data for lasso
+#'
+#' @description
+#' \code{impute.data.Rphylopars} uses function \code{phylopars} from package \code{Rphylopars}
+#' to impute missing data.
+#' 
+#' @details 
+#' This function assume that there are no shifts on the tree. It is only a first approximation
+#' for initialization purposes.
+#'
+#' @param phylo a phylogenetic tree
+#' @param Y_data data at the tips.
+#' @param process the stochastic process
+#' @param random.init wether root is random or fixed.
+#' 
+#' @return Y_data_imp the imputed data using Rphylopars
+##
+
+impute.data.Rphylopars <- function(phylo, Y_data, process, random.init){
+  process_Rphylopars <- choose_process_Rphyopars(process, random.init)
+  library(Rphylopars)
+  trait_data <- as.data.frame(t(Y_data))
+  trait_data[ , "species"] <- phylo$tip.label
+  fit_phylopars <- phylopars(trait_data,
+                             phylo,
+                             model = process_Rphylopars,
+                             pheno_error = FALSE,
+                             phylo_correlated = TRUE,
+                             REML = TRUE,
+                             optim_limit = 50,
+                             BM_first = TRUE,
+                             usezscores = TRUE)
+  data_phylopars <- phylopars.predict(fit_phylopars, nodes = NULL)
+  Y_data_imp <- t(unname(as.matrix(data_phylopars$predicted)))
+  return(Y_data_imp)
+}
+
+choose_process_Rphyopars <- function(process, random.init){
+  if (process == "BM"){
+    return(process)
+  } else if (process == "OU"){
+    stop("Rphylopars imputation only works for scalar OU. Could not do the Lasso initialization.")
+  } else if (process == "scOU"){
+    if (random.root){
+      return("OUrandomRoot")
+    } else {
+      return("OUfixedRoot")
+    }
+  }
+}

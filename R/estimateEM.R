@@ -93,6 +93,7 @@ estimateEM <- function(phylo,
                                        var.root = 10^(5),
                                        selection.strength = 10^(5)),
                        var.init.root = diag(1, nrow(Y_data)),
+                       variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
                        methods.segmentation = c("max_costs_0", 
                                                 "lasso", 
                                                 "same_shifts", 
@@ -228,7 +229,12 @@ estimateEM <- function(phylo,
                                                   method.init.alpha.estimation = method.init.alpha.estimation,
                                                   tol = tol,
                                                   h_tree = h_tree,
-                                                  random.root = random.root)
+                                                  random.root = random.root,
+                                                  T_tree = T_tree,
+                                                  h_tree = h_tree,
+                                                  subtree.list = subtree.list,
+                                                  missing = missing,
+                                                  ...)
   init.var.root <- init.a.g$gamma_0 # mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
   if (process == "OU"){
     if(!alpha_known) {
@@ -242,6 +248,21 @@ estimateEM <- function(phylo,
   }
   if (process == "BM"){
     init.selection.strength <- 0
+  }
+  
+  ## Init of Rate matrix for BM
+  if (process == "BM"){
+    variance.init <- init.variance.BM.estimation(phylo = phylo, 
+                                                 Y_data = Y_data, 
+                                                 nbr_of_shifts = nbr_of_shifts, 
+                                                 times_shared = times_shared,
+                                                 distances_phylo = distances_phylo, 
+                                                 h_tree = h_tree,
+                                                 random.root = random.root,
+                                                 T_tree = T_tree,
+                                                 subtree.list = subtree.list,
+                                                 missing = missing,
+                                                 ...)
   }
 
   ########## Initialization of all parameters #################################
