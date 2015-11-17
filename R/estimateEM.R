@@ -275,7 +275,7 @@ estimateEM <- function(phylo,
   params_history <- vector("list")#, Nbr_It_Max)
   #   CLL_history <- NULL
   number_new_shifts <- NULL
-  CV_log_lik <- TRUE
+  CV_log_lik <- FALSE
   while ( Nbr_It == 0 || # Initialisation
             ( !(CV_log_lik && # CV of log-Likelihood ?
               shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
