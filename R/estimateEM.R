@@ -93,6 +93,7 @@ estimateEM <- function(phylo,
                                        var.root = 10^(5),
                                        selection.strength = 10^(5)),
                        var.init.root = diag(1, nrow(Y_data)),
+                       variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
                        methods.segmentation = c("max_costs_0", 
                                                 "lasso", 
                                                 "same_shifts", 
@@ -116,11 +117,11 @@ estimateEM <- function(phylo,
   ## Find dimension
   p <- nrow(Y_data)
   
-  ## Check consistancy #########################################
+  ########## Check consistancy ################################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
   
-  ## Choose process #########################################
+  ########## Choose process ###################################################
   process <- match.arg(process)
   original_process <- process
   temp <- choose_process_EM(process, p, random.root, stationnary.root, alpha_known,
@@ -129,7 +130,7 @@ estimateEM <- function(phylo,
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
   
-  ## Choose functions ############################################
+  ########## Choose functions #################################################
   # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
@@ -153,7 +154,7 @@ estimateEM <- function(phylo,
 #                                                    BM = conditional_expectation_log_likelihood.BM,
 #                                                    OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))
 
-  ## init alpha #########################################
+  ########## init alpha #######################################################
   method.init.alpha  <- match.arg(method.init.alpha)
   if (!stationnary.root && (method.init.alpha == "estimation")){
     method.init.alpha <- "default"
@@ -165,7 +166,8 @@ estimateEM <- function(phylo,
   init.alpha.gamma<- switch(process, 
                             BM = init.alpha.gamma.BM,
                             OU = init.alpha.gamma.OU)
-  ## Choose method
+  
+  ########## Moments computation method #######################################
   method.variance  <- match.arg(method.variance)
   compute_E  <- switch(method.variance, 
                        simple = compute_E.simple)
@@ -176,13 +178,13 @@ estimateEM <- function(phylo,
   compute_mahalanobis_distance  <- switch(method.variance, 
                                           simple = compute_mahalanobis_distance.simple)
 
-  ## Iniialization Method #########################################
+  ########## Initialization Method ############################################
   method.init  <- match.arg(method.init)
   # Lasso initialization for OU only works for stationnary root
-  if (!stationnary.root && (method.init == "lasso")){
-    method.init <- "default"
-    warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
-  }
+#   if (!stationnary.root && (method.init == "lasso")){
+#     method.init <- "default"
+#     warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+#   }
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
                      lasso = init.EM.lasso)
@@ -190,7 +192,7 @@ estimateEM <- function(phylo,
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
   method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
   
-  ## Fixed Quantities #########################################
+  ########## Fixed Quantities #################################################
   ntaxa <- length(phylo$tip.label)
   ## Transform the branch lengths if needed
   phy_original <- phylo
@@ -203,7 +205,7 @@ estimateEM <- function(phylo,
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   
-  ## Missing Data #############################################
+  ########## Missing Data #####################################################
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   p <- nrow(Y_data)
@@ -214,7 +216,7 @@ estimateEM <- function(phylo,
   masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
   masque_data[1:(p*ntaxa)] <- !missing
   
-  ## Initialization #############################################
+  ########## Initialization of alpha and Variance #############################
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
                                                   nbr_of_shifts = nbr_of_shifts,
@@ -228,7 +230,12 @@ estimateEM <- function(phylo,
                                                   method.init.alpha.estimation = method.init.alpha.estimation,
                                                   tol = tol,
                                                   h_tree = h_tree,
-                                                  random.root = random.root)
+                                                  random.root = random.root,
+                                                  T_tree = T_tree,
+                                                  h_tree = h_tree,
+                                                  subtree.list = subtree.list,
+                                                  missing = missing,
+                                                  ...)
   init.var.root <- init.a.g$gamma_0 # mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
   if (process == "OU"){
     if(!alpha_known) {
@@ -240,18 +247,26 @@ estimateEM <- function(phylo,
       init.selection.strength <- known.selection.strength
     }
   }
-#   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
-#   if (!exists("edges.init") || is.null(edges.init)){
-#     if (nbr_of_shifts != 0){
-#       init_edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
-#     }
-#     else {
-#       init_edges <- NULL
-#     }
-#   } else {
-#     init_edges <- edges.init
-#   }
-# Initialization per se
+  if (process == "BM"){
+    init.selection.strength <- 0
+  }
+  
+  ## Init of Rate matrix for BM
+  if (process == "BM"){
+    variance.init <- init.variance.BM.estimation(phylo = phylo, 
+                                                 Y_data = Y_data, 
+                                                 nbr_of_shifts = nbr_of_shifts, 
+                                                 times_shared = times_shared,
+                                                 distances_phylo = distances_phylo, 
+                                                 h_tree = h_tree,
+                                                 random.root = random.root,
+                                                 T_tree = T_tree,
+                                                 subtree.list = subtree.list,
+                                                 missing = missing,
+                                                 ...)
+  }
+
+  ########## Initialization of all parameters #################################
   params_init <- init.EM(phylo = phylo,
                          Y_data = Y_data,
                          process = process, 
@@ -266,6 +281,8 @@ estimateEM <- function(phylo,
                          var.root.init = init.var.root,
                          T_tree = T_tree,
                          subtree.list = subtree.list,
+                         missing = missing,
+                         variance.init = variance.init,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 
@@ -277,12 +294,12 @@ estimateEM <- function(phylo,
   attr(params, "p_dim")  <- p
   params_old <- NULL
   
-  ## Iterations #############################################
+  ########## Iterations #######################################################
   Nbr_It <- 0
   params_history <- vector("list")#, Nbr_It_Max)
   #   CLL_history <- NULL
   number_new_shifts <- NULL
-  CV_log_lik <- TRUE
+  CV_log_lik <- FALSE
   while ( Nbr_It == 0 || # Initialisation
             ( !(CV_log_lik && # CV of log-Likelihood ?
               shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
@@ -291,7 +308,7 @@ estimateEM <- function(phylo,
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
-    ## Log likelihood ################
+    ########## Log Likelihood #################################################
     # Check convergence of loglik ?
     if (check_convergence_likelihood && Nbr_It > 1){
       log_likelihood_old_old <- log_likelihood_old
@@ -320,7 +337,8 @@ estimateEM <- function(phylo,
                                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
                                                    missing = missing)
     attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
-    ## E step  #############################################
+    
+    ########## E step #########################################################
     conditional_law_X <- compute_E(phylo = phylo,
                                    Y_data_vec = Y_data_vec_known,
                                    sim = moments$sim,
@@ -348,7 +366,7 @@ estimateEM <- function(phylo,
     ## Store params for history
     params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
     
-    ## M step #############################################
+    ########## M step #########################################################
     params <- compute_M(phylo = phylo, 
                         Y_data = Y_data, 
                         conditional_law_X = conditional_law_X, 
@@ -389,7 +407,7 @@ estimateEM <- function(phylo,
     #         attr(params, "MaxCompleteLogLik") <- CLL_new
   }
   
-  ########## Go back to OU parameters if needed ##################################
+  ########## Go back to OU parameters if needed ###############################
   params_scOU <- params # If a BM, params_scOU = params
   if (transform_scOU){
     ## Go back to original tree and process
@@ -412,7 +430,7 @@ estimateEM <- function(phylo,
     params_scOU$root.state$stationary.root <- FALSE
   }
   
-  ########## Compute scores and ancestral states for final parameters ########################
+  ########## Compute scores and ancestral states for final parameters ##########
   ## Compute log-likelihood for final parameters
   moments <- compute_mean_variance(phylo = phylo,
                                    times_shared = times_shared,
@@ -452,7 +470,7 @@ estimateEM <- function(phylo,
   if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params_scOU, "Neq") <- Neq
   
-  ## Result  #############################################
+  ########## Result  ##########################################################
   conditional_law_X$expectations <- matrix(conditional_law_X$expectations, nrow = p)
   result <- list(params = params_scOU, # Return untransformed parameters as default
                  params_raw = params,

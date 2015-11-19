@@ -1255,7 +1255,7 @@ for (l in 1:p){
   plot.data.process.actual(Y.state = Y_data[l, ],
                            phylo = tree, 
                            params = params,
-                           imposed.scale = c(min(Y_data), max(Y_data)),
+                           # imposed.scale = c(min(Y_data), max(Y_data)),
                            adj.root = 0,
                            automatic_colors = TRUE,
                            margin_plot = NULL,
@@ -1263,10 +1263,34 @@ for (l in 1:p){
                            bg_shifts = "azure2",
                            bg_beta_0 = "azure2",
                            plot_ancestral_states = TRUE,
-                           ancestral_states = res$alpha_max$Djump_BM1$Zhat[l,],
-                           imposed.scale.node = c(min(res$alpha_max$Djump_BM1$Zhat),
-                                                  max(res$alpha_max$Djump_BM1$Zhat)))
+                           ancestral_states = res$alpha_max$DDSE_BM1$Zvar[l, l, ])
+                           # imposed.scale.node = c(min(res$alpha_max$Djump_BM1$Zhat),
+                                                  # max(res$alpha_max$Djump_BM1$Zhat)))
 }
+
+## True alpha, and good init
+results_estim_EM <- estimateEM(phylo = tree, 
+                               Y_data = Y_data, 
+                               process = "scOU", 
+                               nbr_of_shifts = 2,
+                               random.root = FALSE,
+                               stationnary.root = FALSE,
+                               alpha_known = TRUE,
+                               known.selection.strength = alpha,
+                               # var.init.root = prev$params_raw$root.state$var.root,
+                               # exp.root.init = prev$params_raw$root.state$exp.root,
+                               variance.init = paramsSimu$variance,
+                               value.root.init = paramsSimu$root.state$value.root,
+                               edges.init = paramsSimu$shifts$edges,
+                               values.init = paramsSimu$shifts$values,
+                               #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                               tol = list(variance = 10^(-2), 
+                                          value.root = 10^(-2),
+                                          log_likelihood = 10^(-2)),
+                               Nbr_It_Max = 1000,
+                               method.init = "lasso"
+                               )
+
 
 ## Mising data
 Y_data_miss <- Y_data
@@ -1324,12 +1348,13 @@ plot(tree, no.margin = TRUE); edgelabels()
 variance <- 5
 
 root.state <- list(random = FALSE,
+                   stationary.root = FALSE,
                    value.root = 1,
                    exp.root = NA,
                    var.root = NA)
 
-shifts = list(edges = c(60, 310, 379, 581),
-              values=c(1, -1, 5, -5),
+shifts = list(edges = c(60, 253, 559),
+              values=c(10, 5, -10),
               relativeTimes = 0)
 
 optimal.value <- 1
@@ -1382,7 +1407,7 @@ res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
                                              value.root = 10^(-2),
                                              log_likelihood = 10^(-2)))
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_bis.RData")
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_lasso.RData")
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -1404,7 +1429,8 @@ rres <- res[-c(1, 2, 3, 15)]
 sapply(rres, function(z) z$results_summary$log_likelihood)
 
 ## Shifts values of the solution with the true alpha ?
-transform_shifts_values(res$alpha_max$BGH$params_select$shifts, res$alpha_max$BGH$params_select$selection.strength, alpha, tree)
+transform_shifts_values(res$alpha_max$BGH$params_select$shifts,
+                        res$alpha_max$BGH$params_select$selection.strength, alpha, tree)
 
 ## Log likelihood of the true parameters
 moments <- compute_mean_variance.simple(phylo = tree,
@@ -1427,7 +1453,9 @@ log_likelihood <- compute_log_likelihood.simple(phylo = tree,
 ## Fit with the true alpha
 res_true <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                     random.root = FALSE, alpha = alpha, save_step = FALSE)
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300.RData")
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_big_shifts.RData")
+
+res_true$alpha_max$results_summary$log_likelihood
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -1442,11 +1470,11 @@ plot.data.process.actual(Y.state = Y_data,
                          plot_ancestral_states = TRUE,
                          ancestral_states = res_true$alpha_max$BGH$Zhat)
 
-## True alpha, and good init
+## True alpha, and good init lasso
 results_estim_EM <- estimateEM(phylo = tree, 
                                Y_data = Y_data, 
                                process = "scOU", 
-                               nbr_of_shifts = 4,
+                               nbr_of_shifts = 3,
                                random.root = FALSE,
                                stationnary.root = FALSE,
                                alpha_known = TRUE,
@@ -1456,12 +1484,13 @@ results_estim_EM <- estimateEM(phylo = tree,
                                variance.init = paramsSimu$variance,
                                value.root.init = paramsSimu$root.state$value.root,
                                edges.init = paramsSimu$shifts$edges,
-                               values.init = 10 * paramsSimu$shifts$values,
+                               values.init = paramsSimu$shifts$values,
                                #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
                                tol = list(variance = 10^(-2), 
                                           value.root = 10^(-2),
                                           log_likelihood = 10^(-2)),
-                               Nbr_It_Max = 1000
+                               Nbr_It_Max = 1000,
+                               method.init = "lasso"
                                )
 
 results_estim_EM$params$shifts$values
@@ -1474,6 +1503,681 @@ sapply(results_estim_EM$params_history, function(z) z$shifts$edges)
 sapply(results_estim_EM$params_history, function(z) z$shifts$values)
 # Right shifts and wrong values -> converges to wrong solution
 # Right shifts and right values -> converges right solution
+
+## Start with obtained values second chance
+params_rebound <- res$alpha_3.34087286186464$params_estim$`3`
+results_estim_EM <- estimateEM(phylo = tree, 
+                               Y_data = Y_data, 
+                               process = "scOU", 
+                               nbr_of_shifts = 3,
+                               random.root = FALSE,
+                               stationnary.root = FALSE,
+                               alpha_known = TRUE,
+                               known.selection.strength = params_rebound$selection.strength,
+                               # var.init.root = prev$params_raw$root.state$var.root,
+                               # exp.root.init = prev$params_raw$root.state$exp.root,
+                               # variance.init = params_rebound$variance,
+                               # variance.init = 5,
+                               # value.root.init = params_rebound$root.state$value.root,
+                               # edges.init = params_rebound$shifts$edges,
+                               # values.init = params_rebound$shifts$values,
+                               #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                               tol = list(variance = 10^(-2), 
+                                          value.root = 10^(-2),
+                                          log_likelihood = 10^(-2)),
+                               Nbr_It_Max = 1000,
+                               method.init = "lasso"
+                               )
+
+results_estim_EM$params$shifts$values
+results_estim_EM$params_raw$shifts$values
+transform_shifts_values(results_estim_EM$params_raw$shifts, 0, alpha, tree)
+sapply(results_estim_EM$params_history, function(z) attr(z, "log_likelihood"))
+sapply(results_estim_EM$params_history, function(z) as.vector(z$variance))
+sapply(results_estim_EM$params_history, function(z) z$root.state$value.root)
+sapply(results_estim_EM$params_history, function(z) z$shifts$edges)
+sapply(results_estim_EM$params_history, function(z) z$shifts$values)
+# Right shifts and wrong values -> converges to wrong solution
+# Right shifts and right values -> converges right solution
+
+plot.data.process.actual(Y.state = Y_data,
+                         phylo = tree, 
+                         params = results_estim_EM$params,
+                         process = "OU",
+                         adj.root = 1,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "lightgoldenrod3",
+                         bg_beta_0 = "lightgoldenrod3",
+                         plot_ancestral_states = TRUE,
+                         ancestral_states = results_estim_EM$ReconstructedNodesStates)
+
+## Try mvMORPH with the shifts of high alpha
+library(mvMORPH)
+tree_mapped <- shifts_to_simmap(tree, params_rebound$shifts$edges)
+cols <- c("black", rainbow(length(params_rebound$shifts$edges), start = 0, v = 0.5))
+cols <- setNames(cols, 0:length(params_rebound$shifts$edges))
+plotSimmap(tree_mapped, colors = cols)
+
+fit_mvOU <- mvOU(tree_mapped,
+                 as.vector(Y_data),
+                 error = NULL,
+                 model = "OUM",
+                 param = list(root = FALSE,
+                              alpha = alpha),
+                 method = "univarpf"
+                 # scale.height = FALSE
+                 # optimization = c("L-BFGS-B", "Nelder-Mead", "subplex"),
+                 # control = list(maxit = 20000),
+                 # precalc = NULL,
+                 # diagnostic = TRUE,
+                 # echo = TRUE
+                 )
+params_EM <- res$alpha_3.34087286186464$params_estim$`3`
+
+c(fit_mvOU$LogLik,
+  attr(params_EM, "log_likelihood"),
+  log_likelihood)
+
+c(fit_mvOU$alpha,
+  params_EM$selection.strength,
+  alpha)
+
+c(fit_mvOU$sigma,
+  params_EM$variance,
+  variance)
+
+fit_mvOU$theta
+unique(compute_betas(tree, params_EM$optimal.value, params_EM$shifts))
+unique(compute_betas(tree, paramsSimu$optimal.value, paramsSimu$shifts))
+
+## Lasso init (hybrid)
+res_lasso <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
+                     use_previous = FALSE, method.init = "lasso",
+                     random.root = FALSE, alpha = alpha_grid, save_step = FALSE,
+                     Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
+                                                   value.root = 10^(-2),
+                                                   log_likelihood = 10^(-2)))
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_big_shifts_lasso.RData")
+
+## Compare with mvMORPH on BM true alpha
+tree_rescaled <- transform_branch_length(tree, alpha)
+
+estim_EM_rBM <- estimateEM(phylo = tree_rescaled, 
+                           Y_data = Y_data, 
+                           process = "BM", 
+                           nbr_of_shifts = 3,
+                           random.root = FALSE,
+                           # stationnary.root = FALSE,
+                           # alpha_known = TRUE,
+                           # known.selection.strength = params_rebound$selection.strength,
+                           # var.init.root = prev$params_raw$root.state$var.root,
+                           # exp.root.init = prev$params_raw$root.state$exp.root,
+                           # variance.init = params_rebound$variance,
+                           # variance.init = 5,
+                           # value.root.init = params_rebound$root.state$value.root,
+                           # edges.init = params_rebound$shifts$edges,
+                           # values.init = params_rebound$shifts$values,
+                           #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                           tol = list(variance = 10^(-2), 
+                                      value.root = 10^(-2),
+                                      log_likelihood = 10^(-2)),
+                           Nbr_It_Max = 1000,
+                           method.init = "lasso"
+                           )
+
+estim_EM_scOU <- estimateEM(phylo = tree, 
+                           Y_data = Y_data, 
+                           process = "scOU", 
+                           nbr_of_shifts = 3,
+                           random.root = FALSE,
+                           stationnary.root = FALSE,
+                           alpha_known = TRUE,
+                           known.selection.strength = alpha,
+                           # var.init.root = prev$params_raw$root.state$var.root,
+                           # exp.root.init = prev$params_raw$root.state$exp.root,
+                           # variance.init = params_rebound$variance,
+                           # variance.init = 5,
+                           # value.root.init = params_rebound$root.state$value.root,
+                           # edges.init = params_rebound$shifts$edges,
+                           # values.init = params_rebound$shifts$values,
+                           #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                           tol = list(variance = 10^(-2), 
+                                      value.root = 10^(-2),
+                                      log_likelihood = 10^(-2)),
+                           Nbr_It_Max = 1000,
+                           method.init = "lasso"
+)
+
+params_EM_BM <- estim_EM_rBM$params
+params_EM_OU_raw <- estim_EM_scOU$params_raw
+
+params_EM_OU_raw$variance
+params_EM_BM$variance
+
+params_EM_OU_raw$shifts
+params_EM_BM$shifts
+
+library(mvMORPH)
+tree_rescaled_mapped <- shifts_to_simmap(tree, params_EM$shifts$edges)
+cols <- c("black", rainbow(length(params_EM$shifts$edges), start = 0, v = 0.5))
+cols <- setNames(cols, 0:length(params_EM$shifts$edges))
+plotSimmap(tree_rescaled_mapped, colors = cols)
+
+fit_mvBM <- mvBM(tree_rescaled_mapped,
+                 as.vector(Y_data),
+                 error = NULL,
+                 model = "BMM",
+                 param = list(root = FALSE)
+                 # method = "univarpf"
+                 # scale.height = FALSE
+                 # optimization = c("L-BFGS-B", "Nelder-Mead", "subplex"),
+                 # control = list(maxit = 20000),
+                 # precalc = NULL,
+                 # diagnostic = TRUE,
+                 # echo = TRUE
+)
+
+c(fit_mvBM$LogLik,
+  attr(params_EM, "log_likelihood"),
+  log_likelihood)
+
+c(fit_mvBM$sigma,
+  params_EM$variance,
+  variance)
+
+fit_mvBM$theta
+
+#######################################
+## Test of EM - OU/rBM - Multivariate - 64 - lasso
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 50
+tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                        lambda = 0.1, mu = 0,
+                        age = 1, mrca = TRUE)[[1]]
+plot(tree); edgelabels()
+
+## Parameters
+p <- 3
+variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+
+root.state <- list(random = FALSE,
+                   stationary.root = FALSE,
+                   value.root = c(0, 0, 1),
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts = list(edges = c(56, 8),
+              values=cbind(c(10, -10, 0),
+                           c(5, 5, 5)),
+              relativeTimes = 0)
+
+optimal.value <- c(0, 0, 1)
+
+h_tree <- max(diag(node.depth.edgelength(tree))[1:ntaxa])
+alpha <- log(2) / (0.2 * h_tree)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state,
+                   selection.strength = alpha,
+                   optimal.value = optimal.value)
+attr(paramsSimu, "p_dim") <- p
+
+## Simulate Process
+set.seed(1344)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "scOU",
+               variance = variance,
+               shifts = shifts,
+               selection.strength = alpha,
+               optimal.value = optimal.value)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_states <- extract.simulate(X1,"nodes","states")
+
+## Mising data
+Y_data_miss <- Y_data
+set.seed(1122)
+nMiss <- floor(ntaxa * p / 100) * 5
+miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+chars <- (miss - 1) %% p + 1
+tips <- (miss - 1) %/% p + 1
+# chars <- sample(1:p, nMiss, replace = TRUE)
+# tips <- sample(1:ntaxa, nMiss, replace = TRUE)
+for (i in 1:nMiss){
+  Y_data_miss[chars[i], tips[i]] <- NA
+}
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value<- paramsSimu$optimal.value[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           process = "OU",
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3",
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = Z_states[l,])
+}
+
+set.seed(17920920)
+alpha_grid <- find_grid_alpha(tree,
+                              nbr_alpha = 10,
+                              factor_up_alpha = 2,
+                              factor_down_alpha = 3,
+                              quantile_low_distance = 0.001,
+                              log_transform = TRUE)
+res <- PhyloEM(phylo = tree, Y_data = Y_data_miss, process = "scOU", K_max = 10,
+               random.root = FALSE, alpha = c(0, alpha), save_step = FALSE,
+               Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
+                                             value.root = 10^(-2),
+                                             log_likelihood = 10^(-2)),
+               method.init = "lasso", use_previous = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=3_n=64_lasso_missing.RData")
+
+res$alpha_max$results_summary$alpha_name
+
+rres <- res[-c(1, 2, 3, 15)]
+sapply(rres, function(z) z$results_summary$log_likelihood)
+
+sapply(rres, function(z) z$params_estim$`2`$shifts$edges)
+sapply(rres, function(z) z$params_estim$`2`$shifts$values)
+
+plot(res$alpha_max$capushe_outputBM2@DDSE, newwindow = FALSE)
+
+params_estim_EM <- res$alpha_max$DDSE_BM1$params_select
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- params_estim_EM
+  params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
+  params$root.state$value.root <- round(params_estim_EM$root.state$value.root[l], 2)
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           # imposed.scale = c(min(Y_data), max(Y_data)),
+                           adj.root = 0,
+                           automatic_colors = TRUE, 
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "azure2",
+                           bg_beta_0 = "azure2",
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = res$alpha_max$DDSE_BM1$Zvar[l, l, ])
+  # imposed.scale.node = c(min(res$alpha_max$Djump_BM1$Zhat),
+  # max(res$alpha_max$Djump_BM1$Zhat)))
+}
+
+## True alpha, lasso init
+
+res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
+               random.root = FALSE, alpha = alpha, save_step = FALSE,
+               Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
+                                             value.root = 10^(-2),
+                                             log_likelihood = 10^(-2)),
+               method.init = "lasso", use_previous = FALSE)
+
+results_estim_EM <- estimateEM(phylo = tree, 
+                               Y_data = Y_data_miss, 
+                               process = "scOU", 
+                               nbr_of_shifts = 4,
+                               random.root = FALSE,
+                               stationnary.root = FALSE,
+                               alpha_known = TRUE,
+                               known.selection.strength = alpha,
+                               # var.init.root = prev$params_raw$root.state$var.root,
+                               # exp.root.init = prev$params_raw$root.state$exp.root,
+                               # variance.init = paramsSimu$variance,
+                               # value.root.init = paramsSimu$root.state$value.root,
+                               # edges.init = paramsSimu$shifts$edges,
+                               # values.init = paramsSimu$shifts$values,
+                               #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                               tol = list(variance = 10^(-2), 
+                                          value.root = 10^(-2),
+                                          log_likelihood = 10^(-2)),
+                               Nbr_It_Max = 1000,
+                               method.init = "lasso"
+                               )
+
+
+sapply(results_estim_EM$params_history, function(z) attr(z, "log_likelihood"))
+sapply(results_estim_EM$params_history, function(z) as.vector(z$variance))
+sapply(results_estim_EM$params_history, function(z) z$root.state$value.root)
+sapply(results_estim_EM$params_history, function(z) z$shifts$edges)
+sapply(results_estim_EM$params_history, function(z) z$shifts$values)
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+params_select <- res$alpha_max$DDSE_BM1$params_select
+params_select <- res$alpha_max$params_estim$`2`
+for (l in 1:p){
+  params <- params_select
+  params$shifts$values <- params_select$shifts$values[l, ]
+  params$optimal.value<- params_select$optimal.value[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           process = "OU",
+                           adj.root = 1,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3")
+}
+
+plot(res$alpha_max$capushe_outputBM1@DDSE, newwindow = F, ask = F)
+
+#######################################
+## Test of EM - OU/rBM - Univariate - Lasso init
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 300
+tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                        lambda = 0.1, mu = 0,
+                        age = 1, mrca = TRUE)[[1]]
+plot(tree, no.margin = TRUE); edgelabels()
+
+## Parameters
+variance <- 5
+
+root.state <- list(random = FALSE,
+                   stationary.root = FALSE,
+                   value.root = 1,
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts = list(edges = c(60, 253, 559),
+              values=c(10, 5, -10),
+              relativeTimes = 0)
+
+optimal.value <- 1
+
+h_tree <- max(diag(node.depth.edgelength(tree))[1:ntaxa])
+alpha <- log(2) / (0.2 * h_tree)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state,
+                   selection.strength = alpha,
+                   optimal.value = optimal.value)
+attr(paramsSimu, "p_dim") <- 1
+
+## Simulate Process
+set.seed(1344)
+X1 <- simulate(tree,
+               root.state = root.state,
+               process = "OU",
+               variance = variance,
+               shifts = shifts,
+               selection.strength = alpha,
+               optimal.value = optimal.value)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_states <- extract.simulate(X1,"nodes","states")
+
+plot.data.process.actual(Y.state = Y_data,
+                         phylo = tree, 
+                         params = paramsSimu,
+                         process = "OU",
+                         adj.root = 1,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "lightgoldenrod3",
+                         bg_beta_0 = "lightgoldenrod3",
+                         plot_ancestral_states = TRUE,
+                         ancestral_states = Z_states)
+
+set.seed(17920920)
+alpha_grid <- find_grid_alpha(tree,
+                              nbr_alpha = 10,
+                              factor_up_alpha = 2,
+                              factor_down_alpha = 3,
+                              quantile_low_distance = 0.001,
+                              log_transform = TRUE)
+res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
+               random.root = FALSE, alpha = alpha_grid, save_step = FALSE,
+               Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
+                                             value.root = 10^(-2),
+                                             log_likelihood = 10^(-2)),
+               method.init = "lasso", use_previous = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_big_shifts_lasso_init_var_init.RData")
+
+plot.data.process.actual(Y.state = Y_data,
+                         phylo = tree, 
+                         params = res$alpha_max$BGH$params_select,
+                         process = "OU",
+                         adj.root = 1,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "lightgoldenrod3",
+                         bg_beta_0 = "lightgoldenrod3",
+                         plot_ancestral_states = TRUE,
+                         ancestral_states = res$alpha_max$BGH$Zhat)
+
+
+res$alpha_max$results_summary$alpha_name
+
+rres <- res[-c(1, 2, 3, 15)]
+sapply(rres, function(z) z$results_summary$log_likelihood)
+
+#######################################
+## Test of EM - OU/rBM - Univariate - Identifiability exemple
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 50
+tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                        lambda = 0.1, mu = 0,
+                        age = 1, mrca = TRUE)[[1]]
+
+## Simulate Process
+h_tree <- max(diag(node.depth.edgelength(tree))[1:ntaxa])
+alpha <- log(2) / (0.5 * h_tree)
+lambda <- 1
+
+paramsSimu1 <- list(variance = 1,
+                    shifts = NULL,
+#                    shifts = list(edges = c(56, 29, 84),
+#                                  values = c(1, -1, 1)),
+                   root.state = list(random = FALSE,
+                                     stationary.root = FALSE,
+                                     value.root = lambda,
+                                     exp.root = NA,
+                                     var.root = NA),
+                   selection.strength = alpha,
+                   optimal.value = lambda)
+
+X1 <- simulate(tree,
+               root.state = paramsSimu1$root.state,
+               process = "OU",
+               variance = paramsSimu1$variance,
+               shifts = paramsSimu1$shifts,
+               selection.strength = paramsSimu1$selection.strength,
+               optimal.value = paramsSimu1$optimal.value)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_states <- extract.simulate(X1,"nodes","states")
+Y_exp_1 <- extract.simulate(X1, "tips", "expectations")
+Z_exp_1 <- extract.simulate(X1, "nodes", "expectations")
+
+## Second simu
+beta_0 <- -2
+mu <- (lambda - (1 - exp(-alpha * h_tree)) * beta_0) * exp(alpha * h_tree)
+
+paramsSimu2 <- paramsSimu1
+paramsSimu2$root.state <- list(random = FALSE,
+                               stationary.root = FALSE,
+                               value.root = mu,
+                               exp.root = NA,
+                               var.root = NA)
+paramsSimu2$optimal.value <- beta_0
+
+X2 <- simulate(tree,
+               root.state = paramsSimu2$root.state,
+               process = "OU",
+               variance = paramsSimu2$variance,
+               shifts = paramsSimu2$shifts,
+               selection.strength = paramsSimu2$selection.strength,
+               optimal.value = paramsSimu2$optimal.value)
+
+Y_exp_2 <- extract.simulate(X2, "tips", "expectations")
+Z_exp_2 <- extract.simulate(X2, "nodes", "expectations")
+all.equal(Y_exp_1, Y_exp_2)
+
+## plots
+plot.data.process.actual(Y.state = Y_exp_1,
+                         phylo = tree, 
+                         params = paramsSimu1,
+                         process = "OU",
+                         adj.root = 2,
+                         automatic_colors = TRUE,
+                         margin_plot = c(0,0,0,0),
+                         cex = 2,
+                         bg_shifts = "lightgoldenrod3",
+                         bg_beta_0 = "lightgoldenrod3",
+                         plot_ancestral_states = TRUE,
+                         ancestral_states = Z_exp_1,
+                         imposed.scale.nodes = c(Z_exp_1, Z_exp_2))
+
+plot.data.process.actual(Y.state = Y_exp_2,
+                         phylo = tree, 
+                         params = paramsSimu2,
+                         process = "OU",
+                         adj.root = 2,
+                         automatic_colors = TRUE,
+                         margin_plot = c(0,0,0,0),
+                         cex = 2,
+                         bg_shifts = "lightgoldenrod3",
+                         bg_beta_0 = "lightgoldenrod3",
+                         plot_ancestral_states = TRUE,
+                         ancestral_states = Z_exp_2,
+                         imposed.scale.nodes = c(Z_exp_1, Z_exp_2))
+
+#######################################
+## Test of Rphylopars
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 64
+tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                        lambda = 0.1, mu = 0,
+                        age = 1, mrca = TRUE)[[1]]
+plot(tree); edgelabels()
+
+## Parameters
+p <- 3
+variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+
+root.state <- list(random = FALSE,
+                   value.root = c(0, 0, 1),
+                   exp.root = NA,
+                   var.root = NA)
+
+shifts = list(edges = c(7, 92),
+              values=cbind(c(5, -5, 0),
+                           c(2, 2, 2)),
+              relativeTimes = 0)
+
+optimal.value <- c(0, 0, 1)
+
+h_tree <- max(diag(node.depth.edgelength(tree))[1:ntaxa])
+alpha <- log(2) / (0.2 * h_tree)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state,
+                   selection.strength = alpha,
+                   optimal.value = optimal.value)
+
+## Simulate Process
+set.seed(1344)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "scOU",
+               variance = variance,
+               shifts = shifts,
+               selection.strength = alpha,
+               optimal.value = optimal.value)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_states <- extract.simulate(X1,"nodes","states")
+
+## Mising data
+Y_data_miss <- Y_data
+set.seed(1122)
+nMiss <- floor(ntaxa * p / 100) * 20
+miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+chars <- (miss - 1) %% p + 1
+tips <- (miss - 1) %/% p + 1
+# chars <- sample(1:p, nMiss, replace = TRUE)
+# tips <- sample(1:ntaxa, nMiss, replace = TRUE)
+for (i in 1:nMiss){
+  Y_data_miss[chars[i], tips[i]] <- NA
+}
+
+## Rphylopars
+trait_data <- as.data.frame(t(Y_data_miss))
+trait_data[ , "species"] <- tree$tip.label
+fit_phylopars <- phylopars(trait_data,
+                           tree,
+                           model = "BM",
+                           pheno_error = FALSE,
+                           phylo_correlated = TRUE,
+                           REML = TRUE,
+                           optim_limit = 50,
+                           BM_first = TRUE,
+                           usezscores = TRUE)
+
+variance_estim_phylopars <- 2 * fit_phylopars$model * fit_phylopars$pars$Phylogenetic
+
+data_phylopars <- phylopars.predict(fit_phylopars, nodes = NULL)
+
+all.equal(Y_data_miss, t(unname(as.matrix(data_phylopars$predicted))))
+
+## try other simulation function
+library(mvMORPH)
+sim_mvmorph <- mvSIM(tree,
+                     nsim = 1,
+                     model = "OU1",
+                     param = list(mu = root.state$value.root,
+                                  sigma = variance,
+                                  alpha = diag(rep(alpha, p)),
+                                  ntraits = p,
+                                  root = FALSE))
+
+fit_mvmorph <- mvOU(tree, sim_mvmorph, model="OU1")
+
+trait_data <- as.data.frame(sim_mvmorph)
+trait_data[ , "species"] <- rownames(sim_mvmorph)
+fit_phylopars <- phylopars(trait_data,
+                           tree,
+                           model = "OUfixedRoot",
+                           pheno_error = FALSE,
+                           phylo_correlated = TRUE,
+                           REML = FALSE,
+                           optim_limit = 50,
+                           BM_first = TRUE,
+                           usezscores = TRUE)
+
+2 * fit_phylopars$model * fit_phylopars$pars$Phylogenetic
+
+data_phylopars <- phylopars.predict(fit_phylopars)
 
 #######################################
 ## Test of EM - BM - Multivariate - Random Root
