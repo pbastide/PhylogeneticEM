@@ -83,7 +83,7 @@ init.EM.default.BM <- function(phylo = NULL,
   }
   if (n_shifts_provided < nbr_of_shifts){
     missing <- nbr_of_shifts - ncol(values.init)
-    values.init <- cbind(values.init, rep(0, p))
+    values.init <- cbind(values.init, matrix(0, ncol = missing, nrow = p))
   }
   params_init = list(variance = variance.init,
                      root.state = list(random = random.init,
