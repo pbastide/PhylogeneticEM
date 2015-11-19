@@ -1094,7 +1094,8 @@ init.variance.BM.estimation <- function(phylo,
     tips <- which(tips_groups == grp)
     if (length(tips) > 1){
       centered_data <- cbind(centered_data,
-                             Y_data[, tips] - rowMeans(Y_data[, tips], na.rm = TRUE))
+                             Y_data[, tips, drop = F] - rowMeans(Y_data[, tips, drop = F],
+                                                                 na.rm = TRUE))
     }
   }
   R_0 <- covMcd(t(1 / sqrt(h_tree) * centered_data))

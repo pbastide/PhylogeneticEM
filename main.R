@@ -1791,7 +1791,7 @@ for (l in 1:p){
                            params = params,
                            # imposed.scale = c(min(Y_data), max(Y_data)),
                            adj.root = 0,
-                           automatic_colors = TRUE,
+                           automatic_colors = TRUE, 
                            margin_plot = NULL,
                            cex = 2,
                            bg_shifts = "azure2",
@@ -1936,7 +1936,7 @@ res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                                              value.root = 10^(-2),
                                              log_likelihood = 10^(-2)),
                method.init = "lasso", use_previous = FALSE)
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_big_shifts_lasso_init_small_grid.RData")
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_big_shifts_lasso_init_var_init.RData")
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
