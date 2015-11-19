@@ -4,9 +4,9 @@
 library(doParallel)
 library(foreach)
 library(ape)
-library(quadrupen) # For Lasso initialization
+library(glmnet) # For Lasso initialization
 library(robustbase) # For robust fitting of alpha
-reqpckg <- c("ape", "quadrupen", "robustbase")
+reqpckg <- c("ape", "glmnet", "robustbase")
 
 ## Set number of parallel cores
 Ncores <- 1
@@ -67,7 +67,7 @@ estimations_several_K <- function(X){
   res <- PhyloEM_core(phylo = trees[[paste0(X$ntaxa)]],
                       Y_data = X$Y_data,
                       process = "scOU",
-                      K_max = 10,
+                      K_max = max(K_try[[paste0(X$ntaxa)]]),
                       random.root = FALSE,
                       alpha = alpha_grid,
                       save_step = FALSE,
@@ -78,7 +78,7 @@ estimations_several_K <- function(X){
                       method.init = "lasso",
                       use_previous = FALSE)
   ret <- list(sim = X,
-            res = res)
+              res = res)
   return(ret)
 }
 

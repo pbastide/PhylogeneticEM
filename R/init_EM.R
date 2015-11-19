@@ -712,7 +712,8 @@ init.EM.lasso <- function(phylo,
                                       values.init = values.init,
                                       relativeTimes.init = relativeTimes.init,
                                       optimal.value.init = optimal.value.init,
-                                      nbr_of_shifts = nbr_of_shifts)
+                                      nbr_of_shifts = nbr_of_shifts,
+                                      phylo = phylo)
     }
     Fm <- compute_tree_correlations_matrix(times_shared = times_shared,
                                           distances_phylo = distances_phylo,
@@ -756,7 +757,8 @@ init.EM.lasso <- function(phylo,
                            var.root.init = var.root.init,
                            variance.init = variance.init,
                            stationnary.root.init = stationnary.root.init,
-                           nbr_of_shifts = nbr_of_shifts, ...))
+                           nbr_of_shifts = nbr_of_shifts,
+                           phylo = phylo, ...))
   } else { 
     E0.gauss <- fit$E0.gauss
     delta.gauss <- t(fit$delta.gauss)
