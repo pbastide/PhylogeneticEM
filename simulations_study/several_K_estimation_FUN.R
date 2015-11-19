@@ -9,7 +9,7 @@ library(robustbase) # For robust fitting of alpha
 reqpckg <- c("ape", "quadrupen", "robustbase")
 
 ## Set number of parallel cores
-Ncores <- 3
+Ncores <- 1
 
 ## Define date-stamp for file names
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
@@ -64,21 +64,22 @@ estimations_several_K <- function(X){
                                 factor_down_alpha = 3,
                                 quantile_low_distance = 0.001,
                                 log_transform = TRUE)
-  res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
-                 Y_data = X$Y_data,
-                 process = "scOU",
-                 K_max = 10,
-                 random.root = FALSE,
-                 alpha = alpha_grid,
-                 save_step = FALSE,
-                 Nbr_It_Max = 2000,
-                 tol = list(variance = 10^(-2), 
-                            value.root = 10^(-2),
-                            log_likelihood = 10^(-2)),
-                 method.init = "lasso",
-                 use_previous = FALSE)
-  X <- c(X, res)
-  return(X)
+  res <- PhyloEM_core(phylo = trees[[paste0(X$ntaxa)]],
+                      Y_data = X$Y_data,
+                      process = "scOU",
+                      K_max = 10,
+                      random.root = FALSE,
+                      alpha = alpha_grid,
+                      save_step = FALSE,
+                      Nbr_It_Max = 2000,
+                      tol = list(variance = 10^(-2), 
+                                 value.root = 10^(-2),
+                                 log_likelihood = 10^(-2)),
+                      method.init = "lasso",
+                      use_previous = FALSE)
+  ret <- list(sim = X,
+            res = res)
+  return(ret)
 }
 
 ############
@@ -96,7 +97,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird <- system.time(
-  simestimations_fav <- foreach(i = simlist[favorables][1:3], .packages = reqpckg) %dopar%
+  simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }

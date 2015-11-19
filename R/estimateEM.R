@@ -1067,6 +1067,94 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data, process, K_t,
   return(format_output(results_estim_EM, phylo, tt))
 }
 
+PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                         K_max, use_previous = TRUE,
+                         order = TRUE,
+                         method.variance = "simple",
+                         method.init = "default",
+                         method.init.alpha = "default",
+                         method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
+                         methods.segmentation = c("lasso", "best_single_move"),
+                         alpha_known = TRUE,
+                         random.root = FALSE,
+                         stationnary.root = FALSE,
+                         alpha = NULL,
+                         check.tips.names = FALSE,
+                         progress.bar = TRUE,
+                         estimates = NULL,
+                         save_step = FALSE,
+                         ...){
+  ## Check the tree
+  if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
+  ## Check that the vector of data is in the correct order and dimensions ################
+  Y_data <- check_data(phylo, Y_data, check.tips.names)
+  p <- nrow(Y_data)
+  ntaxa <- length(phylo$tip.label)
+  ## Process
+  process <- match.arg(process)
+  process_original <- process
+  original_phy <- phylo
+  temp <- choose_process_EM(process, p, random.root, stationnary.root, alpha_known)
+  rescale_tree <- temp$rescale_tree # Rescale the tree ?
+  transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
+  
+  ## Compute alpha
+  if (process == "BM") {
+    alpha <- 0
+  } else {
+    alpha <- find_grid_alpha(phylo, alpha, ...)
+  }
+  
+  ## Estimates
+  X <- list(Y_data = Y_data,
+            K_try = 0:K_max,
+            ntaxa = ntaxa)
+  
+  ## Loop on alpha
+  for (alp in alpha){
+    ## Transform branch lengths if needed
+    phylo <- original_phy
+    if (rescale_tree) {
+      phylo <- transform_branch_length(phylo, alp)
+    }
+    ## Fixed quantities
+    times_shared <- compute_times_ca(phylo)
+    distances_phylo <- compute_dist_phy(phylo)
+    subtree.list <- enumerate_tips_under_edges(phylo)
+    T_tree <- incidence.matrix(phylo)
+    h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+    ## Estimations
+    X <- Phylo_EM_sequencial(phylo = original_phy,
+                             Y_data = Y_data,
+                             process = process,
+                             K_max = K_max,
+                             curent = X,
+                             use_previous = use_previous,
+                             order = order,
+                             method.variance = method.variance,
+                             method.init = method.init,
+                             method.init.alpha = method.init.alpha,
+                             method.init.alpha.estimation = method.init.alpha.estimation, 
+                             methods.segmentation = methods.segmentation,
+                             alpha_known = alpha_known,
+                             random.root = random.root,
+                             stationnary.root = stationnary.root,
+                             alp = alp,
+                             check.tips.names = check.tips.names,
+                             progress.bar = progress.bar,
+                             times_shared = times_shared,
+                             distances_phylo = distances_phylo,
+                             subtree.list = subtree.list,
+                             T_tree = T_tree,
+                             h_tree = h_tree,
+                             save_step = save_step,
+                             ...)
+  }
+  ## Select max solution for each K
+  X <- merge_max_grid_alpha(X, alpha)
+  return(X)
+}
+
 ##
 #' @title Run the EM for several values of K
 #'
