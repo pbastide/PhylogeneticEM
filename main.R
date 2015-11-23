@@ -1934,7 +1934,7 @@ plot.data.process.actual(Y.state = Y_data,
                          process = "OU",
                          adj.root = 1,
                          automatic_colors = TRUE,
-                         margin_plot = NULL,
+                         margin_plot = c(0, 0, 0, 0),
                          cex = 2,
                          bg_shifts = "lightgoldenrod3",
                          bg_beta_0 = "lightgoldenrod3",
@@ -1974,6 +1974,8 @@ res$alpha_max$results_summary$alpha_name
 
 rres <- res[-c(1, 2, 3, 15)]
 sapply(rres, function(z) z$results_summary$log_likelihood)
+
+sum(sapply(rres, function(z) z$results_summary$time)) / 3600
 
 #######################################
 ## Test of EM - OU/rBM - Univariate - Identifiability exemple

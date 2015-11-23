@@ -518,6 +518,25 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
   return(-LL/2)
 }
 
+compute_log_det.simple <- function(phylo, Y_data_vec, sim,
+                                   Sigma, Sigma_YY_chol_inv,
+                                   missing, masque_data){
+  ntaxa <- length(phylo$tip.label)
+  Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
+  logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
+  return( - (ntaxa * log(2*pi) + logdetSigma_YY) / 2)
+}
+
+compute_log_maha.simple <- function(phylo, Y_data_vec, sim,
+                                    Sigma, Sigma_YY_chol_inv,
+                                    missing, masque_data){
+  ntaxa <- length(phylo$tip.label)
+  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y_vec <- as.vector(m_Y)[!missing]
+  LL <- tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
+  return(-LL/2)
+}
+
 compute_entropy.simple <- function(Sigma, Sigma_YY_inv){
   Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ")
   Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ")
