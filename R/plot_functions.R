@@ -319,11 +319,13 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   }
   ## Plot beta_0
   if (value_in_box){ # Write value of shift in the box
-    nodelabels(text = round(root.val, 1), 
-               node = ntaxa + 1,
-               bg = bg_beta_0,
-               cex = 7/10*lastPP$cex,
-               adj = adj.root)
+    if (!is.null(root.val)){
+      nodelabels(text = round(root.val, 1), 
+                 node = ntaxa + 1,
+                 bg = bg_beta_0,
+                 cex = 7/10*lastPP$cex,
+                 adj = adj.root)
+    }
     # Plot shifts
     if ( !is.null(params$shifts$edges) ) {
       edgelabels_home(text = round(params$shifts$values, 1), 
@@ -354,7 +356,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     if (!is.null(root.val)){
       nodelabels(text = "", 
                  node = ntaxa + 1,
-                 frame = "rect",
+                 frame = "circle",
                  cex = 0.5*lastPP$cex,
                  bg = col_shifts[1])
     }
@@ -363,7 +365,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     if ( !is.null(params$shifts$edges) ) {
       edgelabels_home(text = rep("", length(col_shifts)),
                  edge = params$shifts$edges, 
-                 frame = "rect",
+                 frame = "circle",
                  cex = 0.5*lastPP$cex,
                  bg = col_shifts,
                  beg = TRUE)
