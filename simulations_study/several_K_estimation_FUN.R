@@ -82,6 +82,26 @@ estimations_several_K <- function(X){
   return(ret)
 }
 
+estimations_several_K_ak <- function(X){
+  alpha_grid <- X$alpha
+  res <- PhyloEM_core(phylo = trees[[paste0(X$ntaxa)]],
+                      Y_data = X$Y_data,
+                      process = "scOU",
+                      K_max = max(K_try[[paste0(X$ntaxa)]]),
+                      random.root = FALSE,
+                      alpha = alpha_grid,
+                      save_step = FALSE,
+                      Nbr_It_Max = 2000,
+                      tol = list(variance = 10^(-2), 
+                                 value.root = 10^(-2),
+                                 log_likelihood = 10^(-2)),
+                      method.init = "lasso",
+                      use_previous = FALSE)
+  ret <- list(sim = X,
+              res = res)
+  return(ret)
+}
+
 ############
 ## Estimations (alpha on a grid)
 ############
@@ -141,3 +161,64 @@ assign(paste0("simestimations_", inference.index),
 rm(simestimations)
 
 save.image(paste0(saveresultfile, "-", datestamp_day, "_", inference.index, ".RData"))
+
+############
+## Estimations (alpha known)
+############
+
+## Separate "favorable" values from others
+simparams_keep <- subset(simparams, n %in% n.range)
+favorables <- simparams_keep$gamma <= 1 & simparams_keep$alpha >= 3 & simparams_keep$K <= 5
+
+## FAVORABLES ##
+## Register parallel backend for computing
+cl <- makeCluster(Ncores)
+registerDoParallel(cl)
+
+## Parallelized estimations
+time_alpha_known <- system.time(
+  simestimations_fav <- foreach(i = simlist[favorables][1:3], .packages = reqpckg) %dopar%
+  {
+    estimations_several_K_ak(i)
+  }
+)
+# Stop the cluster (parallel)
+stopCluster(cl)
+
+## rename object and save
+assign(paste0("simestimations_fav_alpha_known_", inference.index), 
+       simestimations_fav)
+rm(simestimations_fav)
+
+save.image(paste0(saveresultfile, "favorables_alpha_known_", datestamp_day, "_", inference.index, ".RData"))
+
+## NOT FAVORABLES ##
+## Register parallel backend for computing
+cl <- makeCluster(Ncores)
+registerDoParallel(cl)
+
+## Parallelized estimations
+time_alpha_known <- system.time(
+  simestimations_unfav <- foreach(i = simlist[!favorables], .packages = reqpckg) %dopar%
+  {
+    estimations_several_K_ak(i)
+  }
+)
+# Stop the cluster (parallel)
+stopCluster(cl)
+
+## group favorables and unfavorables
+simestimations <- vector(mode = "list", length = length(favorables))
+simestimations[favorables] <- eval(as.name(paste0("simestimations_fav_alpha_known_", inference.index)))
+simestimations[!favorables] <- simestimations_unfav
+
+rm(simestimations_unfav)
+rm(list = paste0("simestimations_fav_alpha_known_", inference.index))
+
+## rename object and save
+assign(paste0("simestimations_alpha_known_", inference.index), 
+       simestimations)
+rm(simestimations)
+
+save.image(paste0(saveresultfile, "alpha_known_", datestamp_day, "_", inference.index, ".RData"))
+
