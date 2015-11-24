@@ -2,8 +2,8 @@
 ## Bind files together several K
 #############################################
 
-saveresultfile = "../Results/Simulations_Several_K/several_K_estimations"
-datestamp_day <- "2015-03-17"
+saveresultfile = "../Results/Simulations_Several_K/several_K_estimations_FUN_"
+datestamp_day <- "2015-11-19" # 03-17
 
 simestimations_alpha_known <- NULL
 
