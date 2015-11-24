@@ -3,12 +3,12 @@
 #############################################
 
 saveresultfile = "../Results/Simulations_Several_K/several_K_estimations_FUN_"
-datestamp_day <- "2015-11-19" # 03-17
+datestamp_day <- "2015-11-24" # 03-17 11-19
 
 simestimations_alpha_known <- NULL
 
-for (inference.index in 1:40){
-  file <- paste0(saveresultfile, "_alpha_known-", datestamp_day, "_", inference.index, ".RData")
+for (inference.index in 1:2){
+  file <- paste0(saveresultfile, "alpha_known_", datestamp_day, "_", inference.index, ".RData")
   if (file.exists(file)) {
     load(file)
     ## simestimations
@@ -21,4 +21,4 @@ for (inference.index in 1:40){
   }
 }
 
-save.image(paste0(saveresultfile, "_alpha_known-", datestamp_day, "_all", ".RData"))
+save.image(paste0(saveresultfile, "alpha_known_", datestamp_day, "_all", ".RData"))
