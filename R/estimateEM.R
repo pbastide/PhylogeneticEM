@@ -991,16 +991,21 @@ merge_max_grid_alpha <- function(X, alpha){
   X$alpha_max$results_summary <- matrix(NA, nrow = length(X$K_try),
                                         ncol = ncol(summary_all))
   colnames(X$alpha_max$results_summary) <- colnames(summary_all)
+  X$alpha_max$edge.quality <- vector(length = length(X$K_try), mode = "list")
   for (K_t in X$K_try){
     max_sum <- subset(subset(summary_all, K_try == K_t), log_likelihood == max(log_likelihood))
     res_max <- X[[paste0("alpha_", max_sum$alpha_name)]]
     params <- res_max$params_estim[[paste(K_t)]]
     X$alpha_max$results_summary[K_t + 1, ] <- as.vector(unname(as.matrix(max_sum)))
     X$alpha_max$params_estim[[paste(K_t)]] <- params
+    X$alpha_max$params_raw[[paste(K_t)]] <- res_max$params_raw[[paste(K_t)]]
+    X$alpha_max$params_init_estim[[paste(K_t)]] <- res_max$params_init_estim[[paste(K_t)]]
     X$alpha_max$Yhat[[paste(K_t)]] <- res_max$Yhat[[paste(K_t)]]
     X$alpha_max$Zhat[[paste(K_t)]] <- res_max$Zhat[[paste(K_t)]]
     X$alpha_max$Yvar[[paste(K_t)]] <- res_max$Yvar[[paste(K_t)]]
     X$alpha_max$Zvar[[paste(K_t)]] <- res_max$Zvar[[paste(K_t)]]
+    X$alpha_max$edge.quality[[paste(K_t)]] <- res_max$edge.quality[[paste(K_t)]]
+    X$alpha_max$m_Y_estim[[paste(K_t)]] <- res_max$m_Y_estim[[paste(K_t)]]
   }
   X$alpha_max$results_summary <- as.data.frame(X$alpha_max$results_summary)
   return(X)
