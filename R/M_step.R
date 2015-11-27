@@ -53,7 +53,8 @@ compute_M.BM <- function(phylo,
                          nbr_of_shifts,
                          random.root,
                          variance_old,
-                         mu_old, ...) {
+                         mu_old,
+                         sBM_variance, ...) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   p <- nrow(Y_data)
@@ -67,7 +68,7 @@ compute_M.BM <- function(phylo,
                                   conditional_law_X = conditional_law_X)
   ## Transform diff_exp and lengths if root fixed
   trans <- compute_transformed_diff_exp_0.BM(phylo, random.root,
-                                                     diff_exp, mu_old)
+                                             diff_exp, mu_old)
   diff_exp_trans <- trans$diff_exp
   lengths_ed <- trans$lengths_ed
   costs0 <- compute_costs_0.simple(phylo = phylo,
@@ -79,7 +80,32 @@ compute_M.BM <- function(phylo,
                          diff_exp = diff_exp_trans)
   params$shifts <- check_dimensions.shifts(p, seg$shifts)
   edges_max <- seg$edges_max
-  ## Actualization of the root
+  ## Variance and root parameters
+  var_diff <- compute_var_diff.BM(phylo = phylo, 
+                                  conditional_law_X = conditional_law_X)
+  if (sBM_variance){
+    ## Variance then root
+    params$variance <- compute_var_M.sBM(phylo = phylo,
+                                         var_diff = var_diff,
+                                         diff_exp = diff_exp,
+                                         edges_max = edges_max,
+                                         conditional_law_X = conditional_law_X)
+    params <- update.root.sBM(phylo, params, conditional_law_X, seg, ntaxa)
+  } else {
+    ## Root then variance
+    params <- update.root.BM(phylo, params, conditional_law_X, seg, ntaxa)
+    params$variance <- compute_var_M.BM(phylo = phylo,
+                                        var_diff = var_diff,
+                                        diff_exp = diff_exp,
+                                        edges_max = edges_max,
+                                        random.root = random.root,
+                                        mu = params$root.state$value.root)
+  }
+  ## Variance
+  return(params)
+}
+
+update.root.BM <- function (phylo, params, conditional_law_X, seg, ntaxa) {
   if (params$root.state$random) {
     params$root.state$value.root <- NA
     params$root.state$exp.root <- conditional_law_X$expectations[ , ntaxa + 1]
@@ -92,15 +118,16 @@ compute_M.BM <- function(phylo,
     params$root.state$exp.root <- NA
     params$root.state$var.root <- NA
   }
-  ## Variance
-  var_diff <- compute_var_diff.BM(phylo = phylo, 
-                                  conditional_law_X = conditional_law_X)
-  params$variance <- compute_var_M.BM(phylo = phylo,
-                                      var_diff = var_diff,
-                                      diff_exp = diff_exp,
-                                      edges_max = edges_max,
-                                      random.root = random.root,
-                                      mu = params$root.state$value.root)
+  return(params)
+}
+
+update.root.sBM <- function (phylo, params, conditional_law_X, seg, ntaxa) {
+  if (!params$root.state$random) {
+    stop("Something went wrong: in M step, root is said fixed, but trying to fit a sBM.")
+    }
+    params$root.state$value.root <- NA
+    params$root.state$exp.root <- conditional_law_X$expectations[ , ntaxa + 1]
+    params$root.state$var.root <- params$variance * phylo$root.edge
   return(params)
 }
 
@@ -180,6 +207,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
                                         conditional_law_X = conditional_law_X,
                                         selection.strength = known.selection.strength)
   D <- regMat$D
+  D <- matrix(D, nrow = 1)
   Xp <- regMat$Xp
   ## Choose method(s) for segmentation
   segmentation.OU.specialCase <- function(method.segmentation){
@@ -422,6 +450,20 @@ compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max, random.root, 
                               sqrt(1/phylo$edge.length[-edges_max]), '*')),
              "symmetricMatrix")
   return(1/(ntaxa + nNodes - 1) * (varr + expp))
+}
+
+compute_var_M.sBM <- function(phylo, var_diff, diff_exp, edges_max, conditional_law_X){
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  p <- nrow(var_diff)
+  varr <- compute_sum_var_diff(phylo, var_diff)
+  varr <- varr + 1 / phylo$root.edge * get_variance_node(ntaxa + 1,
+                                   conditional_law_X$variances)
+  expp <- as(tcrossprod(sweep(diff_exp[, -edges_max, drop = F], 2,
+                              sqrt(1/phylo$edge.length[-edges_max]), '*')),
+             "symmetricMatrix")
+  # expp <- expp + 1 / phylo$root.edge * tcrossprod(conditional_law_X$expectations[ , ntaxa + 1])
+  return(1/(ntaxa + nNodes) * (varr + expp))
 }
 
 compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.strength, conditional_root_variance){

@@ -644,7 +644,11 @@ transform_branch_length <- function(phylo, alp){
     fun <- function(z){
       return(1 / (2 * alp) * exp(- 2 * alp * h_tree) * (exp(2 * alp * nodes_depth[z[2]]) - exp(2 * alp * nodes_depth[z[1]])))
     }
+    ## Root edge if exists
     phylo$edge.length <- apply(phylo$edge, 1, fun)
+    if (!is.null(phylo$root.edge)){
+      phylo$root.edge <- 1 / (2 * alp) * exp(- 2 * alp * h_tree) * phylo$root.edge
+    }
     return(phylo)
   }
 }

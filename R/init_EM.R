@@ -60,9 +60,13 @@ init.EM.default.BM <- function(phylo = NULL,
                                values.init = matrix(0, p, length(edges.init)),
                                relativeTimes.init = NULL,
                                nbr_of_shifts = length(edges.init),
-                               subtree.list = NULL, ...) {
+                               subtree.list = NULL,
+                               sBM_variance = FALSE, ...) {
   if (random.init) {
     value.root.init <- NA
+    if (sBM_variance){
+      var.root.init <- phylo$root.edge * variance.init
+    }
   } else {
     exp.root.init <- NA
     var.root.init <- NA
@@ -144,7 +148,7 @@ init.EM.default.OU <- function(phylo = NULL,
   }
   if (n_shifts_provided < nbr_of_shifts){
     missing <- nbr_of_shifts - ncol(values.init)
-    values.init <- cbind(values.init, rep(0, p))
+    values.init <- cbind(values.init, matrix(0, ncol = missing, nrow = p))
   }
   params_init=list(variance = variance.init,
                    root.state = list(random = random.init,
@@ -676,6 +680,8 @@ init.EM.lasso <- function(phylo,
                           T_tree = incidence.matrix(phylo),
                           subtree.list = NULL,
                           missing = FALSE,
+                          sBM_variance = FALSE,
+                          stationnary.root.init = FALSE,
                           ...) {
   ntaxa <- length(phylo$tip.label)
   p <- nrow(Y_data)
@@ -713,7 +719,8 @@ init.EM.lasso <- function(phylo,
                                       relativeTimes.init = relativeTimes.init,
                                       optimal.value.init = optimal.value.init,
                                       nbr_of_shifts = nbr_of_shifts,
-                                      phylo = phylo)
+                                      phylo = phylo,
+                                      sBM_variance = sBM_variance)
     }
     Fm <- compute_tree_correlations_matrix(times_shared = times_shared,
                                           distances_phylo = distances_phylo,
@@ -758,7 +765,8 @@ init.EM.lasso <- function(phylo,
                            variance.init = variance.init,
                            stationnary.root.init = stationnary.root.init,
                            nbr_of_shifts = nbr_of_shifts,
-                           phylo = phylo, ...))
+                           phylo = phylo,
+                           sBM_variance = sBM_variance, ...))
   } else { 
     E0.gauss <- fit$E0.gauss
     delta.gauss <- t(fit$delta.gauss)
@@ -782,12 +790,13 @@ init.EM.lasso <- function(phylo,
                                    edges.init = shifts.gauss$edges, 
                                    values.init = shifts.gauss$values, 
                                    relativeTimes.init = shifts.gauss$relativeTimes, 
-                                   selection.strength.init =selection.strength.init, 
+                                   selection.strength.init = selection.strength.init, 
                                    random.init = random.init, 
                                    var.root.init = var.root.init,
                                    variance.init = variance.init,
-                                   selection.strength.init = selection.strength.init, 
-                                   stationnary.root.init = stationnary.root.init, ...)
+                                   stationnary.root.init = stationnary.root.init,
+                                   sBM_variance = sBM_variance,
+                                   phylo = phylo, ...)
     return(params_init)
   }
 }
@@ -1101,7 +1110,7 @@ init.variance.BM.estimation <- function(phylo,
                                                                  na.rm = TRUE))
     }
   }
-  R_0 <- covMcd(t(1 / sqrt(h_tree) * centered_data))
+  R_0 <- covMcd(t(1 / sqrt(h_tree + phylo$root.edge) * centered_data))
   return(R_0$cov)
 }
 
