@@ -895,7 +895,7 @@ segmentation.OU.specialCase.same_shifts <- function(phylo, shifts_old, D, Xp, ..
   if (is.null(edges)) edges <- 0
   dim(edges) <- c(1, length(edges))
   root <- length(phylo$tip.label) + phylo$Nnode
-  return(best_scenario(D, Xp, edges, root))
+  return(best_scenario(as.vector(D), Xp, edges, root))
 #   return(optimize_costs_given_shift_position.OU.specialCase(phylo = phylo,
 #                                                             conditional_law_X = conditional_law_X,
 #                                                             selection.strength = selection.strength,
@@ -1008,7 +1008,7 @@ segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, X
     scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
   }
   ## Choose the best scenario
-  return(best_scenario(D, Xp, scenarii, root))
+  return(best_scenario(as.vector(D), Xp, scenarii, root))
 }
 
 
