@@ -852,7 +852,7 @@ segmentation.OU.specialCase.lasso_one_move <- function(phylo, shifts_old, nbr_of
   penscales <- matrix(1, nrow = nbr_of_shifts, ncol = ncol(Xp))
   for (i in 1:nbr_of_shifts){
     shs <- shifts_old$edges[-i]
-    penscales[i, shs] <- 10^(-5)
+    penscales[i, shs] <- 0
   }
   ## Computation of answer matrix D : already done by now.
   ## Segmentation per se

@@ -99,6 +99,66 @@ plot.data.process.actual(Y.state = data,
                          ancestral_states = res$alpha_max$BGH$Zhat,
                          no.margin = TRUE)
 
+## Random root - New Method ###################################################
+
+## Re-scale tree to one
+height_tree <- node.depth.edgelength(tree)[1]
+tree$edge.length <- tree$edge.length / height_tree
+
+alpha_grid <- find_grid_alpha(tree,
+                              nbr_alpha = 20,
+                              factor_up_alpha = 2,
+                              factor_down_alpha = 4,
+                              quantile_low_distance = 0.01,
+                              log_transform = TRUE)
+
+res_new <- PhyloEM(phylo = tree, Y_data = data, process = "scOU", K_max = 10,
+                   random.root = TRUE, stationnary.root = TRUE,
+                   alpha = alpha_grid[-1], save_step = FALSE,
+                   Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
+                                                 value.root = 10^(-2),
+                                                 log_likelihood = 10^(-2)),
+                   method.init = "lasso", use_previous = FALSE)
+
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_nrBM_method.RData"))
+
+res_new$alpha_max$results_summary$alpha_name
+res$alpha_max$results_summary$alpha_name
+
+
+rbind(sapply(res_new[-c(1, 2, 3, length(res_new))], function(z) z$results_summary$log_likelihood)[5, ],
+sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$log_likelihood)[5, ])
+
+params_select_stationnary <- res_new$alpha_max$BGH$params_select
+total_time <- sum(sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$time))
+
+OU_EM_stationary <- list(Nbr_shifts = length(params_select_stationnary$shifts$edges),
+                         Nbr_regimes = length(params_select_stationnary$shifts$edges) + 1,
+                         lnL = attr(params_select_stationnary, "log_likelihood"),
+                         MlnL = NaN,
+                         alpha = as.vector(params_select_stationnary$selection.strength),
+                         half_life = log(2) / as.vector(params_select_stationnary$selection.strength),
+                         sigma = as.vector(params_select_stationnary$variance),
+                         gamma = as.vector(params_select_stationnary$variance / (2 * params_select_stationnary$selection.strength)),
+                         time = total_time)
+
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root.RData"))
+save(params_select_stationnary, OU_EM_stationary,
+     file = paste0(PATH, data_type, "_EM_stationnary_summary.RData"))
+
+plot.data.process.actual(Y.state = data,
+                         phylo = tree, 
+                         params = res_new$alpha_max$BGH$params_select,
+                         adj.root = 1.3,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 1.3,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2",
+                         plot_ancestral_states = TRUE,
+                         ancestral_states = res_new$alpha_max$BGH$Zhat,
+                         no.margin = TRUE)
+
 ## Fixed Root ###########################################################################
 
 ## Re-scale tree to one

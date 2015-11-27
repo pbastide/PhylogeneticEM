@@ -2165,6 +2165,11 @@ res_lasso$alpha_max$results_summary$log_likelihood
 
 res_old_method$alpha_max$results_summary$log_likelihood
 
+plot(res_old_method$alpha_max$results_summary$log_likelihood,
+     xlab = "Nbr of Shifts", ylab = "LL",
+     pch = 3)
+points(res_lasso$alpha_max$results_summary$log_likelihood, pch = 4)
+
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
                          params = res_lasso$alpha_max$BGH$params_select,
@@ -2194,7 +2199,7 @@ plot.data.process.actual(Y.state = Y_data,
 results_estim_EM_rescale <- estimateEM(phylo = tree, 
                                        Y_data = Y_data, 
                                        process = "scOU", 
-                                       nbr_of_shifts = 3,
+                                       nbr_of_shifts = 8,
                                        random.root = TRUE,
                                        stationnary.root = TRUE,
                                        alpha_known = TRUE,
@@ -2216,10 +2221,21 @@ results_estim_EM_rescale <- estimateEM(phylo = tree,
 
 sapply(results_estim_EM_rescale$params_history, function(z) as.vector(attr(z, "log_likelihood")))
 
+plot.data.process.actual(Y.state = Y_data,
+                         phylo = tree, 
+                         params = results_estim_EM_rescale$params,
+                         process = "OU",
+                         adj.root = 1,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "lightgoldenrod3",
+                         bg_beta_0 = "lightgoldenrod3")
+
 results_estim_EM_raw <- estimateEM(phylo = tree, 
                                    Y_data = Y_data, 
                                    process = "scOU", 
-                                   nbr_of_shifts = 3,
+                                   nbr_of_shifts = 8,
                                    random.root = TRUE,
                                    stationnary.root = TRUE,
                                    alpha_known = TRUE,
@@ -2240,6 +2256,17 @@ results_estim_EM_raw <- estimateEM(phylo = tree,
                                    method.OUsun = "raw")
 
 sapply(results_estim_EM_raw$params_history, function(z) as.vector(attr(z, "log_likelihood")))
+
+plot.data.process.actual(Y.state = Y_data,
+                         phylo = tree, 
+                         params = results_estim_EM_raw$params,
+                         process = "OU",
+                         adj.root = 1,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "lightgoldenrod3",
+                         bg_beta_0 = "lightgoldenrod3")
 
 ## Log likelihood of raw parameters
 tree_bis <- tree
