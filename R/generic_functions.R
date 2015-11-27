@@ -652,3 +652,19 @@ transform_branch_length <- function(phylo, alp){
     return(phylo)
   }
 }
+
+##
+#' @title Scale variance and selection strenght from a linear transform
+#'
+#' @param params: parameters
+#' @param f: factor of the linear transform. If t' = f * t, the function takes parameters
+#' from phylo' back to phylo.
+#'     
+#' @return re-scaled parameters
+#' 
+##
+scale_params <- function(params, f){
+  if (!is.null(params$variance)) params$variance <- f * params$variance
+  if (!is.null(params$selection.strength)) params$selection.strength <- f * params$selection.strength
+  return(params)
+}

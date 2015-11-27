@@ -224,6 +224,20 @@ estimateEM <- function(phylo,
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   
+  ########## Re-scale tree to 100 #############################################
+  
+  factor_rescale <- min(phy_original$edge.length) / min(phylo$edge.length)
+  
+  h_tree <- factor_rescale * h_tree
+  times_shared <- factor_rescale * times_shared
+  distances_phylo <- factor_rescale * distances_phylo
+  phylo$edge.length <- factor_rescale * phylo$edge.length
+  phylo$root.edge <- factor_rescale * phylo$root.edge
+  
+  known.selection.strength <-  known.selection.strength / factor_rescale
+  init.selection.strength <- init.selection.strength / factor_rescale
+  variance.init <- variance.init / factor_rescale
+  
   ########## Missing Data #####################################################
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
@@ -427,6 +441,20 @@ estimateEM <- function(phylo,
     #         CLL_history <- cbind(CLL_history, c(CLL_old, CLL_new))
     #         attr(params, "MaxCompleteLogLik") <- CLL_new
   }
+  
+  ########## Scale back parameters to original tree ###########################
+  
+  params <- scale_params(params, factor_rescale)
+  
+  h_tree <- h_tree / factor_rescale
+  times_shared <- times_shared / factor_rescale
+  distances_phylo <- distances_phylo / factor_rescale
+  phylo$edge.length <- phylo$edge.length / factor_rescale
+  phylo$root.edge <- phylo$root.edge / factor_rescale
+  
+  known.selection.strength <-  known.selection.strength * factor_rescale
+  init.selection.strength <- init.selection.strength * factor_rescale
+  variance.init <- variance.init * factor_rescale
   
   ########## Go back to OU parameters if needed ###############################
   params_scOU <- params # If a BM, params_scOU = params
