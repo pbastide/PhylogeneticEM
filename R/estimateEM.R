@@ -227,6 +227,7 @@ estimateEM <- function(phylo,
   ########## Re-scale tree to 100 #############################################
   
   factor_rescale <- min(phy_original$edge.length) / min(phylo$edge.length)
+  # factor_rescale <- 1
   
   h_tree <- factor_rescale * h_tree
   times_shared <- factor_rescale * times_shared

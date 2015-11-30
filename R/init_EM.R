@@ -771,6 +771,7 @@ init.EM.lasso <- function(phylo,
     E0.gauss <- fit$E0.gauss
     delta.gauss <- t(fit$delta.gauss)
     if (chol_data){
+      E0.gauss <- as.vector(R_chol %*% E0.gauss)
       delta.gauss <- R_chol %*% delta.gauss
     }
     shifts.gauss <- shifts.matrix_to_list(delta.gauss)

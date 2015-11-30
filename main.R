@@ -2148,6 +2148,14 @@ res_lasso <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10
                                                    log_likelihood = 10^(-2)),
                      method.init = "lasso", use_previous = FALSE)
 
+res_lasso_thourought <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
+                                random.root = TRUE, stationnary.root = TRUE,
+                                alpha = alpha, save_step = FALSE,
+                                Nbr_It_Max = 10000, tol = list(variance = 10^(-3), 
+                                                              value.root = 10^(-3),
+                                                              log_likelihood = 10^(-3)),
+                                method.init = "lasso", use_previous = FALSE)
+
 res_old_method <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                           random.root = TRUE, stationnary.root = TRUE,
                           alpha = alpha, save_step = FALSE,
@@ -2162,6 +2170,8 @@ save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=3
 res$alpha_max$results_summary$log_likelihood
 
 res_lasso$alpha_max$results_summary$log_likelihood
+
+res_lasso_thourought$alpha_max$results_summary$log_likelihood
 
 res_old_method$alpha_max$results_summary$log_likelihood
 
@@ -2199,7 +2209,7 @@ plot.data.process.actual(Y.state = Y_data,
 results_estim_EM_rescale <- estimateEM(phylo = tree, 
                                        Y_data = Y_data, 
                                        process = "scOU", 
-                                       nbr_of_shifts = 8,
+                                       nbr_of_shifts = 4,
                                        random.root = TRUE,
                                        stationnary.root = TRUE,
                                        alpha_known = TRUE,
@@ -2220,6 +2230,8 @@ results_estim_EM_rescale <- estimateEM(phylo = tree,
                                        method.OUsun = "rescale")
 
 sapply(results_estim_EM_rescale$params_history, function(z) as.vector(attr(z, "log_likelihood")))
+sapply(results_estim_EM_rescale$params_history, function(z) z$shifts$edges)
+sapply(results_estim_EM_rescale$params_history, function(z) as.vector(z$variance))
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -2235,7 +2247,7 @@ plot.data.process.actual(Y.state = Y_data,
 results_estim_EM_raw <- estimateEM(phylo = tree, 
                                    Y_data = Y_data, 
                                    process = "scOU", 
-                                   nbr_of_shifts = 8,
+                                   nbr_of_shifts = 4,
                                    random.root = TRUE,
                                    stationnary.root = TRUE,
                                    alpha_known = TRUE,
@@ -2256,6 +2268,7 @@ results_estim_EM_raw <- estimateEM(phylo = tree,
                                    method.OUsun = "raw")
 
 sapply(results_estim_EM_raw$params_history, function(z) as.vector(attr(z, "log_likelihood")))
+sapply(results_estim_EM_raw$params_history, function(z) z$shifts$edges)
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -2267,6 +2280,18 @@ plot.data.process.actual(Y.state = Y_data,
                          cex = 2,
                          bg_shifts = "lightgoldenrod3",
                          bg_beta_0 = "lightgoldenrod3")
+
+
+## Compare inits
+
+results_estim_EM_rescale$params_init$shifts$edges
+results_estim_EM_raw$params_init$shifts$edges
+
+results_estim_EM_rescale$params$shifts$edges
+results_estim_EM_raw$params$shifts$edges
+
+res_lasso$alpha_max$BGH$params_select$shifts$edges
+res_old_method$alpha_max$BGH$params_select$shifts$edges
 
 ## Log likelihood of raw parameters
 tree_bis <- tree
