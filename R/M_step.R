@@ -807,7 +807,7 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, pensc
     return(list(beta_0 = 0, shifts = NULL, costs = Inf))
   } else {
     # Define shifts
-    shifts <- fit$shifts.gauss
+    shifts <- shifts.matrix_to_list(t(fit$delta.gauss))
     # Define mu = beta_0
     beta_0 <- fit$E0.gauss
     # Compute new costs

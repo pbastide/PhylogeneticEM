@@ -2209,7 +2209,7 @@ plot.data.process.actual(Y.state = Y_data,
 results_estim_EM_rescale <- estimateEM(phylo = tree, 
                                        Y_data = Y_data, 
                                        process = "scOU", 
-                                       nbr_of_shifts = 4,
+                                       nbr_of_shifts = 3,
                                        random.root = TRUE,
                                        stationnary.root = TRUE,
                                        alpha_known = TRUE,
@@ -2265,7 +2265,8 @@ results_estim_EM_raw <- estimateEM(phylo = tree,
                                               log_likelihood = 10^(-2)),
                                    Nbr_It_Max = 1000,
                                    method.init = "lasso",
-                                   method.OUsun = "raw")
+                                   method.OUsun = "raw",
+                                   methods.segmentation = c("lasso", "best_single_move"))
 
 sapply(results_estim_EM_raw$params_history, function(z) as.vector(attr(z, "log_likelihood")))
 sapply(results_estim_EM_raw$params_history, function(z) z$shifts$edges)
