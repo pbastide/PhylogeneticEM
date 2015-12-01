@@ -2165,9 +2165,8 @@ res_old_method <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max
                           method.init = "lasso", use_previous = FALSE,
                           method.OUsun = "raw")
 
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_lasso_SUN.RData")
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_lasso_SUN_new.RData")
 
-res$alpha_max$results_summary$log_likelihood
 
 res_lasso$alpha_max$results_summary$log_likelihood
 
@@ -2191,7 +2190,7 @@ plot.data.process.actual(Y.state = Y_data,
                          bg_shifts = "lightgoldenrod3",
                          bg_beta_0 = "lightgoldenrod3",
                          plot_ancestral_states = TRUE,
-                         ancestral_states = res$alpha_max$BGH$Zhat)
+                         ancestral_states = res_lasso$alpha_max$BGH$Zhat)
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -2204,7 +2203,7 @@ plot.data.process.actual(Y.state = Y_data,
                          bg_shifts = "lightgoldenrod3",
                          bg_beta_0 = "lightgoldenrod3",
                          plot_ancestral_states = TRUE,
-                         ancestral_states = res$alpha_max$BGH$Zhat)
+                         ancestral_states = res_old_method$alpha_max$BGH$Zhat)
 
 results_estim_EM_rescale <- estimateEM(phylo = tree, 
                                        Y_data = Y_data, 
@@ -2225,7 +2224,7 @@ results_estim_EM_rescale <- estimateEM(phylo = tree,
                                        tol = list(variance = 10^(-2), 
                                                   value.root = 10^(-2),
                                                   log_likelihood = 10^(-2)),
-                                       Nbr_It_Max = 1000,
+                                       Nbr_It_Max = 1,
                                        method.init = "lasso",
                                        method.OUsun = "rescale")
 

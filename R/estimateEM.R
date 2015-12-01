@@ -297,6 +297,7 @@ estimateEM <- function(phylo,
                                                  T_tree = T_tree,
                                                  subtree.list = subtree.list,
                                                  missing = missing,
+                                                 selection.strength.init = init.selection.strength,
                                                  ...)
   }
 
