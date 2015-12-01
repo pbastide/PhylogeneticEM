@@ -2142,7 +2142,7 @@ alpha_grid <- find_grid_alpha(tree,
                               log_transform = TRUE)
 res_lasso <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                      random.root = TRUE, stationnary.root = TRUE,
-                     alpha = alpha, save_step = FALSE,
+                     alpha = alpha_grid[-1], save_step = FALSE,
                      Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
                                                    value.root = 10^(-2),
                                                    log_likelihood = 10^(-2)),
@@ -2150,7 +2150,7 @@ res_lasso <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10
 
 res_lasso_thourought <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                                 random.root = TRUE, stationnary.root = TRUE,
-                                alpha = alpha, save_step = FALSE,
+                                alpha = alpha_grid[-1], save_step = FALSE,
                                 Nbr_It_Max = 10000, tol = list(variance = 10^(-3), 
                                                               value.root = 10^(-3),
                                                               log_likelihood = 10^(-3)),
@@ -2158,21 +2158,22 @@ res_lasso_thourought <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU",
 
 res_old_method <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                           random.root = TRUE, stationnary.root = TRUE,
-                          alpha = alpha, save_step = FALSE,
+                          alpha = alpha_grid[-1], save_step = FALSE,
                           Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
                                                         value.root = 10^(-2),
                                                         log_likelihood = 10^(-2)),
                           method.init = "lasso", use_previous = FALSE,
                           method.OUsun = "raw")
 
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_lasso_SUN_new.RData")
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_lasso_SUN_grid.RData")
 
 
 res_lasso$alpha_max$results_summary$log_likelihood
-
-res_lasso_thourought$alpha_max$results_summary$log_likelihood
-
 res_old_method$alpha_max$results_summary$log_likelihood
+
+res_lasso$alpha_max$results_summary$alpha_name
+res_old_method$alpha_max$results_summary$alpha_name
+
 
 plot(res_old_method$alpha_max$results_summary$log_likelihood,
      xlab = "Nbr of Shifts", ylab = "LL",
@@ -2208,23 +2209,15 @@ plot.data.process.actual(Y.state = Y_data,
 results_estim_EM_rescale <- estimateEM(phylo = tree, 
                                        Y_data = Y_data, 
                                        process = "scOU", 
-                                       nbr_of_shifts = 3,
+                                       nbr_of_shifts = 4,
                                        random.root = TRUE,
                                        stationnary.root = TRUE,
                                        alpha_known = TRUE,
-                                       known.selection.strength = alpha,
-                                       # var.init.root = prev$params_raw$root.state$var.root,
-                                       # exp.root.init = prev$params_raw$root.state$exp.root,
-                                       # variance.init = params_rebound$variance,
-                                       # variance.init = 5,
-                                       # value.root.init = params_rebound$root.state$value.root,
-                                       # edges.init = params_rebound$shifts$edges,
-                                       # values.init = params_rebound$shifts$values,
-                                       #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                                       known.selection.strength = alpha_grid[11],
                                        tol = list(variance = 10^(-2), 
                                                   value.root = 10^(-2),
                                                   log_likelihood = 10^(-2)),
-                                       Nbr_It_Max = 1,
+                                       Nbr_It_Max = 1000,
                                        method.init = "lasso",
                                        method.OUsun = "rescale")
 
@@ -2250,15 +2243,7 @@ results_estim_EM_raw <- estimateEM(phylo = tree,
                                    random.root = TRUE,
                                    stationnary.root = TRUE,
                                    alpha_known = TRUE,
-                                   known.selection.strength = alpha,
-                                   # var.init.root = prev$params_raw$root.state$var.root,
-                                   # exp.root.init = prev$params_raw$root.state$exp.root,
-                                   # variance.init = params_rebound$variance,
-                                   # variance.init = 5,
-                                   # value.root.init = params_rebound$root.state$value.root,
-                                   # edges.init = params_rebound$shifts$edges,
-                                   # values.init = params_rebound$shifts$values,
-                                   #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                                   known.selection.strength = alpha_grid[11],
                                    tol = list(variance = 10^(-2), 
                                               value.root = 10^(-2),
                                               log_likelihood = 10^(-2)),
