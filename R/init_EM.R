@@ -614,7 +614,7 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
   } else { # take intercept (root) into consideration
     Xproj <- 0 + Xp[, c(root, projection), drop = FALSE]
     fit.gauss <- lm.fit(x = Xproj, y = t(Yp))
-    delta.gauss <- matrix(0, dim(Xp)[2], dim(Yp)[1])
+    delta.gauss <- matrix(0, dim(Xp)[2] - 1, dim(Yp)[1])
     coefs_gauss <- matrix(coef(fit.gauss), ncol = dim(Yp)[1])
     E0.gauss <- coefs_gauss[1, ]; names(E0.gauss) <- NULL
     delta.gauss[projection, ] <- coefs_gauss[-1, ]
@@ -737,8 +737,8 @@ init.EM.lasso <- function(phylo,
     R_chol_inv <- t(backsolve(t(R_chol), diag(ncol(R_chol)))) # R_YY_inv = t(R_chol_inv)%*%R_chol_inv
     # Transform Y_data and T
     Tr <- cbind(Tr, rep(1, dim(Tr)[1])) # Here we use hypothesis : beta_0 = mu if OU
-    Tp <- t(Fm_chol_inv) %*% Tr
-    Yp <- R_chol_inv %*% Y_data_imp %*% Fm_chol_inv
+    Tp <- Fm_chol_inv %*% Tr
+    Yp <- R_chol_inv %*% Y_data_imp %*% t(Fm_chol_inv)
     fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp,
                                         K = nbr_of_shifts, root = dim(Tr)[2]))
     chol_data <- TRUE
