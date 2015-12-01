@@ -1174,11 +1174,10 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                          alpha = NULL,
                          check.tips.names = FALSE,
                          progress.bar = TRUE,
-                         estimates = NULL,
                          save_step = FALSE,
                          sBM_variance = FALSE,
                          method.OUsun = "rescale",
-                         ...){
+                    ...){
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
   ## Check that the vector of data is in the correct order and dimensions ################
@@ -1196,16 +1195,20 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             known.selection.strength = alpha,
                             sBM_variance = sBM_variance,
                             method.OUsun = method.OUsun)
+  
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
   transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
   sBM_variance <- temp$sBM_variance
+  if (sBM_variance){ # process sBM : need a root branch.
+    original_phy$root.edge <- 1
+  }
+  
   ## Compute alpha
   if (process == "BM") {
     alpha <- 0
   } else {
     alpha <- find_grid_alpha(phylo, alpha, ...)
   }
-  
   ## Estimates
   X <- list(Y_data = Y_data,
             K_try = 0:K_max,
