@@ -1111,8 +1111,8 @@ init.variance.BM.estimation <- function(phylo,
                                                                  na.rm = TRUE))
     }
   }
-  R_0 <- covMcd(t(1 / sqrt(h_tree + phylo$root.edge) * centered_data))
-  return(R_0$cov)
+  R_0 <- covMcd(t(centered_data))
+  return(1 / (h_tree + phylo$root.edge) * R_0$cov)
 }
 
 ## Regression on normalized half life to have the good tolerence.
