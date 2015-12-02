@@ -119,6 +119,9 @@ estimateEM <- function(phylo,
   ## Find dimension
   p <- nrow(Y_data)
   
+  ## Root edge of the tree ###############################################################
+  if (is.null(phylo$root.edge)) phylo$root.edge <- 0
+  
   ########## Check consistancy ################################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
