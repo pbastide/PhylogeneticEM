@@ -112,15 +112,18 @@ alpha_grid <- find_grid_alpha(tree,
                               quantile_low_distance = 0.01,
                               log_transform = TRUE)
 
-res_new <- PhyloEM(phylo = tree, Y_data = data, process = "scOU", K_max = 10,
+res_new <- PhyloEM(phylo = tree, Y_data = data, process = "scOU",
+                   K_max = K_max,
                    random.root = TRUE, stationnary.root = TRUE,
-                   alpha = alpha_grid[-1], save_step = FALSE,
-                   Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
-                                                 value.root = 10^(-2),
-                                                 log_likelihood = 10^(-2)),
+                   alpha = alpha_grid[-1],
+                   save_step = FALSE,
+                   Nbr_It_Max = 1000,
+                   tol = list(variance = 10^(-2), 
+                              value.root = 10^(-2),
+                              log_likelihood = 10^(-2)),
                    method.init = "lasso", use_previous = FALSE)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_nrBM_method.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM_method.RData"))
 
 res_new$alpha_max$results_summary$alpha_name
 res$alpha_max$results_summary$alpha_name
@@ -129,22 +132,22 @@ res$alpha_max$results_summary$alpha_name
 rbind(sapply(res_new[-c(1, 2, 3, length(res_new))], function(z) z$results_summary$log_likelihood)[5, ],
 sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$log_likelihood)[5, ])
 
-params_select_stationnary <- res_new$alpha_max$BGH$params_select
-total_time <- sum(sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$time))
+params_select_stationnary_rBM <- res_new$alpha_max$BGH$params_select
+total_time <- sum(sapply(res_new[-c(1, 2, 3, length(res_new))], function(z) z$results_summary$time))
 
-OU_EM_stationary <- list(Nbr_shifts = length(params_select_stationnary$shifts$edges),
-                         Nbr_regimes = length(params_select_stationnary$shifts$edges) + 1,
-                         lnL = attr(params_select_stationnary, "log_likelihood"),
-                         MlnL = NaN,
-                         alpha = as.vector(params_select_stationnary$selection.strength),
-                         half_life = log(2) / as.vector(params_select_stationnary$selection.strength),
-                         sigma = as.vector(params_select_stationnary$variance),
-                         gamma = as.vector(params_select_stationnary$variance / (2 * params_select_stationnary$selection.strength)),
-                         time = total_time)
+OU_EM_stationary_rBM <- list(Nbr_shifts = length(params_select_stationnary_rBM$shifts$edges),
+                             Nbr_regimes = length(params_select_stationnary_rBM$shifts$edges) + 1,
+                             lnL = attr(params_select_stationnary_rBM, "log_likelihood"),
+                             MlnL = NaN,
+                             alpha = as.vector(params_select_stationnary_rBM$selection.strength),
+                             half_life = log(2) / as.vector(params_select_stationnary_rBM$selection.strength),
+                             sigma = as.vector(params_select_stationnary_rBM$variance),
+                             gamma = as.vector(params_select_stationnary_rBM$variance / (2 * params_select_stationnary_rBM$selection.strength)),
+                             time = total_time)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root.RData"))
-save(params_select_stationnary, OU_EM_stationary,
-     file = paste0(PATH, data_type, "_EM_stationnary_summary.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM.RData"))
+save(params_select_stationnary_rBM, OU_EM_stationary_rBM,
+     file = paste0(PATH, data_type, "_EM_stationnary_rBM_summary.RData"))
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 

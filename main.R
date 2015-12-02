@@ -1971,6 +1971,8 @@ plot.data.process.actual(Y.state = Y_data,
 
 
 res$alpha_max$results_summary$alpha_name
+res$alpha_max$results_summary$log_likelihood
+res$alpha_max$results_summary$log_likelihood_init
 
 rres <- res[-c(1, 2, 3, 15)]
 sapply(rres, function(z) z$results_summary$log_likelihood)
