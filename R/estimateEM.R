@@ -109,7 +109,9 @@ estimateEM <- function(phylo,
                        tol_half_life = TRUE,
                        warning_several_solutions = TRUE,
                        convergence_mode = c("relative", "absolute"),
-                       check_convergence_likelihood = TRUE, ...){
+                       check_convergence_likelihood = TRUE,
+                       sBM_variance = FALSE,
+                       method.OUsun = c("rescale", "raw"), ...){
   
   ntaxa <- length(phylo$tip.label)
   ## Check that the vector of data is in the correct order and dimensions ################
@@ -117,18 +119,38 @@ estimateEM <- function(phylo,
   ## Find dimension
   p <- nrow(Y_data)
   
+  ## Root edge of the tree ###############################################################
+  if (is.null(phylo$root.edge)) phylo$root.edge <- 0
+  
   ########## Check consistancy ################################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
+  if (sBM_variance){
+    if (!random.root){
+      warning("Process sBM assumes a random root. Switching to a random root.")
+      random.root <- TRUE
+    }
+    if (phylo$root.edge == 0){
+      stop("Something went wrong: I need to know the length of the root edge for the sBM.")
+    }
+  }
   
   ########## Choose process ###################################################
   process <- match.arg(process)
   original_process <- process
-  temp <- choose_process_EM(process, p, random.root, stationnary.root, alpha_known,
-                            known.selection.strength, eps)
+  temp <- choose_process_EM(process = process, p = p,
+                            random.root = random.root,
+                            stationnary.root = stationnary.root,
+                            alpha_known = alpha_known,
+                            known.selection.strength = known.selection.strength,
+                            eps = eps,
+                            sBM_variance = sBM_variance,
+                            method.OUsun = method.OUsun)
   process <- temp$process
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
+  sBM_variance <- temp$sBM_variance
+  if (sBM_variance) phylo$root.edge <- 1
   
   ########## Choose functions #################################################
   # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
@@ -205,6 +227,21 @@ estimateEM <- function(phylo,
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   
+  ########## Re-scale tree to 100 #############################################
+  
+  factor_rescale <- min(phy_original$edge.length) / min(phylo$edge.length)
+  # factor_rescale <- 1
+  
+  h_tree <- factor_rescale * h_tree
+  times_shared <- factor_rescale * times_shared
+  distances_phylo <- factor_rescale * distances_phylo
+  phylo$edge.length <- factor_rescale * phylo$edge.length
+  phylo$root.edge <- factor_rescale * phylo$root.edge
+  
+  known.selection.strength <-  known.selection.strength / factor_rescale
+  init.selection.strength <- init.selection.strength / factor_rescale
+  variance.init <- variance.init / factor_rescale
+  
   ########## Missing Data #####################################################
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
@@ -252,7 +289,7 @@ estimateEM <- function(phylo,
   }
   
   ## Init of Rate matrix for BM
-  if (process == "BM"){
+  if (process == "BM" && (!random.root || (random.root && sBM_variance))){
     variance.init <- init.variance.BM.estimation(phylo = phylo, 
                                                  Y_data = Y_data, 
                                                  nbr_of_shifts = nbr_of_shifts, 
@@ -263,6 +300,7 @@ estimateEM <- function(phylo,
                                                  T_tree = T_tree,
                                                  subtree.list = subtree.list,
                                                  missing = missing,
+                                                 selection.strength.init = init.selection.strength,
                                                  ...)
   }
 
@@ -283,6 +321,7 @@ estimateEM <- function(phylo,
                          subtree.list = subtree.list,
                          missing = missing,
                          variance.init = variance.init,
+                         sBM_variance = sBM_variance,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 
@@ -381,7 +420,8 @@ estimateEM <- function(phylo,
                         shifts_old = params_old$shifts,
                         variance_old = params_old$variance,
                         mu_old = params_old$root.state$value.root,
-                        subtree.list = subtree.list)
+                        subtree.list = subtree.list,
+                        sBM_variance = sBM_variance)
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p_dim")  <- p
     ## Number of shifts that changed position ?
@@ -407,6 +447,20 @@ estimateEM <- function(phylo,
     #         attr(params, "MaxCompleteLogLik") <- CLL_new
   }
   
+  ########## Scale back parameters to original tree ###########################
+  
+  params <- scale_params(params, factor_rescale)
+  
+  h_tree <- h_tree / factor_rescale
+  times_shared <- times_shared / factor_rescale
+  distances_phylo <- distances_phylo / factor_rescale
+  phylo$edge.length <- phylo$edge.length / factor_rescale
+  phylo$root.edge <- phylo$root.edge / factor_rescale
+  
+  known.selection.strength <-  known.selection.strength * factor_rescale
+  init.selection.strength <- init.selection.strength * factor_rescale
+  variance.init <- variance.init * factor_rescale
+  
   ########## Go back to OU parameters if needed ###############################
   params_scOU <- params # If a BM, params_scOU = params
   if (transform_scOU){
@@ -418,7 +472,11 @@ estimateEM <- function(phylo,
                                                          known.selection.strength,
                                                          eps))
     ## lambda parameter
-    params_scOU$lambda <- params$root.state$value.root
+    if (sBM_variance){
+      params_scOU$lambda <- params$root.state$exp.root
+    } else {
+      params_scOU$lambda <- params$root.state$value.root
+    }
     ## Default: beta_0 = mu = lambda
     params_scOU$optimal.value <- params_scOU$lambda
     ## shifts values
@@ -428,6 +486,10 @@ estimateEM <- function(phylo,
                                                   phylo = phylo)
     params_scOU$selection.strength <- known.selection.strength
     params_scOU$root.state$stationary.root <- FALSE
+    if (sBM_variance){
+      params_scOU$root.state$var.root <- params_scOU$variance / (2 * params_scOU$selection.strength)
+      params_scOU$root.state$stationary.root <- TRUE
+    }
   }
   
   ########## Compute scores and ancestral states for final parameters ##########
@@ -678,6 +740,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     progress.bar = TRUE,
                     estimates = NULL,
                     save_step = FALSE,
+                    sBM_variance = FALSE,
+                    method.OUsun = "rescale",
                     ...){
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
@@ -697,9 +761,20 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   process <- match.arg(process)
   process_original <- process
   original_phy <- phylo
-  temp <- choose_process_EM(process, p, random.root, stationnary.root, alpha_known)
+  temp <- choose_process_EM(process = process, p = p,
+                            random.root = random.root,
+                            stationnary.root = stationnary.root,
+                            alpha_known = alpha_known,
+                            known.selection.strength = alpha,
+                            sBM_variance = sBM_variance,
+                            method.OUsun = method.OUsun)
+    
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
   transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
+  sBM_variance <- temp$sBM_variance
+  if (sBM_variance){ # process sBM : need a root branch.
+    original_phy$root.edge <- 1
+  }
   
   ## Compute alpha
   if (process == "BM") {
@@ -754,6 +829,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                T_tree = T_tree,
                                h_tree = h_tree,
                                save_step = save_step,
+                               sBM_variance = sBM_variance,
+                               method.OUsun = method.OUsun,
                                ...)
     }
   }
@@ -805,6 +882,8 @@ Phylo_EM_sequencial <- function(phylo, Y_data, process, K_max,
                                 T_tree = NULL,
                                 h_tree = NULL,
                                 save_step = TRUE,
+                                sBM_variance = FALSE,
+                                method.OUsun = "rescale",
                                 ...){
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
@@ -847,6 +926,8 @@ Phylo_EM_sequencial <- function(phylo, Y_data, process, K_max,
                                                       T_tree = T_tree,
                                                       h_tree = h_tree,
                                                       warning_several_solutions = FALSE,
+                                                      sBM_variance = sBM_variance,
+                                                      method.OUsun = method.OUsun,
                                                       ...)
   pp <- check_dimensions(p,
                          XX[[paste0(K_first)]]$params$root.state,
@@ -882,6 +963,8 @@ Phylo_EM_sequencial <- function(phylo, Y_data, process, K_max,
                                                           T_tree = T_tree, 
                                                           h_tree = h_tree,
                                                           warning_several_solutions = FALSE,
+                                                          sBM_variance = sBM_variance,
+                                                          method.OUsun = method.OUsun,
                                                           ...)
     pp <- check_dimensions(p,
                            XX[[paste0(K_t)]]$params$root.state,
@@ -1023,6 +1106,8 @@ estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
                                         methods.segmentation,
                                         method.init,
                                         method.init.alpha,
+                                        sBM_variance,
+                                        method.OUsun,
                                         ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -1044,6 +1129,8 @@ estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
                                                    values.init = prev$params_raw$shifts$values,
                                                    #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
                                                    methods.segmentation = methods.segmentation,
+                                                   sBM_variance = sBM_variance,
+                                                   method.OUsun = method.OUsun,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -1055,6 +1142,8 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data, process, K_t,
                                        methods.segmentation,
                                        method.init,
                                        method.init.alpha,
+                                       sBM_variance,
+                                       method.OUsun,
                                        ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -1068,6 +1157,8 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data, process, K_t,
                                                    alpha_known = alpha_known,
                                                    known.selection.strength = alpha,
                                                    methods.segmentation = methods.segmentation,
+                                                   sBM_variance = sBM_variance,
+                                                   method.OUsun = method.OUsun,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -1086,9 +1177,10 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                          alpha = NULL,
                          check.tips.names = FALSE,
                          progress.bar = TRUE,
-                         estimates = NULL,
                          save_step = FALSE,
-                         ...){
+                         sBM_variance = FALSE,
+                         method.OUsun = "rescale",
+                    ...){
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
   ## Check that the vector of data is in the correct order and dimensions ################
@@ -1099,9 +1191,20 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   process <- match.arg(process)
   process_original <- process
   original_phy <- phylo
-  temp <- choose_process_EM(process, p, random.root, stationnary.root, alpha_known)
+  temp <- choose_process_EM(process = process, p = p,
+                            random.root = random.root,
+                            stationnary.root = stationnary.root,
+                            alpha_known = alpha_known,
+                            known.selection.strength = alpha,
+                            sBM_variance = sBM_variance,
+                            method.OUsun = method.OUsun)
+  
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
   transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
+  sBM_variance <- temp$sBM_variance
+  if (sBM_variance){ # process sBM : need a root branch.
+    original_phy$root.edge <- 1
+  }
   
   ## Compute alpha
   if (process == "BM") {
@@ -1109,7 +1212,6 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   } else {
     alpha <- find_grid_alpha(phylo, alpha, ...)
   }
-  
   ## Estimates
   X <- list(Y_data = Y_data,
             K_try = 0:K_max,
@@ -1153,6 +1255,8 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              T_tree = T_tree,
                              h_tree = h_tree,
                              save_step = save_step,
+                             sBM_variance = sBM_variance,
+                             method.OUsun = method.OUsun,
                              ...)
   }
   ## Select max solution for each K
@@ -1385,36 +1489,47 @@ check_data <- function(phylo, Y_data, check.tips.names){
 }
 
 choose_process_EM <- function(process, p, random.root, stationnary.root, alpha_known,
-                              known.selection.strength = 1, eps = 10^(-3)){
+                              known.selection.strength = 1, eps = 10^(-3),
+                              sBM_variance = FALSE,
+                              method.OUsun = "rescale"){
   ## Reduce Process
   transform_scOU <- FALSE # Should we re-transform back the parameters to get an OU ?
   rescale_tree <- FALSE # Should we re-scale the tree ?
   if (process == "OU"){
     if (p > 1) {
       warning("The general OU is not implemented in the multivariate case. Switching to the scalar OU (scOU).")
-      process <- "scOU"
-    } else{
-      if (stationnary.root) {
-        warning("The OU with a stationnary root is the 'old fashioned' implementation, that might be slower. Please consider using a fixed root.")
-      } else {
-        process <-"scOU"
-      }
     }
+    process <- "scOU"
   }
   if (process == "scOU"){
-    if (random.root && p > 1){
-      stop("The scalar OU process with a random root is not implemented for the multivariate case")
+    if (random.root){
+      if ((method.OUsun == "rescale")){
+        if (!alpha_known){
+          stop("The re-scaled scalar OU is only implemented for known selection strength. Please consider using a grid.")
+        }
+        sBM_variance <- TRUE
+        if (!stationnary.root){
+          warning("The scalar OU process with a general random root is not implemented for the multivariate case. The root is taken to be in the stationnary state.")
+        }
+        transform_scOU <- TRUE
+        rescale_tree <- TRUE
+        process <- "BM"
+      } else {
+        process <- "OU"
+      }
     } else {
-      if (!alpha_known) stop("The scalar OU is only implemented for known selection strength. Pleas consider using a grid.")
-      process <- "BM"
+      if (!alpha_known){
+        stop("The re-scaled scalar OU is only implemented for known selection strength. Please consider using a grid.")
+      }
       transform_scOU <- TRUE
       rescale_tree <- TRUE
+      process <- "BM"
     }
   }
   if ((process == "OU") && alpha_known){
     process <- check.selection.strength(process, known.selection.strength, eps)
   }
-  if ((process == "BM") && random.root){
+  if ((process == "BM") && random.root && !sBM_variance){
     warning("The root parameters cannot be estimated for a BM with a random root. Switching to a fixed root.")
     random.root <- FALSE
   }
@@ -1424,5 +1539,6 @@ choose_process_EM <- function(process, p, random.root, stationnary.root, alpha_k
   }
   return(list(process = process,
               transform_scOU = transform_scOU,
-              rescale_tree = rescale_tree))
+              rescale_tree = rescale_tree,
+              sBM_variance = sBM_variance))
 }

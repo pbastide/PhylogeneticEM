@@ -644,7 +644,27 @@ transform_branch_length <- function(phylo, alp){
     fun <- function(z){
       return(1 / (2 * alp) * exp(- 2 * alp * h_tree) * (exp(2 * alp * nodes_depth[z[2]]) - exp(2 * alp * nodes_depth[z[1]])))
     }
+    ## Root edge if exists
     phylo$edge.length <- apply(phylo$edge, 1, fun)
+    if (!is.null(phylo$root.edge)){
+      phylo$root.edge <- 1 / (2 * alp) * exp(- 2 * alp * h_tree) * phylo$root.edge
+    }
     return(phylo)
   }
+}
+
+##
+#' @title Scale variance and selection strenght from a linear transform
+#'
+#' @param params: parameters
+#' @param f: factor of the linear transform. If t' = f * t, the function takes parameters
+#' from phylo' back to phylo.
+#'     
+#' @return re-scaled parameters
+#' 
+##
+scale_params <- function(params, f){
+  if (!is.null(params$variance)) params$variance <- f * params$variance
+  if (!is.null(params$selection.strength)) params$selection.strength <- f * params$selection.strength
+  return(params)
 }

@@ -281,17 +281,16 @@ get_variance_node <- function(node, vars){
 ##
 compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
   p <- nrow(params_old$shifts$values)
+  J <- matrix(1, nrow = dim(times_shared)[1], ncol = dim(times_shared)[2])
   if (p == 1){ # Dimension 1 (next would also work, but slightly faster)
     varr <- as.vector(params_old$variance) * times_shared
     if (params_old$root.state$random) {
-      J <- matrix(1, nrow = dim(times_shared)[1], ncol = dim(times_shared)[2])
       varr <- varr + as.vector(params_old$root.state$var.root) * J
     }
   } else {
     varr <- kronecker(times_shared, params_old$variance)
     if (params_old$root.state$random) {
-      varr <- varr + kronecker(as(diag(1, dim(times_shared)), "symmetricMatrix"), 
-                               params_old$root.state$var.root)
+      varr <- varr + kronecker(as(J, "symmetricMatrix"), params_old$root.state$var.root)
     }
   }
   attr(varr, "p_dim") <- p
