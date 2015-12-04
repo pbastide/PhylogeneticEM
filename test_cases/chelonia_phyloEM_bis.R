@@ -54,20 +54,24 @@ height_tree <- node.depth.edgelength(tree)[1]
 tree$edge.length <- tree$edge.length / height_tree
 
 alpha_grid <- find_grid_alpha(tree,
-                              nbr_alpha = 20,
+                              nbr_alpha = 50,
                               factor_up_alpha = 2,
                               factor_down_alpha = 4,
-                              quantile_low_distance = 0.01,
+                              quantile_low_distance = 0.005,
                               log_transform = TRUE)
 
 res <- PhyloEM(phylo = tree,
-               Y_data = data,
-               process = "OU", K_max = K_max,
-               alpha_known = TRUE, alpha = alpha_grid[-1],
+               Y_data = data, process = "scOU",
+               K_max = K_max,
                random.root = TRUE, stationnary.root = TRUE,
-               methods.segmentation = "lasso")
+               alpha = alpha_grid[-1], save_step = FALSE,
+               Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
+                                             value.root = 10^(-2),
+                                             log_likelihood = 10^(-2)),
+               method.init = "lasso", use_previous = FALSE,
+               method.OUsun = "raw")
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_50.RData"))
 
 params_select_stationnary <- res$alpha_max$BGH$params_select
 total_time <- sum(sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$time))
@@ -82,9 +86,9 @@ OU_EM_stationary <- list(Nbr_shifts = length(params_select_stationnary$shifts$ed
                          gamma = as.vector(params_select_stationnary$variance / (2 * params_select_stationnary$selection.strength)),
                          time = total_time)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_50.RData"))
 save(params_select_stationnary, OU_EM_stationary,
-     file = paste0(PATH, data_type, "_EM_stationnary_summary.RData"))
+     file = paste0(PATH, data_type, "_EM_stationnary_summary_50.RData"))
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
@@ -106,10 +110,10 @@ height_tree <- node.depth.edgelength(tree)[1]
 tree$edge.length <- tree$edge.length / height_tree
 
 alpha_grid <- find_grid_alpha(tree,
-                              nbr_alpha = 20,
+                              nbr_alpha = 50,
                               factor_up_alpha = 2,
                               factor_down_alpha = 4,
-                              quantile_low_distance = 0.01,
+                              quantile_low_distance = 0.005,
                               log_transform = TRUE)
 
 res_new <- PhyloEM(phylo = tree, Y_data = data, process = "scOU",
@@ -123,7 +127,7 @@ res_new <- PhyloEM(phylo = tree, Y_data = data, process = "scOU",
                               log_likelihood = 10^(-2)),
                    method.init = "lasso", use_previous = FALSE)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM_method.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM_method_50.RData"))
 
 res_new$alpha_max$results_summary$alpha_name
 res$alpha_max$results_summary$alpha_name
@@ -147,9 +151,9 @@ OU_EM_stationary_rBM <- list(Nbr_shifts = length(params_select_stationnary_rBM$s
 
 sum_sols_stationnary_rBM <- res_new$alpha_max$BGH
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM.RData"))
-save(params_select_stationnary_rBM, OU_EM_stationary_rBM, sum_sols_stationnary_rBM,
-     file = paste0(PATH, data_type, "_EM_stationnary_rBM_summary.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM_50.RData"))
+save(params_select_stationnary_rBM, OU_EM_stationary_rBM, sum_sols_stationnary_rBM, alpha_grid,
+     file = paste0(PATH, data_type, "_EM_stationnary_rBM_summary_50.RData"))
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
@@ -171,13 +175,13 @@ height_tree <- node.depth.edgelength(tree)[1]
 tree$edge.length <- tree$edge.length / height_tree
 
 alpha_grid <- find_grid_alpha(tree,
-                              nbr_alpha = 20,
+                              nbr_alpha = 50,
                               factor_up_alpha = 2,
                               factor_down_alpha = 4,
-                              quantile_low_distance = 0.01,
+                              quantile_low_distance = 0.005,
                               log_transform = TRUE)
 
-alpha_grid <- seq(0, 14, 0.2)
+# alpha_grid <- seq(0, 14, 0.2)
 
 resb <- PhyloEM(phylo = tree,
                 Y_data = data,
@@ -189,7 +193,7 @@ resb <- PhyloEM(phylo = tree,
                 tol = list(variance = 10^(-2), 
                            value.root = 10^(-2)))
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_fixed_root_rescaled_tree_lasso_init_R_init_new.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_fixed_root_rescaled_tree_lasso_init_R_init_50.RData"))
 
 params_select_fixed <- resb$alpha_max$BGH$params_select
 total_time <- sum(sapply(resb[-c(1, 2, 3, length(resb))], function(z) z$results_summary$time))
@@ -204,9 +208,9 @@ OU_EM_fixed <- list(Nbr_shifts = length(params_select_fixed$shifts$edges),
                     gamma = as.vector(params_select_fixed$variance / (2 * params_select_fixed$selection.strength)),
                     time = total_time)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_fixed_root_rescaled_tree_lasso_init_R_init_new.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_fixed_root_rescaled_tree_lasso_init_R_init_50.RData"))
 save(params_select_fixed, OU_EM_fixed,
-     file = paste0(PATH, data_type, "_EM_fixed_summary_new.RData"))
+     file = paste0(PATH, data_type, "_EM_fixed_summary_50.RData"))
 
 ## Computation of log det and log maha for each solution
 times_shared <- compute_times_ca(tree)
