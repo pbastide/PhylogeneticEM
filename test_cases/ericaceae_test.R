@@ -7,7 +7,8 @@ library(combinat) # For alpha prior robust estimation
 library(robustbase) # For robust fitting of alpha
 library(TreeSim)
 
-library(testthat)
+## Load Ericaceae data
+load("../data/ericaceae_data.RData")
 
 source("R/simulate.R")
 source("R/estimateEM.R")
@@ -22,48 +23,7 @@ source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
 source("R/model_selection.R")
 
-## Load Ericaceae data
-load("../data/ericaceae_data.RData")
-
-## Get a single data frame ################################################
-
-## Select Columns: Corrola lenght (2), anther length (7)
-linear_measures <- data_reduced[, c(1, 2, 7)]
-## Compute species mean (one value per species)
-mean_linear_measures_length <- aggregate(cbind(corolla_tube_length, total_large_anther_length) ~ species,
-                                         data = linear_measures,
-                                         mean,
-                                         na.action = na.pass)
-## Add PC1 and PC2 from Corolla and Anther Shape
-# anther
-# pca_anthers <- data.frame(pca_efou_anthers$x[, 1:2])
-pca_anthers <- data.frame(all_data_pcs_anthers_unique[, 1:3])
-colnames(pca_anthers) <- c("species", "anther.PC1", "anther.PC2")
-# pca_anthers$species <- rownames(pca_anthers)
-# Corolla
-# pca_corolla <- data.frame(pca_efou_flowers$x[, 1:2])
-pca_corolla <- data.frame(all_data_pcs_flowers_unique[, 1:3])
-colnames(pca_corolla) <- c("species", "corolla.PC1", "corolla.PC2")
-# pca_corolla$species <- rownames(pca_corolla)
-# Merge
-dd <- merge(mean_linear_measures_length, pca_anthers, by = "species", all = TRUE) # Match: 4 !!
-traits_data <- merge(dd, pca_corolla, by = "species", all = TRUE)
-## Drop NA (entire ligne is NA)
-traits_data_all <- vector("list", 6)
-trait_matrix_all <- vector("list", 6)
-percentage_missing <- vector(length = 6)
-for (i in 1:6){ # i is the minimal number of non-NA trait
-  traits_data_all[[i]] <- traits_data[rowSums(is.na(traits_data)) < (dim(traits_data)[2] - i),]
-  rownames(traits_data_all[[i]]) <- traits_data_all[[i]][,1]
-  ## Check compatibility with the tree
-  Overlap_traits <- name.check(tree, traits_data_all[[i]])
-  subtree_traits <- drop.tip(tree, Overlap_traits$Tree.not.data)
-  # Sort data in same order as tree
-  match_traits <- match(subtree_traits$tip.label, rownames(traits_data_all[[i]]))
-  sortedData_traits <- traits_data_all[[i]][match_traits, -1]
-  trait_matrix_all[[i]] <- t(as.matrix(sortedData_traits))
-  percentage_missing[i] <- sum(is.na(trait_matrix_all[[i]]))/prod(dim(trait_matrix_all[[i]])) * 100
-}
+datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 
 ## Descriptive Statistics ########################################
 # Number of species
@@ -79,17 +39,6 @@ plot(1:6, sapply(trait_matrix_all, function(z) sum(is.na(z))/prod(dim(z))),
 # Summary
 trait_matrix <- trait_matrix_all[[1]]
 summary(t(trait_matrix))
-
-# Zero values for lengths ?
-sum(trait_matrix[1, ] == 0, na.rm = TRUE)
-sum(trait_matrix[2, ] == 0, na.rm = TRUE)
-# Replace 0 with small value
-corrola_lg <- trait_matrix[1, ]
-nbrzeros <- sum(trait_matrix[1, ] == 0, na.rm = TRUE)
-histogram <- hist(corrola_lg, 1000, plot = FALSE)
-mean <- min(corrola_lg[corrola_lg > 0], na.rm = TRUE) / 10
-sd <- mean / 10
-corrola_lg[corrola_lg == 0] <- rnorm(nbrzeros, mean, sd)
   
 # Histograms non transform
 par(mfrow = c(2, 3))
@@ -109,19 +58,58 @@ for (i in 1:2){
 for (i in 3:6){
   hist(trait_matrix[i, ], 100, main = rownames(trait_matrix)[i])
 }
-par(mfrow = 1)
+par(mfrow = c(1,1))
 
-## EM ############################################################
-set.seed(17920920)
-res <- PhyloEM(phylo = subtree_traits,
-               Y_data = trait_matrix,
-               process = "BM",
-               K_max = 10,
+###############################################################################
+## EM Univariate ##############################################################
+###############################################################################
+## Select data
+phylo <- subtree_traits[[1]]
+trait_matrix <- trait_matrix_all[[1]]
+
+# 0 values
+set.seed(17910402)
+temp_cl <- replace_zeros(trait_matrix[1, ])
+trait_matrix[1, ] <- temp_cl$x
+# Log transform sizes
+trait_matrix_transform <- trait_matrix
+trait_matrix_transform[1:2, ] <- log(trait_matrix_transform[1:2, ])
+
+## Trait i
+i <- 1
+
+# Drop NAs
+data_uni <- trait_matrix_transform[i, !is.na(trait_matrix_transform[i, ])]
+Overlap_traits <- name.check(phylo, data_uni)
+tree_uni <- drop.tip(phylo, Overlap_traits$Tree.not.data)
+
+## Re-scale tree to one
+height_tree <- node.depth.edgelength(tree_uni)[1]
+tree_uni$edge.length <- tree_uni$edge.length / height_tree
+
+# Alpha Values
+alpha_grid <- find_grid_alpha(tree_uni,
+                              nbr_alpha = 10,
+                              factor_up_alpha = 2,
+                              factor_down_alpha = 4,
+                              quantile_low_distance = 0.001,
+                              log_transform = TRUE)
+
+res <- PhyloEM(phylo = tree_uni,
+               Y_data = data_uni,
+               process = "scOU",
                random.root = FALSE,
+               K_max = 35,
+               alpha_known = TRUE,
+               alpha = alpha_grid,
                tol = list(variance = 10^(-2), 
-                        value.root = 10^(-2)),
-               Nbr_It_Max = 100)
-save.image(file = paste0("../Results/Test_Cases/trait_BM_fith_try.RData"))
+                          value.root = 10^(-2),
+                          log_likelihood = 10^(-2)),
+               use_previous = FALSE,
+               method.init = "lasso",
+               method.selection = "BGH")
+
+save.image(file = paste0("../Results/Test_Cases/trait_scOU_fixed_root_trait_", i, ".RData"))
 
 library(lineprof)
 l1 <- lineprof(results_estim_EM <- estimateEM(phylo = subtree_traits,

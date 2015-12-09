@@ -68,11 +68,14 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 
 phylo <- subtree_traits[[1]]
 trait_matrix <- trait_matrix_all[[1]]
+# Log transform sizes
+trait_matrix_transform <- trait_matrix
+trait_matrix_transform[1:2, ] <- log(trait_matrix_transform[1:2, ])
 
 ## Alpha values
 # Re-scale tree
-height_tree <- node.depth.edgelength(tree)[1]
-phylo$edge.length <- tree$edge.length / height_tree
+height_tree <- node.depth.edgelength(phylo)[1]
+phylo$edge.length <- phylo$edge.length / height_tree
 
 alpha_grid <- find_grid_alpha(phylo,
                               nbr_alpha = 10,
@@ -86,7 +89,7 @@ alpha_grid <- find_grid_alpha(phylo,
 # Lasso init
 # K_max = 35
 resb <- PhyloEM_core(phylo = phylo,
-                     Y_data = trait_matrix,
+                     Y_data = trait_matrix_transform,
                      process = "scOU",
                      random.root = FALSE,
                      K_max = 35,
