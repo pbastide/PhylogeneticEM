@@ -1690,11 +1690,11 @@ c(fit_mvBM$sigma,
 fit_mvBM$theta
 
 #######################################
-## Test of EM - OU/rBM - Multivariate - 64 - lasso
+## Test of EM - OU/rBM - Multivariate - lasso
 #######################################
 ## Tree
 set.seed(18850706)
-ntaxa <- 50
+ntaxa <- 300
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
                         lambda = 0.1, mu = 0,
                         age = 1, mrca = TRUE)[[1]]
@@ -1710,9 +1710,10 @@ root.state <- list(random = FALSE,
                    exp.root = NA,
                    var.root = NA)
 
-shifts = list(edges = c(56, 8),
+shifts = list(edges = c(60, 310, 559),
               values=cbind(c(10, -10, 0),
-                           c(5, 5, 5)),
+                           c(5, 5, 5),
+                           c(-5, -5, -5)),
               relativeTimes = 0)
 
 optimal.value <- c(0, 0, 1)
@@ -1759,7 +1760,7 @@ for (l in 1:p){
   params <- paramsSimu
   params$shifts$values <- paramsSimu$shifts$values[l, ]
   params$optimal.value<- paramsSimu$optimal.value[l]
-  plot.data.process.actual(Y.state = Y_data[l, ],
+  plot.data.process.actual(Y.state = Y_data_miss[l, ],
                            phylo = tree, 
                            params = params,
                            process = "OU",
@@ -1773,20 +1774,28 @@ for (l in 1:p){
                            ancestral_states = Z_states[l,])
 }
 
-set.seed(17920920)
 alpha_grid <- find_grid_alpha(tree,
                               nbr_alpha = 10,
                               factor_up_alpha = 2,
                               factor_down_alpha = 3,
                               quantile_low_distance = 0.001,
                               log_transform = TRUE)
-res <- PhyloEM(phylo = tree, Y_data = Y_data_miss, process = "scOU", K_max = 10,
-               random.root = FALSE, alpha = c(0, alpha), save_step = FALSE,
-               Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
-                                             value.root = 10^(-2),
-                                             log_likelihood = 10^(-2)),
+
+res <- PhyloEM(phylo = tree,
+               Y_data = Y_data_miss,
+               process = "scOU",
+               K_max = 10,
+               random.root = FALSE,
+               alpha = alpha_grid,
+               Nbr_It_Max = 1000,
+               tol = list(variance = 10^(-2), 
+                          value.root = 10^(-2),
+                          log_likelihood = 10^(-2)),
                method.init = "lasso", use_previous = FALSE)
-save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=3_n=64_lasso_missing.RData")
+
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=3_n=300_lasso_missing.RData")
+
+time <- sum(sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$time))
 
 res$alpha_max$results_summary$alpha_name
 
@@ -1796,9 +1805,9 @@ sapply(rres, function(z) z$results_summary$log_likelihood)
 sapply(rres, function(z) z$params_estim$`2`$shifts$edges)
 sapply(rres, function(z) z$params_estim$`2`$shifts$values)
 
-plot(res$alpha_max$capushe_outputBM2@DDSE, newwindow = FALSE)
+plot(res$alpha_max$capushe_outputBM1@DDSE, newwindow = FALSE)
 
-params_estim_EM <- res$alpha_max$DDSE_BM1$params_select
+params_estim_EM <- res$alpha_max$Djump_BM1$params_select
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
   params <- params_estim_EM
@@ -1820,30 +1829,27 @@ for (l in 1:p){
   # max(res$alpha_max$Djump_BM1$Zhat)))
 }
 
-## True alpha, lasso init
-
-res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
-               random.root = FALSE, alpha = alpha, save_step = FALSE,
-               Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
-                                             value.root = 10^(-2),
-                                             log_likelihood = 10^(-2)),
+## one  alpha, lasso init
+res <- PhyloEM(phylo = tree,
+               Y_data = Y_data_miss,
+               process = "scOU",
+               K_max = 10,
+               random.root = FALSE,
+               alpha = alpha_grid[11],
+               Nbr_It_Max = 1000,
+               tol = list(variance = 10^(-2), 
+                          value.root = 10^(-2),
+                          log_likelihood = 10^(-2)),
                method.init = "lasso", use_previous = FALSE)
 
 results_estim_EM <- estimateEM(phylo = tree, 
                                Y_data = Y_data_miss, 
                                process = "scOU", 
-                               nbr_of_shifts = 4,
+                               nbr_of_shifts = 0,
                                random.root = FALSE,
                                stationnary.root = FALSE,
                                alpha_known = TRUE,
-                               known.selection.strength = alpha,
-                               # var.init.root = prev$params_raw$root.state$var.root,
-                               # exp.root.init = prev$params_raw$root.state$exp.root,
-                               # variance.init = paramsSimu$variance,
-                               # value.root.init = paramsSimu$root.state$value.root,
-                               # edges.init = paramsSimu$shifts$edges,
-                               # values.init = paramsSimu$shifts$values,
-                               #relativeTimes.init = prev$params_raw$shifts$relativeTimes,
+                               known.selection.strength = alpha_grid[11],
                                tol = list(variance = 10^(-2), 
                                           value.root = 10^(-2),
                                           log_likelihood = 10^(-2)),
@@ -2300,6 +2306,7 @@ log_likelihood <- compute_log_likelihood.simple(phylo = tree_bis,
                                                 missing = rep(FALSE, ntaxa * 1),
                                                 masque_data = c(rep(TRUE, ntaxa * 1),
                                                                 rep(FALSE, tree$Nnode * 1)))
+
 
 #######################################
 ## Test of Rphylopars

@@ -1111,6 +1111,7 @@ init.variance.BM.estimation <- function(phylo,
                                                                  na.rm = TRUE))
     }
   }
+  # centered_data <- centered_data[, colSums(is.na(centered_data)) < 1]
   R_0 <- covMcd(t(centered_data))
   return(1 / (h_tree + phylo$root.edge) * R_0$cov)
 }

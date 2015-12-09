@@ -229,7 +229,8 @@ estimateEM <- function(phylo,
   
   ########## Re-scale tree to 100 #############################################
   
-  factor_rescale <- min(phy_original$edge.length) / min(phylo$edge.length)
+  # factor_rescale <- min(phy_original$edge.length) / min(phylo$edge.length) # min new = min old
+  factor_rescale <- 1 / h_tree # total height to 1
   # factor_rescale <- 1
   
   h_tree <- factor_rescale * h_tree
