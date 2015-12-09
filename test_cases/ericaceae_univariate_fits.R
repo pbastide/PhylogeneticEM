@@ -101,3 +101,27 @@ res_uni_all <- foreach(i = 1:6, .packages = reqpckg) %dopar%
 stopCluster(cl)
 
 save.image(file = paste0("../Results/Test_Cases/trait_scOU_fixed_root_trait_all.RData"))
+
+
+## Plotting
+# par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (i in 1:6){
+  params <- res_uni_all[[i]]$alpha_max$BGH$params_select
+#   params$shifts$values <- round(params_estim_EM$shifts$values[l, ], 2)
+#   params$root.state$value.root <- round(params_estim_EM$root.state$value.root[l], 2)
+  plot.data.process.actual(Y.state = res_uni_all[[i]]$Y_data,
+                           phylo = res_uni_all[[i]]$tree, 
+                           params = params,
+                           # imposed.scale = c(min(Y_data), max(Y_data)),
+                           adj.root = 0,
+                           automatic_colors = TRUE, 
+                           margin_plot = c(0, 0, 0, 0),
+                           value_in_box = FALSE,
+                           cex = 2,
+                           bg_shifts = "azure2",
+                           bg_beta_0 = "azure2",
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = res_uni_all[[i]]$alpha_max$BGH$Zhat)
+  # imposed.scale.node = c(min(res$alpha_max$Djump_BM1$Zhat),
+  # max(res$alpha_max$Djump_BM1$Zhat)))
+}
