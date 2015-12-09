@@ -661,6 +661,7 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
 ##
 init.EM.lasso <- function(phylo,
                           Y_data,
+                          Y_data_imp = Y_data,
                           process,
                           times_shared = compute_times_ca(phylo),
                           distances_phylo,
@@ -687,8 +688,8 @@ init.EM.lasso <- function(phylo,
   p <- nrow(Y_data)
   init.EM.default <- init.EM.default(process)
   ## If missing data, impute them using Rphylopars
-  Y_data_imp <- Y_data
-  if (any(missing)){
+  if (any(is.na(Y_data_imp))){
+    message("Imputing data for lasso initialization.")
     Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.init)
   }
   ## Actualization of incidence matrix

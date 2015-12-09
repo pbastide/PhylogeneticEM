@@ -56,6 +56,7 @@
 ##
 estimateEM <- function(phylo, 
                        Y_data, 
+                       Y_data_imp = Y_data,
                        process = c("BM", "OU", "scOU", "rBM"), 
                        tol = list(variance = 10^(-3), 
                                   value.root = 10^(-3), 
@@ -308,6 +309,7 @@ estimateEM <- function(phylo,
   ########## Initialization of all parameters #################################
   params_init <- init.EM(phylo = phylo,
                          Y_data = Y_data,
+                         Y_data_imp = Y_data_imp,
                          process = process, 
                          times_shared = times_shared, 
                          distances_phylo = distances_phylo, 
@@ -795,7 +797,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     ## Loop on alpha
     for (alp in alpha){
       ## Transform branch lengths if needed
-       phylo <- original_phy
+      phylo <- original_phy
       if (rescale_tree) {
         phylo <- transform_branch_length(phylo, alp)
       }
@@ -805,9 +807,21 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       subtree.list <- enumerate_tips_under_edges(phylo)
       T_tree <- incidence.matrix(phylo)
       h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+      ## Impute data if needed
+      Y_data_imp <- Y_data
+      if (temp$process == "BM"){
+        ## Re-scale tree to unit height
+        factor_rescale <- 1 / h_tree # total height to 1
+        phylo_temp <- phylo
+        phylo_temp$edge.length <- factor_rescale * phylo$edge.length
+        phylo_temp$root.edge <- factor_rescale * phylo$root.edge
+        Y_data_imp <- impute.data.Rphylopars(phylo_temp, Y_data, temp$process, random.init)
+        rm(phylo_temp)
+      }
       ## Estimations
       X <- Phylo_EM_sequencial(phylo = original_phy,
                                Y_data = Y_data,
+                               Y_data_imp = Y_data_imp,
                                process = process,
                                K_max = K_max,
                                curent = X,
@@ -859,7 +873,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   return(X)
 }
 
-Phylo_EM_sequencial <- function(phylo, Y_data, process, K_max,
+Phylo_EM_sequencial <- function(phylo, Y_data,
+                                Y_data_imp,
+                                process, K_max,
                                 curent = list(Y_data = Y_data,
                                               K_try = 0:K_max,
                                               ntaxa = length(phylo$tip.label)),
@@ -911,6 +927,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data, process, K_max,
   ## First
   XX[[paste0(K_first)]] <- estimateEM_wrapper_scratch(phylo = phylo,
                                                       Y_data = Y_data,
+                                                      Y_data_imp = Y_data_imp,
                                                       process = process,
                                                       K_t = K_first,
                                                       method.variance = method.variance,
@@ -947,6 +964,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data, process, K_max,
   for (K_t in (next_it(K_first)):(K_last)){
     XX[[paste0(K_t)]] <- estimateEM_wrapper(use_previous)(phylo = phylo,
                                                           Y_data = Y_data,
+                                                          Y_data_imp = Y_data_imp,
                                                           process = process,
                                                           K_t = K_t,
                                                           prev = XX[[paste0(prev_it(K_t))]],
@@ -1100,7 +1118,9 @@ estimateEM_wrapper <- function(use_previous){
   return(estimateEM_wrapper_scratch)
 }
 
-estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
+estimateEM_wrapper_previous <- function(phylo, Y_data,
+                                        Y_data_imp,
+                                        process, K_t, prev,
                                         method.variance,
                                         random.root, stationnary.root,
                                         alpha_known, alpha,
@@ -1112,6 +1132,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
                                         ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
+                                                   Y_data_imp = Y_data_imp,
                                                    process = process, 
                                                    method.variance = method.variance, 
                                                    method.init = method.init,
@@ -1136,7 +1157,9 @@ estimateEM_wrapper_previous <- function(phylo, Y_data, process, K_t, prev,
   return(format_output(results_estim_EM, phylo, tt))
 }
 
-estimateEM_wrapper_scratch <- function(phylo, Y_data, process, K_t,
+estimateEM_wrapper_scratch <- function(phylo, Y_data,
+                                       Y_data_imp,
+                                       process, K_t,
                                        method.variance,
                                        random.root, stationnary.root,
                                        alpha_known, alpha,
@@ -1148,6 +1171,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data, process, K_t,
                                        ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
+                                                   Y_data_imp = Y_data_imp,
                                                    process = process, 
                                                    method.variance = method.variance, 
                                                    method.init = method.init,
@@ -1231,9 +1255,15 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     subtree.list <- enumerate_tips_under_edges(phylo)
     T_tree <- incidence.matrix(phylo)
     h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+    ## Impute data if needed
+    Y_data_imp <- Y_data
+    if (temp$process == "BM"){
+      Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, temp$process, random.init)
+    }
     ## Estimations
     X <- Phylo_EM_sequencial(phylo = original_phy,
                              Y_data = Y_data,
+                             Y_data_imp = Y_data_imp,
                              process = process,
                              K_max = K_max,
                              curent = X,
