@@ -600,17 +600,25 @@ vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
 dtoc <- function(x) gsub(".", ",", x, fixed=TRUE)
 
 color_palette <- function (values) {
-  indPos <- which(values > 0)
-  indNeg <- which(values < 0)
-  indNull <- which(values == 0)
+  indPos <- values > 0
+  indNeg <- values < 0
+  indNull <- values == 0
   nbrColPos <- sum(indPos)
   nbrColNeg <- sum(indNeg)
   nbrColNull <- sum(indNull)
   palettePos <- colorRampPalette(c("orangered", "red"))(nbrColPos)
   paletteNeg <- colorRampPalette(c("blue", "lightblue"))(nbrColNeg)
   col_shifts <- rep(NA, length(values))
-  col_shifts[indPos] <- palettePos[cut(values[indPos], nbrColPos)]
-  col_shifts[indNeg] <- paletteNeg[cut(values[indNeg], nbrColNeg)]
+  if (nbrColPos <= 1){
+    col_shifts[indPos] <- palettePos
+  } else {
+    col_shifts[indPos] <- palettePos[cut(values[indPos], nbrColPos)]
+  }
+  if (nbrColNeg <= 1){
+    col_shifts[indNeg] <- paletteNeg
+  } else {
+    col_shifts[indNeg] <- paletteNeg[cut(values[indNeg], nbrColNeg)]
+  }
   col_shifts[indNull] <- "white"
   return(col_shifts)
 }
