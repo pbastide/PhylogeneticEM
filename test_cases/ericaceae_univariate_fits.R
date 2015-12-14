@@ -102,6 +102,8 @@ stopCluster(cl)
 
 save.image(file = paste0("../Results/Test_Cases/trait_scOU_fixed_root_trait_all.RData"))
 
+load(file = paste0("../Results/Test_Cases/trait_scOU_fixed_root_trait_all.RData"))
+
 
 ## Plotting
 # par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
