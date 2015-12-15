@@ -123,7 +123,12 @@ for (i in 1:6){
                            bg_shifts = "azure2",
                            bg_beta_0 = "azure2",
                            plot_ancestral_states = TRUE,
-                           ancestral_states = res_uni_all[[i]]$alpha_max$BGH$Zhat)
+                           ancestral_states = res_uni_all[[i]]$alpha_max$BGH$Zhat,
+                           edge.width = 3,
+                           ancestral_cex = 1,
+                           ancestral_pch = 15,
+                           show.tip.label = TRUE ,
+                           text_cex = 0.5)
   # imposed.scale.node = c(min(res$alpha_max$Djump_BM1$Zhat),
   # max(res$alpha_max$Djump_BM1$Zhat)))
 }
