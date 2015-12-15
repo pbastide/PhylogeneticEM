@@ -199,6 +199,12 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      plot_ancestral_states = FALSE,
                                      ancestral_states = NULL,
                                      imposed.scale.nodes = ancestral_states,
+                                     ancestral_cex = 2,
+                                     ancestral_pch = 19,
+                                     text_cex = 1,
+                                     show.tip.label = FALSE,
+                                     underscore = FALSE,
+                                     label.offset = 0,
                                      ...){
   ntaxa <- length(phylo$tip.label)
 #   if (normalize){
@@ -252,7 +258,10 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       pal <- rev(palette(rainbow(1001, start = 0, end = 0.7)))
       col_ancestral <- map2color(ancestral_states, pal = pal, limits = imp.scale.nodes)
       # If plotting ancestral, colors of the tips values to match colors of the palette
-      if (!is.null(Y.state)) color_characters <- map2color(Y.state, pal, limits = imp.scale.nodes)
+      if (!is.null(Y.state)){
+        color_characters_regimes <- color_characters
+        color_characters <- map2color(Y.state, pal, limits = imp.scale.nodes)
+      }
     }
   }
   ## Plot
@@ -261,25 +270,33 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   # Plot tree
   if (is.null(Y.state)){
-    plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
+    plot(phylo, show.tip.label = show.tip.label, root.edge = TRUE, 
          edge.color = as.vector(color_edges), ...)
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
   } else {
     imp.scale  <- c(min(0, min(imposed.scale, na.rm = TRUE)),
                     max(imposed.scale, na.rm = TRUE))
     h_p <- max(node.depth.edgelength(phylo))
-    x.lim.max <- h_p + h_p/5
+    if (show.tip.label){
+      size_labels <- h_p / 4 
+    } else {
+      size_labels <- 0
+    }
+    x.lim.max <- h_p + h_p / 5 + size_labels
     y.lim.min <- -ntaxa/10
     y.lim.max <- ntaxa + ntaxa/10
     plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
          x.lim = c(0, x.lim.max), 
          y.lim = c(y.lim.min, y.lim.max),
          edge.color = as.vector(color_edges), ...)
+    if (show.tip.label){
+      size_labels <- max(strwidth(phylo$tip.label, cex = text_cex))
+    }
     # Plot data at tips
     # length available for character plotting
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
     pos_last_tip <- max(lastPP$xx)
-    available_x <- x.lim.max - pos_last_tip
+    available_x <- x.lim.max - pos_last_tip - size_labels - label.offset
     offset <- available_x/8
     ell <- available_x - offset # lenght for the plot of the character
     mult <- ell / (imp.scale[2] - imp.scale[1])
@@ -305,10 +322,19 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     text(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
          "Unit", cex = lastPP$cex,
          pos = 2)
+    ## Tip Labels
+    if (show.tip.label){
+      if (is.expression(phylo$tip.label)) underscore <- TRUE
+      if (!underscore) phylo$tip.label <- gsub("_", " ", phylo$tip.label)
+      x.lim.max.data <- max(pos_last_tip + eccart_g + Y.plot) + label.offset
+      text(x.lim.max.data, lastPP$yy[1:ntaxa], phylo$tip.label, 
+           cex = text_cex, pos = 4,
+           col = as.vector(color_characters_regimes))
+    }
   }
   ## Ancestral states
   if (plot_ancestral_states){
-    nodelabels(pch = 19, cex = 2, col = col_ancestral)
+    nodelabels(pch = ancestral_pch, cex = ancestral_cex, col = col_ancestral)
     leg <- 0.5 * node.depth.edgelength(phylo)[1]
     add.color.bar(leg, pal, title = "Trait Value",
                   lims = imp.scale.nodes,
@@ -357,7 +383,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       nodelabels(text = "", 
                  node = ntaxa + 1,
                  frame = "circle",
-                 cex = 0.5*lastPP$cex,
+                 cex = 0.3*lastPP$cex,
                  bg = col_shifts[1])
     }
     col_shifts <- col_shifts[-1]
@@ -366,7 +392,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       edgelabels_home(text = rep("", length(col_shifts)),
                  edge = params$shifts$edges, 
                  frame = "circle",
-                 cex = 0.5*lastPP$cex,
+                 cex = 0.3*lastPP$cex,
                  bg = col_shifts,
                  beg = TRUE)
     }
