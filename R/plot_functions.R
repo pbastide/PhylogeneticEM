@@ -193,6 +193,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      regime_boxes = FALSE,
                                      alpha.border = 70,
                                      value_in_box = TRUE,
+                                     shifts_cex = 1,
                                      margin_plot = c(0,0,0,0),
                                      color_shifts_regimes = FALSE,
                                      shifts_regimes = NULL,
@@ -207,11 +208,11 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      label.offset = 0,
                                      ...){
   ntaxa <- length(phylo$tip.label)
-#   if (normalize){
-#     norm <- max(abs(Y.state))
-#   } else {
-#     norm <- 1
-#   }
+  #   if (normalize){
+  #     norm <- max(abs(Y.state))
+  #   } else {
+  #     norm <- 1
+  #   }
   Y.state <- Y.state # / norm
   unit <- 1 # / norm
   ## Root state
@@ -236,7 +237,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     
     color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
     levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
-                                                start = 0, v = 0.5))
+                                              start = 0, v = 0.5))
   }
   ## Plot ancestral states ?
   if (plot_ancestral_states){
@@ -357,7 +358,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       edgelabels_home(text = round(params$shifts$values, 1), 
                       edge = params$shifts$edges, 
                       bg = bg_shifts,
-                      cex = 7/10*lastPP$cex,
+                      cex = shifts_cex,
                       beg = TRUE,
                       adj = adj.nodes)
     }
@@ -372,7 +373,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       edgelabels_home(text = rep("", length(col_shifts)),
                       edge = params$shifts$edges, 
                       frame = "circle",
-                      cex = 0.5*lastPP$cex,
+                      cex = shifts_cex,
                       bg = col_shifts,
                       beg = TRUE)
     }
@@ -383,18 +384,18 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       nodelabels(text = "", 
                  node = ntaxa + 1,
                  frame = "circle",
-                 cex = 0.3*lastPP$cex,
+                 cex = shifts_cex,
                  bg = col_shifts[1])
     }
     col_shifts <- col_shifts[-1]
     # Plot shifts
     if ( !is.null(params$shifts$edges) ) {
       edgelabels_home(text = rep("", length(col_shifts)),
-                 edge = params$shifts$edges, 
-                 frame = "circle",
-                 cex = 0.3*lastPP$cex,
-                 bg = col_shifts,
-                 beg = TRUE)
+                      edge = params$shifts$edges, 
+                      frame = "circle",
+                      cex = shifts_cex,
+                      bg = col_shifts,
+                      beg = TRUE)
     }
   }
   ## Boxes aroud regimes
