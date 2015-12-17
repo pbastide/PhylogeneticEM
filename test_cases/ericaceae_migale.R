@@ -2,10 +2,10 @@ rm(list=ls())
 
 library(ape)
 library(plyr)
-library(quadrupen)
+# library(quadrupen)
 library(combinat) # For alpha prior robust estimation
 library(robustbase) # For robust fitting of alpha
-library(TreeSim)
+# library(TreeSim)
 
 ## Load Ericaceae data
 load("../data/ericaceae_data.RData")
@@ -66,8 +66,13 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 ## EM inferences - without model selection ####################################
 ###############################################################################
 
-phylo <- subtree_traits[[1]]
-trait_matrix <- trait_matrix_all[[1]]
+## Select data
+phylo <- subtree_traits[[3]]
+trait_matrix <- trait_matrix_all[[3]]
+# 0 values
+set.seed(17910402)
+temp_cl <- replace_zeros(trait_matrix[1, ])
+trait_matrix[1, ] <- temp_cl$x
 # Log transform sizes
 trait_matrix_transform <- trait_matrix
 trait_matrix_transform[1:2, ] <- log(trait_matrix_transform[1:2, ])
@@ -81,24 +86,25 @@ alpha_grid <- find_grid_alpha(phylo,
                               nbr_alpha = 10,
                               factor_up_alpha = 2,
                               factor_down_alpha = 4,
-                              quantile_low_distance = 0.001,
+                              quantile_low_distance = 0.0003,
                               log_transform = TRUE)
 
 ## Inference (no model selection)
 # Root fixed
 # Lasso init
 # K_max = 35
-resb <- PhyloEM_core(phylo = phylo,
-                     Y_data = trait_matrix_transform,
-                     process = "scOU",
-                     random.root = FALSE,
-                     K_max = 35,
-                     alpha_known = TRUE,
-                     alpha = alpha_grid,
-                     tol = list(variance = 10^(-2), 
-                                value.root = 10^(-2),
-                                log_likelihood = 10^(-2)),
-                     use_previous = FALSE,
-                     method.init = "lasso")
+res <- PhyloEM(phylo = phylo,
+               Y_data = trait_matrix_transform,
+               process = "scOU",
+               random.root = FALSE,
+               K_max = 35,
+               alpha_known = TRUE,
+               alpha = alpha_grid,
+               tol = list(variance = 10^(-2), 
+                          value.root = 10^(-2),
+                          log_likelihood = 10^(-2)),
+               use_previous = FALSE,
+               method.init = "lasso",
+               method.selection = c("BirgeMassart1", "BirgeMassart2"))
 
 save.image(file = paste0("../Results/Test_Cases/ericaceae_migale_", datestamp, ".RData"))
