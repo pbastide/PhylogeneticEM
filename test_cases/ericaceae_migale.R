@@ -8,6 +8,22 @@ library(robustbase) # For robust fitting of alpha
 # library(TreeSim)
 library(Matrix)
 
+
+source("R/simulate.R")
+source("R/estimateEM.R")
+source("R/init_EM.R")
+source("R/E_step.R")
+source("R/M_step.R")
+source("R/shutoff.R")
+source("R/generic_functions.R")
+source("R/shifts_manipulations.R")
+source("R/plot_functions.R")
+source("R/parsimonyNumber.R")
+source("R/partitionsNumber.R")
+source("R/model_selection.R")
+
+exportFunctions <- ls() # All the functions for parallel computations.
+
 ## Load Ericaceae data
 load("../data/ericaceae_data.RData")
 
@@ -84,7 +100,7 @@ height_tree <- node.depth.edgelength(phylo)[1]
 phylo$edge.length <- phylo$edge.length / height_tree
 
 alpha_grid <- find_grid_alpha(phylo,
-                              nbr_alpha = 10,
+                              nbr_alpha = 4,
                               factor_up_alpha = 2,
                               factor_down_alpha = 4,
                               quantile_low_distance = 0.0003,
@@ -106,6 +122,8 @@ res <- PhyloEM(phylo = phylo,
                           log_likelihood = 10^(-2)),
                use_previous = FALSE,
                method.init = "lasso",
-               method.selection = c("BirgeMassart1", "BirgeMassart2"))
+               method.selection = c("BirgeMassart1", "BirgeMassart2"),
+               parallel_alpha = TRUE, Ncores = 5,
+               exportFunctions = exportFunctions)
 
 save.image(file = paste0("../Results/Test_Cases/ericaceae_migale_", datestamp, ".RData"))
