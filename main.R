@@ -22,6 +22,8 @@ source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
 source("R/model_selection.R")
 
+exportFunctions <- ls()
+
 ###########################################################################
 ###########################################################################
 
@@ -1955,11 +1957,13 @@ alpha_grid <- find_grid_alpha(tree,
                               quantile_low_distance = 0.001,
                               log_transform = TRUE)
 res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
-               random.root = FALSE, alpha = alpha_grid, save_step = FALSE,
+               random.root = FALSE, alpha = alpha_grid[1:2], save_step = FALSE,
                Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
                                              value.root = 10^(-2),
                                              log_likelihood = 10^(-2)),
-               method.init = "lasso", use_previous = FALSE)
+               method.init = "lasso", use_previous = FALSE,
+               parallel_alpha = TRUE, Ncores = 2,
+               exportFunctions = exportFunctions)
 save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_big_shifts_lasso_init_var_init.RData")
 
 plot.data.process.actual(Y.state = Y_data,

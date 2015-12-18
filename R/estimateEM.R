@@ -683,23 +683,29 @@ format_output <- function(results_estim_EM, phylo, time = NA){
 }
 
 format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
+  alpha <- paste0("alpha_", alpha)
+  out[[alpha]] <- format_output_several_K_single(res_sev_K)
+  return(out)
+}
+
+format_output_several_K_single <- function(res_sev_K){
   dd <- do.call(rbind, res_sev_K)
   df <- do.call(rbind, dd[ , "summary"])
   df <- as.data.frame(df)
   ## Results
-  alpha <- paste0("alpha_", alpha)
-  out[[alpha]]$results_summary <- df
-  out[[alpha]]$params_estim <- dd[, "params"]
-  out[[alpha]]$params_raw <- dd[, "params_raw"]
-  out[[alpha]]$params_init_estim <- dd[, "params_init"]
-  out[[alpha]]$alpha_0 <- dd[,"alpha_0" == colnames(dd)]
-  out[[alpha]]$Zhat <- dd[, "Zhat"]
-  out[[alpha]]$Yhat <- dd[, "Yhat"]
-  out[[alpha]]$Zvar <- dd[, "Zvar"]
-  out[[alpha]]$Yvar <- dd[, "Yvar"]
-  out[[alpha]]$m_Y_estim <- dd[, "m_Y_estim"]
-  out[[alpha]]$edge.quality <- dd[, "edge.quality"]
-  return(out)
+  res <- vector("list")
+  res$results_summary <- df
+  res$params_estim <- dd[, "params"]
+  res$params_raw <- dd[, "params_raw"]
+  res$params_init_estim <- dd[, "params_init"]
+  res$alpha_0 <- dd[,"alpha_0" == colnames(dd)]
+  res$Zhat <- dd[, "Zhat"]
+  res$Yhat <- dd[, "Yhat"]
+  res$Zvar <- dd[, "Zvar"]
+  res$Yvar <- dd[, "Yvar"]
+  res$m_Y_estim <- dd[, "m_Y_estim"]
+  res$edge.quality <- dd[, "edge.quality"]
+  return(res)
 }
 
 ##
@@ -745,7 +751,17 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     save_step = FALSE,
                     sBM_variance = FALSE,
                     method.OUsun = "rescale",
+                    parallel_alpha = FALSE,
+                    Ncores = 3,
+                    exportFunctions = ls(),
                     ...){
+  ## Required packages
+  library(doParallel)
+  library(foreach)
+  library(ape)
+  library(glmnet) # For Lasso initialization
+  library(robustbase) # For robust fitting of alpha
+  reqpckg <- c("ape", "glmnet", "robustbase")
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
   ## Check that the vector of data is in the correct order and dimensions ################
@@ -790,12 +806,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     ## Set Up
     X <- estimates ## Get estimations from presiously computed results
   } else {
-    X <- list(Y_data = Y_data,
-              K_try = 0:K_max,
-              ntaxa = ntaxa)
-    
     ## Loop on alpha
-    for (alp in alpha){
+    estimate_alpha_several_K <- function(alp, ...){
       ## Transform branch lengths if needed
       phylo <- original_phy
       if (rescale_tree) {
@@ -824,7 +836,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                Y_data_imp = Y_data_imp,
                                process = process,
                                K_max = K_max,
-                               curent = X,
+                               # curent = X,
                                use_previous = use_previous,
                                order = order,
                                method.variance = method.variance,
@@ -848,6 +860,24 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                method.OUsun = method.OUsun,
                                ...)
     }
+    if (parallel_alpha){
+      cl <- makeCluster(Ncores)
+      registerDoParallel(cl)
+      X <- foreach(alp = alpha, .packages = reqpckg, .export = exportFunctions) %dopar%
+      {
+        estimate_alpha_several_K(alp)
+      }
+      stopCluster(cl)
+    } else {
+      X <- foreach(alp = alpha, .packages = reqpckg) %do%
+      {
+        estimate_alpha_several_K(alp)
+      }
+    }
+    names(X) <- paste0("alpha_", alpha)
+    X$Y_data <- Y_data
+    X$K_try <- 0:K_max
+    X$ntaxa <- ntaxa
   }
   ## Select max solution for each K
   X <- merge_max_grid_alpha(X, alpha)
@@ -876,9 +906,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 Phylo_EM_sequencial <- function(phylo, Y_data,
                                 Y_data_imp,
                                 process, K_max,
-                                curent = list(Y_data = Y_data,
-                                              K_try = 0:K_max,
-                                              ntaxa = length(phylo$tip.label)),
+#                                 curent = list(Y_data = Y_data,
+#                                               K_try = 0:K_max,
+#                                               ntaxa = length(phylo$tip.label)),
                                 use_previous = TRUE,
                                 order = TRUE,
                                 method.variance = "simple",
@@ -918,7 +948,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
   }
   ## Set up
   XX <- vector('list', K_max + 1)
-  names(XX) <- curent$K_try
+  names(XX) <- 0:K_max
   ## Progress Bar
   if(progress.bar){
     message(paste0("Alpha ", alp))
@@ -998,89 +1028,10 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
     XX[[paste0(K_t)]]$params$optimal.value <- pp$optimal.value
     if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
   }
-  ## Formate results
-  curent <- format_output_several_K(XX, curent, alp)
-  if (save_step) save(curent, file = paste0("Tmp_", alp, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
-  return(curent)
-}
-
-Phylo_EM_several_K <- function(phylo, Y_data, process, K_max,
-                                curent = list(Y_data = Y_data,
-                                              K_try = 0:K_max,
-                                              ntaxa = length(phylo$tip.label)),
-                                use_previous = TRUE,
-                                order = TRUE,
-                                method.variance = "simple",
-                                method.init = "default",
-                                method.init.alpha = "default",
-                                method.init.alpha.estimation = c("regression",
-                                                                 "regression.MM", "median"), 
-                                methods.segmentation = c("lasso", "best_single_move"),
-                                alpha_known = FALSE,
-                                random.root = TRUE,
-                                stationnary.root = TRUE,
-                                alp = alp,
-                                check.tips.names = FALSE,
-                                progress.bar = TRUE,
-                                times_shared = NULL,
-                                distances_phylo = NULL,
-                                subtree.list = NULL,
-                                T_tree = NULL,
-                                h_tree = NULL,
-                                save_step = TRUE,
-                                ...){
-  p <- nrow(Y_data)
-  ntaxa <- length(phylo$tip.label)
-  ## Set up
-  XX <- vector('list', K_max + 1)
-  names(XX) <- curent$K_try
-  ## Progress Bar
-  if(progress.bar){
-    message(paste0("Alpha ", alp))
-    pb <- txtProgressBar(min = 0, max = K_max + 1, style = 3)
-    counter <- 1
-  }
-  ## Lasso Initialisation
-  XX_init <- 
-  ## Iterations
-  for (K_t in 0:K_max){
-    XX[[paste0(K_t)]] <- estimateEM_wrapper_previous(phylo = phylo,
-                                                     Y_data = Y_data,
-                                                     process = process,
-                                                     K_t = K_t,
-                                                     prev = XX_init[[paste0(K_t)]],
-                                                     method.variance = method.variance,
-                                                     random.root = random.root,
-                                                     stationnary.root = stationnary.root,
-                                                     alpha_known = alpha_known,
-                                                     alpha = alp,
-                                                     method.init = method.init,
-                                                     method.init.alpha = method.init.alpha,
-                                                     methods.segmentation = methods.segmentation,
-                                                     times_shared = times_shared, 
-                                                     distances_phylo = distances_phylo,
-                                                     subtree.list = subtree.list,
-                                                     T_tree = T_tree, 
-                                                     h_tree = h_tree,
-                                                     warning_several_solutions = FALSE,
-                                                     ...)
-    pp <- check_dimensions(p,
-                           XX[[paste0(K_t)]]$params$root.state,
-                           XX[[paste0(K_t)]]$params$shifts,
-                           XX[[paste0(K_t)]]$params$variance,
-                           XX[[paste0(K_t)]]$params$selection.strength,
-                           XX[[paste0(K_t)]]$params$optimal.value)
-    XX[[paste0(K_t)]]$params$root.state <- pp$root.state
-    XX[[paste0(K_t)]]$params$shifts <- pp$shifts
-    XX[[paste0(K_t)]]$params$variance <- pp$variance
-    XX[[paste0(K_t)]]$params$selection.strength <- pp$selection.strength
-    XX[[paste0(K_t)]]$params$optimal.value <- pp$optimal.value
-    if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
-  }
-  ## Formate results
-  curent <- format_output_several_K(XX, curent, alp)
-  if (save_step) save(curent, file = paste0("Tmp_", alp, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
-  return(curent)
+  ## Format results and return
+  res <- format_output_several_K_single(XX)
+  if (save_step) save(res, file = paste0("Tmp_", alp, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
+  return(res)
 }
 
 merge_max_grid_alpha <- function(X, alpha){
@@ -1266,7 +1217,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              Y_data_imp = Y_data_imp,
                              process = process,
                              K_max = K_max,
-                             curent = X,
+                             # curent = X,
                              use_previous = use_previous,
                              order = order,
                              method.variance = method.variance,
