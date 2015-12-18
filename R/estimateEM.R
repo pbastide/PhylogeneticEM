@@ -294,6 +294,7 @@ estimateEM <- function(phylo,
   if (process == "BM" && (!random.root || (random.root && sBM_variance))){
     variance.init <- init.variance.BM.estimation(phylo = phylo, 
                                                  Y_data = Y_data, 
+                                                 Y_data_imp = Y_data_imp,
                                                  nbr_of_shifts = nbr_of_shifts, 
                                                  times_shared = times_shared,
                                                  distances_phylo = distances_phylo, 
