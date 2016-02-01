@@ -84,8 +84,8 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 ###############################################################################
 
 ## Select data
-phylo <- subtree_traits[[3]]
-trait_matrix <- trait_matrix_all[[3]]
+phylo <- subtree_traits[[6]]
+trait_matrix <- trait_matrix_all[[6]]
 # 0 values
 set.seed(17910402)
 temp_cl <- replace_zeros(trait_matrix[1, ])
@@ -100,7 +100,7 @@ height_tree <- node.depth.edgelength(phylo)[1]
 phylo$edge.length <- phylo$edge.length / height_tree
 
 alpha_grid <- find_grid_alpha(phylo,
-                              nbr_alpha = 4,
+                              nbr_alpha = 10,
                               factor_up_alpha = 2,
                               factor_down_alpha = 4,
                               quantile_low_distance = 0.0003,
@@ -114,16 +114,16 @@ res <- PhyloEM(phylo = phylo,
                Y_data = trait_matrix_transform,
                process = "scOU",
                random.root = FALSE,
-               K_max = 35,
+               K_max = 15,
                alpha_known = TRUE,
-               alpha = alpha_grid,
+               alpha = alpha_grid[5],
                tol = list(variance = 10^(-2), 
                           value.root = 10^(-2),
                           log_likelihood = 10^(-2)),
                use_previous = FALSE,
                method.init = "lasso",
-               method.selection = c("BirgeMassart1", "BirgeMassart2"),
-               parallel_alpha = TRUE, Ncores = 5,
-               exportFunctions = exportFunctions)
+               method.selection = c("BirgeMassart1", "BirgeMassart2"))
+               # parallel_alpha = TRUE, Ncores = 5,
+               # exportFunctions = exportFunctions)
 
 save.image(file = paste0("../Results/Test_Cases/ericaceae_migale_", datestamp, ".RData"))

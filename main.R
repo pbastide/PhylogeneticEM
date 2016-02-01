@@ -2,7 +2,8 @@ rm(list=ls())
 
 library(ape)
 library(plyr)
-library(quadrupen)
+library(Matrix)
+# library(quadrupen)
 library(combinat) # For alpha prior robust estimation
 library(robustbase) # For robust fitting of alpha
 library(TreeSim)
