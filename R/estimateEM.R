@@ -783,24 +783,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     warning("BGH is not implemented for multivariate data.")
   }
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2") library(capushe)
-  ## Process
   process <- match.arg(process)
-  process_original <- process
-  original_phy <- phylo
-  temp <- choose_process_EM(process = process, p = p,
-                            random.root = random.root,
-                            stationnary.root = stationnary.root,
-                            alpha_known = alpha_known,
-                            known.selection.strength = alpha,
-                            sBM_variance = sBM_variance,
-                            method.OUsun = method.OUsun)
-    
-  rescale_tree <- temp$rescale_tree # Rescale the tree ?
-  transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
-  sBM_variance <- temp$sBM_variance
-  if (sBM_variance){ # process sBM : need a root branch.
-    original_phy$root.edge <- 1
-  }
   
   ## Compute alpha
   if (process == "BM") {
@@ -815,6 +798,24 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   } else {
     ## Loop on alpha
     estimate_alpha_several_K <- function(alp, ...){
+      ## Process
+      # process <- match.arg(process)
+      process_original <- process
+      original_phy <- phylo
+      temp <- choose_process_EM(process = process, p = p,
+                                random.root = random.root,
+                                stationnary.root = stationnary.root,
+                                alpha_known = alpha_known,
+                                known.selection.strength = alp,
+                                sBM_variance = sBM_variance,
+                                method.OUsun = method.OUsun)
+      
+      rescale_tree <- temp$rescale_tree # Rescale the tree ?
+      transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
+      sBM_variance <- temp$sBM_variance
+      if (sBM_variance){ # process sBM : need a root branch.
+        original_phy$root.edge <- 1
+      }
       ## Transform branch lengths if needed
       phylo <- original_phy
       if (rescale_tree) {
@@ -834,7 +835,16 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
         phylo_temp <- phylo
         phylo_temp$edge.length <- factor_rescale * phylo$edge.length
         phylo_temp$root.edge <- factor_rescale * phylo$root.edge
-        Y_data_imp <- impute.data.Rphylopars(phylo_temp, Y_data, temp$process, random.init)
+        Y_data_imp <- try(impute.data.Rphylopars(phylo_temp,
+                                                 Y_data,
+                                                 temp$process,
+                                                 random.init))
+        if (inherits(Y_data_imp, "try-error")) { # If fails, replace with mean of the trait
+          Y_data_imp <- Y_data
+          for (j in 1:(dim(Y_data_imp)[1])){
+            Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
+          }
+        }
         rm(phylo_temp)
       }
       ## Estimations
@@ -914,9 +924,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 Phylo_EM_sequencial <- function(phylo, Y_data,
                                 Y_data_imp,
                                 process, K_max,
-#                                 curent = list(Y_data = Y_data,
-#                                               K_try = 0:K_max,
-#                                               ntaxa = length(phylo$tip.label)),
+                                #                                 curent = list(Y_data = Y_data,
+                                #                                               K_try = 0:K_max,
+                                #                                               ntaxa = length(phylo$tip.label)),
                                 use_previous = TRUE,
                                 order = TRUE,
                                 method.variance = "simple",
