@@ -1104,7 +1104,7 @@ init.variance.BM.estimation <- function(phylo,
   } else {
     edges_shifts <- NULL
   }
-  ## For each group, take all the couples of tips to estimate the covariance sigma_ij
+  ## Recenter each group around its mean.
   centered_data <- NULL
   for (grp in 0:length(edges_shifts)) {
     tips <- which(tips_groups == grp)
@@ -1115,7 +1115,7 @@ init.variance.BM.estimation <- function(phylo,
     }
   }
   # centered_data <- centered_data[, colSums(is.na(centered_data)) < 1]
-  R_0 <- covMcd(t(centered_data))
+  R_0 <- covMcd(t(centered_data), nsamp = "deterministic")
   return(1 / (h_tree + phylo$root.edge) * R_0$cov)
 }
 
@@ -1211,8 +1211,16 @@ impute.data.Rphylopars <- function(phylo, Y_data, process, random.init){
                              optim_limit = 50,
                              BM_first = TRUE,
                              usezscores = TRUE)
-  data_phylopars <- phylopars.predict(fit_phylopars, nodes = NULL)
-  Y_data_imp <- t(unname(as.matrix(data_phylopars$predicted)))
+  data_phylopars <- try(phylopars.predict(fit_phylopars, nodes = NULL))
+  if (inherits(data_phylopars, "try-error")) { # If fails, replace with mean of the trait
+    warning("The RPhyloPars imputation failed. Taking the mean of each trait for missing data for initialization.")
+    Y_data_imp <- Y_data
+    for (j in 1:(dim(Y_data_imp)[1])){
+      Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
+    }
+  } else {
+    Y_data_imp <- t(unname(as.matrix(data_phylopars$predicted)))
+  }
   return(Y_data_imp)
 }
 
