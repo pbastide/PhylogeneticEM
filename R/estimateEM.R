@@ -112,7 +112,9 @@ estimateEM <- function(phylo,
                        convergence_mode = c("relative", "absolute"),
                        check_convergence_likelihood = TRUE,
                        sBM_variance = FALSE,
-                       method.OUsun = c("rescale", "raw"), ...){
+                       method.OUsun = c("rescale", "raw"),
+                       impute_init_Rphylopars = TRUE,
+                       ...){
   
   ntaxa <- length(phylo$tip.label)
   ## Check that the vector of data is in the correct order and dimensions ################
@@ -311,6 +313,7 @@ estimateEM <- function(phylo,
   params_init <- init.EM(phylo = phylo,
                          Y_data = Y_data,
                          Y_data_imp = Y_data_imp,
+                         Y_data_vec_known = Y_data_vec_known,
                          process = process, 
                          times_shared = times_shared, 
                          distances_phylo = distances_phylo, 
@@ -326,6 +329,8 @@ estimateEM <- function(phylo,
                          missing = missing,
                          variance.init = variance.init,
                          sBM_variance = sBM_variance,
+                         impute_init_Rphylopars = impute_init_Rphylopars,
+                         masque_data = masque_data,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 
@@ -755,6 +760,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     parallel_alpha = FALSE,
                     Ncores = 3,
                     exportFunctions = ls(),
+                    impute_init_Rphylopars = TRUE,
                     ...){
   ## Required packages
   library(doParallel)
@@ -822,7 +828,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
       ## Impute data if needed
       Y_data_imp <- Y_data
-      if (temp$process == "BM"){
+      if (impute_init_Rphylopars && temp$process == "BM"){
         ## Re-scale tree to unit height
         factor_rescale <- 1 / h_tree # total height to 1
         phylo_temp <- phylo
@@ -859,6 +865,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                save_step = save_step,
                                sBM_variance = sBM_variance,
                                method.OUsun = method.OUsun,
+                               impute_init_Rphylopars = impute_init_Rphylopars,
                                ...)
     }
     if (parallel_alpha){
@@ -931,7 +938,8 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 h_tree = NULL,
                                 save_step = TRUE,
                                 sBM_variance = FALSE,
-                                method.OUsun = "rescale",
+                                method.OUsun = "rescale", 
+                                impute_init_Rphylopars = TRUE,
                                 ...){
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
@@ -977,6 +985,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       warning_several_solutions = FALSE,
                                                       sBM_variance = sBM_variance,
                                                       method.OUsun = method.OUsun,
+                                                      impute_init_Rphylopars = impute_init_Rphylopars,
                                                       ...)
   pp <- check_dimensions(p,
                          XX[[paste0(K_first)]]$params$root.state,
@@ -1015,6 +1024,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                           warning_several_solutions = FALSE,
                                                           sBM_variance = sBM_variance,
                                                           method.OUsun = method.OUsun,
+                                                          impute_init_Rphylopars = impute_init_Rphylopars,
                                                           ...)
     pp <- check_dimensions(p,
                            XX[[paste0(K_t)]]$params$root.state,
@@ -1081,6 +1091,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         method.init.alpha,
                                         sBM_variance,
                                         method.OUsun,
+                                        impute_init_Rphylopars,
                                         ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -1105,6 +1116,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    methods.segmentation = methods.segmentation,
                                                    sBM_variance = sBM_variance,
                                                    method.OUsun = method.OUsun,
+                                                   impute_init_Rphylopars = impute_init_Rphylopars,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -1120,6 +1132,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        method.init.alpha,
                                        sBM_variance,
                                        method.OUsun,
+                                       impute_init_Rphylopars,
                                        ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -1136,6 +1149,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    methods.segmentation = methods.segmentation,
                                                    sBM_variance = sBM_variance,
                                                    method.OUsun = method.OUsun,
+                                                   impute_init_Rphylopars = impute_init_Rphylopars,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
