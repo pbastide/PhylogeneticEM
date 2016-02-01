@@ -362,21 +362,21 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                       beg = TRUE,
                       adj = adj.nodes)
     }
-    if (color_shifts_regimes){ # Shift has one color for each regime
-      nodes_regimes  <-  compute_betas(tree, 
-                                       root.val,
-                                       params$shifts)
-      color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
-      levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
-                                                start = 0, v = 0.5))
-      col_shifts <- as.vector(color_edges[params$shifts$edges])
-      edgelabels_home(text = rep("", length(col_shifts)),
-                      edge = params$shifts$edges, 
-                      frame = "circle",
-                      cex = shifts_cex,
-                      bg = col_shifts,
-                      beg = TRUE)
-    }
+  }
+  if (color_shifts_regimes){ # Shift has one color for each regime
+    nodes_regimes  <-  compute_betas(tree, 
+                                     root.val,
+                                     params$shifts)
+    color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
+    levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
+                                              start = 0, v = 0.5))
+    col_shifts <- as.vector(color_edges[params$shifts$edges])
+    edgelabels_home(text = rep("", length(col_shifts)),
+                    edge = params$shifts$edges, 
+                    frame = "circle",
+                    cex = shifts_cex,
+                    bg = col_shifts,
+                    beg = TRUE)
   } else { # Color code for shifts values
     values <- c(root.val, params$shifts$values)
     col_shifts <- color_palette(values)
