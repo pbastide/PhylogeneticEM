@@ -783,7 +783,11 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     warning("BGH is not implemented for multivariate data.")
   }
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2") library(capushe)
+  
+  ## Save Original process and tree
   process <- match.arg(process)
+  process_original <- process
+  original_phy <- phylo
   
   ## Compute alpha
   if (process == "BM") {
@@ -799,10 +803,11 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     ## Loop on alpha
     estimate_alpha_several_K <- function(alp, ...){
       ## Process
-      # process <- match.arg(process)
-      process_original <- process
-      original_phy <- phylo
-      temp <- choose_process_EM(process = process, p = p,
+#       process <- match.arg(process)
+#       process_original <- process
+#       original_phy <- phylo
+      temp <- choose_process_EM(process = process_original,
+                                p = p,
                                 random.root = random.root,
                                 stationnary.root = stationnary.root,
                                 alpha_known = alpha_known,
