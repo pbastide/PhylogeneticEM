@@ -180,9 +180,16 @@ compute_root_value.BM <- function(phylo,
   root_edges <- which(parents == ntaxa + 1)
   deltas <- matrix(0, p, nEdges)
   deltas <- shifts.list_to_matrix(phylo, shifts, p)
-  mu <- rowSums(sweep((expectations[ , daughters[root_edges], drop = F] - deltas[, root_edges, drop = F]), 2, 1/(phylo$edge.length[root_edges]), '*'))
-  mu <- mu / sum(1/phylo$edge.length[root_edges])
-  return(mu)
+  expe_root <- expectations[ , daughters[root_edges], drop = F]
+  shifts_root <- deltas[, root_edges, drop = F]
+  # If no shift and identical, avoid numerical errors
+  if (all(shifts_root == 0) && identical(expe_root[, 1], expe_root[, 2])){
+    return(expe_root[, 1])
+  } else {
+    mu <- rowSums(sweep((expectations[ , daughters[root_edges], drop = F] - deltas[, root_edges, drop = F]), 2, 1/(phylo$edge.length[root_edges]), '*'))
+    mu <- mu / sum(1/phylo$edge.length[root_edges])
+    return(mu)
+  }
 }
 
 compute_M.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
