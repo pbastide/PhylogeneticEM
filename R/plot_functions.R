@@ -350,7 +350,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       nodelabels(text = round(root.val, 1), 
                  node = ntaxa + 1,
                  bg = bg_beta_0,
-                 cex = 7/10*lastPP$cex,
+                 cex = shifts_cex,
                  adj = adj.root)
     }
     # Plot shifts
@@ -362,40 +362,41 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                       beg = TRUE,
                       adj = adj.nodes)
     }
-  }
-  if (color_shifts_regimes){ # Shift has one color for each regime
-    nodes_regimes  <-  compute_betas(tree, 
-                                     root.val,
-                                     params$shifts)
-    color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
-    levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
-                                              start = 0, v = 0.5))
-    col_shifts <- as.vector(color_edges[params$shifts$edges])
-    edgelabels_home(text = rep("", length(col_shifts)),
-                    edge = params$shifts$edges, 
-                    frame = "circle",
-                    cex = shifts_cex,
-                    bg = col_shifts,
-                    beg = TRUE)
-  } else { # Color code for shifts values
-    values <- c(root.val, params$shifts$values)
-    col_shifts <- color_palette(values)
-    if (!is.null(root.val)){
-      nodelabels(text = "", 
-                 node = ntaxa + 1,
-                 frame = "circle",
-                 cex = shifts_cex,
-                 bg = col_shifts[1])
-    }
-    col_shifts <- col_shifts[-1]
-    # Plot shifts
-    if ( !is.null(params$shifts$edges) ) {
+  } else {
+    if (color_shifts_regimes){ # Shift has one color for each regime
+      nodes_regimes  <-  compute_betas(tree, 
+                                       root.val,
+                                       params$shifts)
+      color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
+      levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
+                                                start = 0, v = 0.5))
+      col_shifts <- as.vector(color_edges[params$shifts$edges])
       edgelabels_home(text = rep("", length(col_shifts)),
                       edge = params$shifts$edges, 
                       frame = "circle",
                       cex = shifts_cex,
                       bg = col_shifts,
                       beg = TRUE)
+    } else { # Color code for shifts values
+      values <- c(root.val, params$shifts$values)
+      col_shifts <- color_palette(values)
+      if (!is.null(root.val)){
+        nodelabels(text = "", 
+                   node = ntaxa + 1,
+                   frame = "circle",
+                   cex = shifts_cex,
+                   bg = col_shifts[1])
+      }
+      col_shifts <- col_shifts[-1]
+      # Plot shifts
+      if ( !is.null(params$shifts$edges) ) {
+        edgelabels_home(text = rep("", length(col_shifts)),
+                        edge = params$shifts$edges, 
+                        frame = "circle",
+                        cex = shifts_cex,
+                        bg = col_shifts,
+                        beg = TRUE)
+      }
     }
   }
   ## Boxes aroud regimes
