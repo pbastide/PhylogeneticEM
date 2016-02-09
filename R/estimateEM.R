@@ -834,7 +834,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
       ## Impute data if needed
       Y_data_imp <- Y_data
-      if (impute_init_Rphylopars && temp$process == "BM"){
+      if (any(is.na(Y_data_imp))
+          && impute_init_Rphylopars
+          && temp$process == "BM"){
         ## Re-scale tree to unit height
         factor_rescale <- 1 / h_tree # total height to 1
         phylo_temp <- phylo
