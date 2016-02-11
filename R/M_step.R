@@ -182,10 +182,12 @@ compute_root_value.BM <- function(phylo,
   deltas <- shifts.list_to_matrix(phylo, shifts, p)
   expe_root <- expectations[ , daughters[root_edges], drop = F]
   shifts_root <- deltas[, root_edges, drop = F]
-  if (all(shifts_root == 0) && identical(expe_root[, 1], expe_root[, 2])){
+  if (all(shifts_root == 0) 
+      && isTRUE(all.equal(expe_root[, 1], expe_root[, 2]))){
     # If no shift and identical, avoid numerical errors
     return(expe_root[, 1])
-  } else if (identical(expe_root[, 1] - shifts_root [, 1], expe_root[, 2])){
+  } else if (isTRUE(all.equal(expe_root[, 1] - shifts_root [, 1],
+                              expe_root[, 2]))){
     # If one shift in binary case fixed root
     return(expe_root[, 2])
   } else {
