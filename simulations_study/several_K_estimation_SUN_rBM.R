@@ -59,10 +59,10 @@ nbrSim <- length(simlist)
 ######################
 estimations_several_K <- function(X){
   alpha_grid <- find_grid_alpha(trees[[paste0(X$ntaxa)]],
-                                nbr_alpha = 11,
+                                nbr_alpha = 10,
                                 factor_up_alpha = 2,
                                 factor_down_alpha = 3,
-                                quantile_low_distance = 0,
+                                quantile_low_distance = 0.0001,
                                 log_transform = TRUE)
   res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
                  Y_data = X$Y_data,
@@ -99,7 +99,7 @@ enlight_res <- function(res){
 }
 
 add_total_time <- function(res){
-  tot_time <- sum(sapply(res[-c(1, 2, 3, length(res))],
+  tot_time <- sum(sapply(res[grep("alpha_[[:digit:]]", names(res))],
                          function(z) z$results_summary$time))
   res$alpha_max$results_summary$total_time <- tot_time
   res$alpha_max$BGH$results_summary$total_time <- tot_time

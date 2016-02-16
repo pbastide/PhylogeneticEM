@@ -1502,7 +1502,8 @@ check_data <- function(phylo, Y_data, check.tips.names){
   return(as.matrix(Y_data))
 }
 
-choose_process_EM <- function(process, p, random.root, stationnary.root, alpha_known,
+choose_process_EM <- function(process, p, random.root, stationnary.root,
+                              alpha_known,
                               known.selection.strength = 1, eps = 10^(-3),
                               sBM_variance = FALSE,
                               method.OUsun = "rescale"){
