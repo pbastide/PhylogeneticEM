@@ -450,6 +450,34 @@ compute_mean_variance.simple <- function (phylo,
 #####################################################################
 
 ##
+#' @title Residuals
+#'
+#' @description
+#' \code{compute_residuals.simple} computes the residuals after the fit of the
+#' data in the simple case where the inverse of the variance matrix is given.
+#'
+#' @details
+#' This function takes parameters sim and Sigma_YY_inv from  
+#' \code{compute_mean_variance.simple}. It uses function \code{extract.simulate}
+#' to extract the needed quantities from these objects.
+#'
+#' @param phylo Input tree.
+#' @param Y_data : vector indicating the data at the tips.
+#' @param sim (list) : result of function \code{simulate}.
+#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
+#' 
+#' @return vector of residuals
+##
+compute_residuals.simple <- function(phylo, Y_data_vec, sim,
+                                     Sigma_YY_chol_inv, missing){
+  ntaxa <- length(phylo$tip.label)
+  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y <- as.vector(m_Y)[!missing]
+  resis <- Sigma_YY_chol_inv %*% (Y_data_vec - m_Y)
+  return(resis)
+}
+
+##
 #' @title Squared Mahalanobis Distance
 #'
 #' @description
