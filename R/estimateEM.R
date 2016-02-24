@@ -273,11 +273,14 @@ estimateEM <- function(phylo,
                                                   h_tree = h_tree,
                                                   random.root = random.root,
                                                   T_tree = T_tree,
-                                                  h_tree = h_tree,
                                                   subtree.list = subtree.list,
                                                   missing = missing,
                                                   ...)
-  init.var.root <- init.a.g$gamma_0 # mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
+  init.var.root <- try(mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)]))
+  if (inherits(init.var.root, "try-error")) {
+    init.var.root <- init.a.g$gamma_0
+  }
+  init.var.root <- as.matrix(init.var.root)
   if (process == "OU"){
     if(!alpha_known) {
       if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
