@@ -813,7 +813,7 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, pensc
   ## Computation of answer matrix D : already done by now.
   ## Segmentation per se
   # Lasso regression
-  fit <- try(lasso_regression_K_fixed(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes, penscale = penscale))
+  fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes, penscale = penscale))
   if (inherits(fit, "try-error")) {
     warning("At M step, Lasso regression failed.")
     return(list(beta_0 = 0, shifts = NULL, costs = Inf))
