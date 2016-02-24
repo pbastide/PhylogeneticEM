@@ -629,10 +629,14 @@ lasso_regression_K_fixed.quadrupen <- function (Yp, Xp, K, root = NULL, penscale
 #'
 ##
 find_independent_regression_vectors.glmnet_multivariate <- function(Xp, K, fit, root){
-  p <- length(fit$beta)
+  if (!is.list(fit$beta)){
+    p <- 1
+  } else {
+    p <- length(fit$beta)
+  }
   if (p == 1){
     deltas <- fit$beta
-    deltas <- matrix(delta, dim = c(1, dim(delta)))
+    deltas <- array(deltas, dim = c(1, dim(deltas)))
   } else {
     library(plyr)
     deltas <- laply(fit$beta, function(z) as.matrix(z))
@@ -667,17 +671,12 @@ find_independent_regression_vectors.glmnet_multivariate <- function(Xp, K, fit, 
   } else {
     right_one <- which(right_ones)[1]
     ## If too many, take the K largests.
-    delta_ind <- t(deltas[, , right_one])
-    if (is.null(root)){
-      edges <- order(-rowSums(abs(delta_ind)))[1:K]
-      delta.bis <- matrix(0, dim(delta_ind)[1], dim(delta_ind)[2])
-      delta.bis[edges, ] <- delta_ind[edges, ]
-    } else {
-      edges <- order(-rowSums(abs(delta_ind[-root, , drop = F])))[1:(K-1)]
-      edges <- c(root, edges)
-      delta.bis <- matrix(0, dim(delta_ind)[1], dim(delta_ind)[2])
-      delta.bis[edges, ] <- delta_ind[edges, ]
-    }
+    delta_ind <- t(matrix(deltas[, , right_one], nrow = dim(deltas)[1]))
+    edges <- which(projections[right_one, ])
+    delta.bis <- matrix(0, dim(delta_ind)[1], dim(delta_ind)[2])
+    values <- delta_ind[edges, , drop = FALSE]
+    values[rowSums(values) == 0, ] <- 1 # If projection selected edges not initially present
+    delta.bis[edges, ] <- values
     return(delta.bis)
 #     return(matrix(rep(0 + projections[right_one, ], 3),
 #                   nrow = length(projections[right_one, ])))
