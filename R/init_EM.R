@@ -947,8 +947,8 @@ init.EM.lasso <- function(phylo,
     # Return untransformed Y_data and T
     Tp <- Tr
     Yp <- Y_data_imp
-    fit <- try(lasso_regression_K_fixed(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
-    chol_data <- TRUE
+    fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
+    chol_data <- FALSE
   }
   ## Fit
   if (inherits(fit, "try-error")) {
@@ -1190,7 +1190,9 @@ init.alpha.gamma.estimation <- function(phylo,
                            Y_data = Y_data,
                            process = "OU",
                            nbr_of_shifts = nbr_of_shifts,
-                           use_sigma = FALSE)
+                           use_sigma = FALSE,
+                           random.init = TRUE,
+                           stationnary.root.init = TRUE)
     ## Roeorder phylo and trace edges
     phy <- reorder(phylo, order = "cladewise")
     edges_shifts <- correspondanceEdges(edges=lasso$shifts$edges,from=phylo,to=phy)
