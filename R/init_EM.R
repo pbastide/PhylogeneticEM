@@ -1317,7 +1317,11 @@ init.variance.BM.estimation <- function(phylo,
     }
   }
   # centered_data <- centered_data[, colSums(is.na(centered_data)) < 1]
-  R_0 <- covMcd(t(centered_data), nsamp = "deterministic")
+  R_0 <- suppressWarnings(covMcd(t(centered_data), nsamp = "deterministic"))
+  if (any(is.na(R_0$cov))) {
+    warning("The initial estimation of the variance by covMcd gave some NAs. Replacing them by default value of 0.1.")
+    R_0$cov[is.na(R_0$cov)] <- 0.1
+  }
   return(1 / (h_tree + phylo$root.edge) * R_0$cov)
 }
 
