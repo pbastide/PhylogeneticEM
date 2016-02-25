@@ -9,8 +9,11 @@ datestamp_day <- "2016-02-17" # 03-17 11-19 11-24
 simestimations <- NULL
 ak <- "" # alpha_known_
 
-for (inference.index in 1:4){
-  file <- paste0(saveresultfile, ak, "-", datestamp_day, "_", inference.index, ".RData")
+files_list <- list.files(pattern = "several_K_estimations_SUN_rBM-2016-02-")
+
+# for (inference.index in 1:50){
+#   file <- paste0(saveresultfile, ak, "-", datestamp_day, "_", inference.index, ".RData")
+for (file in files_list){
   if (file.exists(file)) {
     load(file)
     ## simestimations
