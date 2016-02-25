@@ -249,3 +249,128 @@ save.image(paste0(saveresultfile, "-", datestamp_day, "_", inference.index, ".RD
 # 
 # save.image(paste0(saveresultfile, "alpha_known_", datestamp_day, "_", inference.index, ".RData"))
 
+### Tests
+# Cas 1
+situation <- simparams$gamma == 0.05 & simparams$ntaxa == 64 & simparams$n == 5
+X <- simlist[situation][[1]]
+
+res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
+               Y_data = X$Y_data,
+               process = "scOU",
+               K_max = max(K_try[[paste0(X$ntaxa)]]),
+               random.root = TRUE,
+               stationnary.root = TRUE,
+               alpha = X$alpha,
+               save_step = FALSE,
+               Nbr_It_Max = 2000,
+               tol = list(variance = 10^(-2), 
+                          value.root = 10^(-2),
+                          log_likelihood = 10^(-2)),
+               method.init = "lasso",
+               use_previous = FALSE,
+               method.selection = "BGH",
+               method.OUsun = "rescale")
+
+res$alpha_3$results_summary[6,]
+
+res_old <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
+                   Y_data = X$Y_data,
+                   process = "OU",
+                   K_max = max(K_try[[paste0(X$ntaxa)]]),
+                   random.root = TRUE,
+                   stationnary.root = TRUE,
+                   alpha = X$alpha,
+                   save_step = FALSE,
+                   Nbr_It_Max = 2000,
+                   tol = list(variance = 10^(-2), 
+                              value.root = 10^(-2),
+                              log_likelihood = 10^(-2)),
+                   method.init = "lasso",
+                   use_previous = FALSE,
+                   method.selection = "BGH",
+                   method.OUsun = "raw",
+                   methods.segmentation = c("lasso", "best_single_move"),
+                   method.init.alpha = "estimation")
+
+res_old$alpha_3$results_summary[6,]
+
+results_estim_EM_5bis <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
+                                    Y_data = X$Y_data, 
+                                    process = "scOU", 
+                                    nbr_of_shifts = 5,
+                                    random.root = TRUE,
+                                    stationnary.root = TRUE,
+                                    alpha_known = TRUE,
+                                    known.selection.strength = X$alpha,
+                                    tol = list(variance = 10^(-2), 
+                                               value.root = 10^(-2),
+                                               log_likelihood = 10^(-2)),
+                                    Nbr_It_Max = 1000,
+                                    method.init = "lasso"
+)
+
+results_estim_EM_5bisold <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
+                                    Y_data = X$Y_data, 
+                                    process = "OU", 
+                                    nbr_of_shifts = 5,
+                                    random.root = TRUE,
+                                    stationnary.root = TRUE,
+                                    alpha_known = TRUE,
+                                    known.selection.strength = X$alpha,
+                                    tol = list(variance = 10^(-2), 
+                                               value.root = 10^(-2),
+                                               log_likelihood = 10^(-2)),
+                                    Nbr_It_Max = 1000,
+                                    method.init = "lasso",
+                                    method.OUsun = "raw",
+                                    methods.segmentation = c("lasso", "best_single_move"),
+                                    method.init.alpha = "estimation"
+)
+
+
+# Cas 2
+situation <- simparams$alpha > 60 & simparams$ntaxa == 128 & simparams$n == 56
+X <- simlist[situation][[1]]
+
+res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
+               Y_data = X$Y_data,
+               process = "scOU",
+               K_max = max(K_try[[paste0(X$ntaxa)]]),
+               random.root = TRUE,
+               stationnary.root = TRUE,
+               alpha = X$alpha,
+               save_step = FALSE,
+               Nbr_It_Max = 2000,
+               tol = list(variance = 10^(-2), 
+                          value.root = 10^(-2),
+                          log_likelihood = 10^(-2)),
+               method.init = "lasso",
+               use_previous = FALSE,
+               method.selection = "BGH")
+
+res$alpha_69.3147180559945$results_summary[6,]
+
+# Cas 3 (alpha inconnu)
+X <- simlist[!favorables][[6]]
+
+alpha_grid <- find_grid_alpha(trees[[paste0(X$ntaxa)]],
+                              nbr_alpha = 10,
+                              factor_up_alpha = 2,
+                              factor_down_alpha = 3,
+                              quantile_low_distance = 0.0001,
+                              log_transform = TRUE)
+
+results_estim_EM_5bis <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
+                                    Y_data = X$Y_data, 
+                                    process = "scOU", 
+                                    nbr_of_shifts = 6,
+                                    random.root = TRUE,
+                                    stationnary.root = TRUE,
+                                    alpha_known = TRUE,
+                                    known.selection.strength = alpha_grid[7],
+                                    tol = list(variance = 10^(-2), 
+                                               value.root = 10^(-2),
+                                               log_likelihood = 10^(-2)),
+                                    Nbr_It_Max = 1000,
+                                    method.init = "lasso"
+)
