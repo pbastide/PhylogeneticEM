@@ -25,7 +25,7 @@ source("R/model_selection.R")
 exportFunctions <- ls() # All the functions for parallel computations.
 
 ## Load Ericaceae data
-load("../data/ericaceae_data.RData")
+load("../data/ericaceae_data_2016-02-26.RData")
 
 source("R/simulate.R")
 source("R/estimateEM.R")
@@ -44,48 +44,77 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 
 
 # ## Get a single data frame ####################################################
-# 
-# ## Select Columns: Corrola lenght (2), anther length (7)
-# linear_measures <- data_reduced[, c(1, 2, 7)]
-# ## Compute species mean (one value per species)
-# mean_linear_measures_length <- aggregate(cbind(corolla_tube_length, total_large_anther_length) ~ species,
-#                                          data = linear_measures,
-#                                          mean,
-#                                          na.action = na.pass)
-# ## Add PC1 and PC2 from Corolla and Anther Shape
-# # anther
-# # pca_anthers <- data.frame(pca_efou_anthers$x[, 1:2])
-# pca_anthers <- data.frame(all_data_pcs_anthers_unique[, 1:3])
-# colnames(pca_anthers) <- c("species", "anther.PC1", "anther.PC2")
-# # pca_anthers$species <- rownames(pca_anthers)
-# # Corolla
-# # pca_corolla <- data.frame(pca_efou_flowers$x[, 1:2])
-# pca_corolla <- data.frame(all_data_pcs_flowers_unique[, 1:3])
-# colnames(pca_corolla) <- c("species", "corolla.PC1", "corolla.PC2")
-# # pca_corolla$species <- rownames(pca_corolla)
-# # Merge
-# dd <- merge(mean_linear_measures_length, pca_anthers, by = "species", all = TRUE) # Match: 4 !!
-# traits_data <- merge(dd, pca_corolla, by = "species", all = TRUE)
-# ## Drop NA (entire ligne is NA)
-# traits_data <- traits_data[rowSums(is.na(traits_data)) < (dim(traits_data)[2]-1),]
-# rownames(traits_data) <- traits_data[,1]
-# percentage_missing <- sum(is.na(traits_data))/prod(dim(traits_data)) * 100
-# ## Check compatibility with the tree
-# Overlap_traits <- name.check(tree, traits_data)
-# subtree_traits <- drop.tip(tree, Overlap_traits$Tree.not.data)
-# # Sort data in same order as tree
-# match_traits <- match(subtree_traits$tip.label, rownames(traits_data))
-# sortedData_traits <- traits_data[match_traits, -1]
-# trait_matrix <- t(as.matrix(sortedData_traits))
+## Select Columns: Corrola lenght, anther length
+linear_measures <- data_reduced[, c("species",
+                                    "corolla_tube_length",
+                                    "total_large_anther_length")]
+## Compute species mean (one value per species)
+mean_linear_measures_length <- aggregate(cbind(corolla_tube_length, total_large_anther_length) ~ species,
+                                         data = linear_measures,
+                                         mean,
+                                         na.action = na.pass)
+## Add PC1 and PC2 from Corolla and Anther Shape
+# anther
+# pca_anthers <- data.frame(pca_efou_anthers$x[, 1:2])
+pca_anthers <- data.frame(all_data_pcs_anthers_unique[, 1:3])
+colnames(pca_anthers) <- c("species", "anther.PC1", "anther.PC2")
+# pca_anthers$species <- rownames(pca_anthers)
+# Corolla
+# pca_corolla <- data.frame(pca_efou_flowers$x[, 1:2])
+pca_corolla <- data.frame(all_data_pcs_flowers_unique[, 1:3])
+colnames(pca_corolla) <- c("species", "corolla.PC1", "corolla.PC2")
+# pca_corolla$species <- rownames(pca_corolla)
+# Merge
+dd <- merge(mean_linear_measures_length, pca_anthers,
+            by = "species", all = TRUE) # Match: 4 !!
+traits_data <- merge(dd, pca_corolla, by = "species", all = TRUE)
+## Drop NA (entire ligne is NA)
+traits_data_all <- vector("list", 6)
+trait_matrix_all <- vector("list", 6)
+subtree_traits <- vector("list", 6)
+percentage_missing <- vector(length = 6)
+for (i in 1:6){ # i is the minimal number of non-NA trait
+  traits_data_all[[i]] <- traits_data[rowSums(is.na(traits_data)) < (dim(traits_data)[2] - i),]
+  rownames(traits_data_all[[i]]) <- traits_data_all[[i]][,1]
+  ## Check compatibility with the tree
+  Overlap_traits <- name.check(tree, traits_data_all[[i]])
+  subtree_traits[[i]] <- drop.tip(tree, Overlap_traits$Tree.not.data)
+  # Sort data in same order as tree
+  match_traits <- match(subtree_traits[[i]]$tip.label,
+                        rownames(traits_data_all[[i]]))
+  sortedData_traits <- traits_data_all[[i]][match_traits, -1]
+  trait_matrix_all[[i]] <- t(as.matrix(sortedData_traits))
+  percentage_missing[i] <- sum(is.na(trait_matrix_all[[i]]))/prod(dim(trait_matrix_all[[i]])) * 100
+}
 
+replace_zeros <- function(x){
+  zeros_x <- (!is.na(x) & x == 0)
+  m <- min(x[x > 0], na.rm = TRUE) / 2
+  sd <- m / 2.33
+  values <- rnorm(sum(zeros_x), m, sd)
+  counter <- 1
+  while(counter < 100 && any(values <= 0)){
+    values <- rnorm(sum(zeros_x), m, sd)
+    counter <- counter + 1
+  }
+  if (counter < 100){
+    x[zeros_x] <- rnorm(sum(zeros_x), m, sd)
+    return(list(x = x,
+                zeros_x = zeros_x,
+                m = m,
+                sd = sd))
+  } else {
+    stop("Please consider a smaller variance, as I could not find only positive values.")
+  }
+}
 
 ###############################################################################
 ## EM inferences - without model selection ####################################
 ###############################################################################
 
 ## Select data
-phylo <- subtree_traits[[6]]
-trait_matrix <- trait_matrix_all[[6]]
+phylo <- subtree_traits[[5]]
+trait_matrix <- trait_matrix_all[[5]]
 # 0 values
 set.seed(17910402)
 temp_cl <- replace_zeros(trait_matrix[1, ])
@@ -103,7 +132,7 @@ alpha_grid <- find_grid_alpha(phylo,
                               nbr_alpha = 10,
                               factor_up_alpha = 2,
                               factor_down_alpha = 4,
-                              quantile_low_distance = 0.0006,
+                              quantile_low_distance = 0.0005,
                               log_transform = TRUE)
 
 ## Inference (no model selection)
@@ -126,4 +155,4 @@ res <- PhyloEM(phylo = phylo,
                # parallel_alpha = TRUE, Ncores = 5,
                # exportFunctions = exportFunctions)
 
-save.image(file = paste0("../Results/Test_Cases/ericaceae_migale_", datestamp, ".RData"))
+save.image(file = paste0("../Results/Test_Cases/ericaceae_1_NA_", datestamp, ".RData"))
