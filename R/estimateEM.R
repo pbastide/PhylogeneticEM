@@ -564,7 +564,7 @@ estimateEM <- function(phylo,
   if (transform_scOU) result$params_scOU <-  params_scOU
   ## Handle convergence
   attr(result, "Nbr_It") <- Nbr_It
-  attr(result, "Divergence") <- !is.in.ranges.params(result$params, min=min_params, max=max_params) # TRUE if has diverged
+  attr(result, "Divergence") <- !is.in.ranges.params(result$params_raw, min=min_params, max=max_params) # TRUE if has diverged (use raw parameters for diagnostic)
   if (Nbr_It == Nbr_It_Max) warning(paste("The maximum number of iterations (Nbr_It_Max = ",Nbr_It_Max,") was reached.",sep=""))
   return(result)
 }
