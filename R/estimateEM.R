@@ -276,11 +276,12 @@ estimateEM <- function(phylo,
                                                   subtree.list = subtree.list,
                                                   missing = missing,
                                                   ...)
-  init.var.root <- try(mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)]))
-  if (inherits(init.var.root, "try-error")) {
-    init.var.root <- init.a.g$gamma_0
+  if (is.null(init.a.g$gamma_0)){
+    init.var.root <- NULL
+  } else {
+    init.var.root <- mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
+    init.var.root <- as.matrix(init.var.root)
   }
-  init.var.root <- as.matrix(init.var.root)
   if (process == "OU"){
     if(!alpha_known) {
       if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
@@ -297,6 +298,11 @@ estimateEM <- function(phylo,
   
   ## Init of Rate matrix for BM
   if (process == "BM" && (!random.root || (random.root && sBM_variance))){
+    if (impute_init_Rphylopars && any(is.na(Y_data_imp))){
+      # Impute the data only once, if needed.
+      message("Imputing data for lasso initialization.")
+      Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.init)
+    }
     variance.init <- init.variance.BM.estimation(phylo = phylo, 
                                                  Y_data = Y_data, 
                                                  Y_data_imp = Y_data_imp,
