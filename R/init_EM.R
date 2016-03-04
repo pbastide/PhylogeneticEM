@@ -261,19 +261,26 @@ lasso_regression_K_fixed.glmnet_multivariate <- function (Yp, Xp, K,
   }
   ## If the right lambda does not exists, find it.
   count <- 0
+  fit_tmp <- fit
   while (!any(df == K) && count < 500) {
     count <- count + 1
-    K_inf <- K - 1
+    K_inf <- max(K - 2, 0)
     while (!any(K_inf == df) && (K_inf >= 0)) {
       K_inf <- K_inf - 1
     }
     lambda_inf <- fit$lambda[tail(which(K_inf == df), n = 1)]
-    K_sup <- K + 1
+    K_sup <- K + 2
+    if (K_sup > max(df)){
+      fit <- fit_tmp
+      df <- fit_tmp$df
+      break
+    }
     while (!any(K_sup == df) && (K_sup <= max(df))) {
       K_sup <- K_sup + 1
     }
     lambda_sup <- fit$lambda[head(which(K_sup == df), n = 1)]
     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+    fit_tmp <- fit
     fit <- glmnet(x = 0 + Xp_orth,
                   y = t(Yp_orth),
                   family = "mgaussian",
@@ -283,10 +290,13 @@ lasso_regression_K_fixed.glmnet_multivariate <- function (Yp, Xp, K,
                   penalty.factor = penscale)
     df <- fit$df
   }
+  rm(fit_tmp)
   ## If the right lambda does not exists, raise the number of shifts
   K_2 <- K
   while (!any(df == K_2) && K_2 <= min(dim(Xp))) {
-    warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+    if (K_2 == K){
+      warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+    }
     K_2 <- K_2 + 1
   }
   ## If could not find the right lambda, do a default initialization
