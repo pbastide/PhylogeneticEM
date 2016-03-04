@@ -222,3 +222,71 @@ rm(simestimations)
 
 save.image(paste0(saveresultfile, "alpha_known_", datestamp_day, "_", inference.index, ".RData"))
 
+
+### Tests
+# Cas 1
+situation <- simparams$alpha > 7 & simparams$ntaxa == 128 & simparams$n == 1
+X <- simlist[situation][[1]]
+
+res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
+               Y_data = X$Y_data,
+               process = "scOU",
+               K_max = max(K_try[[paste0(X$ntaxa)]]),
+               random.root = TRUE,
+               stationnary.root = TRUE,
+               alpha = X$alpha,
+               save_step = FALSE,
+               Nbr_It_Max = 2000,
+               tol = list(variance = 10^(-2), 
+                          value.root = 10^(-2),
+                          log_likelihood = 10^(-2)),
+               method.init = "lasso",
+               use_previous = FALSE,
+               method.selection = "BGH",
+               method.OUsun = "rescale")
+
+results_estim_EM_5 <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
+                                 Y_data = X$Y_data, 
+                                 process = "scOU", 
+                                 nbr_of_shifts = 5,
+                                 random.root = FALSE,
+                                 stationnary.root = FALSE,
+                                 alpha_known = TRUE,
+                                 known.selection.strength = X$alpha,
+                                 tol = list(variance = 10^(-2), 
+                                            value.root = 10^(-2),
+                                            log_likelihood = 10^(-2)),
+                                 Nbr_It_Max = 1000,
+                                 method.init = "lasso"#,
+#                                  min_params = list(variance = 0, 
+#                                                    value.root = -10^(5), 
+#                                                    exp.root = -10^(5), 
+#                                                    var.root = 0,
+#                                                    selection.strength = 0)
+)
+
+results_estim_EM_5old <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
+                                    Y_data = X$Y_data, 
+                                    process = "OU", 
+                                    nbr_of_shifts = 5,
+                                    random.root = TRUE,
+                                    stationnary.root = TRUE,
+                                    alpha_known = TRUE,
+                                    known.selection.strength = X$alpha,
+                                    tol = list(variance = 10^(-2), 
+                                               value.root = 10^(-2),
+                                               log_likelihood = 10^(-2)),
+                                    Nbr_It_Max = 1000,
+                                    method.init = "lasso",
+                                    method.OUsun = "raw",
+                                    methods.segmentation = c("lasso", "best_single_move"),
+                                    method.init.alpha = "estimation"
+)
+
+attr(results_estim_EM_5, "Divergence")
+
+sapply(results_estim_EM_5$params_history, function(z) attr(z, "log_likelihood"))
+sapply(results_estim_EM_5old$params_history, function(z) attr(z, "log_likelihood"))
+
+sapply(results_estim_EM_5$params_history, function(z) z$shifts$edges)
+sapply(results_estim_EM_5old$params_history, function(z) z$shifts$edges)

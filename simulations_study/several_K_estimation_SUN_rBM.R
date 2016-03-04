@@ -251,7 +251,9 @@ save.image(paste0(saveresultfile, "-", datestamp_day, "_", inference.index, ".RD
 
 ### Tests
 # Cas 1
-situation <- simparams$gamma == 0.05 & simparams$ntaxa == 64 & simparams$n == 5
+# situation <- simparams$gamma == 0.05 & simparams$ntaxa == 64 & simparams$n == 5
+# situation <- simparams$alpha > 7 & simparams$ntaxa == 64 & simparams$n == 28
+situation <- simparams$alpha > 7 & simparams$ntaxa == 256 & simparams$n == 131
 X <- simlist[situation][[1]]
 
 res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
@@ -306,7 +308,12 @@ results_estim_EM_5bis <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
                                                value.root = 10^(-2),
                                                log_likelihood = 10^(-2)),
                                     Nbr_It_Max = 1000,
-                                    method.init = "lasso"
+                                    method.init = "lasso",
+                                    min_params = list(variance = 0, 
+                                                      value.root = -10^(5), 
+                                                      exp.root = -10^(5), 
+                                                      var.root = 0,
+                                                      selection.strength = 0)
 )
 
 results_estim_EM_5bisold <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
@@ -327,6 +334,40 @@ results_estim_EM_5bisold <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
                                     method.init.alpha = "estimation"
 )
 
+attr(results_estim_EM_5bis, "Divergence")
+
+sapply(results_estim_EM_5bis$params_history, function(z) attr(z, "log_likelihood"))
+sapply(results_estim_EM_5bisold$params_history, function(z) attr(z, "log_likelihood"))
+
+sapply(results_estim_EM_5bis$params_history, function(z) z$shifts$edges)
+sapply(results_estim_EM_5bisold$params_history, function(z) z$shifts$edges)
+
+results_estim_EM_5ter <- estimateEM(phylo = trees[[paste0(X$ntaxa)]],
+                                    Y_data = X$Y_data, 
+                                    process = "scOU", 
+                                    nbr_of_shifts = 5,
+                                    random.root = TRUE,
+                                    stationnary.root = TRUE,
+                                    alpha_known = TRUE,
+                                    known.selection.strength = X$alpha,
+                                    tol = list(variance = 10^(-2), 
+                                               value.root = 10^(-2),
+                                               log_likelihood = 10^(-2)),
+                                    Nbr_It_Max = 1000,
+                                    method.init = "default",
+                                    edges.init = results_estim_EM_5bisold$params$shifts$edges,
+                                    values.init = results_estim_EM_5bisold$params$shifts$values,
+                                    exp.root.init = results_estim_EM_5bisold$params$root.state$exp.root,
+                                    min_params=list(variance = 0, 
+                                                    value.root = -10^(5), 
+                                                    exp.root = -10^(5), 
+                                                    var.root = 0,
+                                                    selection.strength = 0)
+)
+
+attr(results_estim_EM_5bis, "Divergence")
+sapply(results_estim_EM_5ter$params_history, function(z) attr(z, "log_likelihood"))
+sapply(results_estim_EM_5ter$params_history, function(z) z$shifts$edges)
 
 # Cas 2
 situation <- simparams$alpha > 60 & simparams$ntaxa == 128 & simparams$n == 56
