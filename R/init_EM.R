@@ -264,13 +264,13 @@ lasso_regression_K_fixed.glmnet_multivariate <- function (Yp, Xp, K,
   fit_tmp <- fit
   while (!any(df == K) && count < 500) {
     count <- count + 1
-    K_inf <- max(K - 2, 0)
+    K_inf <- max(K - 2, min(df))
     while (!any(K_inf == df) && (K_inf >= 0)) {
       K_inf <- K_inf - 1
     }
     lambda_inf <- fit$lambda[tail(which(K_inf == df), n = 1)]
-    K_sup <- K + 2
-    if (K_sup > max(df)){
+    K_sup <- min(K + 2, max(df))
+    if (K > max(df)){
       fit <- fit_tmp
       df <- fit_tmp$df
       break
