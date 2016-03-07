@@ -25,7 +25,7 @@ source("R/model_selection.R")
 exportFunctions <- ls() # All the functions for parallel computations.
 
 ## Load Ericaceae data
-load("../data/ericaceae_data_2016-02-26.RData")
+load("../data/ericaceae_data_2016-03-03.RData")
 
 source("R/simulate.R")
 source("R/estimateEM.R")
@@ -151,7 +151,8 @@ res <- PhyloEM(phylo = phylo,
                           log_likelihood = 10^(-2)),
                use_previous = FALSE,
                method.init = "lasso",
-               method.selection = c("BirgeMassart1", "BirgeMassart2"))
+               method.selection = c("BirgeMassart1", "BirgeMassart2"),
+               impute_init_Rphylopars = FALSE)
                # parallel_alpha = TRUE, Ncores = 5,
                # exportFunctions = exportFunctions)
 

@@ -810,7 +810,27 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     X <- estimates ## Get estimations from presiously computed results
   } else {
     ## Loop on alpha
-    estimate_alpha_several_K <- function(alp, ...){
+    estimate_alpha_several_K <- function(alp, 
+                                         original_phy, Y_data,
+                                         process_original,
+                                         process,
+                                         K_max, 
+                                         use_previous,
+                                         order,
+                                         method.variance,
+                                         method.init,
+                                         method.init.alpha,
+                                         method.init.alpha.estimation, 
+                                         methods.segmentation,
+                                         alpha_known,
+                                         random.root,
+                                         stationnary.root,
+                                         sBM_variance,
+                                         method.OUsun,
+                                         impute_init_Rphylopars = TRUE,
+                                         p,
+                                         ntaxa,
+                                         ...){
       ## Process
 #       process <- match.arg(process)
 #       process_original <- process
@@ -842,6 +862,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       T_tree <- incidence.matrix(phylo)
       h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
       ## Impute data if needed
+      if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
+        warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be infered. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
+        impute_init_Rphylopars <- TRUE
+      }
       Y_data_imp <- Y_data
       if (any(is.na(Y_data_imp))
           && impute_init_Rphylopars
@@ -899,13 +923,53 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       registerDoParallel(cl)
       X <- foreach(alp = alpha, .packages = reqpckg, .export = exportFunctions) %dopar%
       {
-        estimate_alpha_several_K(alp)
+        estimate_alpha_several_K(alp,
+                                 original_phy = original_phy, Y_data = Y_data,
+                                 process_original = process_original,
+                                 process = process,
+                                 K_max = K_max, 
+                                 use_previous = use_previous,
+                                 order = order,
+                                 method.variance = method.variance,
+                                 method.init = method.init,
+                                 method.init.alpha = method.init.alpha,
+                                 method.init.alpha.estimation = method.init.alpha.estimation, 
+                                 methods.segmentation = methods.segmentation,
+                                 alpha_known = alpha_known,
+                                 random.root = random.root,
+                                 stationnary.root = stationnary.root,
+                                 sBM_variance = sBM_variance,
+                                 method.OUsun = method.OUsun,
+                                 impute_init_Rphylopars = impute_init_Rphylopars,
+                                 p = p,
+                                 ntaxa = ntaxa,
+                                 ...)
       }
       stopCluster(cl)
     } else {
       X <- foreach(alp = alpha, .packages = reqpckg) %do%
       {
-        estimate_alpha_several_K(alp)
+        estimate_alpha_several_K(alp,
+                                 original_phy = original_phy, Y_data = Y_data,
+                                 process_original = process_original,
+                                 process = process,
+                                 K_max = K_max, 
+                                 use_previous = use_previous,
+                                 order = order,
+                                 method.variance = method.variance,
+                                 method.init = method.init,
+                                 method.init.alpha = method.init.alpha,
+                                 method.init.alpha.estimation = method.init.alpha.estimation, 
+                                 methods.segmentation = methods.segmentation,
+                                 alpha_known = alpha_known,
+                                 random.root = random.root,
+                                 stationnary.root = stationnary.root,
+                                 sBM_variance = sBM_variance,
+                                 method.OUsun = method.OUsun,
+                                 impute_init_Rphylopars = impute_init_Rphylopars,
+                                 p = p,
+                                 ntaxa = ntaxa,
+                                 ...)
       }
     }
     names(X) <- paste0("alpha_", alpha)
@@ -1013,6 +1077,9 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       method.OUsun = method.OUsun,
                                                       impute_init_Rphylopars = impute_init_Rphylopars,
                                                       ...)
+  if (K_first == 0){
+    Y_data_imp <- XX[["0"]]$Yhat
+  }
   pp <- check_dimensions(p,
                          XX[[paste0(K_first)]]$params$root.state,
                          XX[[paste0(K_first)]]$params$shifts,

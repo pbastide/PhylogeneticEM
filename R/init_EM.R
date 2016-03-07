@@ -884,6 +884,26 @@ init.EM.lasso <- function(phylo,
   ntaxa <- length(phylo$tip.label)
   p <- nrow(Y_data)
   init.EM.default <- init.EM.default(process)
+  ## If no shifts, hasty fix for initial value (if missing values)
+  # TO DO : take variance matrix into account
+  if (nbr_of_shifts == 0 && any(is.na(Y_data_imp)) && !impute_init_Rphylopars){
+    E0 <- rowMeans(Y_data, na.rm = TRUE)
+    params_init <- init.EM.default(Y_data = Y_data,
+                                   value.root.init = E0, 
+                                   exp.root.init = E0, 
+                                   optimal.value.init = E0,
+                                   edges.init = NULL, 
+                                   values.init = NULL, 
+                                   relativeTimes.init = NULL, 
+                                   selection.strength.init = selection.strength.init, 
+                                   random.init = random.init, 
+                                   var.root.init = var.root.init,
+                                   variance.init = variance.init,
+                                   stationnary.root.init = stationnary.root.init,
+                                   sBM_variance = sBM_variance,
+                                   phylo = phylo, ...)
+    return(params_init)
+  }
   ## If missing data, impute them using Rphylopars
   if (impute_init_Rphylopars && any(is.na(Y_data_imp))){
     message("Imputing data for lasso initialization.")
