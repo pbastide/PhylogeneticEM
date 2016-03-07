@@ -183,7 +183,7 @@ compute_root_value.BM <- function(phylo,
   expe_root <- expectations[ , daughters[root_edges], drop = F]
   shifts_root <- deltas[, root_edges, drop = F]
   if (all(shifts_root == 0) 
-      && isTRUE(all.equal(expe_root[, 1], expe_root[, 2]))){
+      && isTRUE(all.equal(expe_root[, 1], expe_root[, 2], tolerance = 1e-20))){
     # If no shift and identical, avoid numerical errors
     return(expe_root[, 1])
   } else if (isTRUE(all.equal(expe_root[, 1] - shifts_root [, 1],
