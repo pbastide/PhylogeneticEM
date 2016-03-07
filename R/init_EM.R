@@ -1414,29 +1414,35 @@ estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
 ##
 
 impute.data.Rphylopars <- function(phylo, Y_data, process, random.init){
+  message("Using Rphylopars for initial data imputation.")
   process_Rphylopars <- choose_process_Rphyopars(process, random.init)
   library(Rphylopars)
   trait_data <- as.data.frame(t(Y_data))
-  trait_data[ , "species"] <- phylo$tip.label
+  trait_data <- cbind(phylo$tip.label, trait_data)
+  colnames(trait_data)[1] <- "species"
+#   trait_data <- as.data.frame(t(Y_data))
+#   trait_data[ , "species"] <- phylo$tip.label
   fit_phylopars <- phylopars(trait_data,
                              phylo,
                              model = process_Rphylopars,
                              pheno_error = FALSE,
                              phylo_correlated = TRUE,
+                             pheno_correlated = FALSE,
                              REML = TRUE,
-                             optim_limit = 50,
-                             BM_first = TRUE,
+                             # optim_limit = 50,
+                             # BM_first = TRUE,
                              usezscores = TRUE)
-  data_phylopars <- try(phylopars.predict(fit_phylopars, nodes = NULL))
-  if (inherits(data_phylopars, "try-error")) { # If fails, replace with mean of the trait
-    warning("The RPhyloPars imputation failed. Taking the mean of each trait for missing data for initialization.")
-    Y_data_imp <- Y_data
-    for (j in 1:(dim(Y_data_imp)[1])){
-      Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
-    }
-  } else {
-    Y_data_imp <- t(unname(as.matrix(data_phylopars$predicted)))
-  }
+#   data_phylopars <- try(phylopars.predict(fit_phylopars, nodes = NULL))
+#   if (inherits(data_phylopars, "try-error")) { # If fails, replace with mean of the trait
+#     warning("The RPhyloPars imputation failed. Taking the mean of each trait for missing data for initialization.")
+#     Y_data_imp <- Y_data
+#     for (j in 1:(dim(Y_data_imp)[1])){
+#       Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
+#     }
+#   } else {
+#     Y_data_imp <- t(unname(as.matrix(data_phylopars$predicted)))
+#   }
+  Y_data_imp <- t(fit_phylopars$anc_recon[1:ncol(Y_data), ])
   return(Y_data_imp)
 }
 
