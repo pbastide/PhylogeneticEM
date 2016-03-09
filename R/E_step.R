@@ -533,7 +533,9 @@ compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
 ##
 compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
                                           Sigma, Sigma_YY_chol_inv,
-                                          missing, masque_data){
+                                          missing = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                                          masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
+                                                          rep(FALSE, dim(sim)[1] * phylo$Nnode))){
   # ntaxa <- length(phylo$tip.label)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
