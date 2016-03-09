@@ -113,8 +113,8 @@ replace_zeros <- function(x){
 ###############################################################################
 
 ## Select data
-phylo <- subtree_traits[[5]]
-trait_matrix <- trait_matrix_all[[5]]
+phylo <- subtree_traits[[3]]
+trait_matrix <- trait_matrix_all[[3]]
 # 0 values
 set.seed(17910402)
 temp_cl <- replace_zeros(trait_matrix[1, ])
