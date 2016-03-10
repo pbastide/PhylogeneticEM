@@ -234,7 +234,7 @@ compute_log_det_maha_BM <- function(param, alpha_temp){
                                     sim = moments$sim,
                                     Sigma = moments$Sigma,
                                     Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                    missing = rep(FALSE, ntaxa * 1),
+                                    miss = rep(FALSE, ntaxa * 1),
                                     masque_data = c(rep(TRUE, ntaxa * 1),
                                                     rep(FALSE, tree$Nnode * 1)))
   
@@ -243,7 +243,7 @@ compute_log_det_maha_BM <- function(param, alpha_temp){
                                       sim = moments$sim,
                                       Sigma = moments$Sigma,
                                       Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                      missing = rep(FALSE, ntaxa * 1),
+                                      miss = rep(FALSE, ntaxa * 1),
                                       masque_data = c(rep(TRUE, ntaxa * 1),
                                                       rep(FALSE, tree$Nnode * 1)))
   
@@ -264,7 +264,7 @@ compute_log_det_maha_scOU <- function(param){
                                     sim = moments$sim,
                                     Sigma = moments$Sigma,
                                     Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                    missing = rep(FALSE, ntaxa * 1),
+                                    miss = rep(FALSE, ntaxa * 1),
                                     masque_data = c(rep(TRUE, ntaxa * 1),
                                                     rep(FALSE, tree$Nnode * 1)))
   
@@ -273,7 +273,7 @@ compute_log_det_maha_scOU <- function(param){
                                       sim = moments$sim,
                                       Sigma = moments$Sigma,
                                       Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                      missing = rep(FALSE, ntaxa * 1),
+                                      miss = rep(FALSE, ntaxa * 1),
                                       masque_data = c(rep(TRUE, ntaxa * 1),
                                                       rep(FALSE, tree$Nnode * 1)))
   
@@ -428,7 +428,7 @@ log_likelihood_fixed <- compute_log_likelihood.simple(phylo = tree,
                                                       sim = moments_fixed$sim,
                                                       Sigma = moments_fixed$Sigma,
                                                       Sigma_YY_chol_inv = moments_fixed$Sigma_YY_chol_inv,
-                                                      missing = rep(FALSE, ntaxa * 1),
+                                                      miss = rep(FALSE, ntaxa * 1),
                                                       masque_data = masque_data)
 
 moments_stationnary <- compute_mean_variance.simple(phylo = tree,
@@ -443,7 +443,7 @@ log_likelihood_stationnary <- compute_log_likelihood.simple(phylo = tree,
                                                             sim = moments_stationnary$sim,
                                                             Sigma = moments_stationnary$Sigma,
                                                             Sigma_YY_chol_inv = moments_stationnary$Sigma_YY_chol_inv,
-                                                            missing = rep(FALSE, ntaxa * 1),
+                                                            miss = rep(FALSE, ntaxa * 1),
                                                             masque_data = masque_data)
 
 # Log likelihoods
@@ -484,7 +484,7 @@ log_likelihood_sta_fix <- compute_log_likelihood.simple(phylo = tree,
                                                         sim = moments_sta_fix$sim,
                                                         Sigma = moments_sta_fix$Sigma,
                                                         Sigma_YY_chol_inv = moments_sta_fix$Sigma_YY_chol_inv,
-                                                        missing = rep(FALSE, ntaxa * 1),
+                                                        miss = rep(FALSE, ntaxa * 1),
                                                         masque_data = masque_data)
 
 log_likelihood_fixed

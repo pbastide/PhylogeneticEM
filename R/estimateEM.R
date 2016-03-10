@@ -250,12 +250,12 @@ estimateEM <- function(phylo,
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   p <- nrow(Y_data)
-  missing <- as.vector(is.na(Y_data))
+  miss <- as.vector(is.na(Y_data))
   Y_data_vec <- as.vector(Y_data)
-  Y_data_vec_known <- as.vector(Y_data[!missing])
+  Y_data_vec_known <- as.vector(Y_data[!miss])
   # Vectorized Data Mask
   masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
-  masque_data[1:(p*ntaxa)] <- !missing
+  masque_data[1:(p*ntaxa)] <- !miss
   
   ########## Initialization of alpha and Variance #############################
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
@@ -274,7 +274,7 @@ estimateEM <- function(phylo,
                                                   random.root = random.root,
                                                   T_tree = T_tree,
                                                   subtree.list = subtree.list,
-                                                  missing = missing,
+                                                  miss = miss,
                                                   ...)
   if (is.null(init.a.g$gamma_0)){
     init.var.root <- NULL
@@ -313,7 +313,7 @@ estimateEM <- function(phylo,
                                                  random.root = random.root,
                                                  T_tree = T_tree,
                                                  subtree.list = subtree.list,
-                                                 missing = missing,
+                                                 miss = miss,
                                                  selection.strength.init = init.selection.strength,
                                                  ...)
   }
@@ -335,7 +335,7 @@ estimateEM <- function(phylo,
                          var.root.init = init.var.root,
                          T_tree = T_tree,
                          subtree.list = subtree.list,
-                         missing = missing,
+                         miss = miss,
                          variance.init = variance.init,
                          sBM_variance = sBM_variance,
                          impute_init_Rphylopars = impute_init_Rphylopars,
@@ -381,7 +381,7 @@ estimateEM <- function(phylo,
                                                  sim = moments$sim,
                                                  Sigma = moments$Sigma,
                                                  Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                 missing = missing, 
+                                                 miss = miss, 
                                                  masque_data = masque_data)
     attr(params_old, "log_likelihood") <- log_likelihood_old
     if (check_convergence_likelihood && Nbr_It > 1){
@@ -392,7 +392,7 @@ estimateEM <- function(phylo,
                                                    Y_data_vec = Y_data_vec_known,
                                                    sim = moments$sim,
                                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                   missing = missing)
+                                                   miss = miss)
     attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
     
     ########## E step #########################################################
@@ -401,7 +401,7 @@ estimateEM <- function(phylo,
                                    sim = moments$sim,
                                    Sigma = moments$Sigma,
                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                   missing = missing,
+                                   miss = miss,
                                    masque_data = masque_data)
     rm(moments)
     if (process == "OU"){
@@ -523,7 +523,7 @@ estimateEM <- function(phylo,
                                            sim = moments$sim,
                                            Sigma = moments$Sigma,
                                            Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                           missing = missing,
+                                           miss = miss,
                                            masque_data = masque_data)
   attr(params_scOU, "log_likelihood") <- log_likelihood
   params_history[[paste(Nbr_It, sep="")]] <- params_scOU
@@ -532,7 +532,7 @@ estimateEM <- function(phylo,
                                                  Y_data_vec = Y_data_vec_known,
                                                  sim = moments$sim,
                                                  Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                 missing = missing)
+                                                 miss = miss)
   attr(params_scOU, "mahalanobis_distance_data_mean") <- maha_data_mean
   ## "Ancestral state reconstruction"
   conditional_law_X <- compute_E(phylo = phylo,
@@ -540,7 +540,7 @@ estimateEM <- function(phylo,
                                  sim = moments$sim,
                                  Sigma = moments$Sigma,
                                  Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                 missing = missing,
+                                 miss = miss,
                                  masque_data = masque_data)
   ## Mean at tips with estimated parameters
   m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")

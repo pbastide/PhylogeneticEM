@@ -1449,7 +1449,7 @@ log_likelihood <- compute_log_likelihood.simple(phylo = tree,
                                                 sim = moments$sim,
                                                 Sigma = moments$Sigma,
                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                missing = rep(FALSE, ntaxa * 1),
+                                                miss = rep(FALSE, ntaxa * 1),
                                                 masque_data = c(rep(TRUE, ntaxa * 1),
                                                                 rep(FALSE, tree$Nnode * 1)))
 
@@ -2308,7 +2308,7 @@ log_likelihood <- compute_log_likelihood.simple(phylo = tree_bis,
                                                 sim = moments$sim,
                                                 Sigma = moments$Sigma,
                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                missing = rep(FALSE, ntaxa * 1),
+                                                miss = rep(FALSE, ntaxa * 1),
                                                 masque_data = c(rep(TRUE, ntaxa * 1),
                                                                 rep(FALSE, tree$Nnode * 1)))
 

@@ -54,12 +54,12 @@
 #' 
 ##
 compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
-                              missing, masque_data) {
+                              miss, masque_data) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   p <- dim(sim)[1]
-  nMiss <- sum(missing)
+  nMiss <- sum(miss)
   # index_missing <- (nNodes * p + 1):(nNodes * p + nMiss)
   index_missing <- c(rep(TRUE, nMiss), rep(FALSE, nNodes * p))
   conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + nNodes), 
@@ -80,8 +80,8 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
 #  temp <- Sigma_YZ %*% Sigma_YY_inv
   temp <- Sigma_YZ %*% Sigma_YY_chol_inv
   # Y_data_vec <- as.vector(Y_data)
-  m_Y_vec <- as.vector(m_Y)[!missing]
-  m_Z_vec <- c(as.vector(m_Y)[missing], as.vector(m_Z))
+  m_Y_vec <- as.vector(m_Y)[!miss]
+  m_Z_vec <- c(as.vector(m_Y)[miss], as.vector(m_Z))
   # Conditionnal expectation of unkonwn values
   exp_Z_vec <- m_Z_vec + temp %*% crossprod(Sigma_YY_chol_inv,
                                             (Y_data_vec - m_Y_vec))
@@ -104,14 +104,14 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
     conditional_variance_covariance_tips <- conditional_variance_covariance[index_missing, index_missing, drop = FALSE]
     conditional_variance_covariance_tips_nodes <- conditional_variance_covariance[!index_missing, index_missing, drop = FALSE]
     
-    missing_tips <- (which(missing) - 1) %/% p + 1
+    missing_tips <- (which(miss) - 1) %/% p + 1
     missing_tips_uniques <- unique(missing_tips)
     par_missing_tips <- getAncestors(phylo, missing_tips_uniques)
     par_missing_tips <- par_missing_tips - ntaxa
     par_missing_tips <- sapply(par_missing_tips,
                                function(z) (p * (z - 1) + 1):(p * z))
     par_missing_tips <- matrix(par_missing_tips, nrow = p)
-    missing_chars <- (which(missing) - 1) %% p + 1
+    missing_chars <- (which(miss) - 1) %% p + 1
     grpes_missing <- sapply(1:ntaxa, function(z) missing_tips == z)
     for (i in 1:length(missing_tips_uniques)){
       tip <- missing_tips_uniques[i]
@@ -146,7 +146,7 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
 #'                "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
 #'                "YZ" : sub matrix tips x nodes (p*nNodes last rows and p*ntaxa first columns)
 #'                "ZZ" : sub matrix of nodes (p*nNodes last rows and columns)
-#' @param missing; missing values of Y_data
+#' @param miss; missing values of Y_data
 #' 
 #' @return sub-matrix of variance covariance.
 #' 
@@ -469,10 +469,10 @@ compute_mean_variance.simple <- function (phylo,
 #' @return vector of residuals
 ##
 compute_residuals.simple <- function(phylo, Y_data_vec, sim,
-                                     Sigma_YY_chol_inv, missing){
+                                     Sigma_YY_chol_inv, miss){
   ntaxa <- length(phylo$tip.label)
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
-  m_Y <- as.vector(m_Y)[!missing]
+  m_Y <- as.vector(m_Y)[!miss]
   resis <- Sigma_YY_chol_inv %*% (Y_data_vec - m_Y)
   return(resis)
 }
@@ -498,10 +498,10 @@ compute_residuals.simple <- function(phylo, Y_data_vec, sim,
 #' @return squared Mahalanobis distance between data and mean at the tips.
 ##
 compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
-                                                Sigma_YY_chol_inv, missing){
+                                                Sigma_YY_chol_inv, miss){
   ntaxa <- length(phylo$tip.label)
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
-  m_Y <- as.vector(m_Y)[!missing]
+  m_Y <- as.vector(m_Y)[!miss]
 #  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
   MD <- tcrossprod(t(Y_data_vec - m_Y) %*% Sigma_YY_chol_inv)
   return(MD)
@@ -533,7 +533,7 @@ compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
 ##
 compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
                                           Sigma, Sigma_YY_chol_inv,
-                                          missing = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                                          miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
                                           masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
                                                           rep(FALSE, dim(sim)[1] * phylo$Nnode))){
   # ntaxa <- length(phylo$tip.label)
@@ -541,7 +541,7 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   LL <- length(Y_data_vec) * log(2*pi) + logdetSigma_YY
-  m_Y_vec <- as.vector(m_Y)[!missing]
+  m_Y_vec <- as.vector(m_Y)[!miss]
 #  LL <- LL + t(Y_data_vec - m_Y_vec) %*% Sigma_YY_inv %*% (Y_data_vec - m_Y_vec)
   LL <- LL + tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
   return(-LL/2)
@@ -549,7 +549,7 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
 
 compute_log_det.simple <- function(phylo, Y_data_vec, sim,
                                    Sigma, Sigma_YY_chol_inv,
-                                   missing, masque_data){
+                                   miss, masque_data){
   ntaxa <- length(phylo$tip.label)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
@@ -558,10 +558,10 @@ compute_log_det.simple <- function(phylo, Y_data_vec, sim,
 
 compute_log_maha.simple <- function(phylo, Y_data_vec, sim,
                                     Sigma, Sigma_YY_chol_inv,
-                                    missing, masque_data){
+                                    miss, masque_data){
   ntaxa <- length(phylo$tip.label)
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
-  m_Y_vec <- as.vector(m_Y)[!missing]
+  m_Y_vec <- as.vector(m_Y)[!miss]
   LL <- tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
   return(-LL/2)
 }

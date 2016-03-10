@@ -73,11 +73,11 @@ init.EM.default.BM <- function(phylo = NULL,
   }
   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
   if (length(edges.init) < nbr_of_shifts){
-    missing <- nbr_of_shifts - length(edges.init)
+    miss <- nbr_of_shifts - length(edges.init)
     auth_edges <- which(!(1:nrow(phylo$edge) %in% edges.init))
-    new_edges <- sample(auth_edges, missing)
+    new_edges <- sample(auth_edges, miss)
     edges.init <- c(edges.init, new_edges)
-    # edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
+    # edges.init <- c(edges.init, sample_shifts_edges(phylo, miss, part.list = subtree.list))
   }
   # If not enought values, complete with 0s
   if (is.null(values.init) || is.vector(values.init)){
@@ -86,8 +86,8 @@ init.EM.default.BM <- function(phylo = NULL,
     n_shifts_provided <- ncol(values.init)
   }
   if (n_shifts_provided < nbr_of_shifts){
-    missing <- nbr_of_shifts - ncol(values.init)
-    values.init <- cbind(values.init, matrix(0, ncol = missing, nrow = p))
+    miss <- nbr_of_shifts - ncol(values.init)
+    values.init <- cbind(values.init, matrix(0, ncol = miss, nrow = p))
   }
   params_init = list(variance = variance.init,
                      root.state = list(random = random.init,
@@ -134,11 +134,11 @@ init.EM.default.OU <- function(phylo = NULL,
   }
   # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
   if (length(edges.init) < nbr_of_shifts){
-    missing <- nbr_of_shifts - length(edges.init)
+    miss <- nbr_of_shifts - length(edges.init)
     auth_edges <- which(!(1:nrow(phylo$edge) %in% edges.init))
-    new_edges <- sample(auth_edges, missing)
+    new_edges <- sample(auth_edges, miss)
     edges.init <- c(edges.init, new_edges)
-    # edges.init <- c(edges.init, sample_shifts_edges(phylo, missing, part.list = subtree.list))
+    # edges.init <- c(edges.init, sample_shifts_edges(phylo, miss, part.list = subtree.list))
   }
   # If not enought values, complete with 0s
   if (is.null(values.init) || is.vector(values.init)){
@@ -147,8 +147,8 @@ init.EM.default.OU <- function(phylo = NULL,
     n_shifts_provided <- ncol(values.init)
   }
   if (n_shifts_provided < nbr_of_shifts){
-    missing <- nbr_of_shifts - ncol(values.init)
-    values.init <- cbind(values.init, matrix(0, ncol = missing, nrow = p))
+    miss <- nbr_of_shifts - ncol(values.init)
+    values.init <- cbind(values.init, matrix(0, ncol = miss, nrow = p))
   }
   params_init=list(variance = variance.init,
                    root.state = list(random = random.init,
@@ -875,7 +875,7 @@ init.EM.lasso <- function(phylo,
                           optimal.value.init = 0,
                           T_tree = incidence.matrix(phylo),
                           subtree.list = NULL,
-                          missing = FALSE,
+                          miss = FALSE,
                           sBM_variance = FALSE,
                           stationnary.root.init = FALSE,
                           impute_init_Rphylopars = TRUE,
@@ -1301,7 +1301,7 @@ init.variance.BM.estimation <- function(phylo,
                                         random.root,
                                         T_tree,
                                         subtree.list,
-                                        missing,
+                                        miss,
                                         ...){
   ## Initialize a vector with the group of each tip
   tips_groups <- rep(0, length(phylo$tip.label))
@@ -1320,7 +1320,7 @@ init.variance.BM.estimation <- function(phylo,
                            T_tree = T_tree,
                            h_tree = h_tree,
                            subtree.list = subtree.list,
-                           missing = missing,
+                           miss = miss,
                            ...)
     ## Roeorder phylo and trace edges
     phy <- reorder(phylo, order = "cladewise")
