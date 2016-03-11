@@ -16,9 +16,9 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-03-09" # "2015-03-17" #format(Sys.time(), "%Y-%m-%d")
+datestamp_data <- "2016-03-10" # "2015-03-17" #format(Sys.time(), "%Y-%m-%d")
 savedatafile = "../Results/Simulations_Several_K/several_K_simlist_uncertainties"
-saveresultfile <- "../Results/Simulations_Several_K/several_K_estimations_SUN_rBM_"
+saveresultfile <- "../Results/Simulations_Several_K/several_K_estimations_SUN_rBM_uncertainties_"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
 
 source("R/simulate.R")
