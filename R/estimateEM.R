@@ -1077,7 +1077,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       method.OUsun = method.OUsun,
                                                       impute_init_Rphylopars = impute_init_Rphylopars,
                                                       ...)
-  if (K_first == 0){
+  if (K_first == 0 && any(is.na(Y_data))){
     Y_data_imp <- XX[["0"]]$Yhat
   }
   pp <- check_dimensions(p,
