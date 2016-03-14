@@ -6,6 +6,7 @@ library(quadrupen)
 library(combinat) # For alpha prior robust estimation
 library(robustbase) # For robust fitting of alpha
 library(TreeSim)
+library(Matrix)
 
 library(testthat)
 
