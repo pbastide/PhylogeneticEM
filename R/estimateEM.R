@@ -268,6 +268,7 @@ estimateEM <- function(phylo,
   if (!Flag_Missing && process == "BM"){
     F_moments$C_YY = F_moments$C_YY * factor_rescale
     F_moments$C_YY_chol_inv = F_moments$C_YY_chol_inv / sqrt(factor_rescale)
+    F_moments$F_vars = F_moments$F_vars * factor_rescale
   }
   
   known.selection.strength <-  known.selection.strength / factor_rescale
@@ -503,6 +504,12 @@ estimateEM <- function(phylo,
   distances_phylo <- distances_phylo / factor_rescale
   phylo$edge.length <- phylo$edge.length / factor_rescale
   phylo$root.edge <- phylo$root.edge / factor_rescale
+  
+  if (!Flag_Missing && process == "BM"){
+    F_moments$C_YY = F_moments$C_YY / factor_rescale
+    F_moments$C_YY_chol_inv = F_moments$C_YY_chol_inv * sqrt(factor_rescale)
+    F_moments$F_vars = F_moments$F_vars / factor_rescale
+  }
   
   known.selection.strength <-  known.selection.strength * factor_rescale
   init.selection.strength <- init.selection.strength * factor_rescale

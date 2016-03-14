@@ -3,7 +3,9 @@ context("E step no missing data")
 test_that("Likelihood missing/no missing methods", {
   set.seed(586)
   ntaxa <- 200
-  tree <- rtree(ntaxa)
+  tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                          lambda = 0.1, mu = 0,
+                          age = 1, mrca = TRUE)[[1]]
   
   ## Parameters
   p <- 6
@@ -12,9 +14,13 @@ test_that("Likelihood missing/no missing methods", {
                      value.root = c(1, -1, 2, -10, 2.58, -13.2),
                      exp.root = NA,
                      var.root = NA)
-  shifts = list(edges = c(18, 32),
+  shifts = list(edges = c(18, 32, 45, 109, 254, 398),
                 values=cbind(c(4, -10, 3, 12, 32, -5),
-                             c(-5, 5, 0, -1.1, 32.89, 16)),
+                             c(-5, 5, 0, -1.1, 32.89, 16),
+                             c(4, -10, 3, 12, 32, -5),
+                             c(4, -10, 3, 12, 32, -5),
+                             c(4, -10, 3, 12, 32, -5),
+                             c(4, -10, 3, 12, 32, -5)),
                 relativeTimes = 0)
   
   params = list(variance = variance,
