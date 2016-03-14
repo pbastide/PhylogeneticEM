@@ -54,7 +54,10 @@
 #' 
 ##
 compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
-                              miss, masque_data) {
+                              miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                              masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
+                                              rep(FALSE, dim(sim)[1] * phylo$Nnode)),
+                              ...) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
@@ -133,6 +136,72 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
   return(conditional_law_X)
 }
 
+compute_E.simple.nomissing.BM <- function (phylo, Y_data, sim,
+                                           F_means, F_vars, R, ...) {
+  ## Initialization
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  p <- dim(sim)[1]
+  conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + nNodes), 
+                            variances = array(NA, c(p, p, ntaxa + nNodes)), 
+                            covariances = matrix(NA, c(p, p, ntaxa + nNodes)))
+  ## Mean
+  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Z <- extract.simulate(sim, where="nodes", what="expectations")
+  # Conditionnal expectation of unkonwn values
+  conditional_law_X$expectations <- m_Z + (Y_data- m_Y) %*% F_means
+  conditional_law_X$expectations <- cbind(Y_data, conditional_law_X$expectations)
+  conditional_law_X$expectations <- matrix(conditional_law_X$expectations, dim(conditional_law_X$expectations))
+  ## Variances
+  # Data tips
+  var_tips <- array(0, c(p, p, ntaxa))
+  cov_tips <- array(0, c(p, p, ntaxa))
+  # Nodes - varariances
+  R <- array(R, dim(R))
+  var_nodes <- R %o% array(diag(F_vars))
+  conditional_law_X$variances <- array(c(var_tips,
+                                         var_nodes), c(p, p, ntaxa + nNodes))
+  # Nodes - covariances
+  daughters <- phylo$edge[phylo$edge[, 2] > ntaxa, 2] # Only the nodes
+  parents <- phylo$edge[phylo$edge[, 2] > ntaxa, 1]
+  cov_nodes <- diag(F_vars[daughters - ntaxa, parents - ntaxa])
+  cov_nodes[daughters - ntaxa] <- cov_nodes
+  cov_nodes[1] <- NA # Root is NA
+  cov_nodes <- R %o% array(cov_nodes)
+  conditional_law_X$covariances <- array(c(cov_tips,
+                                           cov_nodes), c(p, p, ntaxa + nNodes))
+  return(conditional_law_X)
+}
+
+##
+#' @title Compute fixed moments for E step.
+#'
+#' @description
+#' \code{compute_fixed_moments} compute the fixed matrices used in E step when
+#' there is no missing data.
+#' 
+#' @param times_shared matrix of the tree, result of function
+#'  \code{compute_times_ca}
+#' 
+#' @return F_means the matrix to use for actualization of means.
+#' @return F_vars the matrix to use for the actualization of variances.
+#' 
+##
+compute_fixed_moments <- function(times_shared, ntaxa){
+  masque_data <- c(rep(TRUE, ntaxa), rep(FALSE, dim(times_shared)[1] - ntaxa))
+  C_YZ <- extract.variance_covariance(times_shared, what="YZ", masque_data)
+  C_YY <- extract.variance_covariance(times_shared, what="YY", masque_data)
+  C_ZZ <- extract.variance_covariance(times_shared, what="ZZ", masque_data)
+  C_YY_chol <- chol(C_YY)
+  C_YY_chol_inv <- backsolve(C_YY_chol, diag(ncol(C_YY_chol)))
+  temp <- C_YZ %*% C_YY_chol_inv
+  F_means <- tcrossprod(C_YY_chol_inv, temp)  # solve(C_YY) %*% t(C_YZ)
+  F_vars <- C_ZZ - tcrossprod(temp)
+  if (!isSymmetric(F_vars)) stop("Something went wrong, matrix F_vars sould be symmetric.")
+  F_vars <- forceSymmetric(F_vars)
+  return(list(C_YY = C_YY, C_YY_chol_inv = C_YY_chol_inv,
+              F_means = F_means, F_vars = F_vars))
+}
 
 ##
 #' @title Extract sub-matrices of variance.
@@ -418,7 +487,8 @@ compute_mean_variance.simple <- function (phylo,
                                           distances_phylo,
                                           process=c("BM", "OU", "rBM", "scOU"),
                                           params_old,
-                                          masque_data, ...) {
+                                          masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
+                                                          rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)), ...) {
   ## Choose process 
   process  <- match.arg(process)
   compute_variance_covariance  <- switch(process, 
@@ -443,6 +513,24 @@ compute_mean_variance.simple <- function (phylo,
   Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, diag(ncol(Sigma_YY_chol)))
   #Sigma_YY_inv <- chol2inv(Sigma_YY_chol)
   return(list(sim = sim, Sigma = Sigma, Sigma_YY_chol_inv = Sigma_YY_chol_inv))
+}
+
+compute_mean_variance.simple.nomissing.BM <- function (phylo,
+                                                       process = "BM",
+                                                       params_old,
+                                                       F_moments, ...) {
+  ## Mean
+  sim <- simulate(phylo = phylo, 
+                  process = process,
+                  p = attr(params_old, "p_dim"),
+                  root.state = params_old$root.state, 
+                  shifts = params_old$shifts, 
+                  variance = params_old$variance, 
+                  optimal.value = params_old$optimal.value, 
+                  selection.strength = params_old$selection.strength)
+  return(list(sim = sim, C_YY = F_moments$C_YY,
+              C_YY_chol_inv = F_moments$C_YY_chol_inv,
+              F_means = F_moments$F_means, F_vars = F_moments$F_vars))
 }
 
 #####################################################################
@@ -498,13 +586,26 @@ compute_residuals.simple <- function(phylo, Y_data_vec, sim,
 #' @return squared Mahalanobis distance between data and mean at the tips.
 ##
 compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
-                                                Sigma_YY_chol_inv, miss){
+                                                Sigma_YY_chol_inv,
+                                                miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                                                ...){
   ntaxa <- length(phylo$tip.label)
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   m_Y <- as.vector(m_Y)[!miss]
 #  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
   MD <- tcrossprod(t(Y_data_vec - m_Y) %*% Sigma_YY_chol_inv)
   return(MD)
+}
+
+compute_mahalanobis_distance.simple.nomissing.BM <- function(phylo, Y_data, sim,
+                                                             C_YY_chol_inv, R, ...){
+  ntaxa <- length(phylo$tip.label)
+  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+#  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
+  R_chol <- t(chol(R)) # R = R_chol %*% t(R_chol)
+  R_chol_inv <- t(backsolve(t(R_chol), diag(ncol(R_chol))))
+  MD <- R_chol_inv %*% (Y_data - m_Y) %*% C_YY_chol_inv
+  return(sum(MD^2))
 }
 
 
@@ -535,7 +636,7 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
                                           Sigma, Sigma_YY_chol_inv,
                                           miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
                                           masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
-                                                          rep(FALSE, dim(sim)[1] * phylo$Nnode))){
+                                                          rep(FALSE, dim(sim)[1] * phylo$Nnode)), ...){
   # ntaxa <- length(phylo$tip.label)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
@@ -544,6 +645,18 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
   m_Y_vec <- as.vector(m_Y)[!miss]
 #  LL <- LL + t(Y_data_vec - m_Y_vec) %*% Sigma_YY_inv %*% (Y_data_vec - m_Y_vec)
   LL <- LL + tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
+  return(-LL/2)
+}
+
+compute_log_likelihood.simple.nomissing.BM <- function(phylo, Y_data, sim,
+                                                       C_YY, C_YY_chol_inv, R, ...){
+  # ntaxa <- length(phylo$tip.label)
+  logdetC_YY <- determinant(C_YY, logarithm = TRUE)$modulus
+  logdetR <- determinant(R, logarithm = TRUE)$modulus
+  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  LL <- prod(dim(Y_data)) * log(2*pi) + dim(R)[1] * logdetC_YY + dim(C_YY)[1] * logdetR
+  LL <- LL + compute_mahalanobis_distance.simple.nomissing.BM(phylo, Y_data, sim,
+                                                              C_YY_chol_inv, R)
   return(-LL/2)
 }
 
