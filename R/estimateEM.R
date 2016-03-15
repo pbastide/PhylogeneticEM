@@ -903,9 +903,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       T_tree <- incidence.matrix(phylo)
       h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
       ## Fixed Quantities if no missing data
-      Flag_Missing <- any(is.na(Y_data_imp)) # TRUE if some missing values
+      Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
       if (!Flag_Missing){
-        F_moments <- compute_fixed_moments(times_shared)
+        F_moments <- compute_fixed_moments(times_shared, ntaxa)
       } else {
         F_moments = NULL
       }
