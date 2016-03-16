@@ -16,9 +16,9 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-03-10" # "2015-03-17" #format(Sys.time(), "%Y-%m-%d")
-savedatafile = "../Results/Simulations_Several_K/several_K_simlist_uncertainties"
-saveresultfile <- "../Results/Simulations_Several_K/several_K_estimations_SUN_rBM_uncertainties_"
+datestamp_data <- "2015-03-17" # "2015-03-17" "2016-03-10" #format(Sys.time(), "%Y-%m-%d")
+savedatafile = "../Results/Simulations_Several_K/several_K_simlist"
+saveresultfile <- "../Results/Simulations_Several_K/several_K_estimations_SUN_rBM"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
 
 source("R/simulate.R")
@@ -80,23 +80,23 @@ estimations_several_K <- function(X){
                  use_previous = FALSE,
                  method.selection = "BGH")
   res <- add_total_time(res)
-  res <- enlight_res(res)
+  # res <- enlight_res(res)
   ret <- list(sim = X,
               res = res)
   return(ret)
 }
 
-enlight_res <- function(res){
-  lres <- vector("list", 4)
-  lres[1:3] <- res[1:3]
-  lmax <- res$alpha_max$BGH[c("params_select", "params_raw", "params_init_estim",
-                              "results_summary",
-                              # "Yhat", "Zhat", "Yvar", "Zvar",
-                              "m_Y_estim", "edge.quality")]
-  lres$alpha_max <- res$alpha_max
-  lres$alpha_max$BGH <- lmax
-  return(lres)
-}
+# enlight_res <- function(res){
+#   lres <- vector("list", 4)
+#   lres[1:3] <- res[1:3]
+#   lmax <- res$alpha_max$BGH[c("params_select", "params_raw", "params_init_estim",
+#                               "results_summary",
+#                               # "Yhat", "Zhat", "Yvar", "Zvar",
+#                               "m_Y_estim", "edge.quality")]
+#   lres$alpha_max <- res$alpha_max
+#   lres$alpha_max$BGH <- lmax
+#   return(lres)
+# }
 
 add_total_time <- function(res){
   tot_time <- sum(sapply(res[grep("alpha_[[:digit:]]", names(res))],
@@ -211,7 +211,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(
-  simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
+  simestimations_fav <- foreach(i = simlist[favorables][1:3], .packages = reqpckg) %dopar%
   {
     estimations_several_K_ak(i)
   }
