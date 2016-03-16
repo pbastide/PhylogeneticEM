@@ -3880,3 +3880,42 @@ eq_shifts_values_estim <- equivalent_shifts_values(tree,
                                              t_tree, times_shared, Tr)
 
 plot_equivalent_shifts(tree, eq_shifts_edges_estim, eq_shifts_values_estim, paste0(PATH, "estim_"), name)
+
+###################################################################
+## Test of function simulate
+###################################################################
+set.seed(586)
+ntaxa <- 200
+tree <- rtree(ntaxa)
+
+## Simulate Process
+p <- 3
+variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+root.state <- list(random = FALSE,
+                   value.root = c(1, -1, 2),
+                   exp.root = NA,
+                   var.root = NA)
+shifts = list(edges = c(18, 32),
+              values=cbind(c(4, -10, 3),
+                           c(-5, 5, 0)),
+              relativeTimes = 0)
+f1 <- function(tree, p, root.state, variance, shifts){
+  X1 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "BM",
+                 variance = variance,
+                 shifts = shifts)
+  
+  return(extract.simulate(X1, where = "tips", what = "exp"))
+}
+
+T_tree <- incidence.matrix(tree)
+
+f2 <- function(tree, root.state, shifts, T_tree){
+  Delta <- shifts.list_to_matrix(tree, shifts)
+  return(tcrossprod(Delta, T_tree) + root.state$value.root)
+}
+
+library(microbenchmark)
+microbenchmark(f1(tree, p, root.state, variance, shifts), f2(tree, root.state, shifts, T_tree))

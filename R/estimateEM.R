@@ -107,6 +107,7 @@ estimateEM <- function(phylo,
                        subtree.list = NULL,
                        T_tree = NULL, 
                        h_tree = NULL,
+                       F_moments = NULL,
                        tol_half_life = TRUE,
                        warning_several_solutions = TRUE,
                        convergence_mode = c("relative", "absolute"),
@@ -155,6 +156,18 @@ estimateEM <- function(phylo,
   sBM_variance <- temp$sBM_variance
   if (sBM_variance) phylo$root.edge <- 1
   
+  ########## Missing Data #####################################################
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  p <- nrow(Y_data)
+  miss <- as.vector(is.na(Y_data))
+  Flag_Missing <- any(miss)
+  Y_data_vec <- as.vector(Y_data)
+  Y_data_vec_known <- as.vector(Y_data[!miss])
+  # Vectorized Data Mask
+  masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
+  masque_data[1:(p*ntaxa)] <- !miss
+  
   ########## Choose functions #################################################
   # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
@@ -194,14 +207,21 @@ estimateEM <- function(phylo,
   
   ########## Moments computation method #######################################
   method.variance  <- match.arg(method.variance)
+  if (process == "BM" && !Flag_Missing && method.variance == "simple"){
+    method.variance <- "simple.nomissing.BM"
+  }
   compute_E  <- switch(method.variance, 
-                       simple = compute_E.simple)
+                       simple = compute_E.simple,
+                       simple.nomissing.BM = compute_E.simple.nomissing.BM)
   compute_mean_variance  <- switch(method.variance, 
-                                   simple = compute_mean_variance.simple)
+                                   simple = compute_mean_variance.simple,
+                                   simple.nomissing.BM = compute_mean_variance.simple.nomissing.BM)
   compute_log_likelihood  <- switch(method.variance, 
-                                    simple = compute_log_likelihood.simple)
+                                    simple = compute_log_likelihood.simple,
+                                    simple.nomissing.BM = compute_log_likelihood.simple.nomissing.BM)
   compute_mahalanobis_distance  <- switch(method.variance, 
-                                          simple = compute_mahalanobis_distance.simple)
+                                          simple = compute_mahalanobis_distance.simple,
+                                          simple.nomissing.BM = compute_mahalanobis_distance.simple.nomissing.BM)
 
   ########## Initialization Method ############################################
   method.init  <- match.arg(method.init)
@@ -229,6 +249,9 @@ estimateEM <- function(phylo,
   if (is.null(subtree.list)) subtree.list <- enumerate_tips_under_edges(phylo)
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+  if (is.null(F_moments) && !Flag_Missing && process == "BM"){
+    F_moments <- compute_fixed_moments(times_shared, ntaxa)
+  } 
   
   ########## Re-scale tree to 100 #############################################
   
@@ -242,20 +265,15 @@ estimateEM <- function(phylo,
   phylo$edge.length <- factor_rescale * phylo$edge.length
   phylo$root.edge <- factor_rescale * phylo$root.edge
   
+  if (!Flag_Missing && process == "BM"){
+    F_moments$C_YY = F_moments$C_YY * factor_rescale
+    F_moments$C_YY_chol_inv = F_moments$C_YY_chol_inv / sqrt(factor_rescale)
+    F_moments$F_vars = F_moments$F_vars * factor_rescale
+  }
+  
   known.selection.strength <-  known.selection.strength / factor_rescale
   init.selection.strength <- init.selection.strength / factor_rescale
   variance.init <- variance.init / factor_rescale
-  
-  ########## Missing Data #####################################################
-  ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
-  p <- nrow(Y_data)
-  miss <- as.vector(is.na(Y_data))
-  Y_data_vec <- as.vector(Y_data)
-  Y_data_vec_known <- as.vector(Y_data[!miss])
-  # Vectorized Data Mask
-  masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
-  masque_data[1:(p*ntaxa)] <- !miss
   
   ########## Initialization of alpha and Variance #############################
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
@@ -375,14 +393,19 @@ estimateEM <- function(phylo,
                                      distances_phylo = distances_phylo,
                                      process = process,
                                      params_old = params_old,
-                                     masque_data = masque_data)
+                                     masque_data = masque_data,
+                                     F_moments = F_moments)
     log_likelihood_old <- compute_log_likelihood(phylo = phylo,
                                                  Y_data_vec = Y_data_vec_known,
                                                  sim = moments$sim,
                                                  Sigma = moments$Sigma,
                                                  Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
                                                  miss = miss, 
-                                                 masque_data = masque_data)
+                                                 masque_data = masque_data,
+                                                 C_YY = F_moments$C_YY,
+                                                 Y_data = Y_data,
+                                                 C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                                 R = params_old$variance)
     attr(params_old, "log_likelihood") <- log_likelihood_old
     if (check_convergence_likelihood && Nbr_It > 1){
       CV_log_lik <- has_converged_absolute(log_likelihood_old_old, log_likelihood_old, tol$log_likelihood)
@@ -392,7 +415,10 @@ estimateEM <- function(phylo,
                                                    Y_data_vec = Y_data_vec_known,
                                                    sim = moments$sim,
                                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                   miss = miss)
+                                                   miss = miss,
+                                                   Y_data = Y_data,
+                                                   C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                                   R = params_old$variance)
     attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
     
     ########## E step #########################################################
@@ -402,7 +428,11 @@ estimateEM <- function(phylo,
                                    Sigma = moments$Sigma,
                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
                                    miss = miss,
-                                   masque_data = masque_data)
+                                   masque_data = masque_data,
+                                   F_means = F_moments$F_means,
+                                   F_vars = F_moments$F_vars,
+                                   R = params_old$variance,
+                                   Y_data = Y_data)
     rm(moments)
     if (process == "OU"){
       if (p > 1) stop("Multivariate OU not yet implemented.")
@@ -475,6 +505,12 @@ estimateEM <- function(phylo,
   phylo$edge.length <- phylo$edge.length / factor_rescale
   phylo$root.edge <- phylo$root.edge / factor_rescale
   
+  if (!Flag_Missing && process == "BM"){
+    F_moments$C_YY = F_moments$C_YY / factor_rescale
+    F_moments$C_YY_chol_inv = F_moments$C_YY_chol_inv * sqrt(factor_rescale)
+    F_moments$F_vars = F_moments$F_vars / factor_rescale
+  }
+  
   known.selection.strength <-  known.selection.strength * factor_rescale
   init.selection.strength <- init.selection.strength * factor_rescale
   variance.init <- variance.init * factor_rescale
@@ -512,6 +548,11 @@ estimateEM <- function(phylo,
   
   ########## Compute scores and ancestral states for final parameters ##########
   ## Compute log-likelihood for final parameters
+  compute_E <- compute_E.simple
+  compute_mean_variance  <- compute_mean_variance.simple
+  compute_log_likelihood  <- compute_log_likelihood.simple
+  compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
+  
   moments <- compute_mean_variance(phylo = phylo,
                                    times_shared = times_shared,
                                    distances_phylo = distances_phylo,
@@ -861,6 +902,13 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       subtree.list <- enumerate_tips_under_edges(phylo)
       T_tree <- incidence.matrix(phylo)
       h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+      ## Fixed Quantities if no missing data
+      Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
+      if (!Flag_Missing){
+        F_moments <- compute_fixed_moments(times_shared, ntaxa)
+      } else {
+        F_moments = NULL
+      }
       ## Impute data if needed
       if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
         warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be infered. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
@@ -912,6 +960,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                subtree.list = subtree.list,
                                T_tree = T_tree,
                                h_tree = h_tree,
+                               F_moments = F_moments,
                                save_step = save_step,
                                sBM_variance = sBM_variance,
                                method.OUsun = method.OUsun,
@@ -1026,6 +1075,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 subtree.list = NULL,
                                 T_tree = NULL,
                                 h_tree = NULL,
+                                F_moments = NULL,
                                 save_step = TRUE,
                                 sBM_variance = FALSE,
                                 method.OUsun = "rescale", 
@@ -1072,6 +1122,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       subtree.list = subtree.list,
                                                       T_tree = T_tree,
                                                       h_tree = h_tree,
+                                                      F_moments = F_moments,
                                                       warning_several_solutions = FALSE,
                                                       sBM_variance = sBM_variance,
                                                       method.OUsun = method.OUsun,
@@ -1114,6 +1165,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                           subtree.list = subtree.list,
                                                           T_tree = T_tree, 
                                                           h_tree = h_tree,
+                                                          F_moments = F_moments,
                                                           warning_several_solutions = FALSE,
                                                           sBM_variance = sBM_variance,
                                                           method.OUsun = method.OUsun,

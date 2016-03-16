@@ -99,7 +99,7 @@ compute_times_ca <- function(phy) {
   times <- node.depth.edgelength(phy)
   prac <- mrca(phy,full=TRUE)
   times_ca <- matrix(times[prac],dim(prac))
-  attr(times_ca, "ntaxa") <- length(phy$tip.label)
+  # attr(times_ca, "ntaxa") <- length(phy$tip.label)
   return(as(times_ca, "symmetricMatrix"))
 }
 
