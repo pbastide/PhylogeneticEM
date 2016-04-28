@@ -455,6 +455,59 @@ compute_tree_correlations_matrix.scOU <- function(times_shared, distances_phylo,
 }
 
 ##
+#' @title Complete variance covariance matrix for OU
+#'
+#' @description
+#' \code{compute_variance_covariance.OU} computes the (n+m)*p squared variance
+#' covariance matrix of vec(X).
+#'
+#'  @param times_shared times of shared ancestry of all nodes and tips, result 
+#'  of function \code{compute_times_ca}
+#'  @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return matrix of variance covariance for the OU
+#' 
+##
+compute_variance_covariance.OU <- function(times_shared, params_old, ...) {
+  p <- dim(params_old$variance)[1]
+  ntaxa <- dim(times_shared)[1]
+  if (is.null(p)){
+    return(compute_variance_covariance.scOU(times_shared, distances_phylo, params_old, ...))
+  }
+  alpha_mat <- params_old$selection.strength
+  sigma2 <- params_old$variance
+  varr <- matrix(NA, p*ntaxa, p*ntaxa)
+  # random root if needed
+  if (params_old$root.state$random){
+    var_root <- params_old$root.state$var.root
+  } else {
+    var_root <- matrix(0, p, p)
+  }
+  eig_alpha <- eigen(alpha_mat, symmetric = TRUE)
+  P <- eig_alpha$vectors
+  sigma_trans <- t(P) %*% sigma2 %*% P
+  var_root_trans <- t(P) %*% var_root %*% P
+  vv <- matrix(NA, p, p)
+  for (q in 1:p){
+    for (r in 1:p){
+      vv[q, r] <- 1/(eig_alpha$values[q] + eig_alpha$values[r])
+    }
+  }
+  for (i in 1:ntaxa){
+    for (j in 1:ntaxa){
+      ti <- times_shared[i, i]
+      tj <- times_shared[j, j]
+      tij <- times_shared[i, j]
+      temp <- vv * exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * (exp(eig_alpha$values * tij) %*% t(exp(eig_alpha$values * tij)) - 1)
+      varr[((i-1)*(p)+1):(i*p),((j-1)*(p)+1):(j*p)] <- as.matrix(P %*% (temp * sigma_trans + exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * var_root_trans) %*% t(P))
+    }
+  }
+  attr(varr, "p_dim") <- p
+  attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
+  return(varr)
+}
+
+##
 #' @title Compute moments of params_old
 #'
 #' @description
@@ -493,7 +546,7 @@ compute_mean_variance.simple <- function (phylo,
   process  <- match.arg(process)
   compute_variance_covariance  <- switch(process, 
                                          BM = compute_variance_covariance.BM,
-                                         OU = compute_variance_covariance.scOU,
+                                         OU = compute_variance_covariance.OU,
                                          scOU = compute_variance_covariance.scOU)
   ## Mean
   sim <- simulate(phylo = phylo, 
