@@ -3919,3 +3919,313 @@ f2 <- function(tree, root.state, shifts, T_tree){
 
 library(microbenchmark)
 microbenchmark(f1(tree, p, root.state, variance, shifts), f2(tree, root.state, shifts, T_tree))
+
+
+############################################################################
+## PCA
+############################################################################
+tree <- read.tree(text="(((A1:1,A2:1,A3:1,A4:1):0.2,(A5:1,A6:1,A7:1,A8:1):0.2):4,((B1:1,B2:1,B3:1,B4:1):0.2,(C1:1,C2:1,C3:1,C4:1):0.2):4);")
+tree$edge.length <- tree$edge.length / node.depth.edgelength(tree)[1]
+plot(tree); edgelabels()
+
+#####
+## Simulate Process : No shift
+p <- 2
+variance <- matrix(-0.9, p, p) + diag(1.9, p, p)
+eigTrue <- eigen(variance)
+root.state <- list(random = FALSE,
+                   value.root = c(0, 0),
+                   exp.root = NA,
+                   var.root = NA)
+shifts = NULL
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state)
+
+regimes <- allocate_regimes_from_shifts(tree, shifts$edges)
+
+set.seed(17920902)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+traits <- t(extract.simulate(X1, where = "tips", what = "state"))
+ancestral <- extract.simulate(X1, where = "nodes", what = "states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$root.state$value.root <- paramsSimu$root.state$value.root[l]
+  plot.data.process.actual(Y.state = t(traits)[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3",
+                           show.tip.label = TRUE,
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = ancestral,
+                           ancestral_as_shift = FALSE)
+}
+
+# plot(traits[, 1], traits[, 2],
+#      col = regimes[1:length(tree$tip.label)] + 1,
+#      pch = c(rep(1, 8), rep(2, 8)))
+
+## Standart PCA
+pca <- prcomp(traits)
+# summary(pca)
+# plot(pca$x[, 1], pca$x[, 2],
+#      col = regimes[1:length(tree$tip.label)] + 1,
+#      pch = c(rep(1, 8), rep(2, 8)))
+# 
+# pca$sdev / sum(pca$sdev)
+# t(pca$x[, 1]) %*% pca$x[, 2]
+# t(pca$x[, 1]) %*% solve(vcv(tree)) %*% pca$x[, 2]
+
+## Phylogenetic PCA
+library(phytools)
+ppca <- phyl.pca(tree, traits)
+# plot(ppca$S[, 1], ppca$S[, 2],
+#      col = regimes[1:length(tree$tip.label)] + 1,
+#      pch = c(rep(1, 8), rep(2, 8)))
+
+# Plot the axis of the real variance, the pca variance, and the ppca one.
+# Here ppca is a bit better than plain pca
+library(ggplot2)
+traits_df <- data.frame(x = traits[, 1], y = traits[, 2],
+                        regime = regimes[1:length(tree$tip.label)])
+axes_df <- data.frame(x1 = rep(pca$center[1], 6),
+                      y1 = rep(pca$center[2], 6),
+                      x2 = c(pca$center[1] + eigTrue$vectors[1,],
+                             pca$center[1] + pca$rotation[1,],
+                             pca$center[1] + ppca$Evec[1,]),
+                      y2 = c(pca$center[2] + eigTrue$vectors[2,],
+                             pca$center[2] + pca$rotation[2,],
+                             pca$center[2] + ppca$Evec[2,]),
+                      rotation = c(rep("true", 2),
+                                   rep("PCA", 2),
+                                   rep("pPCA", 2)))
+
+p <- ggplot(traits_df, aes(x=x, y=y), asp = 1)
+p <- p + geom_text(aes(label=tree$tip.label))
+p <- p + geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2, colour = rotation), data = axes_df)
+p <- p + labs(x = "trait 1",
+              y = "trait 2")
+p <- p + theme_bw()
+p
+
+plot(traits[, 1], traits[, 2],
+     col = regimes[1:length(tree$tip.label)] + 1,
+     pch = c(rep(1, 8), rep(2, 8)), asp = 1)
+segments(rep(pca$center[1], 2), rep(pca$center[2], 2), pca$center[1] + eigTrue$vectors[1,], pca$center[2] + eigTrue$vectors[2,], lty = c(1, 2))
+segments(rep(pca$center[1], 2), rep(pca$center[2], 2), pca$center[1] + pca$rotation[1,], pca$center[2] + pca$rotation[2,], col = "blue", lty = c(1, 2))
+segments(rep(pca$center[1], 2), rep(pca$center[2], 2), pca$center[1] + ppca$Evec[1,], pca$center[2] + ppca$Evec[2,], col = "red", lty = c(1, 2))
+
+# diag(ppca$Eval / sum(ppca$Eval))
+# t(ppca$S[, 1]) %*% ppca$S[, 2]
+# t(ppca$S[, 1]) %*% solve(vcv(tree)) %*% ppca$S[, 2]
+
+#####
+## Simulate Process : One shift that "agrees" with the phylogeny
+p <- 2
+variance <- matrix(-0.9, p, p) + diag(1.9, p, p)
+eigTrue <- eigen(variance)
+root.state <- list(random = FALSE,
+                   value.root = c(0, 0),
+                   exp.root = NA,
+                   var.root = NA)
+shifts = list(edges = c(12),
+              values=matrix(2*c(1, 0.5), nrow = 2),
+              relativeTimes = 0)
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state)
+
+regimes <- allocate_regimes_from_shifts(tree, shifts$edges)
+
+set.seed(17920902)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+traits <- t(extract.simulate(X1, where = "tips", what = "state"))
+ancestral <- extract.simulate(X1, where = "nodes", what = "states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$root.state$value.root <- paramsSimu$root.state$value.root[l]
+  plot.data.process.actual(Y.state = t(traits)[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3",
+                           show.tip.label = TRUE,
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = ancestral,
+                           ancestral_as_shift = FALSE)
+}
+
+## Standart PCA
+pca <- prcomp(traits)
+
+## Phylogenetic PCA
+library(phytools)
+ppca <- phyl.pca(tree, traits)
+
+# Plot the axis of the real variance, the pca variance, and the ppca one.
+# Here, as the shift agrees with the phylogeny (on a long branch), the ppca still
+# does a good job. The pca is in the cabbages.
+traits_df <- data.frame(x = traits[, 1], y = traits[, 2],
+                        regime = regimes[1:length(tree$tip.label)])
+axes_df <- data.frame(x1 = rep(pca$center[1], 6),
+                      y1 = rep(pca$center[2], 6),
+                      x2 = c(pca$center[1] + eigTrue$vectors[1,],
+                             pca$center[1] + pca$rotation[1,],
+                             pca$center[1] + ppca$Evec[1,]),
+                      y2 = c(pca$center[2] + eigTrue$vectors[2,],
+                             pca$center[2] + pca$rotation[2,],
+                             pca$center[2] + ppca$Evec[2,]),
+                      rotation = c(rep("true", 2),
+                                   rep("PCA", 2),
+                                   rep("pPCA", 2)))
+
+p <- ggplot(traits_df, aes(x=x, y=y), asp = 1)
+p <- p + geom_text(aes(label=tree$tip.label))
+p <- p + coord_fixed(ratio = 1)
+p <- p + geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2, colour = rotation), data = axes_df)
+p <- p + labs(x = "trait 1",
+              y = "trait 2")
+p <- p + theme_bw()
+p
+
+#####
+## Simulate Process : One very vicious shift.
+p <- 2
+variance <- matrix(-0.9, p, p) + diag(1.9, p, p)
+eigTrue <- eigen(variance)
+root.state <- list(random = FALSE,
+                   value.root = c(0, 0),
+                   exp.root = NA,
+                   var.root = NA)
+shifts = list(edges = c(18),
+              values=matrix(2*c(1, 0.5), nrow = 2),
+              relativeTimes = 0)
+
+regimes <- allocate_regimes_from_shifts(tree, shifts$edges)
+
+set.seed(17920902)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "BM",
+               variance = variance,
+               shifts = shifts)
+
+traits <- t(extract.simulate(X1, where = "tips", what = "state"))
+ancestral <- extract.simulate(X1, where = "nodes", what = "states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$root.state$value.root <- paramsSimu$root.state$value.root[l]
+  plot.data.process.actual(Y.state = t(traits)[l, ],
+                           phylo = tree, 
+                           params = params,
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3",
+                           show.tip.label = TRUE,
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = ancestral,
+                           ancestral_as_shift = FALSE)
+}
+
+## Standart PCA
+pca <- prcomp(traits)
+
+## Phylogenetic PCA
+library(phytools)
+ppca <- phyl.pca(tree, traits)
+
+# Plot the axis of the real variance, the pca variance, and the ppca one.
+# Here, with a shift, both ppca and pca produce very wrong axis.
+plot(traits[, 1], traits[, 2],
+     col = regimes[1:length(tree$tip.label)] + 1,
+     pch = c(rep(1, 8), rep(2, 8)), asp = 1)
+segments(rep(pca$center[1], 2), rep(pca$center[2], 2), pca$center[1] + eigTrue$vectors[1,], pca$center[2] + eigTrue$vectors[2,], lty = c(1, 2))
+segments(rep(pca$center[1], 2), rep(pca$center[2], 2), pca$center[1] + pca$rotation[1,], pca$center[2] + pca$rotation[2,], col = "blue", lty = c(1, 2))
+segments(rep(pca$center[1], 2), rep(pca$center[2], 2), pca$center[1] + ppca$Evec[1,], pca$center[2] + ppca$Evec[2,], col = "red", lty = c(1, 2))
+
+##############################################
+## Computation of Kullback distances
+##############################################
+n <- 60
+p <- 4
+sigma2 <- 2
+r <- 0.6
+alpha <- 1
+
+I <- diag(1, 4)
+J <- matrix(1, 4, 4)
+
+## Variance pleine contre scalaire
+D_1 <- -n*p*log(sigma2) + n*log(det(sigma2 * I + 2*r*(J-I)))
+n*log((sigma2-2*r)^3*(sigma2 + 3*(2*r)))
+n*log(sigma2^p + 8*sigma2*(2*r)^3 - 6*(2*r)^2*sigma2^2 - 3*(2*r)^4)
+
+## Idem, methode brutale
+library(ape)
+library(TreeSim)
+tree <- sim.bd.taxa.age(n = n, numbsim = 1, lambda = 1, mu = 0, 
+                        age = 1, mrca = TRUE)[[1]]
+D <- cophenetic.phylo(tree)
+M <- exp(-alpha * D)
+R <- sigma2 * I + 2 * r * (J - I)
+Sigma_A <- sigma2 / (2 * alpha) * kronecker(M, I)
+Sigma_B <- 1 / (2 * alpha) *kronecker(M, R)
+D_1_brut <- sum(diag(solve(Sigma_A)%*%Sigma_B)) -n*p - as.vector(determinant(Sigma_A, logarithm = TRUE)$modulus) + as.vector(determinant(Sigma_B, logarithm = TRUE)$modulus)
+D_1_brut # ne dépend pas de la topologie, -103 pour 2r=1.2
+
+## A diagonale non scalaire
+s <- 1.4
+Ms <- exp(- s * D)
+Mdiff <- M * (1/(2*(alpha + s))*Ms - 1/(2 * alpha))
+K = diag(c(0, 0, 1, 1))
+Sigma_D <- Sigma_A + sigma2 * kronecker(Mdiff, K)
+D_2_brut <- sum(diag(solve(Sigma_A)%*%Sigma_D)) -n*p - as.vector(determinant(Sigma_A, logarithm = TRUE)$modulus) + as.vector(determinant(Sigma_D, logarithm = TRUE)$modulus)
+D_2_brut # dépend de la topologie, autour de -110 pour s = 1.4
+
+## A pleine, sigma scalaire
+A <- alpha * I + r*(J - I)
+eg <- eigen(A, symmetric = TRUE)
+K_1 <- diag(c(1, 0, 0, 0))
+K_2 <- diag(c(0, 1, 0, 0))
+K_3 <- diag(c(0, 0, 1, 0))
+K_4 <- diag(c(0, 0, 0, 1))
+Sigma_C <- kronecker(exp(-eg$values[1] * D), K_1) + kronecker(exp(-eg$values[2] * D), K_2) + kronecker(exp(-eg$values[3] * D), K_3) + kronecker(exp(-eg$values[4] * D), K_4)
+Sigma_C <- kronecker(diag(rep(1, n)), eg$vectors) %*% Sigma_C %*% kronecker(diag(rep(1, n)), t(eg$vectors))
+D_3_brut <- sum(diag(solve(Sigma_A)%*%Sigma_C)) -n*p - as.vector(determinant(Sigma_A, logarithm = TRUE)$modulus) + as.vector(determinant(Sigma_C, logarithm = TRUE)$modulus)
+D_3_brut # dépend de la topologie, autour de -130 pour r = 0.6
+

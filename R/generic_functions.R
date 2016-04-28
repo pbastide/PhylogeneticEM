@@ -432,7 +432,7 @@ coherence_stationnary_case <- function(root.state, optimal.value,
 
 compute_stationnary_variance <- function(variance, selection.strength){
   if (is.null(selection.strength)) return(NA)
-  if (dim(variance)[1] == 1){
+  if (length(as.vector(selection.strength)) == 1){
     vv <- variance / (2 * selection.strength)
     vv <- Matrix(vv)
     vv <- as(vv, "symmetricMatrix")

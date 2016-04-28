@@ -764,6 +764,9 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
 #'
 ##
 shifts_to_simmap <- function(tree, shifts_edges){
+  if (is.null(shifts_edges)){
+    return(tree)
+  }
   ## Reorder tree (older shifts first)
   phy <- reorder(tree, order = "cladewise")
   # Trace edges
