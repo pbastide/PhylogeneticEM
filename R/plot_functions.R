@@ -206,6 +206,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      show.tip.label = FALSE,
                                      underscore = FALSE,
                                      label.offset = 0,
+                                     ancestral_as_shift = TRUE,
                                      ...){
   ntaxa <- length(phylo$tip.label)
   #   if (normalize){
@@ -328,6 +329,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       if (is.expression(phylo$tip.label)) underscore <- TRUE
       if (!underscore) phylo$tip.label <- gsub("_", " ", phylo$tip.label)
       x.lim.max.data <- max(pos_last_tip + eccart_g + Y.plot) + label.offset
+      if (!exists("color_characters_regimes")) color_characters_regimes <- color_edges
       text(x.lim.max.data, lastPP$yy[1:ntaxa], phylo$tip.label, 
            cex = text_cex, pos = 4,
            col = as.vector(color_characters_regimes))
@@ -346,7 +348,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   }
   ## Plot beta_0
   if (value_in_box){ # Write value of shift in the box
-    if (!is.null(root.val)){
+    if (!is.null(root.val) && ancestral_as_shift){
       nodelabels(text = round(root.val, 1), 
                  node = ntaxa + 1,
                  bg = bg_beta_0,
@@ -380,7 +382,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     } else { # Color code for shifts values
       values <- c(root.val, params$shifts$values)
       col_shifts <- color_palette(values)
-      if (!is.null(root.val)){
+      if (!is.null(root.val) && ancestral_as_shift){
         nodelabels(text = "", 
                    node = ntaxa + 1,
                    frame = "circle",
