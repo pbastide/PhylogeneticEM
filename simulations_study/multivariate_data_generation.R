@@ -137,7 +137,7 @@ for (nta in c(ntaxa_base, ntaxa_grid)){
   T_tree[[paste0(nta)]] <- incidence.matrix(trees[[paste0(nta)]])
   h_tree[[paste0(nta)]] <- max(diag(times_shared[[paste0(nta)]])[1:nta])
   # Number of tries (depends on tree)
-  K_try[[paste0(nta)]] <- 0:floor(sqrt(nta))
+  K_try[[paste0(nta)]] <- 0:max(floor(sqrt(nta)), 10)
 }
 
 ## Generation of shifts
@@ -247,7 +247,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   tree <- trees[[paste0(ntaxa)]]
   if (ntaxa == 60 && K > 0){
     shifts <- shifts_grid[[paste0(K)]]
-    # Multiplicative factor
+    # Multiplicative factor 
     shifts$values <- factor_shift * shifts$values
     # Randomly multiply by +1 or -1 each trait
     plusminus <- sample(c(-1, 1), p_base, replace = TRUE)
@@ -331,8 +331,8 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
 set.seed(18051804)
 
 ## Sequencial simulations (for reproductability)
-# simlist <- foreach(i = 1:nrow(simparams)) %do% {
-simlist <- foreach(i = ((1:41) - 1) * 200 + 1) %do% {
+simlist <- foreach(i = 1:nrow(simparams)) %do% {
+# simlist <- foreach(i = ((1:42) - 1) * 200 + 1) %do% {
   sim <- datasetsim(alpha = simparams[i, "alpha"],
                     gamma = simparams[i, "gamma"],
                     K = simparams[i, "K"],
