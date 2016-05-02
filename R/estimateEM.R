@@ -691,9 +691,9 @@ format_output <- function(results_estim_EM, phylo, time = NA){
   K_t <- length(params$shifts$edges)
   X$summary <- data.frame(
     ## Estimated Parameters
-    "alpha_estim" = params$selection.strength,
+    # "alpha_estim" = params$selection.strength,
     # "gamma_estim" = params$root.state$var.root,
-    "beta_0_estim" = params$root.state$exp.root,
+    # "beta_0_estim" = params$root.state$exp.root,
     "log_likelihood" = attr(params, "log_likelihood")[1],
     "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
     #"least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
@@ -710,7 +710,7 @@ format_output <- function(results_estim_EM, phylo, time = NA){
     ## Initial Estimated Parameters
     # "alpha_estim_init" = params_init$selection.strength,
     # "gamma_estim_init" = params_init$root.state$var.root,
-    "beta_0_estim_init" = params_init$root.state$exp.root,
+    # "beta_0_estim_init" = params_init$root.state$exp.root,
     "log_likelihood_init" = attr(params_init, "log_likelihood")[1],
     "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean")
     #"least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
