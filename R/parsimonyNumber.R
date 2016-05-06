@@ -703,7 +703,7 @@ equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
 }
 
 ##
-#' @title Find values given edges. OU stationnary case. Ultrametric tree.
+#' @title Find values given edges. OU stationary case. Ultrametric tree.
 #'
 #' @description
 #' \code{equivalent_shifts_values} computes the values of the shifts given all the 
@@ -738,7 +738,7 @@ equivalent_shifts_values <- function(phylo,
   ## corresponding values at tips
   delta <- shifts.list_to_vector(phylo, shifts)
   m_Y <- T_tree_ac %*% delta + beta_0
-  ## find the right coefficients for each combination of edges (! stationnary case)
+  ## find the right coefficients for each combination of edges (! stationary case)
   shifts_and_beta <- apply(eq_shifts_edges, 2,
                            find_shift_values, T_tree_ac = T_tree_ac, m_Y = m_Y)
   ## exclude NAs column (when qr.solve failed)
@@ -748,7 +748,7 @@ equivalent_shifts_values <- function(phylo,
 }
 
 ##
-#' @title Find values given edges. OU stationnary case. Ultrametric tree.
+#' @title Find values given edges. OU stationary case. Ultrametric tree.
 #'
 #' @description
 #' \code{find_actualized_shift_values} computes the values of the shifts their
@@ -768,7 +768,7 @@ equivalent_shifts_values <- function(phylo,
 #' values of the shifts.
 ##
 find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
-  mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[, shifts_edges]) # stationnary case assumption used here
+  mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[, shifts_edges]) # stationary case assumption used here
   coefs <- try(qr.solve_exact(mat, m_Y), silent = TRUE)
   if (inherits(coefs, "try-error")){
     warning("Had a problem solving exactly the linear system.")

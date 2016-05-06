@@ -877,7 +877,7 @@ init.EM.lasso <- function(phylo,
                           subtree.list = NULL,
                           miss = FALSE,
                           sBM_variance = FALSE,
-                          stationnary.root.init = FALSE,
+                          stationary.root.init = FALSE,
                           impute_init_Rphylopars = TRUE,
                           masque_data,
                           ...) {
@@ -899,7 +899,7 @@ init.EM.lasso <- function(phylo,
                                    random.init = random.init, 
                                    var.root.init = var.root.init,
                                    variance.init = variance.init,
-                                   stationnary.root.init = stationnary.root.init,
+                                   stationary.root.init = stationary.root.init,
                                    sBM_variance = sBM_variance,
                                    phylo = phylo, ...)
     return(params_init)
@@ -922,7 +922,7 @@ init.EM.lasso <- function(phylo,
       params_sigma <- init.EM.default(Y_data = Y_data_imp,
                                       selection.strength.init = selection.strength.init, 
                                       random.init = random.init,
-                                      stationnary.root.init = stationnary.root.init,
+                                      stationary.root.init = stationary.root.init,
                                       var.root.init = var.root.init,
                                       variance.init = variance.init,
                                       value.root.init = value.root.init,
@@ -994,7 +994,7 @@ init.EM.lasso <- function(phylo,
                            random.init = random.init, 
                            var.root.init = var.root.init,
                            variance.init = variance.init,
-                           stationnary.root.init = stationnary.root.init,
+                           stationary.root.init = stationary.root.init,
                            nbr_of_shifts = nbr_of_shifts,
                            phylo = phylo,
                            sBM_variance = sBM_variance, ...))
@@ -1026,7 +1026,7 @@ init.EM.lasso <- function(phylo,
                                    random.init = random.init, 
                                    var.root.init = var.root.init,
                                    variance.init = variance.init,
-                                   stationnary.root.init = stationnary.root.init,
+                                   stationary.root.init = stationary.root.init,
                                    sBM_variance = sBM_variance,
                                    phylo = phylo, ...)
     return(params_init)
@@ -1222,7 +1222,7 @@ init.alpha.gamma.estimation <- function(phylo,
                            nbr_of_shifts = nbr_of_shifts,
                            use_sigma = FALSE,
                            random.init = TRUE,
-                           stationnary.root.init = TRUE)
+                           stationary.root.init = TRUE)
     ## Roeorder phylo and trace edges
     phy <- reorder(phylo, order = "cladewise")
     edges_shifts <- correspondanceEdges(edges=lasso$shifts$edges,from=phylo,to=phy)

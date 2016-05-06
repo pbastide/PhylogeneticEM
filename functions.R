@@ -1002,7 +1002,7 @@ estimateEM <- function(phylo,
                        method.init.alpha = c("default", "estimation"),
                        nbr_of_shifts = 0,
                        random.root = TRUE,
-                       stationnary.root = TRUE,
+                       stationary.root = TRUE,
                        shifts_at_nodes = TRUE,
                        alpha_known = FALSE,
                        eps = 10^(-3),
@@ -1028,30 +1028,30 @@ estimateEM <- function(phylo,
   ## Choose process
   process <- match.arg(process)
   process <- check.selection.strength(process, known.selection.strength, eps)
-  # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
+  # specialCase <- stationary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
-                       OU = compute_M.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                       OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
-                        OU = shutoff.EM.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                        OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, alpha_known))
   is.finite.params  <- switch(process, 
                               BM = is.finite.params.BM,
-                              OU = is.finite.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                              OU = is.finite.params.OU(stationary.root, shifts_at_nodes, alpha_known))
   is.in.ranges.params  <- switch(process, 
                                  BM = is.in.ranges.params.BM,
-                                 OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                                 OU = is.in.ranges.params.OU(stationary.root, shifts_at_nodes, alpha_known))
   compute_MaxCompleteLogLik <- switch(process, 
                                       BM = compute_MaxCompleteLogLik.BM,
-                                      OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
+                                      OU = compute_MaxCompleteLogLik.OU(stationary.root, shifts_at_nodes))
   conditional_expectation_log_likelihood <- switch(process, 
                                                    BM = conditional_expectation_log_likelihood.BM,
-                                                   OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))
+                                                   OU = conditional_expectation_log_likelihood.OU(stationary.root, shifts_at_nodes))
   ## init alpha
   method.init.alpha  <- match.arg(method.init.alpha)
-  if (!stationnary.root && (method.init.alpha == "estimation")){
+  if (!stationary.root && (method.init.alpha == "estimation")){
     method.init.alpha <- "default"
-    warning("The estimation initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+    warning("The estimation initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
   }
   init.alpha<- switch(process, 
                       BM = init.alpha.BM,
@@ -1100,7 +1100,7 @@ estimateEM <- function(phylo,
                          nbr_of_shifts = nbr_of_shifts, 
                          selection.strength.init = init.selection.strength, 
                          random.init = random.root,
-                         stationnary.root.init = stationnary.root,
+                         stationary.root.init = stationary.root,
                          use_sigma = use_sigma_for_lasso,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
@@ -1541,7 +1541,7 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo,
                                            BM = compute_variance_covariance.BM,
                                            OU = compute_variance_covariance.OU)
     # Initialize Sigma with default parameters
-    params.default <- init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, var.root.init = var.root.init)
+    params.default <- init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationary.root.init=stationary.root.init, var.root.init = var.root.init)
     Sigma <- compute_variance_covariance(times_shared=times_shared, distances_phylo=distances_phylo, params_old=params.default)
     Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
     # Cholesky
@@ -1562,7 +1562,7 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo,
   ## Fit
   if (inherits(fit, "try-error")) {
     warning("Lasso Initialisation fail : could not find a satisfying number of shifts. Proceeding to a default initialization.")
-    return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, ...))
+    return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationary.root.init=stationary.root.init, ...))
   } else { 
     E0.gauss <- fit$E0.gauss
     shifts.gauss <- fit$shifts.gauss
@@ -1591,7 +1591,7 @@ init.EM.lasso <- function(phylo, Y_data, process, times_shared, distances_phylo,
 #   ## If coudl not find the right lambda, do a default initialization
 #   if (sum(fit.sig$df==nbr_of_shifts_2) == 0) {
 #     warning("Lasso Initialisation fail : could not find a satisfying number of shifts. Proceeding to a default initialization.")
-#     return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationnary.root.init=stationnary.root.init, ...))
+#     return(init.EM.default(selection.strength.init=selection.strength.init, random.init=random.init, stationary.root.init=stationary.root.init, ...))
 #   } else {
 #     delta.sig <- coef(fit.sig, s=fit.sig$lambda[min(which(fit.sig$df==nbr_of_shifts_2))])
 #     E0.sig <- delta.sig[1]; # Intercept
@@ -2239,13 +2239,13 @@ compute_M.BM <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, random
   return(params)
 }
 
-compute_M.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+compute_M.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(compute_M.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(compute_M.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(compute_M.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -2253,7 +2253,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   params <- init.EM.default.OU(selection.strength.init=known.selection.strength,
-                               stationnary.root.init=TRUE,
+                               stationary.root.init=TRUE,
                                random.init=TRUE,
                                ...)
   ## Choose method(s) for segmentation
@@ -2308,7 +2308,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   return(params)
 }
 
-compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, ...){
+compute_M.OU.stationary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, ...){
   ## Estimate all parameters with alpha of the previous step
   params <- compute_M.OU.specialCase(phylo = phylo, 
                                      Y_data = Y_data, 
@@ -2326,7 +2326,7 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
                                               shifts = params$shifts,
                                               alpha_old = alpha_old,
                                               max_selection.strength = max_selection.strength)
-  ## Change value of the root (stationnary) accordingly
+  ## Change value of the root (stationary) accordingly
 #  params$root.state <- suppressWarnings(test.root.state(root.state=params$root.state, process="OU", variance=params$variance, selection.strength=params$selection.strength, optimal.value=params$optimal.value))
 # ATTENTION : Changement dans la manière de mettre à jour
    params$variance <- 2 * params$selection.strength * params$root.state$var.root
@@ -2345,7 +2345,7 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}
@@ -2388,7 +2388,7 @@ estimate.alpha <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha_o
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}
@@ -2422,11 +2422,11 @@ R_function <- function(phylo, conditional_law_X, sigma2, mu, alpha){
 }
 
 
-conditional_expectation_log_likelihood.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes) {
+conditional_expectation_log_likelihood.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes) {
     return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -2443,7 +2443,7 @@ conditional_expectation_log_likelihood.OU <- function(stationnary.root, shifts_a
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}, containing
@@ -2493,7 +2493,7 @@ conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}, containing
@@ -3028,13 +3028,13 @@ shutoff.EM.BM.fixedroot <- function(params_old, params, tol){
   }
 }
 
-shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+shutoff.EM.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(shutoff.EM.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(shutoff.EM.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -3048,7 +3048,7 @@ shutoff.EM.OU.specialCase <- function(params_old, params, tol){
   }
 }
 
-shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes <- function(params_old, params, tol){
+shutoff.EM.OU.stationary.root_AND_shifts_at_nodes <- function(params_old, params, tol){
   if (abs(params_old$variance-params$variance)<tol$variance &&
         abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
         abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root &&
@@ -3103,13 +3103,13 @@ is.finite.params.BM.fixedroot <- function(params) {
   }
 }
 
-is.finite.params.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+is.finite.params.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(is.finite.params.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(is.finite.params.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(is.finite.params.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -3123,7 +3123,7 @@ is.finite.params.OU.specialCase <- function(params) {
   }
 }
 
-is.finite.params.OU.stationnary.root_AND_shifts_at_nodes <- function(params) {
+is.finite.params.OU.stationary.root_AND_shifts_at_nodes <- function(params) {
   if (is.finite(params$variance) &&
         is.finite(params$root.state$exp.root) &&
         is.finite(params$root.state$var.root) &&
@@ -3189,13 +3189,13 @@ is.in.ranges.params.BM.fixedroot <- function(params, min, max) {
   }
 }
 
-is.in.ranges.params.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+is.in.ranges.params.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(is.in.ranges.params.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(is.in.ranges.params.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(is.in.ranges.params.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -3209,7 +3209,7 @@ is.in.ranges.params.OU.specialCase <- function(params, min, max) {
   }
 }
 
-is.in.ranges.params.OU.stationnary.root_AND_shifts_at_nodes <- function(params, min, max) {
+is.in.ranges.params.OU.stationary.root_AND_shifts_at_nodes <- function(params, min, max) {
   if (is.in.ranges(params$variance, min$variance, max$variance) &&
         is.in.ranges(params$root.state$exp.root, min$exp.root, max$exp.root) &&
         is.in.ranges(params$root.state$var.root, min$var.root, max$var.root) &&
@@ -3247,15 +3247,15 @@ compute_MaxCompleteLogLik.BM <- function(phylo, params) {
   }
 }
 
-compute_MaxCompleteLogLik.OU <- function(stationnary.root, shifts_at_nodes){
-  if (stationnary.root && shifts_at_nodes) {
-    return(compute_MaxCompleteLogLik.OU.stationnary.root_AND_shifts_at_nodes)
+compute_MaxCompleteLogLik.OU <- function(stationary.root, shifts_at_nodes){
+  if (stationary.root && shifts_at_nodes) {
+    return(compute_MaxCompleteLogLik.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
-compute_MaxCompleteLogLik.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, params) {
+compute_MaxCompleteLogLik.OU.stationary.root_AND_shifts_at_nodes <- function(phylo, params) {
   ntaxa <- attr(params, "ntaxa")
   nNodes <- phylo$Nnode
   ee <- exp(- params$selection.strength * phylo$edge.length)
@@ -4024,7 +4024,7 @@ write.table.history <- function(history, params_algo_EM, PATH, ...) {
   write.csv2(history, name, ...)
 }
 
-plot.history.OU.stationnary <- function(params_history, paramsSimu, PATH, params_algo_EM, name){
+plot.history.OU.stationary <- function(params_history, paramsSimu, PATH, params_algo_EM, name){
   history <- list_to_table.history(params_history)
   params_simu  <-  unlist(paramsSimu)[names(history[,1])]
   pdf(paste(PATH, "history_parameters", "_init=", params_algo_EM$method.init, "_initalpha=", params_algo_EM$method.init.alpha, "_nbrofshifts=", params_algo_EM$nbr_of_shifts, ".pdf", sep=""), width = 12, height = 8)

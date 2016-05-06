@@ -296,7 +296,7 @@ variance <- matrix(0.5, p, p)
 optimal.value <- c(-3, 5, 0)
 selection.strength <- diag(3, p, p)
 exp.stationary <- optimal.value
-var.stationary  <- compute_stationnary_variance(variance, selection.strength)
+var.stationary  <- compute_stationary_variance(variance, selection.strength)
 root.state <- list(random = TRUE,
                    stationary.root = TRUE,
                    value.root = 3,
@@ -677,7 +677,7 @@ tt <- system.time(results_estim_EM <- estimateEM(phylo = tree,
                                                  method.init.alpha = "default",
                                                  nbr_of_shifts = 7,
                                                  random.root = FALSE,
-                                                 stationnary.root = FALSE,
+                                                 stationary.root = FALSE,
                                                  alpha_known = TRUE,
                                                  known.selection.strength = 0,
                                                  init.selection.strength = res$params_estim[["6"]]$selection.strength,
@@ -1277,7 +1277,7 @@ results_estim_EM <- estimateEM(phylo = tree,
                                process = "scOU", 
                                nbr_of_shifts = 2,
                                random.root = FALSE,
-                               stationnary.root = FALSE,
+                               stationary.root = FALSE,
                                alpha_known = TRUE,
                                known.selection.strength = alpha,
                                # var.init.root = prev$params_raw$root.state$var.root,
@@ -1479,7 +1479,7 @@ results_estim_EM <- estimateEM(phylo = tree,
                                process = "scOU", 
                                nbr_of_shifts = 3,
                                random.root = FALSE,
-                               stationnary.root = FALSE,
+                               stationary.root = FALSE,
                                alpha_known = TRUE,
                                known.selection.strength = alpha,
                                # var.init.root = prev$params_raw$root.state$var.root,
@@ -1514,7 +1514,7 @@ results_estim_EM <- estimateEM(phylo = tree,
                                process = "scOU", 
                                nbr_of_shifts = 3,
                                random.root = FALSE,
-                               stationnary.root = FALSE,
+                               stationary.root = FALSE,
                                alpha_known = TRUE,
                                known.selection.strength = params_rebound$selection.strength,
                                # var.init.root = prev$params_raw$root.state$var.root,
@@ -1612,7 +1612,7 @@ estim_EM_rBM <- estimateEM(phylo = tree_rescaled,
                            process = "BM", 
                            nbr_of_shifts = 3,
                            random.root = FALSE,
-                           # stationnary.root = FALSE,
+                           # stationary.root = FALSE,
                            # alpha_known = TRUE,
                            # known.selection.strength = params_rebound$selection.strength,
                            # var.init.root = prev$params_raw$root.state$var.root,
@@ -1635,7 +1635,7 @@ estim_EM_scOU <- estimateEM(phylo = tree,
                            process = "scOU", 
                            nbr_of_shifts = 3,
                            random.root = FALSE,
-                           stationnary.root = FALSE,
+                           stationary.root = FALSE,
                            alpha_known = TRUE,
                            known.selection.strength = alpha,
                            # var.init.root = prev$params_raw$root.state$var.root,
@@ -1850,7 +1850,7 @@ results_estim_EM <- estimateEM(phylo = tree,
                                process = "scOU", 
                                nbr_of_shifts = 4,
                                random.root = FALSE,
-                               stationnary.root = FALSE,
+                               stationary.root = FALSE,
                                alpha_known = TRUE,
                                known.selection.strength = alpha_grid[10],
                                tol = list(variance = 10^(-2), 
@@ -2085,7 +2085,7 @@ plot.data.process.actual(Y.state = Y_exp_2,
 
 
 #######################################
-## Test of EM - OU/rBM - Stationnary - Univariate
+## Test of EM - OU/rBM - stationary - Univariate
 #######################################
 ## Tree
 set.seed(18850706)
@@ -2154,7 +2154,7 @@ alpha_grid <- find_grid_alpha(tree,
                               quantile_low_distance = 0.001,
                               log_transform = TRUE)
 res_lasso <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
-                     random.root = TRUE, stationnary.root = TRUE,
+                     random.root = TRUE, stationary.root = TRUE,
                      alpha = alpha_grid[-1], save_step = FALSE,
                      Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
                                                    value.root = 10^(-2),
@@ -2162,7 +2162,7 @@ res_lasso <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10
                      method.init = "lasso", use_previous = FALSE)
 
 res_lasso_thourought <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
-                                random.root = TRUE, stationnary.root = TRUE,
+                                random.root = TRUE, stationary.root = TRUE,
                                 alpha = alpha_grid[-1], save_step = FALSE,
                                 Nbr_It_Max = 10000, tol = list(variance = 10^(-3), 
                                                               value.root = 10^(-3),
@@ -2170,7 +2170,7 @@ res_lasso_thourought <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU",
                                 method.init = "lasso", use_previous = FALSE)
 
 res_old_method <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
-                          random.root = TRUE, stationnary.root = TRUE,
+                          random.root = TRUE, stationary.root = TRUE,
                           alpha = alpha_grid[-1], save_step = FALSE,
                           Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
                                                         value.root = 10^(-2),
@@ -2224,7 +2224,7 @@ results_estim_EM_rescale <- estimateEM(phylo = tree,
                                        process = "scOU", 
                                        nbr_of_shifts = 4,
                                        random.root = TRUE,
-                                       stationnary.root = TRUE,
+                                       stationary.root = TRUE,
                                        alpha_known = TRUE,
                                        known.selection.strength = alpha_grid[11],
                                        tol = list(variance = 10^(-2), 
@@ -2254,7 +2254,7 @@ results_estim_EM_raw <- estimateEM(phylo = tree,
                                    process = "scOU", 
                                    nbr_of_shifts = 4,
                                    random.root = TRUE,
-                                   stationnary.root = TRUE,
+                                   stationary.root = TRUE,
                                    alpha_known = TRUE,
                                    known.selection.strength = alpha_grid[11],
                                    tol = list(variance = 10^(-2), 
@@ -2784,9 +2784,9 @@ EO.sig.gauss <- coef(fit.sig.gauss)[1]
 delta.sig.gauss[projection.sig] <- coef(fit.sig.gauss)[-1]
 shifts.init.sig.gauss <- shifts.vector_to_list(delta.sig.gauss);
 
-## Compute gamma^2 (hyp : OU + root is stationnary)
+## Compute gamma^2 (hyp : OU + root is stationary)
 Lineages <- rowSums(T[,projection.sig]) > 0 # All lineages that have at least one shift in their history
-gamma2 <- var(Y_data[!Lineages]) # Variance on all the other tips, that should be gamma^2 if stationnary.
+gamma2 <- var(Y_data[!Lineages]) # Variance on all the other tips, that should be gamma^2 if stationary.
 # Estimation of sigma2 if alpha is known
 sigma2 <- gamma2 * 2 * selection.strength
 
@@ -3228,8 +3228,8 @@ time.lasso <- system.time(
     alpha_known=params_algo_EM.lasso$alpha_known
   )
 )
-plot.history.OU.stationnary(results_estim_EM.default$params_history, paramsSimu, PATH=paste(WD, "/Results/Miscellaneous_Evals/", sep=""), params_algo_EM.default)
-plot.history.OU.stationnary(results_estim_EM.lasso$params_history, paramsSimu, PATH=paste(WD, "/Results/Miscellaneous_Evals/", sep=""), params_algo_EM.lasso)
+plot.history.OU.stationary(results_estim_EM.default$params_history, paramsSimu, PATH=paste(WD, "/Results/Miscellaneous_Evals/", sep=""), params_algo_EM.default)
+plot.history.OU.stationary(results_estim_EM.lasso$params_history, paramsSimu, PATH=paste(WD, "/Results/Miscellaneous_Evals/", sep=""), params_algo_EM.lasso)
 # Display results
 #results_estim_EM.default; results_estim_EM.lasso
 params_init.default <- results_estim_EM.default$params_init
@@ -3347,8 +3347,8 @@ history.lasso <- list_to_table.history(results_estim_EM.lasso$params_history)
 write.table.history(history.lasso, params_algo_EM.lasso, PATH)
 
 ## Save plots
-plot.history.OU.stationnary(results_estim_EM.default$params_history, paramsBK, PATH=PATH, params_algo_EM.default)
-plot.history.OU.stationnary(results_estim_EM.lasso$params_history, paramsBK, PATH=PATH, params_algo_EM.lasso)
+plot.history.OU.stationary(results_estim_EM.default$params_history, paramsBK, PATH=PATH, params_algo_EM.default)
+plot.history.OU.stationary(results_estim_EM.lasso$params_history, paramsBK, PATH=PATH, params_algo_EM.lasso)
 
 #######################################
 ## Test of Divergence - 1 - random
@@ -3829,7 +3829,7 @@ history[,"true"]["log_likelihood"] <-log_likelihood.OU(datasim$Y_data, tree, dat
 #CLL_history <- cbind(simest$CLL_history, c(NA, NA))
 #history <- rbind(history, CLL_history)
 write.csv2(history, paste0(PATH, "boite_noire_alpha_unknown", name, ".csv"))
-plot.history.OU.stationnary(simest$history, tree, datasim$params, datasim$Y_data, PATH=PATH, paste0("history_plot", name))
+plot.history.OU.stationary(simest$history, tree, datasim$params, datasim$Y_data, PATH=PATH, paste0("history_plot", name))
 
 simest_true_alpha <- estimationfunction_alpha_known(datasim, alphaKN = alpha, seg = seg)
 simest_true_alpha$history[["true"]] <- datasim$params

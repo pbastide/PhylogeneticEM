@@ -270,7 +270,7 @@ df <- apply(dd[ , colnames(dd) %in% c("alpha", "gamma", "K_try", "n",
             2, unlist)
 df <- as.data.frame(df)
 
-## Normalize mahalanobis distance (stationnary root case)
+## Normalize mahalanobis distance (stationary root case)
 df$least_squares <- df$mahalanobis_distance_data_mean * df$gamma_estim
 
 ## Model Complexity

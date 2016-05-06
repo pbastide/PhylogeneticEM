@@ -58,6 +58,7 @@ estimateEM <- function(phylo,
                        Y_data, 
                        Y_data_imp = Y_data,
                        process = c("BM", "OU", "scOU", "rBM"), 
+                       independent = FALSE,
                        tol = list(variance = 10^(-3), 
                                   value.root = 10^(-3), 
                                   exp.root = 10^(-3), 
@@ -74,7 +75,7 @@ estimateEM <- function(phylo,
                                                         "median"),
                        nbr_of_shifts = 0,
                        random.root = TRUE,
-                       stationnary.root = TRUE,
+                       stationary.root = TRUE,
                        shifts_at_nodes = TRUE,
                        alpha_known = FALSE,
                        eps = 10^(-3),
@@ -144,7 +145,7 @@ estimateEM <- function(phylo,
   original_process <- process
   temp <- choose_process_EM(process = process, p = p,
                             random.root = random.root,
-                            stationnary.root = stationnary.root,
+                            stationary.root = stationary.root,
                             alpha_known = alpha_known,
                             known.selection.strength = known.selection.strength,
                             eps = eps,
@@ -169,34 +170,34 @@ estimateEM <- function(phylo,
   masque_data[1:(p*ntaxa)] <- !miss
   
   ########## Choose functions #################################################
-  # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
+  # specialCase <- stationary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
-                       OU = compute_M.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                       OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
-                        OU = shutoff.EM.OU(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life))
+                        OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, alpha_known, tol_half_life))
   has_converged  <- switch(convergence_mode[1], 
                            relative = has_converged_relative,
                            absolute = has_converged_absolute)
   is.finite.params  <- switch(process, 
                               BM = is.finite.params.BM,
-                              OU = is.finite.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                              OU = is.finite.params.OU(stationary.root, shifts_at_nodes, alpha_known))
   is.in.ranges.params  <- switch(process, 
                                  BM = is.in.ranges.params.BM,
-                                 OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                                 OU = is.in.ranges.params.OU(stationary.root, shifts_at_nodes, alpha_known))
 #   compute_MaxCompleteLogLik <- switch(process, 
 #                                       BM = compute_MaxCompleteLogLik.BM,
-#                                       OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
+#                                       OU = compute_MaxCompleteLogLik.OU(stationary.root, shifts_at_nodes))
 #   conditional_expectation_log_likelihood <- switch(process, 
 #                                                    BM = conditional_expectation_log_likelihood.BM,
-#                                                    OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))
+#                                                    OU = conditional_expectation_log_likelihood.OU(stationary.root, shifts_at_nodes))
 
   ########## init alpha #######################################################
   method.init.alpha  <- match.arg(method.init.alpha)
-  if (!stationnary.root && (method.init.alpha == "estimation")){
+  if (!stationary.root && (method.init.alpha == "estimation")){
     method.init.alpha <- "default"
-    warning("The estimation initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+    warning("The estimation initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
   }
   init.alpha<- switch(process, 
                       BM = init.alpha.BM,
@@ -225,10 +226,10 @@ estimateEM <- function(phylo,
 
   ########## Initialization Method ############################################
   method.init  <- match.arg(method.init)
-  # Lasso initialization for OU only works for stationnary root
-#   if (!stationnary.root && (method.init == "lasso")){
+  # Lasso initialization for OU only works for stationary root
+#   if (!stationary.root && (method.init == "lasso")){
 #     method.init <- "default"
-#     warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+#     warning("The lasso initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
 #   }
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
@@ -347,7 +348,7 @@ estimateEM <- function(phylo,
                          nbr_of_shifts = nbr_of_shifts, 
                          selection.strength.init = init.selection.strength, 
                          random.init = random.root,
-                         stationnary.root.init = stationnary.root,
+                         stationary.root.init = stationary.root,
                          use_sigma = use_sigma_for_lasso,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
@@ -630,7 +631,7 @@ estimateEM <- function(phylo,
 #' K.
 #' The EMs are parralelized thanks to packages \code{foreach} and 
 #' \code{doParallel}.
-#' WARNING : this code only work of OU with stationnary root, on an ultrametric
+#' WARNING : this code only work of OU with stationary root, on an ultrametric
 #' tree.
 #' 
 #'
@@ -799,7 +800,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     methods.segmentation = c("lasso", "best_single_move"),
                     alpha_known = TRUE,
                     random.root = FALSE,
-                    stationnary.root = FALSE,
+                    stationary.root = FALSE,
                     alpha = NULL,
                     check.tips.names = FALSE,
                     progress.bar = TRUE,
@@ -865,7 +866,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                          methods.segmentation,
                                          alpha_known,
                                          random.root,
-                                         stationnary.root,
+                                         stationary.root,
                                          sBM_variance,
                                          method.OUsun,
                                          impute_init_Rphylopars = TRUE,
@@ -879,7 +880,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       temp <- choose_process_EM(process = process_original,
                                 p = p,
                                 random.root = random.root,
-                                stationnary.root = stationnary.root,
+                                stationary.root = stationary.root,
                                 alpha_known = alpha_known,
                                 known.selection.strength = alp,
                                 sBM_variance = sBM_variance,
@@ -951,7 +952,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                methods.segmentation = methods.segmentation,
                                alpha_known = alpha_known,
                                random.root = random.root,
-                               stationnary.root = stationnary.root,
+                               stationary.root = stationary.root,
                                alp = alp,
                                check.tips.names = check.tips.names,
                                progress.bar = progress.bar,
@@ -986,7 +987,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                  methods.segmentation = methods.segmentation,
                                  alpha_known = alpha_known,
                                  random.root = random.root,
-                                 stationnary.root = stationnary.root,
+                                 stationary.root = stationary.root,
                                  sBM_variance = sBM_variance,
                                  method.OUsun = method.OUsun,
                                  impute_init_Rphylopars = impute_init_Rphylopars,
@@ -1012,7 +1013,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                  methods.segmentation = methods.segmentation,
                                  alpha_known = alpha_known,
                                  random.root = random.root,
-                                 stationnary.root = stationnary.root,
+                                 stationary.root = stationary.root,
                                  sBM_variance = sBM_variance,
                                  method.OUsun = method.OUsun,
                                  impute_init_Rphylopars = impute_init_Rphylopars,
@@ -1066,7 +1067,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 methods.segmentation = c("lasso", "best_single_move"),
                                 alpha_known = FALSE,
                                 random.root = TRUE,
-                                stationnary.root = TRUE,
+                                stationary.root = TRUE,
                                 alp = alp,
                                 check.tips.names = FALSE,
                                 progress.bar = TRUE,
@@ -1111,7 +1112,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       K_t = K_first,
                                                       method.variance = method.variance,
                                                       random.root = random.root,
-                                                      stationnary.root = stationnary.root,
+                                                      stationary.root = stationary.root,
                                                       alpha_known = alpha_known,
                                                       alpha = alp,
                                                       method.init = method.init,
@@ -1154,7 +1155,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                           prev = XX[[paste0(prev_it(K_t))]],
                                                           method.variance = method.variance,
                                                           random.root = random.root,
-                                                          stationnary.root = stationnary.root,
+                                                          stationary.root = stationary.root,
                                                           alpha_known = alpha_known,
                                                           alpha = alp,
                                                           method.init = method.init,
@@ -1229,7 +1230,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         Y_data_imp,
                                         process, K_t, prev,
                                         method.variance,
-                                        random.root, stationnary.root,
+                                        random.root, stationary.root,
                                         alpha_known, alpha,
                                         methods.segmentation,
                                         method.init,
@@ -1247,7 +1248,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    method.init.alpha = method.init.alpha,
                                                    nbr_of_shifts = K_t,
                                                    random.root = random.root,
-                                                   stationnary.root = stationnary.root,
+                                                   stationary.root = stationary.root,
                                                    alpha_known = alpha_known,
                                                    known.selection.strength = alpha,
                                                    init.selection.strength = prev$alpha_estim,
@@ -1270,7 +1271,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        Y_data_imp,
                                        process, K_t,
                                        method.variance,
-                                       random.root, stationnary.root,
+                                       random.root, stationary.root,
                                        alpha_known, alpha,
                                        methods.segmentation,
                                        method.init,
@@ -1288,7 +1289,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    method.init.alpha = method.init.alpha,
                                                    nbr_of_shifts = K_t,
                                                    random.root = random.root,
-                                                   stationnary.root = stationnary.root,
+                                                   stationary.root = stationary.root,
                                                    alpha_known = alpha_known,
                                                    known.selection.strength = alpha,
                                                    methods.segmentation = methods.segmentation,
@@ -1309,7 +1310,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                          methods.segmentation = c("lasso", "best_single_move"),
                          alpha_known = TRUE,
                          random.root = FALSE,
-                         stationnary.root = FALSE,
+                         stationary.root = FALSE,
                          alpha = NULL,
                          check.tips.names = FALSE,
                          progress.bar = TRUE,
@@ -1329,7 +1330,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   original_phy <- phylo
   temp <- choose_process_EM(process = process, p = p,
                             random.root = random.root,
-                            stationnary.root = stationnary.root,
+                            stationary.root = stationary.root,
                             alpha_known = alpha_known,
                             known.selection.strength = alpha,
                             sBM_variance = sBM_variance,
@@ -1387,7 +1388,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              methods.segmentation = methods.segmentation,
                              alpha_known = alpha_known,
                              random.root = random.root,
-                             stationnary.root = stationnary.root,
+                             stationary.root = stationary.root,
                              alp = alp,
                              check.tips.names = check.tips.names,
                              progress.bar = progress.bar,
@@ -1420,7 +1421,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #' K.
 #' The EMs are parralelized thanks to packages \code{foreach} and 
 #' \code{doParallel}.
-#' WARNING : this code only work of OU with stationnary root, on an ultrametric
+#' WARNING : this code only work of OU with stationary root, on an ultrametric
 #' tree.
 #' 
 #'
@@ -1502,11 +1503,11 @@ estimateEM_several_K.OUsr <- function(phylo,
 }
 
 ##
-#' @title A wrapper for estimateEM for OU with stationnary root.
+#' @title A wrapper for estimateEM for OU with stationary root.
 #'
 #' @description
 #' \code{estimation_wrapper.OUsr} call estimateEM with a set of parameters well
-#' suited for the OU with stationnary root.
+#' suited for the OU with stationary root.
 #' It is used in \code{estimateEM_several_K.OUsr}.
 #'
 #' @param K_t the number of shifts allowed
@@ -1630,7 +1631,7 @@ check_data <- function(phylo, Y_data, check.tips.names){
   return(as.matrix(Y_data))
 }
 
-choose_process_EM <- function(process, p, random.root, stationnary.root,
+choose_process_EM <- function(process, p, random.root, stationary.root,
                               alpha_known,
                               known.selection.strength = 1, eps = 10^(-3),
                               sBM_variance = FALSE,
@@ -1651,13 +1652,16 @@ choose_process_EM <- function(process, p, random.root, stationnary.root,
           stop("The re-scaled scalar OU is only implemented for known selection strength. Please consider using a grid.")
         }
         sBM_variance <- TRUE
-        if (!stationnary.root){
-          warning("The scalar OU process with a general random root is not implemented for the multivariate case. The root is taken to be in the stationnary state.")
+        if (!stationary.root){
+          warning("The scalar OU process with a general random root is not implemented for the multivariate case. The root is taken to be in the stationary state.")
         }
         transform_scOU <- TRUE
         rescale_tree <- TRUE
         process <- "BM"
       } else {
+        if (p > 1){
+          stop("Only the re-scale method is available for a multivariate scOU.")
+        }
         process <- "OU"
       }
     } else {

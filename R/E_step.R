@@ -427,7 +427,7 @@ compute_variance_covariance.scOU <- function(times_shared, distances_phylo, para
 #'
 #' @description
 #' \code{compute_tree_correlations_matrix.scOU} computes the (n+m)x(m+n) matrix of correlations
-#' induced by the tree. It takes two cases in consideration: root fixed, or root in stationnary
+#' induced by the tree. It takes two cases in consideration: root fixed, or root in stationary
 #' state.
 #'
 #'  @param times_shared times of shared ancestry of all nodes and tips, result of function

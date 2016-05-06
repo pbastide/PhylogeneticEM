@@ -406,31 +406,31 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
 #     root.state$exp.root <- optimal.value
 #     root.state$var.root <- variance/(2 * selection.strength)
 #   }
-  root.state <- coherence_stationnary_case(root.state, optimal.value,
+  root.state <- coherence_stationary_case(root.state, optimal.value,
                                            variance, selection.strength)
   return(root.state)
 }
 
-coherence_stationnary_case <- function(root.state, optimal.value,
+coherence_stationary_case <- function(root.state, optimal.value,
                                        variance, selection.strength){
   if (!root.state$stationary.root){
     return(root.state) ## Do nothing
   } else {
     if (!isTRUE(all.equal(root.state$exp.root, optimal.value))){
       root.state$exp.root <- optimal.value
-      warning("As root is supposed to be in stationnary case, root expectation was set to be equal to optimal value.")
+      warning("As root is supposed to be in stationary case, root expectation was set to be equal to optimal value.")
     }
     
-    root_var_expected <- compute_stationnary_variance(variance, selection.strength)
+    root_var_expected <- compute_stationary_variance(variance, selection.strength)
     if(!isTRUE(all.equal(root.state$var.root, root_var_expected))){
       root.state$var.root <- as(root_var_expected, "symmetricMatrix")
-      warning("As the root is supposed to be in stationnary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
+      warning("As the root is supposed to be in stationary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
     }
     return(root.state)
   }
 }
 
-compute_stationnary_variance <- function(variance, selection.strength){
+compute_stationary_variance <- function(variance, selection.strength){
   if (is.null(selection.strength)) return(NA)
   if (length(as.vector(selection.strength)) == 1){
     vv <- variance / (2 * selection.strength)
@@ -443,12 +443,12 @@ compute_stationnary_variance <- function(variance, selection.strength){
     kro_sum_A_inv <- solve(kro_sum_A)
     root_var_vec <- kro_sum_A_inv %*% variance_vec
     gamma <- matrix(root_var_vec, dim(variance))
-    if (!isSymmetric(gamma)) stop("Error in computation of stationnary variance: matrix computed was not symmetric.")
+    if (!isSymmetric(gamma)) stop("Error in computation of stationary variance: matrix computed was not symmetric.")
     return(forceSymmetric(gamma))
   }
 }
 
-compute_variance_from_stationnary <- function(var.root, selection.strength){
+compute_variance_from_stationary <- function(var.root, selection.strength){
   if (dim(var.root)[1] == 1){
     return(var.root * (2 * selection.strength))
   } else {

@@ -35,7 +35,7 @@ p_base <- 4 # number of traits
 beta_0 <- rep(0, p_base) # ancestral optimum
 alpha_base <- 1 # selection strength
 sigma_base <- 2 # sigma squared variance
-gamma_base <- 1 # gamma squared stationnary variance
+gamma_base <- 1 # gamma squared stationary variance
 K_base <- 0 # number of shifts
 ntaxa_base <- 60 # number of taxa
 factor_shift_base <- 1 # multiplicative factor for shifts
@@ -261,7 +261,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                      stationary.root = TRUE,
                      value.root = NA,
                      exp.root = beta_0,
-                     var.root = compute_stationnary_variance(var_mat, alpha_mat))
+                     var.root = compute_stationary_variance(var_mat, alpha_mat))
   params <-  list(variance = var_mat,
                   root.state = root.state,
                   shifts = shifts,

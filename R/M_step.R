@@ -197,13 +197,13 @@ compute_root_value.BM <- function(phylo,
   }
 }
 
-compute_M.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+compute_M.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(compute_M.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(compute_M.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(compute_M.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -211,7 +211,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   params <- init.EM.default.OU(selection.strength.init=known.selection.strength,
-                               stationnary.root.init=TRUE,
+                               stationary.root.init=TRUE,
                                random.init=TRUE,
                                ...)
   ## Comutation of regression matrix idoine
@@ -305,7 +305,7 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
   return(params)
 }
 
-compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, subtree.list, ...){
+compute_M.OU.stationary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, subtree.list, ...){
   ## Estimate all parameters with alpha of the previous step
   params <- compute_M.OU.specialCase(phylo = phylo, 
                                      Y_data = Y_data, 
@@ -324,7 +324,7 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
                                               shifts = params$shifts,
                                               alpha_old = alpha_old,
                                               max_selection.strength = max_selection.strength)
-  ## Change value of the root (stationnary) accordingly
+  ## Change value of the root (stationary) accordingly
   params$variance <- 2 * params$selection.strength * params$root.state$var.root
   return(params)
 }
@@ -502,7 +502,7 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}
@@ -539,11 +539,11 @@ estimate.alpha <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha_o
 ## Objective function computation
 #########################################################
 
-conditional_expectation_log_likelihood.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes) {
+conditional_expectation_log_likelihood.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes) {
     return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -560,7 +560,7 @@ conditional_expectation_log_likelihood.OU <- function(stationnary.root, shifts_a
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}, containing
@@ -610,7 +610,7 @@ conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}, containing

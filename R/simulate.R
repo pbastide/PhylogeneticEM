@@ -137,9 +137,9 @@ simulate <- function(phylo,
                     root.state = root.state,
                     optimal.value = optimal.value)
   if (process %in% c("scOU", "OU")){
-    stationnary_variance <- compute_stationnary_variance(variance, selection.strength)
+    stationary_variance <- compute_stationary_variance(variance, selection.strength)
   } else {
-    stationnary_variance <- NA
+    stationary_variance <- NA
   }
   ## Tree recursion
   paramSimu <- recursionDown(phy = phy,
@@ -151,7 +151,7 @@ simulate <- function(phylo,
                              variance = variance,
                              eps = eps,
                              selection.strength = selection.strength,
-                             stationnary_variance = stationnary_variance)
+                             stationary_variance = stationary_variance)
   attr(paramSimu, "ntaxa") <- ntaxa
   return(paramSimu)
 }
@@ -307,7 +307,7 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance, ...
 # 16/05/14 - Initial release
 ##
 update.simulate.OU <- function(edgeNbr, ancestral,
-                               length, shifts, selection.strength, stationnary_variance, ...){
+                               length, shifts, selection.strength, stationary_variance, ...){
   shiftsIndex <- which(shifts$edges == edgeNbr) # If no shifts = NULL, and sum = 0
   if (length(shiftsIndex) == 0){
     r <- 0
@@ -322,7 +322,7 @@ update.simulate.OU <- function(edgeNbr, ancestral,
   plus_exp <- (I - ee_d) %*% beta + (I - ee_p) %*% ancestral[ , , 3]
   Sim <- mvrnorm(1,
                  mu = ee %*% ancestral[ , , 1] + plus_exp,
-                 Sigma = stationnary_variance - ee %*% stationnary_variance %*% t(ee))
+                 Sigma = stationary_variance - ee %*% stationary_variance %*% t(ee))
   Exp <- ee %*% ancestral[ , , 2] + plus_exp
   Exp <- as.matrix(Exp)
   child <- ancestral
