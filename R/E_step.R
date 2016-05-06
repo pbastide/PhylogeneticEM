@@ -535,15 +535,16 @@ compute_variance_covariance.OU <- function(times_shared, params_old, ...) {
 #'  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)
 #' 29/09/14 - Initial release
 ##
-compute_mean_variance.simple <- function (phylo,
-                                          times_shared,
-                                          distances_phylo,
-                                          process=c("BM", "OU", "rBM", "scOU"),
-                                          params_old,
-                                          masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
-                                                          rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)), ...) {
+compute_mean_variance.simple <- function(phylo,
+                                         times_shared,
+                                         distances_phylo,
+                                         process = c("BM", "OU", "rBM", "scOU"),
+                                         params_old,
+                                         masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
+                                                         rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)), ...) {
   ## Choose process 
   process  <- match.arg(process)
+  if (attr(params_old, "p_dim") == 1 && process == "OU") process <- "scOU" 
   compute_variance_covariance  <- switch(process, 
                                          BM = compute_variance_covariance.BM,
                                          OU = compute_variance_covariance.OU,
