@@ -119,17 +119,23 @@ estimateEM <- function(phylo,
                        ...){
   
   ntaxa <- length(phylo$tip.label)
-  ## Check that the vector of data is in the correct order and dimensions ################
+  ## Check that the vector of data is in the correct order and dimensions ####
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   ## Find dimension
   p <- nrow(Y_data)
   
-  ## Root edge of the tree ###############################################################
+  ## Root edge of the tree ###################################################
   if (is.null(phylo$root.edge)) phylo$root.edge <- 0
   
   ########## Check consistancy ################################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
+  if (!missing(known.selection.strength)){
+    if (length(known.selection.strength) != p){
+      warning("The vector of selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+      known.selection.strength <- rep(known.selection.strength, p)[1:p]
+    }
+  }
   if (sBM_variance){
     if (!random.root){
       warning("Process sBM assumes a random root. Switching to a random root.")
@@ -173,7 +179,7 @@ estimateEM <- function(phylo,
   # specialCase <- stationary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
-                       OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
+                       OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known, independent))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
                         OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, alpha_known, tol_half_life))
@@ -384,59 +390,123 @@ estimateEM <- function(phylo,
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
-    ########## Log Likelihood #################################################
+    ########## Log Likelihood and E step ####################################
     # Check convergence of loglik ?
     if (check_convergence_likelihood && Nbr_It > 1){
       log_likelihood_old_old <- log_likelihood_old
+    }    
+    # Store params for history
+    params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
+    # Independent ?
+    if (independent){
+      params_old <- split_params_independent(params_old)
     }
-    moments <- compute_mean_variance(phylo = phylo,
+    # Wrapper
+    wrapper_E_step <- function(phylo,
+                               times_shared,
+                               distances_phylo,
+                               process,
+                               params_old,
+                               masque_data,
+                               F_moments,
+                               independent,
+                               Y_data_vec_known,
+                               miss,
+                               Y_data){
+      if (independent){
+        # if independent, params_old is a list of p params
+        masque_data_matr <- matrix(masque_data,
+                                   ncol = length(phylo$tip.label) + phylo$Nnode)
+        miss_matr <- matrix(miss,
+                            ncol = length(phylo$tip.label))
+        res <- vector(mode = "list", length = length(params_old))
+        for (i in 1:length(res)){
+          res[[i]] <- wrapper_E_step(phylo = phylo,
                                      times_shared = times_shared,
                                      distances_phylo = distances_phylo,
                                      process = process,
-                                     params_old = params_old,
-                                     masque_data = masque_data,
-                                     F_moments = F_moments)
-    log_likelihood_old <- compute_log_likelihood(phylo = phylo,
-                                                 Y_data_vec = Y_data_vec_known,
-                                                 sim = moments$sim,
-                                                 Sigma = moments$Sigma,
-                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                 miss = miss, 
-                                                 masque_data = masque_data,
-                                                 C_YY = F_moments$C_YY,
-                                                 Y_data = Y_data,
-                                                 C_YY_chol_inv = F_moments$C_YY_chol_inv,
-                                                 R = params_old$variance)
-    attr(params_old, "log_likelihood") <- log_likelihood_old
-    if (check_convergence_likelihood && Nbr_It > 1){
-      CV_log_lik <- has_converged_absolute(log_likelihood_old_old, log_likelihood_old, tol$log_likelihood)
-    }
-    ## Compute Mahalanobis norm between data and mean at tips
-    maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
+                                     params_old = params_old[[i]],
+                                     masque_data = masque_data_matr[i, ],
+                                     F_moments = F_moments,
+                                     independent = FALSE,
+                                     Y_data_vec_known = Y_data[i, !miss_matr[i, ]],
+                                     miss = miss_matr[i, ],
+                                     Y_data = Y_data[i, , drop = F])
+        }
+        return(res)
+      }
+      moments <- compute_mean_variance(phylo = phylo,
+                                       times_shared = times_shared,
+                                       distances_phylo = distances_phylo,
+                                       process = process,
+                                       params_old = params_old,
+                                       masque_data = masque_data,
+                                       F_moments = F_moments)
+      log_likelihood_old <- compute_log_likelihood(phylo = phylo,
                                                    Y_data_vec = Y_data_vec_known,
                                                    sim = moments$sim,
+                                                   Sigma = moments$Sigma,
                                                    Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                   miss = miss,
+                                                   miss = miss, 
+                                                   masque_data = masque_data,
+                                                   C_YY = F_moments$C_YY,
                                                    Y_data = Y_data,
                                                    C_YY_chol_inv = F_moments$C_YY_chol_inv,
                                                    R = params_old$variance)
-    attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
-    
-    ########## E step #########################################################
-    conditional_law_X <- compute_E(phylo = phylo,
-                                   Y_data_vec = Y_data_vec_known,
-                                   sim = moments$sim,
-                                   Sigma = moments$Sigma,
-                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                   miss = miss,
-                                   masque_data = masque_data,
-                                   F_means = F_moments$F_means,
-                                   F_vars = F_moments$F_vars,
-                                   R = params_old$variance,
-                                   Y_data = Y_data)
-    rm(moments)
-    if (process == "OU"){
-      if (p > 1) stop("Multivariate OU not yet implemented.")
+      ## Compute Mahalanobis norm between data and mean at tips
+      maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
+                                                     Y_data_vec = Y_data_vec_known,
+                                                     sim = moments$sim,
+                                                     Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                     miss = miss,
+                                                     Y_data = Y_data,
+                                                     C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                                     R = params_old$variance)
+      ########## E step #########################################################
+      conditional_law_X <- compute_E(phylo = phylo,
+                                     Y_data_vec = Y_data_vec_known,
+                                     sim = moments$sim,
+                                     Sigma = moments$Sigma,
+                                     Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                     miss = miss,
+                                     masque_data = masque_data,
+                                     F_means = F_moments$F_means,
+                                     F_vars = F_moments$F_vars,
+                                     R = params_old$variance,
+                                     Y_data = Y_data)
+      return(list(log_likelihood_old = log_likelihood_old,
+                  maha_data_mean = maha_data_mean,
+                  conditional_law_X = conditional_law_X))
+    }
+    ## result
+    temp <- wrapper_E_step(phylo = phylo,
+                           times_shared = times_shared,
+                           distances_phylo = distances_phylo,
+                           process = process,
+                           params_old = params_old,
+                           masque_data = masque_data,
+                           F_moments = F_moments,
+                           independent = independent,
+                           Y_data_vec_known = Y_data_vec_known,
+                           miss = miss,
+                           Y_data = Y_data)
+    ## Format result if independent
+    if (independent){
+      attr(params_old, "log_likelihood") <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
+      attr(params_old, "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+      conditional_law_X <- lapply(temp, function(z) return(z$conditional_law_X))
+    } else {
+      attr(params_old, "log_likelihood") <- temp$log_likelihood_old
+      attr(params_old, "mahalanobis_distance_data_mean") <- temp$maha_data_mean
+      conditional_law_X <- temp$conditional_law_X
+    }
+    rm(temp)
+    if (check_convergence_likelihood && Nbr_It > 1){
+      CV_log_lik <- has_converged_absolute(log_likelihood_old_old,
+                                           log_likelihood_old, tol$log_likelihood)
+    }
+
+    if (process == "OU" && p == 1){
       conditional_law_X$expectations <- as.vector(conditional_law_X$expectations)
       conditional_law_X$variances <- as.vector(conditional_law_X$variances)
       conditional_law_X$covariances <- as.vector(conditional_law_X$covariances)
@@ -451,8 +521,7 @@ estimateEM <- function(phylo,
     #                                               alpha = params_old$selection.strength)
     #         log_likelihood_bis <- compute_log_likelihood_with_entropy.simple(CLL, H)
     #         attr(params_old, "log_likelihood_bis") <- log_likelihood_bis
-    ## Store params for history
-    params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
+
     
     ########## M step #########################################################
     params <- compute_M(phylo = phylo, 
@@ -1635,15 +1704,18 @@ choose_process_EM <- function(process, p, random.root, stationary.root,
                               alpha_known,
                               known.selection.strength = 1, eps = 10^(-3),
                               sBM_variance = FALSE,
-                              method.OUsun = "rescale"){
+                              method.OUsun = "rescale",
+                              independent = FALSE){
   ## Reduce Process
   transform_scOU <- FALSE # Should we re-transform back the parameters to get an OU ?
   rescale_tree <- FALSE # Should we re-scale the tree ?
   if (process == "OU"){
-    if (p > 1) {
-      warning("The general OU is not implemented in the multivariate case. Switching to the scalar OU (scOU).")
+    if (p > 1 && !independent) {
+      stop("The EM algorithm for shift detection for the general OU is not implemented in the multivariate case. Please consider choosing one of the two following assumptions: (1) the selection strength matrix A is scalar (A = a*I), and the rate matrix R is full (choose process = scOU) or (2) both matices A and R are diagonal, i.e. all the trait are independent (choose independent = TRUE).")
     }
-    process <- "scOU"
+    if (p == 1) {
+      process <- "scOU"
+    }
   }
   if (process == "scOU"){
     if (random.root){
