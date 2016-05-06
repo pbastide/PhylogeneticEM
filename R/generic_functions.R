@@ -322,7 +322,7 @@ check.selection.strength <- function(process, selection.strength = NA, eps = 10^
   if (process == "BM") {
     return("BM")
   } else if (sum(abs(selection.strength)) < eps) {
-    warning(paste("The selection strength is too low (1-norm<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
+    warning(paste("The selection strength is too low (L1-norm<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
     return("BM")
   } else {
     return(process)
@@ -666,5 +666,90 @@ transform_branch_length <- function(phylo, alp){
 scale_params <- function(params, f){
   if (!is.null(params$variance)) params$variance <- f * params$variance
   if (!is.null(params$selection.strength)) params$selection.strength <- f * params$selection.strength
+  return(params)
+}
+
+##
+#' @title Split independent parameters into a list of parameters
+#' 
+#' @description \code{split_params_independent} split a params object for a 
+#' process with p independent traits into p params objects.
+#' The reverse operation is done by \code{merge_params_independent}
+#'
+#' @param params: parameters
+#'     
+#' @return A list of p parameters
+#' 
+##
+split_params_independent <- function(params){
+  p <- dim(params$variance)[1]
+  params_split <- vector(mode = "list", length = p)
+  for (l in 1:p){
+    params_split[[l]] <- params
+    params_split[[l]]$variance <- params$variance[l, l]
+    params_split[[l]]$selection.strength <- params$selection.strength[l, l]
+    if (!is.null(params$shifts$edges)){
+      params_split[[l]]$shifts$values <- params$shifts$values[l, ]
+    }
+    if (!anyNA(params$root.state$value.root)){
+      params_split[[l]]$root.state$value.root <- params$root.state$value.root[l]
+    }
+    if (!anyNA(params$root.state$exp.root)){
+      params_split[[l]]$root.state$exp.root <- params$root.state$exp.root[l]
+    }
+    if (!anyNA(params$root.state$var.root)){
+      params_split[[l]]$root.state$var.root <- params$root.state$var.root[l, l]
+    }
+    params_split[[l]]$optimal.value <- params$optimal.value[l]
+    params_split[[l]] <- check_dimensions(1,
+                                          params_split[[l]]$root.state,
+                                          params_split[[l]]$shifts,
+                                          params_split[[l]]$variance,
+                                          params_split[[l]]$selection.strength,
+                                          params_split[[l]]$optimal.value)
+    if (!is.null(attr(params, "p_dim"))) attr(params_split[[l]], "p_dim") <- 1
+  }
+  return(params_split)
+}
+
+##
+#' @title Merge a list of independent parameters into into one parameter
+#' 
+#' @description \code{merge_params_independent} merges a list of p params
+#' objects into one param object of dimension p
+#' The reverse operation is done by \code{split_params_independent}
+#'
+#' @param params_split: a list of parameters
+#'     
+#' @return A parameter object
+#' 
+##
+merge_params_independent <- function(params_split){
+  p <- length(params_split)
+  params <- params_split[[1]]
+  params$variance <- diag(sapply(params_split, function(z) return(as.vector(z$variance))))
+  if (!is.null(params$selection.strength)){
+    params$selection.strength <- diag(sapply(params_split, function(z) return(z$selection.strength)))
+  }
+  params$shifts$values <- t(sapply(params_split, function(z) return(z$shifts$values)))
+  if (!is.na(params$root.state$value.root)){
+    params$root.state$value.root <- sapply(params_split, function(z) return(z$root.state$value.root))
+  }
+  if (!is.na(params$root.state$exp.root)){
+    params$root.state$exp.root <- sapply(params_split, function(z) return(z$root.state$exp.root))
+  }
+  if (!is.na(as.vector(params$root.state$var.root))){
+    params$root.state$var.root <- diag(sapply(params_split, function(z) return(as.vector(z$root.state$var.root))))
+  }
+  if (!is.null(params$optimal.value)){
+    params$optimal.value <- sapply(params_split, function(z) return(z$optimal.value))
+  }
+  params <- check_dimensions(p,
+                             params$root.state,
+                             params$shifts,
+                             params$variance,
+                             params$selection.strength,
+                             params$optimal.value)
+  if (!is.null(attr(params_split[[1]], "p_dim"))) attr(params_split[[l]], "p_dim") <- p
   return(params)
 }
