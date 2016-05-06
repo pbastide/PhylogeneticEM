@@ -203,11 +203,14 @@ compute_M.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
   } else if (stationary.root && shifts_at_nodes) {
     return(compute_M.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
+    stop("The EM algorithm for the univariate raw OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
-compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, known.selection.strength, methods.segmentation, beta_0_old, shifts_old, subtree.list, ...){
+compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
+                                     nbr_of_shifts, known.selection.strength,
+                                     methods.segmentation, beta_0_old,
+                                     shifts_old, subtree.list, ...){
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   params <- init.EM.default.OU(selection.strength.init=known.selection.strength,
