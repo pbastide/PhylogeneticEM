@@ -119,7 +119,7 @@ init.EM.default.OU <- function(phylo = NULL,
                                values.init = matrix(0, p, length(edges.init)),
                                relativeTimes.init = NULL,
                                selection.strength.init=1,
-                               optimal.value.init=0,
+                               optimal.value.init = rep(0, p),
                                nbr_of_shifts = length(edges.init),
                                subtree.list = NULL, ...) {
   if (random.init) {
@@ -169,7 +169,7 @@ init.EM.default.OU <- function(phylo = NULL,
                                   params_init$optimal.value)
   params_init$root.state <- test.root.state(params_init$root.state, "OU",
                                             variance = variance.init,
-                                            selection.strength = selection.strength.init,
+                                            selection.strength = params_init$selection.strength,
                                             optimal.value = optimal.value.init)
   params_init$variance <- as(params_init$variance, "symmetricMatrix")
   return(params_init)
@@ -1199,8 +1199,10 @@ estimate_covariance_from_triplet <- function(Y_data, distances_phylo, v){
 }
 
 init.alpha.gamma.default <- function(init.selection.strength, known.selection.strength, alpha_known, init.var.root, ...){
+  if (!is.vector(init.var.root)) gamma_0 <- diag(init.var.root)
+  gamma_0 <- matrix(gamma_0, 1, length(gamma_0))
   return(list(alpha_0 = init.alpha.default(init.selection.strength, known.selection.strength, alpha_known),
-              gamma_0 = init.var.root))
+              gamma_0 = gamma_0))
 }
 
 init.alpha.gamma.estimation <- function(phylo, 

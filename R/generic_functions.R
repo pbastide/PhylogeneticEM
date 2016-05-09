@@ -538,6 +538,9 @@ check_dimensions <- function(p,
   variance <- check_dimensions.matrix(p, p, variance, "variance")
   variance <- as(variance, "symmetricMatrix")
   if (!is.null(selection.strength))
+    if (is.vector(selection.strength) && length(selection.strength) == p){
+      selection.strength <- diag(selection.strength, ncol = length(selection.strength))
+    }
     selection.strength <- check_dimensions.matrix(p, p, selection.strength, "selection strength")
   if (!is.null(optimal.value))
     optimal.value <- check_dimensions.vector(p, optimal.value, "optimal value")
@@ -556,7 +559,7 @@ check_dimensions.matrix <- function(p, q, matrix, name = "matrix"){
       stop(paste0(matrix, " should be a scalar in dimension q = ", q, "."))
     dim(matrix) <- c(1, q)
   }
-  if (!all(dim(matrix) == c(p, q))) 
+  if (is.vector(matrix) || !all(dim(matrix) == c(p, q))) 
     stop(paste0("Dimensions of ", matrix, " matrix do not match"))
   return(matrix)
 }
