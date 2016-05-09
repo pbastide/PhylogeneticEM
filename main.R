@@ -4229,3 +4229,96 @@ Sigma_C <- kronecker(diag(rep(1, n)), eg$vectors) %*% Sigma_C %*% kronecker(diag
 D_3_brut <- sum(diag(solve(Sigma_A)%*%Sigma_C)) -n*p - as.vector(determinant(Sigma_A, logarithm = TRUE)$modulus) + as.vector(determinant(Sigma_C, logarithm = TRUE)$modulus)
 D_3_brut # dépend de la topologie, autour de -130 pour r = 0.6
 
+#######################################
+## Test of EM - OU - independent
+#######################################
+## Tree
+set.seed(18850706)
+ntaxa <- 64
+tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                        lambda = 0.1, mu = 0,
+                        age = 1, mrca = TRUE)[[1]]
+plot(tree); edgelabels()
+
+## Parameters
+p <- 3
+variance <- diag(1:p/10, p, p)
+h_tree <- max(diag(node.depth.edgelength(tree))[1:ntaxa])
+alpha <- diag(log(2) / (1:p/10 * h_tree))
+
+root.state <- list(random = TRUE,
+                   stationary.root = TRUE,
+                   value.root = NA,
+                   exp.root = c(0, 0, 1),
+                   var.root = diag(diag(variance) / (2 * diag(alpha))))
+
+shifts = list(edges = c(7, 92),
+              values=cbind(c(5, -5, 0),
+                           c(2, 2, 2)),
+              relativeTimes = 0)
+
+optimal.value <- c(0, 0, 1)
+
+paramsSimu <- list(variance = variance,
+                   shifts = shifts,
+                   root.state = root.state,
+                   selection.strength = alpha,
+                   optimal.value = optimal.value)
+
+## Simulate Process
+set.seed(1344)
+X1 <- simulate(tree,
+               p = p,
+               root.state = root.state,
+               process = "OU",
+               variance = variance,
+               shifts = shifts,
+               selection.strength = alpha,
+               optimal.value = optimal.value)
+
+Y_data <- extract.simulate(X1,"tips","states")
+Z_states <- extract.simulate(X1,"nodes","states")
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- paramsSimu
+  params$shifts$values <- paramsSimu$shifts$values[l, ]
+  params$optimal.value<- paramsSimu$optimal.value[l]
+  plot.data.process.actual(Y.state = Y_data[l, ],
+                           phylo = tree, 
+                           params = params,
+                           process = "OU",
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3",
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = Z_states[l,])
+}
+
+set.seed(17920920)
+test <- estimateEM(phylo = tree, 
+                   Y_data = Y_data, 
+                   process = "OU", 
+                   independent = TRUE,
+                   Nbr_It_Max = 500, 
+                   method.init = "default",
+                   method.init.alpha = "default",
+                   nbr_of_shifts = 2,
+                   random.root = TRUE,
+                   stationary.root = TRUE,
+                   shifts_at_nodes = TRUE,
+                   alpha_known = TRUE,
+                   eps = 10^(-3),
+                   known.selection.strength = diag(alpha),
+                   init.selection.strength = diag(alpha),
+                   var.init.root = diag(1, nrow(Y_data)),
+                   variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
+                   methods.segmentation = "best_single_move",
+                   convergence_mode = "relative",
+                   impute_init_Rphylopars = FALSE)
+res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
+               random.root = FALSE, alpha = alpha_grid, save_step = FALSE)
+save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=3_n=64.RData")

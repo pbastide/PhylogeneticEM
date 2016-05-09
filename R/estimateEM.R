@@ -156,7 +156,8 @@ estimateEM <- function(phylo,
                             known.selection.strength = known.selection.strength,
                             eps = eps,
                             sBM_variance = sBM_variance,
-                            method.OUsun = method.OUsun)
+                            method.OUsun = method.OUsun,
+                            independent = independent)
   process <- temp$process
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
@@ -179,7 +180,7 @@ estimateEM <- function(phylo,
   # specialCase <- stationary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
-                       OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known, independent))
+                       OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
                         OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, alpha_known, tol_half_life))
@@ -242,6 +243,17 @@ estimateEM <- function(phylo,
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
+  if (independent){
+    tmp <- methods.segmentation %in% c("lasso", "lasso_one_move")
+    if (any(tmp)){
+      warning("Lasso segmentation methods are not implemented for multivariate independent OU. Removing these methods from the list.")
+      methods.segmentation <- methods.segmentation[!tmp]
+      if (length(methods.segmentation) == 0) {
+        warning("The list of segmentations methods was empty. Adding the best single move method.")
+        methods.segmentation <- "best_single_move"
+      }
+    }
+  }
   method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
   
   ########## Fixed Quantities #################################################
@@ -304,8 +316,8 @@ estimateEM <- function(phylo,
   if (is.null(init.a.g$gamma_0)){
     init.var.root <- NULL
   } else {
-    init.var.root <- mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
-    init.var.root <- as.matrix(init.var.root)
+    init.var.root <- colMeans(init.a.g$gamma_0[is.finite(sum(init.a.g$gamma_0)), , drop = F])
+    init.var.root <- diag(init.var.root, ncol = length(init.var.root))
   }
   if (process == "OU"){
     if(!alpha_known) {
@@ -374,6 +386,10 @@ estimateEM <- function(phylo,
                                        selection.strength = params$selection.strength)
   attr(params, "ntaxa")  <- ntaxa
   attr(params, "p_dim")  <- p
+  # Independent ?
+  if (independent){
+    params <- split_params_independent(params)
+  }
   params_old <- NULL
   
   ########## Iterations #######################################################
@@ -397,10 +413,6 @@ estimateEM <- function(phylo,
     }    
     # Store params for history
     params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
-    # Independent ?
-    if (independent){
-      params_old <- split_params_independent(params_old)
-    }
     # Wrapper
     wrapper_E_step <- function(phylo,
                                times_shared,
@@ -492,12 +504,14 @@ estimateEM <- function(phylo,
                            Y_data = Y_data)
     ## Format result if independent
     if (independent){
-      attr(params_old, "log_likelihood") <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
+      log_likelihood_old <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
+      attr(params_old, "log_likelihood") <- log_likelihood_old
       attr(params_old, "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
       conditional_law_X <- lapply(temp, function(z) return(z$conditional_law_X))
     } else {
-      attr(params_old, "log_likelihood") <- temp$log_likelihood_old
-      attr(params_old, "mahalanobis_distance_data_mean") <- temp$maha_data_mean
+      log_likelihood_old <- as.vector(temp$log_likelihood_old)
+      attr(params_old, "log_likelihood") <- log_likelihood_old
+      attr(params_old, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
       conditional_law_X <- temp$conditional_law_X
     }
     rm(temp)
@@ -539,7 +553,8 @@ estimateEM <- function(phylo,
                         variance_old = params_old$variance,
                         mu_old = params_old$root.state$value.root,
                         subtree.list = subtree.list,
-                        sBM_variance = sBM_variance)
+                        sBM_variance = sBM_variance,
+                        params_old = params_old)
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p_dim")  <- p
     ## Number of shifts that changed position ?
@@ -953,7 +968,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                                 alpha_known = alpha_known,
                                 known.selection.strength = alp,
                                 sBM_variance = sBM_variance,
-                                method.OUsun = method.OUsun)
+                                method.OUsun = method.OUsun,
+                                independent = independent)
       
       rescale_tree <- temp$rescale_tree # Rescale the tree ?
       transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
@@ -1403,7 +1419,8 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             alpha_known = alpha_known,
                             known.selection.strength = alpha,
                             sBM_variance = sBM_variance,
-                            method.OUsun = method.OUsun)
+                            method.OUsun = method.OUsun,
+                            independent = independent)
   
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
   transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
