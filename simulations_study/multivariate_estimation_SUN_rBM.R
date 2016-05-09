@@ -16,7 +16,7 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-04-29" # 
+datestamp_data <- "2016-05-06" # 
 savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 saveresultfile <- "../Results/Simulations_Multivariate/multivariate_estimations_SUN_rBM"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
