@@ -242,8 +242,8 @@ test_that("compute_mean_variance.simple", {
                           miss = miss,
                           Y_data = Y_data)
   
-  expect_that(res_1$log_likelihood_old,
-              equals(sum(sapply(res_2, function(z) return(z$log_likelihood_old)))))
-  expect_that(res_1$maha_data_mean,
-              equals(sum(sapply(res_2, function(z) return(z$maha_data_mean)))))
+  expect_equal(as.vector(res_1$log_likelihood_old),
+              sum(sapply(res_2, function(z) return(z$log_likelihood_old))))
+  expect_equal(as.vector(res_1$maha_data_mean),
+              sum(sapply(res_2, function(z) return(z$maha_data_mean))))
 })
