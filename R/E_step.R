@@ -115,7 +115,8 @@ compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
                                function(z) (p * (z - 1) + 1):(p * z))
     par_missing_tips <- matrix(par_missing_tips, nrow = p)
     missing_chars <- (which(miss) - 1) %% p + 1
-    grpes_missing <- sapply(1:ntaxa, function(z) missing_tips == z)
+    grpes_missing <- matrix(sapply(1:ntaxa, function(z) missing_tips == z),
+                            nrow = nMiss)
     for (i in 1:length(missing_tips_uniques)){
       tip <- missing_tips_uniques[i]
       tipgrp <- grpes_missing[, tip]
