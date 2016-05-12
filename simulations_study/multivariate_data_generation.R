@@ -229,6 +229,9 @@ W <- compute_actualization_matrix_ultrametric(trees[["60"]], alpha_base * diag(1
 vec_Y <- kronecker(T_tree[["60"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 
+## Clean up
+rm(list = c(W, vec_Y, X1.tips.exp.mat, Delta))
+
 ## Define date-stamp for file names
 datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 
