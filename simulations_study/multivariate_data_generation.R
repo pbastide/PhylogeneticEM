@@ -116,7 +116,7 @@ simparams <- rbind(simparams_base,
                    simparams_ntaxa
                   ) # 8400 x 11
 colnames(simparams) <- c("alpha", "gamma", "K", "rd", "rs", "s", "factor_shift",
-                         "ntaxa", "NA_per", "n", "grp")
+                         "ntaxa", "NA_per", "nrep", "grp")
 
 ## Generation of trees
 set.seed(17920904)
@@ -342,7 +342,7 @@ simlist <- foreach(i = 1:nrow(simparams)) %do% {
                     factor_shift = simparams[i, "factor_shift"],
                     ntaxa = simparams[i, "ntaxa"],
                     NA_per = simparams[i, "NA_per"],
-                    nrep= simparams[i, "n"],
+                    nrep= simparams[i, "nrep"],
                     grp = simparams[i, "grp"])
   sim$it <- i
   return(sim)
