@@ -386,10 +386,6 @@ estimateEM <- function(phylo,
                                        selection.strength = params$selection.strength)
   attr(params, "ntaxa")  <- ntaxa
   attr(params, "p_dim")  <- p
-  # Independent ?
-  if (independent){
-    params <- split_params_independent(params)
-  }
   params_old <- NULL
   
   ########## Iterations #######################################################
@@ -413,6 +409,10 @@ estimateEM <- function(phylo,
     }    
     # Store params for history
     params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
+    # Independent ?
+    if (independent){
+      params_old <- split_params_independent(params_old)
+    }
     # Wrapper
     wrapper_E_step <- function(phylo,
                                times_shared,
@@ -555,6 +555,10 @@ estimateEM <- function(phylo,
                         subtree.list = subtree.list,
                         sBM_variance = sBM_variance,
                         params_old = params_old)
+    # If independent, go back to merged parameters.
+    if (independent){
+      params <- merge_params_independent(params)
+    }
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p_dim")  <- p
     ## Number of shifts that changed position ?

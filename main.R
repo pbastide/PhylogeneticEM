@@ -1308,6 +1308,20 @@ for (i in 1:nMiss){
   Y_data_miss[chars[i], tips[i]] <- NA
 }
 
+test <- estimateEM(phylo = tree, 
+                   Y_data = Y_data_miss, 
+                   process = "scOU", 
+                   method.init = "lasso",
+                   Nbr_It_Max = 500, 
+                   nbr_of_shifts = 2,
+                   random.root = TRUE,
+                   stationary.root = TRUE,
+                   alpha_known = TRUE,
+                   eps = 10^(-3),
+                   known.selection.strength = alpha, #diag(alpha),
+                   convergence_mode = "relative",
+                   impute_init_Rphylopars = FALSE)
+
 set.seed(17920920)
 res <- PhyloEM(phylo = tree, Y_data = Y_data_miss, process = "BM", K_max = 10, random.root = FALSE)
 save.image(file = paste0("../Results/Miscellaneous_Evals/Test_Multivariate_BM_p=6_n=256_missing_", nMiss, ".RData"))
@@ -4313,12 +4327,10 @@ test <- estimateEM(phylo = tree,
                    alpha_known = TRUE,
                    eps = 10^(-3),
                    known.selection.strength = diag(alpha),
-                   init.selection.strength = diag(alpha),
-                   var.init.root = diag(1, nrow(Y_data)),
-                   variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
                    methods.segmentation = "best_single_move",
                    convergence_mode = "relative",
                    impute_init_Rphylopars = FALSE)
+
 res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                random.root = FALSE, alpha = alpha_grid, save_step = FALSE)
 save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=3_n=64.RData")
