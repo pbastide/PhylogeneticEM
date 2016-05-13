@@ -48,7 +48,7 @@ alpha_grid <- c(2, 3) # alpha varies with gamma squared fixed to 1
 
 ## Number of shifts for simulation
 K_grid <- c(3, 7, 17) # number of shifts
-factor_shift_grid <- c(1.5, 2, 2.5, 3, 3.5, 4) # multiplicative factor
+factor_shift_grid <- c(1, 1.5, 2, 2.5, 3, 3.5, 4) # multiplicative factor
 
 ## correlations
 r_grid <- c(0.2, 0.4, 0.6) # non diagonal elements for A (r) or R (2r)
