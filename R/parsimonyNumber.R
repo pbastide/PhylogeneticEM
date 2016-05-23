@@ -847,6 +847,7 @@ plot_equivalent_shifts.actual <- function(phylo,
                                           numbering = FALSE,
                                           colors_tips = NULL,
                                           nbr_col = 3, ...){
+  ntaxa <- length(phylo$tip.label)
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% nbr_col) + 1
   if (nbrSol %% nbr_col == 0) nbrLignes <- nbrLignes - 1
@@ -873,7 +874,7 @@ plot_equivalent_shifts.actual <- function(phylo,
     levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
     edges_regimes <- regimes[phylo$edge[,2]]
     ## Shifts Colors
-    makeLighter = function(..., saut=100) {
+    makeLighter = function(..., alpha = 0.5, saut=100) {
       alpha = floor(255*alpha)  
       newColor = col2rgb(col=unlist(list(...)), alpha=FALSE)
       .makeTransparent = function(col, alpha) {
