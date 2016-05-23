@@ -165,6 +165,8 @@ Delta <- shifts.list_to_matrix(trees[["60"]], shifts_grid[["3"]])
 W <- compute_actualization_matrix_ultrametric(trees[["60"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["60"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["60"]], clusters_from_shifts_ism(trees[["60"]], shifts_grid[["3"]]$edges)))
 
 # 7
 shifts_grid[["7"]] <- list(edges = c(18, 49, 91, 3, 34, 78, 93),
@@ -191,9 +193,11 @@ Delta <- shifts.list_to_matrix(trees[["60"]], shifts_grid[["7"]])
 W <- compute_actualization_matrix_ultrametric(trees[["60"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["60"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["60"]], clusters_from_shifts_ism(trees[["60"]], shifts_grid[["7"]]$edges)))
 
 # 17
-shifts_grid[["17"]] <- list(edges = c(18, 49, 91, 3, 34, 78, 93, 6, 23, 37, 54, 67, 80, 96, 101, 111, 116),
+shifts_grid[["17"]] <- list(edges = c(18, 49, 91, 3, 34, 78, 93, 6, 23, 37, 54, 67, 80, 96, 101, 110, 116),
                             values=cbind(rep(2, p_base),
                                          rep(-2, p_base),
                                          rep(2, p_base),
@@ -228,6 +232,8 @@ Delta <- shifts.list_to_matrix(trees[["60"]], shifts_grid[["17"]])
 W <- compute_actualization_matrix_ultrametric(trees[["60"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["60"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["60"]], clusters_from_shifts_ism(trees[["60"]], shifts_grid[["17"]]$edges)))
 
 ## Clean up
 rm(list = c(W, vec_Y, X1.tips.exp.mat, Delta))
@@ -258,8 +264,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   } else {
     shifts <- NULL
   }
-  var_mat <- diag(rep(2 * alpha * gamma - 2 * rd, p_base)) + matrix(2 * rd, p_base,
-                                                                    p_base)
+  var_mat <- diag(rep(2 * alpha * gamma - 2 * rd, p_base)) + matrix(2 * rd, p_base, p_base)
   root.state <- list(random = TRUE,
                      stationary.root = TRUE,
                      value.root = NA,
