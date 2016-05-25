@@ -893,13 +893,32 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 #'                           
 #'06/10/14 - Initial release
 ##
-segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, penscale = rep(1, ncol(Xp)), ...){
+segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, penscale = rep(1, (nrow(phylo$edge) + 1)), ...){
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   ## Computation of answer matrix D : already done by now.
-  ## Segmentation per se
-  # Lasso regression
-  fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes, penscale = penscale))
+  if(is.list(D)){ # p independent traits
+    Dvec <- as.vector(do.call(cbind, D))
+    Xkro <- bdiag(Xp)
+    ## Re-order by branches
+    traittoedge <- as.vector(sapply(1:((nrow(phylo$edge) + 1)),
+                                    function(z) ((0:(p-1)) * (nrow(phylo$edge) + 1) + z)))
+    Dvec <- Dvec[traittoedge]
+    Xkro <- as.matrix(Xkro[traittoedge, traittoedge])
+    ## Segmentation per se
+    group <- rep(1:(ntaxa + nNodes), each = length(D))
+    # Lasso regression
+    fit <- try(lasso_regression_K_fixed.gglasso(Yvec = Dvec, Xkro = Xkro,
+                                                K = nbr_of_shifts,
+                                                root = ntaxa + nNodes,
+                                                penscale = penscale,
+                                                group = group))
+  } else { # Only one trait
+    fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp,
+                                                            K = nbr_of_shifts,
+                                                            root = ntaxa+nNodes,
+                                                            penscale = penscale))
+  }
   if (inherits(fit, "try-error")) {
     warning("At M step, Lasso regression failed.")
     return(list(beta_0 = 0, shifts = NULL, costs = Inf))
@@ -910,7 +929,24 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, pensc
     beta_0 <- fit$E0.gauss
     # Compute new costs
     costs <- fit$residuals^2
-    return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
+    if (is.list(D)){ # Split independent traits
+      p <- length(D)
+      # re-order costs
+      edgetotrait <- as.vector(sapply(1:p,
+                                      function(z) ((0:(nrow(phylo$edge))) * p + z)))
+      costs <- costs[edgetotrait]
+      ret <- vector("list", p)
+      for (l in 1:p){
+        ret[[l]] <- list(beta_0 = beta_0[l],
+                         shifts = list(edges = shifts$edges,
+                                       values = shifts$values[l, ],
+                                       relativeTimes = shifts$relativeTimes),
+                         costs = costs[(l-1) * (nrow(phylo$edge) + 1) + 1:(nrow(phylo$edge) + 1)])
+      }
+      return(ret)
+    } else { # One single trait
+      return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
+    }
   }
 }
 
