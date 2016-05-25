@@ -84,11 +84,11 @@ estimateEM <- function(phylo,
                        max_selection.strength = 100,
                        use_sigma_for_lasso = TRUE,
                        max_triplet_number = 10000,
-                       min_params=list(variance = 10^(-5), 
+                       min_params=list(variance = 0, 
                                        value.root = -10^(5), 
                                        exp.root = -10^(5), 
-                                       var.root = 10^(-5),
-                                       selection.strength = 10^(-5)),
+                                       var.root = 0,
+                                       selection.strength = 0),
                        max_params=list(variance = 10^(5), 
                                        value.root = 10^(5), 
                                        exp.root = 10^(5), 
@@ -130,11 +130,17 @@ estimateEM <- function(phylo,
   ########## Check consistancy ################################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
-  if (!missing(known.selection.strength)){
-    if (length(known.selection.strength) != p){
-      warning("The vector of selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
-      known.selection.strength <- rep(known.selection.strength, p)[1:p]
-    }
+  if (independent && 
+      !missing(known.selection.strength) && 
+      (length(known.selection.strength) != p)){
+    warning("The vector of known selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+    known.selection.strength <- rep(known.selection.strength, p)[1:p]
+  }
+  if (independent && 
+      !missing(init.selection.strength) && 
+      (length(init.selection.strength) != p)){
+    warning("The vector of init selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+    init.selection.strength <- rep(init.selection.strength, p)[1:p]
   }
   if (sBM_variance){
     if (!random.root){
@@ -244,7 +250,7 @@ estimateEM <- function(phylo,
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
   if (independent){
-    tmp <- methods.segmentation %in% c("lasso", "lasso_one_move")
+    tmp <- methods.segmentation %in% c("lasso_one_move")
     if (any(tmp)){
       warning("Lasso segmentation methods are not implemented for multivariate independent OU. Removing these methods from the list.")
       methods.segmentation <- methods.segmentation[!tmp]
@@ -377,6 +383,7 @@ estimateEM <- function(phylo,
                          sBM_variance = sBM_variance,
                          impute_init_Rphylopars = impute_init_Rphylopars,
                          masque_data = masque_data,
+                         independent = independent,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 
@@ -388,32 +395,7 @@ estimateEM <- function(phylo,
   attr(params, "p_dim")  <- p
   params_old <- NULL
   
-  ########## Iterations #######################################################
-  Nbr_It <- 0
-  params_history <- vector("list")#, Nbr_It_Max)
-  #   CLL_history <- NULL
-  number_new_shifts <- NULL
-  CV_log_lik <- FALSE
-  while ( Nbr_It == 0 || # Initialisation
-            ( !(CV_log_lik && # CV of log-Likelihood ?
-              shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
-                is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
-                Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
-    ## Actualization
-    Nbr_It <- Nbr_It + 1
-    params_old <- params
-    ########## Log Likelihood and E step ####################################
-    # Check convergence of loglik ?
-    if (check_convergence_likelihood && Nbr_It > 1){
-      log_likelihood_old_old <- log_likelihood_old
-    }    
-    # Store params for history
-    params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
-    # Independent ?
-    if (independent){
-      params_old <- split_params_independent(params_old)
-    }
-    # Wrapper
+ ########## Wrapper for E step ################################################
     wrapper_E_step <- function(phylo,
                                times_shared,
                                distances_phylo,
@@ -474,7 +456,6 @@ estimateEM <- function(phylo,
                                                      Y_data = Y_data,
                                                      C_YY_chol_inv = F_moments$C_YY_chol_inv,
                                                      R = params_old$variance)
-      ########## E step #########################################################
       conditional_law_X <- compute_E(phylo = phylo,
                                      Y_data_vec = Y_data_vec_known,
                                      sim = moments$sim,
@@ -488,7 +469,32 @@ estimateEM <- function(phylo,
                                      Y_data = Y_data)
       return(list(log_likelihood_old = log_likelihood_old,
                   maha_data_mean = maha_data_mean,
-                  conditional_law_X = conditional_law_X))
+                  conditional_law_X = conditional_law_X,
+                  moments = moments))
+    }
+  
+  ########## Iterations #######################################################
+  Nbr_It <- 0
+  params_history <- vector("list")#, Nbr_It_Max)
+  #   CLL_history <- NULL
+  number_new_shifts <- NULL
+  CV_log_lik <- FALSE
+  while ( Nbr_It == 0 || # Initialisation
+            ( !(CV_log_lik && # CV of log-Likelihood ?
+              shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
+                is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
+                Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
+    ## Actualization
+    Nbr_It <- Nbr_It + 1
+    params_old <- params
+    ########## Log Likelihood and E step ####################################
+    # Check convergence of loglik ?
+    if (check_convergence_likelihood && Nbr_It > 1){
+      log_likelihood_old_old <- log_likelihood_old
+    }    
+    # Independent ?
+    if (independent){
+      params_old <- split_params_independent(params_old)
     }
     ## result
     temp <- wrapper_E_step(phylo = phylo,
@@ -505,19 +511,26 @@ estimateEM <- function(phylo,
     ## Format result if independent
     if (independent){
       log_likelihood_old <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
-      attr(params_old, "log_likelihood") <- log_likelihood_old
-      attr(params_old, "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+      # Store params for history
+      params_history[[paste(Nbr_It - 1, sep="")]] <- merge_params_independent(params_old)
+      attr(params_history[[paste(Nbr_It - 1, sep="")]], "log_likelihood") <- log_likelihood_old
+      attr(params_history[[paste(Nbr_It - 1, sep="")]], "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+      # Conditional law
       conditional_law_X <- lapply(temp, function(z) return(z$conditional_law_X))
     } else {
       log_likelihood_old <- as.vector(temp$log_likelihood_old)
       attr(params_old, "log_likelihood") <- log_likelihood_old
       attr(params_old, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
+      # Store params for history
+      params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
+      # Conditional law
       conditional_law_X <- temp$conditional_law_X
     }
     rm(temp)
     if (check_convergence_likelihood && Nbr_It > 1){
       CV_log_lik <- has_converged_absolute(log_likelihood_old_old,
-                                           log_likelihood_old, tol$log_likelihood)
+                                           log_likelihood_old,
+                                           tol$log_likelihood)
     }
 
     if (process == "OU" && p == 1){
@@ -562,8 +575,13 @@ estimateEM <- function(phylo,
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p_dim")  <- p
     ## Number of shifts that changed position ?
-    number_new_shifts <- c(number_new_shifts,
-                           sum(!(params$shifts$edges %in% params_old$shifts$edges)))
+    if (independent){
+      number_new_shifts <- c(number_new_shifts,
+                             sum(!(params$shifts$edges %in% params_old[[1]]$shifts$edges)))
+    } else {
+      number_new_shifts <- c(number_new_shifts,
+                             sum(!(params$shifts$edges %in% params_old$shifts$edges))) 
+    }
     #   ## Check that the M step rised the conditional expectation of the completed likelihood
     #         CLL_old <- conditional_expectation_log_likelihood(phylo = phylo,
     #                                         conditional_law_X = conditional_law_X, 
@@ -642,40 +660,58 @@ estimateEM <- function(phylo,
   compute_log_likelihood  <- compute_log_likelihood.simple
   compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
   
-  moments <- compute_mean_variance(phylo = phylo,
-                                   times_shared = times_shared,
-                                   distances_phylo = distances_phylo,
-                                   process = process,
-                                   params_old = params_scOU,
-                                   masque_data = masque_data)
-  log_likelihood <- compute_log_likelihood(phylo = phylo,
-                                           Y_data_vec = Y_data_vec_known,
-                                           sim = moments$sim,
-                                           Sigma = moments$Sigma,
-                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                           miss = miss,
-                                           masque_data = masque_data)
-  attr(params_scOU, "log_likelihood") <- log_likelihood
-  params_history[[paste(Nbr_It, sep="")]] <- params_scOU
-  ## Compute Mahalanobis norm between data and mean at tips
-  maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                 Y_data_vec = Y_data_vec_known,
-                                                 sim = moments$sim,
-                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                 miss = miss)
-  attr(params_scOU, "mahalanobis_distance_data_mean") <- maha_data_mean
-  ## "Ancestral state reconstruction"
-  conditional_law_X <- compute_E(phylo = phylo,
-                                 Y_data_vec = Y_data_vec_known,
-                                 sim = moments$sim,
-                                 Sigma = moments$Sigma,
-                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                 miss = miss,
-                                 masque_data = masque_data)
-  ## Mean at tips with estimated parameters
-  m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")
+  if (independent){
+    params_scOU <- split_params_independent(params_scOU)
+  }
+  
+  temp <- wrapper_E_step(phylo = phylo,
+                         times_shared = times_shared,
+                         distances_phylo = distances_phylo,
+                         process = process,
+                         params_old = params_scOU,
+                         masque_data = masque_data,
+                         F_moments = NULL,
+                         independent = independent,
+                         Y_data_vec_known = Y_data_vec_known,
+                         miss = miss,
+                         Y_data = Y_data)
+  ## Format result if independent
+  if (independent){
+    ## Likelihood and Mahalanobis of last parameters
+    params_scOU <- merge_params_independent(params_scOU)
+    attr(params_scOU, "log_likelihood") <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
+    attr(params_scOU, "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+    params_history[[paste(Nbr_It, sep="")]] <- params_scOU
+    ## "Ancestral States Reconstruction"
+    condlaw <- lapply(temp, function(z) return(z$conditional_law_X))
+    condlaw <- do.call(rbind, condlaw)
+    conditional_law_X <- vector("list")
+    conditional_law_X$expectations <- do.call(rbind, condlaw[, "expectations"])
+    conditional_law_X$optimal.values <- do.call(rbind, condlaw[, "optimal.values"])
+    conditional_law_X$variances <- do.call(rbind, condlaw[, "variances"])
+    conditional_law_X$variances <- aaply(conditional_law_X$variances, 2, diag)
+    conditional_law_X$variances <- aperm(conditional_law_X$variances, c(2, 3, 1))
+    conditional_law_X$covariances <- do.call(rbind, condlaw[, "covariances"])
+    conditional_law_X$covariances <- aaply(conditional_law_X$covariances, 2, diag)
+    conditional_law_X$covariances <- aperm(conditional_law_X$covariances, c(2, 3, 1))
+    rm(condlaw)
+    ## Mean at tips with estimated parameters
+    m_Y_estim <- lapply(temp, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
+    m_Y_estim <- do.call(rbind, m_Y_estim)
+  } else {
+    ## Likelihood and Mahalanobis of last parameters
+    attr(params_scOU, "log_likelihood") <- as.vector(temp$log_likelihood_old)
+    attr(params_scOU, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
+    params_history[[paste(Nbr_It, sep="")]] <- params_scOU
+    ## "Ancestral States Reconstruction"
+    conditional_law_X <- temp$conditional_law_X
+    ## Mean at tips with estimated parameters
+    m_Y_estim <- extract.simulate(temp$moments$sim, where="tips", what="expectations")
+  }
+  rm(temp)
   ## Number of equivalent solutions
-  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
+  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges,
+                                       part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params_scOU, "Neq") <- Neq
