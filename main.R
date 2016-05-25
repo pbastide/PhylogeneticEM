@@ -4312,13 +4312,18 @@ for (l in 1:p){
                            ancestral_states = Z_states[l,])
 }
 
+## Missing Data
+data <- Y_data
+Y_data[1, 14] <- NA
+Y_data[2, 5] <- NA
+
 set.seed(17920920)
 test <- estimateEM(phylo = tree, 
                    Y_data = Y_data, 
                    process = "OU", 
                    independent = TRUE,
                    Nbr_It_Max = 500, 
-                   method.init = "default",
+                   method.init = "lasso", #"default",
                    method.init.alpha = "default",
                    nbr_of_shifts = 2,
                    random.root = TRUE,
@@ -4327,7 +4332,7 @@ test <- estimateEM(phylo = tree,
                    alpha_known = TRUE,
                    eps = 10^(-3),
                    known.selection.strength = diag(alpha),
-                   methods.segmentation = "best_single_move",
+                   methods.segmentation = c("lasso", "best_single_move"),
                    convergence_mode = "relative",
                    impute_init_Rphylopars = FALSE)
 
