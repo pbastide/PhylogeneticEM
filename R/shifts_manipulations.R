@@ -50,14 +50,14 @@ incidence.matrix <- function(phylo){
   phy <- reorder(phylo, order = "postorder")
   cor <- correspondanceEdges(edges=1:nrow(phy$edge), from=phylo, to=phy)
   ## Init and recurence
-  T <- init.incidence.matrix(phy)
-  T <- recursionUp(phy, T, update.incidence.matrix)
+  Tr <- init.incidence.matrix(phy)
+  Tr <- recursionUp(phy, Tr, update.incidence.matrix)
   ## Take for each node its parenting branch
   daughters <- phy$edge[,2]
-  T <- T[daughters,]
+  Tr <- Tr[daughters,]
   ## Return to original tree
-  T <- T[cor, ]
-  return(t(T))
+  Tr <- Tr[cor, ]
+  return(t(Tr))
 }
 
 ##
