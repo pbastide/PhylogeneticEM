@@ -4336,6 +4336,11 @@ test <- estimateEM(phylo = tree,
                    convergence_mode = "relative",
                    impute_init_Rphylopars = FALSE)
 
-res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
-               random.root = FALSE, alpha = alpha_grid, save_step = FALSE)
+res <- PhyloEM(phylo = tree, Y_data = Y_data,
+               process = "OU",
+               independent = TRUE,
+               K_max = 10,
+               random.root = FALSE,
+               alpha = alpha_grid,
+               save_step = FALSE)
 save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=3_n=64.RData")
