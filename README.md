@@ -1,4 +1,4 @@
-Phylogenetic-EM
+PhylogeneticEM
 ===============
 
 Implementation of the EM algorithm for the detection of shifts in a phylogeny.
