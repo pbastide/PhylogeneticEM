@@ -33,22 +33,22 @@ savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 process <- "OU"
 p_base <- 4 # number of traits
 beta_0 <- rep(0, p_base) # ancestral optimum
-alpha_base <- 1 # selection strength
-sigma_base <- 2 # sigma squared variance
+alpha_base <- 3 # selection strength
+sigma_base <- 6 # sigma squared variance
 gamma_base <- 1 # gamma squared stationnary variance
-K_base <- 0 # number of shifts
-ntaxa_base <- 60 # number of taxa
+K_base <- 3 # number of shifts
+ntaxa_base <- 128 # number of taxa
 factor_shift_base <- 1 # multiplicative factor for shifts
 r_base <- 0 # correlation coefficients
 s_base <- 0 # non diagonal coefficient
 NA_base <- 0 # % of NAs
 
 ## alpha grid
-alpha_grid <- c(2, 3) # alpha varies with gamma squared fixed to 1
+alpha_grid <- c(1, 2) # alpha varies with gamma squared fixed to 1
 
 ## Number of shifts for simulation
-K_grid <- c(3, 7, 17) # number of shifts
-factor_shift_grid <- c(1, 1.5, 2, 2.5, 3, 3.5, 4) # multiplicative factor
+K_grid <- c(0, 3, 7, 11, 15) # number of shifts
+factor_shift_grid <- c(0.5, 1, 1.5, 2) # multiplicative factor
 
 ## correlations
 r_grid <- c(0.2, 0.4, 0.6) # non diagonal elements for A (r) or R (2r)
@@ -60,7 +60,7 @@ s_grid <- c(0.5, 1, 1.5) # additive diagonal for two lowers of A
 NA_grid <- c(0.05, 0.1, 0.2, 0.5)
 
 ## Number of taxa
-ntaxa_grid <- c(32, 64, 96, 128, 160, 192, 215)
+ntaxa_grid <- c(32, 64, 96, 160, 192, 215)
 
 ## replication depth (number of replicates per )
 nrep <- 1:200
@@ -114,11 +114,20 @@ simparams <- rbind(simparams_base,
                    simparams_s,
                    simparams_NA,
                    simparams_ntaxa
-                  ) # 8400 x 11
+                  )
 colnames(simparams) <- c("alpha", "gamma", "K", "rd", "rs", "s", "factor_shift",
                          "ntaxa", "NA_per", "nrep", "grp")
+## Remove redondancies
+# Base
+mask <- (simparams$K == K_base) & (simparams$factor_shift == factor_shift_base) & (simparams$grp == "K_var")
+simparams <- simparams[!mask, ]
+# zero shift
+mask <- (simparams$K == 0) & (simparams$factor_shift != 1) & (simparams$grp == "K_var")
+simparams <- simparams[!mask, ] # 38*200 x 11
 
+##############
 ## Generation of trees
+##############
 set.seed(17920904)
 trees <- vector(mode = "list"); times_shared <- vector(mode = "list");
 distances_phylo <- vector(mode = "list"); subtree.list <- vector(mode = "list");
@@ -140,108 +149,311 @@ for (nta in c(ntaxa_base, ntaxa_grid)){
   K_try[[paste0(nta)]] <- 0:max(floor(sqrt(nta)), 10)
 }
 
+##############
 ## Generation of shifts
-plot(trees[["60"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+##############
+plot(trees[["128"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 
 shifts_grid <- vector(mode = "list")
-# 3
-shifts_grid[["3"]] <- list(edges = c(18, 49, 91),
-                           values=cbind(rep(2, p_base),
-                                        rep(-2, p_base),
-                                        rep(2, p_base)),
-                           relativeTimes = 0)
 
-# Means at the tips ?
-plot.data.process.actual(Y.state = NULL,
-                         phylo = trees[["60"]], 
-                         params = list(shifts = list(edges = shifts_grid[["3"]]$edges, values = shifts_grid[["3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
-Delta <- shifts.list_to_matrix(trees[["60"]], shifts_grid[["3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["60"]], alpha_base * diag(1, p_base, p_base))
-vec_Y <- kronecker(T_tree[["60"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
-X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
-# Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["60"]], clusters_from_shifts_ism(trees[["60"]], shifts_grid[["3"]]$edges)))
-
-# 7
-shifts_grid[["7"]] <- list(edges = c(18, 49, 91, 3, 34, 78, 93),
-                           values=cbind(rep(2, p_base),
-                                        rep(-2, p_base),
-                                        rep(2, p_base),
+## 128 - 3
+shifts_grid[["128_3"]] <- list(edges = c(8, 72, 193),
+                           values=cbind(rep(2.1, p_base),
                                         rep(-2.1, p_base),
-                                        rep(2.5, p_base),
-                                        rep(-2.3, p_base),
-                                        rep(3, p_base)),
+                                        rep(2.1, p_base)),
                            relativeTimes = 0)
 
 # Means at the tips ?
 plot.data.process.actual(Y.state = NULL,
-                         phylo = trees[["60"]], 
-                         params = list(shifts = list(edges = shifts_grid[["7"]]$edges, values = shifts_grid[["7"]]$values[1, ])),
+                         phylo = trees[["128"]], 
+                         params = list(shifts = list(edges = shifts_grid[["128_3"]]$edges, values = shifts_grid[["128_3"]]$values[1, ])),
                          adj.root = 0,
                          automatic_colors = TRUE,
                          margin_plot = NULL,
                          cex = 2,
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
-Delta <- shifts.list_to_matrix(trees[["60"]], shifts_grid[["7"]])
-W <- compute_actualization_matrix_ultrametric(trees[["60"]], alpha_base * diag(1, p_base, p_base))
-vec_Y <- kronecker(T_tree[["60"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_3"]])
+W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
+unique(X1.tips.exp.mat[1, ])
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["60"]], clusters_from_shifts_ism(trees[["60"]], shifts_grid[["7"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_3"]]$edges)))
 
-# 17
-shifts_grid[["17"]] <- list(edges = c(18, 49, 91, 3, 34, 78, 93, 6, 23, 37, 54, 67, 80, 96, 101, 110, 116),
-                            values=cbind(rep(2, p_base),
-                                         rep(-2, p_base),
-                                         rep(2, p_base),
-                                         rep(-2.1, p_base),
-                                         rep(2.5, p_base),
-                                         rep(-2.3, p_base),
-                                         rep(3, p_base),
-                                         rep(-2.2, p_base),
-                                         rep(3.1, p_base),
-                                         rep(5.2, p_base),
-                                         rep(-3.1, p_base),
-                                         rep(-3, p_base),
-                                         rep(-3.1, p_base),
-                                         rep(5, p_base),
-                                         rep(2.5, p_base),
-                                         rep(2.1, p_base),
-                                         rep(-2.2, p_base)),
+## 128 - 7
+shifts_grid[["128_7"]] <- list(edges = c(8, 72, 193,
+                                     117, 179, 33, 84),
+                           values = cbind(rep(2.1, p_base),
+                                          rep(-2.1, p_base),
+                                          rep(2.1, p_base),
+                                          rep(-2.1, p_base),
+                                          rep(-2.1, p_base),
+                                          rep(2.4, p_base),
+                                          rep(4.4, p_base)),
+                           relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_7"]])
+W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["128"]], 
+                         params = list(shifts = list(edges = shifts_grid[["128_7"]]$edges, values = shifts_grid[["128_7"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_7"]]$edges)))
+
+## 128 - 11
+shifts_grid[["128_11"]] <- list(edges = c(8, 72, 193,
+                                      117, 179, 33, 84,
+                                      231, 210, 157, 127),
+                            values = cbind(rep(2.1, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(2.1, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(2.4, p_base),
+                                           rep(4.4, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(2.4, p_base),
+                                           rep(2.2, p_base),
+                                           rep(-2.5, p_base)),
                             relativeTimes = 0)
 
 # Means at the tips ?
-plot.data.process.actual(Y.state = NULL,
-                         phylo = trees[["60"]], 
-                         params = list(shifts = list(edges = shifts_grid[["17"]]$edges, values = shifts_grid[["17"]]$values[1, ])),
+Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_11"]])
+W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["128"]], 
+                         params = list(shifts = list(edges = shifts_grid[["128_11"]]$edges, values = shifts_grid[["128_11"]]$values[1, ])),
                          adj.root = 0,
                          automatic_colors = TRUE,
                          margin_plot = NULL,
                          cex = 2,
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
-edgelabels(); tiplabels()
-Delta <- shifts.list_to_matrix(trees[["60"]], shifts_grid[["17"]])
-W <- compute_actualization_matrix_ultrametric(trees[["60"]], alpha_base * diag(1, p_base, p_base))
-vec_Y <- kronecker(T_tree[["60"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
-X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["60"]], clusters_from_shifts_ism(trees[["60"]], shifts_grid[["17"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_11"]]$edges)))
+
+## 128 -  15
+shifts_grid[["128_15"]] <- list(edges = c(8, 72, 193,
+                                      117, 179, 33, 84,
+                                      231, 210, 157, 127,
+                                      20, 96, 199, 239),
+                            values = cbind(rep(2.1, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(2.1, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(2.4, p_base),
+                                           rep(4.4, p_base),
+                                           rep(-2.1, p_base),
+                                           rep(2.4, p_base),
+                                           rep(2.2, p_base),
+                                           rep(-2.5, p_base),
+                                           rep(-5.2, p_base),
+                                           rep(2.6, p_base),
+                                           rep(-4.5, p_base),
+                                           rep(-2.5, p_base)),
+                            relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_15"]])
+W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["128"]], 
+                         params = list(shifts = list(edges = shifts_grid[["128_15"]]$edges, values = shifts_grid[["128_15"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_15"]]$edges)))
+
+## 32 -  3
+plot(trees[["32"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+shifts_grid[["32_3"]] <- list(edges = c(6, 20, 48),
+                                values = cbind(rep(2.4, p_base),
+                                               rep(-2.4, p_base),
+                                               rep(2.1, p_base)),
+                                relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["32"]], shifts_grid[["32_3"]])
+W <- compute_actualization_matrix_ultrametric(trees[["32"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["32"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, 32) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["32"]], 
+                         params = list(shifts = list(edges = shifts_grid[["32_3"]]$edges, values = shifts_grid[["32_3"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["32"]], clusters_from_shifts_ism(trees[["32"]], shifts_grid[["32_3"]]$edges)))
+
+## 64 -  3
+plot(trees[["64"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+shifts_grid[["64_3"]] <- list(edges = c(3, 43, 92),
+                              values = cbind(rep(2.2, p_base),
+                                             rep(-2.2, p_base),
+                                             rep(2.2, p_base)),
+                              relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["64"]], shifts_grid[["64_3"]])
+W <- compute_actualization_matrix_ultrametric(trees[["64"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["64"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, 64) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["64"]], 
+                         params = list(shifts = list(edges = shifts_grid[["64_3"]]$edges, values = shifts_grid[["64_3"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["64"]], clusters_from_shifts_ism(trees[["64"]], shifts_grid[["64_3"]]$edges)))
+
+## 96 -  3
+plot(trees[["96"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+shifts_grid[["96_3"]] <- list(edges = c(47, 80, 115),
+                              values = cbind(rep(2.2, p_base),
+                                             rep(-2.2, p_base),
+                                             rep(2.2, p_base)),
+                              relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["96"]], shifts_grid[["96_3"]])
+W <- compute_actualization_matrix_ultrametric(trees[["96"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["96"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, 96) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["96"]], 
+                         params = list(shifts = list(edges = shifts_grid[["96_3"]]$edges, values = shifts_grid[["96_3"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["96"]], clusters_from_shifts_ism(trees[["96"]], shifts_grid[["96_3"]]$edges)))
+
+## 160 -  3
+plot(trees[["160"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+shifts_grid[["160_3"]] <- list(edges = c(107, 62, 255),
+                              values = cbind(rep(2.2, p_base),
+                                             rep(-2.2, p_base),
+                                             rep(2.2, p_base)),
+                              relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_3"]])
+W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["160"]], 
+                         params = list(shifts = list(edges = shifts_grid[["160_3"]]$edges, values = shifts_grid[["160_3"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism(trees[["160"]], shifts_grid[["160_3"]]$edges)))
+
+## 192 -  3
+plot(trees[["192"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+shifts_grid[["192_3"]] <- list(edges = c(57, 160, 307),
+                               values = cbind(rep(2.2, p_base),
+                                              rep(-2.2, p_base),
+                                              rep(2.2, p_base)),
+                               relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["192"]], shifts_grid[["192_3"]])
+W <- compute_actualization_matrix_ultrametric(trees[["192"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["192"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, 192) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["192"]], 
+                         params = list(shifts = list(edges = shifts_grid[["192_3"]]$edges, values = shifts_grid[["192_3"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["192"]], clusters_from_shifts_ism(trees[["192"]], shifts_grid[["192_3"]]$edges)))
+
+## 215 -  3
+plot(trees[["215"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+shifts_grid[["215_3"]] <- list(edges = c(24, 282, 335),
+                               values = cbind(rep(2.2, p_base),
+                                              rep(-2.2, p_base),
+                                              rep(2.2, p_base)),
+                               relativeTimes = 0)
+
+# Means at the tips ?
+Delta <- shifts.list_to_matrix(trees[["215"]], shifts_grid[["215_3"]])
+W <- compute_actualization_matrix_ultrametric(trees[["215"]], alpha_base * diag(1, p_base, p_base))
+vec_Y <- kronecker(T_tree[["215"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
+X1.tips.exp.mat <- matrix(vec_Y, p_base, 215) + beta_0
+unique(X1.tips.exp.mat[1, ])
+plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+                         phylo = trees[["215"]], 
+                         params = list(shifts = list(edges = shifts_grid[["215_3"]]$edges, values = shifts_grid[["215_3"]]$values[1, ])),
+                         adj.root = 0,
+                         automatic_colors = TRUE,
+                         margin_plot = NULL,
+                         cex = 2,
+                         bg_shifts = "azure2",
+                         bg_beta_0 = "azure2")
+# Equivalent solutions ?
+extract.parsimonyNumber(parsimonyNumber(trees[["215"]], clusters_from_shifts_ism(trees[["215"]], shifts_grid[["215_3"]]$edges)))
 
 ## Clean up
-rm(list = c(W, vec_Y, X1.tips.exp.mat, Delta))
+rm(W, vec_Y, X1.tips.exp.mat, Delta)
 
+##############
 ## Define date-stamp for file names
+##############
 datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 
+##############
 ## simulation function 
+##############
+
 # Return list of parameters + list of shifts + data at tips
 datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                        ntaxa, NA_per, nrep, grp) {
@@ -254,8 +466,8 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
     alpha_mat <- alpha_mat + diag(c(rep(0, p_base / 2), rep(s, p_base / 2)))
   }
   tree <- trees[[paste0(ntaxa)]]
-  if (ntaxa == 60 && K > 0){
-    shifts <- shifts_grid[[paste0(K)]]
+  if (K > 0){
+    shifts <- shifts_grid[[paste0(ntaxa, "_", K)]]
     # Multiplicative factor 
     shifts$values <- factor_shift * shifts$values
     # Randomly multiply by +1 or -1 each trait
@@ -300,6 +512,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
               m_Y_true = extract.simulate(XX, what="expectations", where="tips"))
   ## Compute true likelihood and difficulty of the problem
   attr(params, "p_dim") <- p_base
+  sim$params_simu <- params
   moments <- compute_mean_variance.simple(phylo = tree,
                                           times_shared = times_shared[[paste0(ntaxa)]],
                                           distances_phylo = distances_phylo[[paste0(ntaxa)]],
@@ -340,7 +553,7 @@ set.seed(18051804)
 
 ## Sequencial simulations (for reproductability)
 simlist <- foreach(i = 1:nrow(simparams)) %do% {
-# simlist <- foreach(i = ((1:42) - 1) * 200 + 1) %do% {
+# simlist <- foreach(i = which(simparams$nrep == 1)) %do% {
   sim <- datasetsim(alpha = simparams[i, "alpha"],
                     gamma = simparams[i, "gamma"],
                     K = simparams[i, "K"],

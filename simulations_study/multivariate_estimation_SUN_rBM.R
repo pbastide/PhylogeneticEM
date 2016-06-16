@@ -16,7 +16,7 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-05-06" # 
+datestamp_data <- "2016-06-08" # 
 savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 saveresultfile <- "../Results/Simulations_Multivariate/multivariate_estimations_SUN_rBM"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
@@ -217,7 +217,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_known <- system.time(
-  simestimations <- foreach(i = simlist[((1:41) - 1) * 200 + 1], .packages = reqpckg) %dopar%
+  simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
   {
     estimations_several_K_ak(i)
   }
