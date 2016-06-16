@@ -189,6 +189,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      bg_beta_0 = "chocolate4", quant.root = 0.25,
                                      color_characters = "black",
                                      color_edges = "black",
+                                     edge.width = 1,
                                      automatic_colors = FALSE,
                                      regime_boxes = FALSE,
                                      alpha.border = 70,
@@ -273,7 +274,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   # Plot tree
   if (is.null(Y.state)){
     plot(phylo, show.tip.label = show.tip.label, root.edge = TRUE, 
-         edge.color = as.vector(color_edges), ...)
+         edge.color = as.vector(color_edges),
+         edge.width = edge.width, ...)
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
   } else {
     imp.scale  <- c(min(0, min(imposed.scale, na.rm = TRUE)),
@@ -290,7 +292,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
          x.lim = c(0, x.lim.max), 
          y.lim = c(y.lim.min, y.lim.max),
-         edge.color = as.vector(color_edges), ...)
+         edge.color = as.vector(color_edges),
+         edge.width = edge.width, ...)
     if (show.tip.label){
       size_labels <- max(strwidth(phylo$tip.label, cex = text_cex))
     }
@@ -316,7 +319,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     # characters
     segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa],
              pos_last_tip + eccart_g + Y.plot, lastPP$yy[1:ntaxa],
-             col = as.vector(color_characters))
+             col = as.vector(color_characters),
+             lwd = edge.width)
     # unit length
     segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
              pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
