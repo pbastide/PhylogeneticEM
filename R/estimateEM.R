@@ -250,7 +250,8 @@ estimateEM <- function(phylo,
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   if (is.null(F_moments) && !Flag_Missing && process == "BM"){
-    F_moments <- compute_fixed_moments(times_shared, ntaxa)
+    # Add root edge to the branch lengths (root assumed fixed by default)
+    F_moments <- compute_fixed_moments(times_shared + phylo$root.edge, ntaxa)
   } 
   
   ########## Re-scale tree to 100 #############################################
@@ -905,7 +906,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       ## Fixed Quantities if no missing data
       Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
       if (!Flag_Missing){
-        F_moments <- compute_fixed_moments(times_shared, ntaxa)
+        # Add root edge to the branch lengths (root assumed fixed by default)
+        F_moments <- compute_fixed_moments(times_shared + phylo$root.edge, ntaxa)
       } else {
         F_moments = NULL
       }

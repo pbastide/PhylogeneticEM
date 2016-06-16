@@ -100,6 +100,7 @@ compute_times_ca <- function(phy) {
   prac <- mrca(phy,full=TRUE)
   times_ca <- matrix(times[prac],dim(prac))
   # attr(times_ca, "ntaxa") <- length(phy$tip.label)
+#   times_ca <- phy$root.edge + times_ca # Add the root length
   return(as(times_ca, "symmetricMatrix"))
 }
 
