@@ -113,7 +113,7 @@ shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_o
   if (has_converged(params_old$variance, params$variance, tol$variance) &&
       has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
       has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root) &&
-      all(abs(log(2) / (h_tree * params_old$selection.strength) - log(2) / (h_tree * params$selection.strength)) < tol$normalized_half_life)) {
+      all(abs(log(2) / (h_tree * diag(params_old$selection.strength)) - log(2) / (h_tree * diag(params$selection.strength))) < tol$normalized_half_life)) {
     return(TRUE)
   } else {
     return(FALSE)
