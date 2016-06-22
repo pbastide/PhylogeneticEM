@@ -940,6 +940,10 @@ transform_shifts_values <- function(shifts, from = 0, to, phylo){
   } else {
     actualizations <- (1 - exp(- from * (h_tree - times_parents))) / (1 - exp(- to * (h_tree - times_parents)))
   }
-  shifts$values <- sweep(shifts$values, 2, actualizations, '*')
+  if (is.vector(shifts$values)){
+    shifts$values <- shifts$values * actualizations
+  } else {
+    shifts$values <- sweep(shifts$values, 2, actualizations, '*')
+  }
   return(shifts)
 }
