@@ -137,9 +137,11 @@ estimateEM <- function(phylo,
     known.selection.strength <- rep(known.selection.strength, p)[1:p]
   }
   if (independent && 
-      !missing(init.selection.strength) && 
+      # !missing(init.selection.strength) && 
       (length(init.selection.strength) != p)){
-    warning("The vector of init selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+    if (!missing(init.selection.strength)) {
+      warning("The vector of init selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+    }
     init.selection.strength <- rep(init.selection.strength, p)[1:p]
   }
   if (sBM_variance){
@@ -318,18 +320,20 @@ estimateEM <- function(phylo,
                                                   T_tree = T_tree,
                                                   subtree.list = subtree.list,
                                                   miss = miss,
+                                                  masque_data = masque_data,
+                                                  independent = independent,
                                                   ...)
   if (is.null(init.a.g$gamma_0)){
     init.var.root <- NULL
   } else {
-    init.var.root <- colMeans(init.a.g$gamma_0[is.finite(sum(init.a.g$gamma_0)), , drop = F])
+    init.var.root <- colMeans(init.a.g$gamma_0, na.rm = TRUE)
     init.var.root <- diag(init.var.root, ncol = length(init.var.root))
   }
   if (process == "OU"){
     if(!alpha_known) {
       if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
         ## Only if not all NAs ot infinite
-        init.selection.strength <- mean(init.a.g$alpha_0[is.finite(init.a.g$alpha_0)])
+        init.selection.strength <- colMeans(init.a.g$alpha_0, na.rm = TRUE)
       }
     } else {
       init.selection.strength <- known.selection.strength
@@ -551,26 +555,33 @@ estimateEM <- function(phylo,
 
     
     ########## M step #########################################################
+    if (independent){
+      # correct format for selection strength case independent
+      alpha_old = sapply(params_old, function(z) z$selection.strength)
+    } else {
+      alpha_old = params_old$selection.strength
+    }
     params <- compute_M(phylo = phylo, 
                         Y_data = Y_data, 
                         conditional_law_X = conditional_law_X, 
                         nbr_of_shifts = nbr_of_shifts, 
                         random.root = random.root,
                         known.selection.strength = known.selection.strength,
-                        alpha_old = params_old$selection.strength,
+                        alpha_old = alpha_old,
                         max_selection.strength = max_selection.strength,
                         eps = eps,
                         methods.segmentation = methods.segmentation,
-                        beta_0_old = params_old$optimal.value,
-                        shifts_old = params_old$shifts,
-                        variance_old = params_old$variance,
-                        mu_old = params_old$root.state$value.root,
+                        beta_0_old = params_history[[paste(Nbr_It - 1, sep="")]]$optimal.value,
+                        shifts_old = params_history[[paste(Nbr_It - 1, sep="")]]$shifts,
+                        variance_old = params_history[[paste(Nbr_It - 1, sep="")]]$variance,
+                        mu_old = params_history[[paste(Nbr_It - 1, sep="")]]$root.state$value.root,
                         subtree.list = subtree.list,
                         sBM_variance = sBM_variance,
                         params_old = params_old)
     # If independent, go back to merged parameters.
     if (independent){
       params <- merge_params_independent(params)
+      params_old <- params_history[[paste(Nbr_It - 1, sep="")]]
     }
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p_dim")  <- p
