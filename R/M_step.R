@@ -255,6 +255,11 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
   ## Segmentation
   segs <- sapply(methods.segmentation, segmentation.OU.specialCase,
                  simplify = FALSE)
+  ## If everyone failed, keep the same shifts
+  if (all(sapply(segs, function(z) length(z$costs) > 0 && is.infinite(z$costs)))){
+    methods.segmentation <- "same_shifts"
+    segs <- sapply(methods.segmentation, segmentation.OU.specialCase, simplify = FALSE)
+  }
   #edges_max <- seg$edges_max
   ## Variance
   if (p == 1){
@@ -272,12 +277,12 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
     var.roots <- sapply(methods.segmentation, compute_var_M)
     # cond log lik
     cond_exp_log_lik <- function(method.segmentation){
-      return(unname(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
-                                                                                                          conditional_law_X = conditional_law_X, 
-                                                                                                          sigma2 = 2 * known.selection.strength * var.roots[method.segmentation],
-                                                                                                          mu = segs[[method.segmentation]]$beta_0,
-                                                                                                          shifts = segs[[method.segmentation]]$shifts,
-                                                                                                          alpha = known.selection.strength)))
+      return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
+                                                                                                   conditional_law_X = conditional_law_X, 
+                                                                                                   sigma2 = 2 * known.selection.strength * var.roots[method.segmentation],
+                                                                                                   mu = segs[[method.segmentation]]$beta_0,
+                                                                                                   shifts = segs[[method.segmentation]]$shifts,
+                                                                                                   alpha = known.selection.strength))
     }
     obj_funcs <- sapply(methods.segmentation, cond_exp_log_lik)
     obj_funcs <- matrix(obj_funcs, ncol = length(methods.segmentation))
@@ -300,12 +305,12 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
       var.roots[[l]] <- sapply(methods.segmentation, compute_var_M)
       # cond log lik
       cond_exp_log_lik <- function(method.segmentation){
-        return(unname(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
-                                                                                                            conditional_law_X = conditional_law_X[[l]], 
-                                                                                                            sigma2 = 2 * known.selection.strength[l] * var.roots[[l]][method.segmentation],
-                                                                                                            mu = segs[[method.segmentation]][[l]]$beta_0,
-                                                                                                            shifts = segs[[method.segmentation]][[l]]$shifts,
-                                                                                                            alpha = known.selection.strength[l])))
+        return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
+                                                                                                     conditional_law_X = conditional_law_X[[l]], 
+                                                                                                     sigma2 = 2 * known.selection.strength[l] * var.roots[[l]][method.segmentation],
+                                                                                                     mu = segs[[method.segmentation]][[l]]$beta_0,
+                                                                                                     shifts = segs[[method.segmentation]][[l]]$shifts,
+                                                                                                     alpha = known.selection.strength[l]))
       }
       obj_funcs[l, ] <- sapply(methods.segmentation, cond_exp_log_lik)
     }
@@ -389,9 +394,10 @@ compute_M.OU.stationary.root_AND_shifts_at_nodes <- function(phylo,
                                                     max_selection.strength,
                                                     eps,
                                                     methods.segmentation,
-                                                    beta_0_old = beta_0_old,
-                                                    shifts_old = shifts_old,
-                                                    subtree.list, ...){
+                                                    beta_0_old,
+                                                    shifts_old,
+                                                    subtree.list,
+                                                    params_old, ...){
   ## Estimate all parameters with alpha of the previous step
   params <- compute_M.OU.specialCase(phylo = phylo, 
                                      Y_data = Y_data, 
@@ -401,17 +407,33 @@ compute_M.OU.stationary.root_AND_shifts_at_nodes <- function(phylo,
                                      methods.segmentation = methods.segmentation,
                                      beta_0_old = beta_0_old,
                                      shifts_old = shifts_old, 
-                                     subtree.list = subtree.list)
+                                     subtree.list = subtree.list,
+                                     params_old = params_old)
   ## Estimate new alpha
-  params$selection.strength <- estimate.alpha(phylo = phylo,
-                                              conditional_law_X = conditional_law_X, 
-                                              sigma2 = params$variance,
-                                              mu = params$root.state$exp.root,
-                                              shifts = params$shifts,
-                                              alpha_old = alpha_old,
-                                              max_selection.strength = max_selection.strength)
-  ## Change value of the root (stationary) accordingly
-  params$variance <- 2 * params$selection.strength * params$root.state$var.root
+  p <- nrow(Y_data)
+  if (p > 1){
+    for (l in 1:p){
+      params[[l]]$selection.strength <- estimate.alpha(phylo = phylo,
+                                                       conditional_law_X = conditional_law_X[[l]], 
+                                                       sigma2 = params[[l]]$variance,
+                                                       mu = params[[l]]$root.state$exp.root,
+                                                       shifts = params[[l]]$shifts,
+                                                       alpha_old = alpha_old[l],
+                                                       max_selection.strength = max_selection.strength)
+      ## Change value of the root (stationary) accordingly
+      params[[l]]$variance <- 2 * params[[l]]$selection.strength * params[[l]]$root.state$var.root
+    }
+  } else {
+    params$selection.strength <- estimate.alpha(phylo = phylo,
+                                                conditional_law_X = conditional_law_X, 
+                                                sigma2 = params$variance,
+                                                mu = params$root.state$exp.root,
+                                                shifts = params$shifts,
+                                                alpha_old = alpha_old,
+                                                max_selection.strength = max_selection.strength)
+    ## Change value of the root (stationary) accordingly
+    params$variance <- 2 * params$selection.strength * params$root.state$var.root
+  }
   return(params)
 }
 
@@ -604,7 +626,13 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #'09/07/14 - Initial release
 #'02/10/14 - Take newly estimated shifts into consideration
 ##
-estimate.alpha <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha_old, max_selection.strength){
+estimate.alpha <- function(phylo,
+                           conditional_law_X,
+                           sigma2,
+                           mu,
+                           shifts,
+                           alpha_old,
+                           max_selection.strength){
   #opt <- optimize(R_function, phylo=phylo, conditional_law_X=conditional_law_X, sigma2=sigma2, mu=mu, interval=c(alpha_old/2, alpha_old*2))
   betas <- compute_betas(phylo = phylo, optimal.value = mu, shifts = shifts)
   opt2 <- optimize(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes.from_betas, 
@@ -752,7 +780,7 @@ conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_
   ee <- exp(- alpha * phylo$edge.length )
   LogLik <- LogLik - (nNodes + ntaxa)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
   ## Terms with the variance
-  K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
+  K_1 <- as.vector(conditional_law_X$variances)[ntaxa+1] + (as.vector(conditional_law_X$expectations)[ntaxa+1] - mu)^2
   var_diff <- compute_var_diff.OU(phylo=phylo, 
                                   conditional_law_X=conditional_law_X, 
                                   selection.strength=alpha)
@@ -765,7 +793,7 @@ conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_
   daughters <- phylo$edge[,2]
   betas <- betas[daughters]
   LogLik <- LogLik - (alpha / sigma2) * sum((1 - ee^2)^(-1) * (diff_exp - betas * (1-ee))^2)
-  return(LogLik)
+  return(unname(as.vector(LogLik)))
 }
 
 #######################################################################

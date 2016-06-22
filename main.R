@@ -4322,19 +4322,27 @@ test <- estimateEM(phylo = tree,
                    Y_data = Y_data, 
                    process = "OU", 
                    independent = TRUE,
-                   Nbr_It_Max = 500, 
+                   Nbr_It_Max = 1000, 
                    method.init = "lasso", #"default",
-                   method.init.alpha = "default",
+                   method.init.alpha = "estimation",
                    nbr_of_shifts = 2,
                    random.root = TRUE,
                    stationary.root = TRUE,
                    shifts_at_nodes = TRUE,
-                   alpha_known = TRUE,
+                   alpha_known = FALSE,
                    eps = 10^(-3),
-                   known.selection.strength = diag(alpha),
-                   methods.segmentation = c("lasso", "best_single_move"),
+                   # known.selection.strength = diag(alpha),
+                   init.selection.strength = diag(alpha),
+                   methods.segmentation = c("lasso", "same_shifts"),#, "best_single_move"),
                    convergence_mode = "relative",
                    impute_init_Rphylopars = FALSE)
+
+sapply(test$params_history, function(z) attr(z, "log_likelihood"))
+sapply(test$params_history, function(z) diag(z$selection.strength))
+sapply(test$params_history, function(z) diag(z$variance))
+sapply(test$params_history, function(z) diag(z$shifts$edges))
+sapply(test$params_history, function(z) diag(z$shifts$values))
+sapply(test$params_history, function(z) diag(z$optimal.value))
 
 res <- PhyloEM(phylo = tree, Y_data = Y_data,
                process = "OU",
