@@ -1255,9 +1255,46 @@ init.EM.lasso <- function(phylo,
     }
   } else {
     # Return untransformed Y_data and T
-    Tp <- Tr
-    Yp <- Y_data_imp
-    fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
+    if (!any(is.na(Y_data_imp)) && !independent){
+      Tr <- cbind(Tr, rep(1, dim(Tr)[1])) # Here we use hypothesis : beta_0 = mu if OU
+      Yp <- Y_data_imp
+      fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = Yp, Xp = Tp,
+                                                              K = nbr_of_shifts,
+                                                              root = dim(Tr)[2]))
+    } else {
+      if (independent){
+        Tr <- lapply(Tr, function(z) return(cbind(z, rep(1, dim(z)[1]))))
+        Xp <- bdiag(Tr)
+        # Reorder matrices
+        corrdata <- as.vector(sapply(1:ntaxa,
+                                     function(z) ((0:(p-1)) * ntaxa + z)))
+        corrdata <- corrdata[!miss]
+        corrreg <- as.vector(sapply(1:((nrow(phylo$edge) + 1)),
+                                    function(z) ((0:(p-1)) * (nrow(phylo$edge) + 1) + z)))
+        Xp <- Xp[corrdata, corrreg]
+        # Data
+        Ytemp <- rep(NA, ntaxa * p)
+        missbis <- as.vector(t(matrix(miss, nrow = p)))
+        Ytemp[!missbis] <- as.vector(t(Y_data))[!missbis]
+        Yp <- Ytemp[corrdata]
+        # root
+        root <- ncol(Tr[[1]])
+      } else { # Case BM with missing values
+        Yp <- Y_data_vec_known
+        # Regressor
+        Xp <- kronecker(Tr, diag(rep(1, p)))
+        Xp <- Xp[masque_data[1:(p*ntaxa)], ]
+        # Root
+        root <- ncol(Tr)
+      }
+      # Fit
+      group <- rep(1:root, each = p)
+      fit <- try(lasso_regression_K_fixed.gglasso(Yvec = as.vector(Yp),
+                                                  Xkro = as.matrix(Xp),
+                                                  K = nbr_of_shifts,
+                                                  group = group,
+                                                  root = root))
+    }
     chol_data <- FALSE
   }
   ## Fit
@@ -1356,9 +1393,9 @@ init.alpha.gamma.OU <- function(method.init.alpha){
 
 init.alpha.default <- function(init.selection.strength, known.selection.strength, alpha_known, ...){
   if (alpha_known) {
-    return(known.selection.strength)
+    return(matrix(known.selection.strength, 1, length(known.selection.strength)))
   } else {
-    return(init.selection.strength)
+    return(matrix(init.selection.strength, 1, length(init.selection.strength)))
   }
 }
 
