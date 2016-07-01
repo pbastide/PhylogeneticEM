@@ -425,12 +425,14 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                    dfmax = K + 10,
                    pf = penscale,
                    lambda = lambda)
+    df_prev <- df
     df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
+    if (identical(df, df_prev)) break
   }
   rm(fit_tmp)
   ## If the right lambda does not exists, raise the number of shifts
   K_2 <- K
-  while (!any(df == K_2) && K_2 <= min(dim(Xp))) {
+  while (!any(df == K_2) && K_2 <= max(group)) {
     if (K_2 == K){
       warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
     }
