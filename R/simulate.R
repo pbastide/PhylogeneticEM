@@ -58,6 +58,7 @@
 simulate <- function(phylo,
                      process = c("BM", "OU", "scOU"),
                      p = 1,
+                     # independent = FALSE,
                      root.state = list(random = FALSE, 
                                        stationary.root = FALSE, 
                                        value.root, 
@@ -141,6 +142,27 @@ simulate <- function(phylo,
   } else {
     stationnary_variance <- NA
   }
+#   ## If independent, do p univariate (faster)
+#   if (independent && (p > 1) && (process == "OU")){
+#     for (l in 1:p){
+#       shifts_ordered_uni <- shifts_ordered
+#       shifts_ordered_uni$values <- shifts_ordered$values[l, , drop = F]
+#       if (!is.null(stationnary_variance)){
+#         stationnary_variance_uni <- stationnary_variance[l,l, drop = F]
+#       }
+#       paramSimu[l, , ] <- recursionDown(phy = phy,
+#                                         params = paramSimu[l, , , drop = F],
+#                                         updateDown = updateDown,
+#                                         subset_node = subset_node.simulate,
+#                                         allocate_subset_node = allocate_subset_node.simulate,
+#                                         shifts = shifts_ordered_uni,
+#                                         variance = variance[l,l, drop = F],
+#                                         eps = eps,
+#                                         selection.strength = selection.strength[l,l, drop = F],
+#                                         stationnary_variance = stationnary_variance_uni)
+#     }
+#     return(paramSimu)
+#   }
   ## Tree recursion
   paramSimu <- recursionDown(phy = phy,
                              params = paramSimu,
@@ -307,7 +329,8 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance, ...
 # 16/05/14 - Initial release
 ##
 update.simulate.OU <- function(edgeNbr, ancestral,
-                               length, shifts, selection.strength, stationnary_variance, ...){
+                               length, shifts, selection.strength,
+                               stationnary_variance, ...){
   shiftsIndex <- which(shifts$edges == edgeNbr) # If no shifts = NULL, and sum = 0
   if (length(shiftsIndex) == 0){
     r <- 0
@@ -315,9 +338,16 @@ update.simulate.OU <- function(edgeNbr, ancestral,
     r <- shifts$relativeTimes[shiftsIndex]
   }
   beta <- ancestral[, , 3] + rowSums(shifts$values[, shiftsIndex, drop = F])
-  ee_d <- expm(-selection.strength * length * (1-r))
-  ee_p <- expm(-selection.strength * length * r)
-  ee <- expm(-selection.strength * length)
+  # p <- ncol(shifts$values)
+  # if (p > 1){
+    ee_d <- expm(-selection.strength * length * (1-r))
+    ee_p <- expm(-selection.strength * length * r)
+    ee <- expm(-selection.strength * length)
+#   } else {
+#     ee <- exp(-selection.strength * length)
+#     ee_d <- ee^(1-r)
+#     ee_p <- ee^(r)
+#   }
   I <- diag(1, dim(selection.strength))
   plus_exp <- (I - ee_d) %*% beta + (I - ee_p) %*% ancestral[ , , 3]
   Sim <- mvrnorm(1,

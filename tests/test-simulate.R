@@ -80,3 +80,100 @@ test_that("Mean of the OU", {
   
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
 })
+# 
+# test_that("Multivariate Independent (OU)", {
+#   set.seed(586)
+#   ntaxa <- 1000
+#   tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+#                           lambda = 1, mu = 0,
+#                           age = 1, mrca = TRUE)[[1]]
+#   
+#   p <- 6
+#   variance <- diag(0.5, p, p)
+#   optimal.value <- c(-3, 5, 0, 7, 3, 0)
+#   selection.strength <- diag(3, p, p)
+#   exp.stationary <- optimal.value
+#   var.stationary  <- compute_stationnary_variance(variance, selection.strength)
+#   root.state <- list(random = TRUE,
+#                      stationary.root = TRUE,
+#                      value.root = NA,
+#                      exp.root = exp.stationary,
+#                      var.root = var.stationary)
+#   shifts = list(edges = c(18, 32),
+#                 values=cbind(c(4, -10, 3, 2, 2, 9),
+#                              c(-5, 5, 0, -7, 5, -4)),
+#                 relativeTimes = 0)
+#   paramsSimu <- list(variance = variance,
+#                      optimal.value = optimal.value,
+#                      selection.strength = selection.strength,
+#                      shifts = shifts,
+#                      root.state = root.state)
+#   
+#   tempsnot <- system.time(Xnot <- simulate(tree,
+#                  p = p,
+#                  independent = FALSE,
+#                  root.state = root.state,
+#                  process = "OU",
+#                  variance = variance,
+#                  optimal.value = optimal.value,
+#                  selection.strength = selection.strength,
+#                  shifts = shifts))
+#   
+#   tempsind <- system.time(Xind <- simulate(tree,
+#                    p = p,
+#                    independent = TRUE,
+#                    root.state = root.state,
+#                    process = "OU",
+#                    variance = variance,
+#                    optimal.value = optimal.value,
+#                    selection.strength = selection.strength,
+#                    shifts = shifts))
+#   
+#   expect_that(Xnot[,,2:3], equals(Xind[,,2:3]))
+# })
+# 
+# test_that("Multivariate Independent (BM)", {
+#   set.seed(586)
+#   ntaxa <- 200
+#   tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+#                           lambda = 1, mu = 0,
+#                           age = 1, mrca = TRUE)[[1]]
+#   
+#   p <- 3
+#   variance <- diag(0.5, p, p)
+#   root.state <- list(random = FALSE,
+#                      stationary.root = FALSE,
+#                      value.root = c(1, -6, 2),
+#                      exp.root = NA,
+#                      var.root = NA)
+#   shifts = list(edges = c(18, 32),
+#                 values=cbind(c(4, -10, 3),
+#                              c(-5, 5, 0)),
+#                 relativeTimes = 0)
+#   paramsSimu <- list(variance = variance,
+#                      selection.strength = selection.strength,
+#                      shifts = shifts,
+#                      root.state = root.state)
+#   
+#   Xnot <- simulate(tree,
+#                    p = p,
+#                    independent = FALSE,
+#                    root.state = root.state,
+#                    process = "BM",
+#                    variance = variance,
+#                    optimal.value = optimal.value,
+#                    selection.strength = selection.strength,
+#                    shifts = shifts)
+#   
+#   Xind <- simulate(tree,
+#                    p = p,
+#                    independent = TRUE,
+#                    root.state = root.state,
+#                    process = "OU",
+#                    variance = variance,
+#                    optimal.value = optimal.value,
+#                    selection.strength = selection.strength,
+#                    shifts = shifts)
+#   
+#   expect_that(Xnot[,,2], equals(Xind[,,2]))
+# })
