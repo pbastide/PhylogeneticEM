@@ -256,7 +256,8 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
   segs <- sapply(methods.segmentation, segmentation.OU.specialCase,
                  simplify = FALSE)
   ## If everyone failed, keep the same shifts
-  if (all(sapply(segs, function(z) length(z$costs) > 0 && is.infinite(z$costs)))){
+  if (all(sapply(segs, function(z) (length(z$costs) > 0 && is.infinite(z$costs))
+                                  || any(is.infinite(z[[1]]$costs))))){
     methods.segmentation <- "same_shifts"
     segs <- sapply(methods.segmentation, segmentation.OU.specialCase, simplify = FALSE)
   }
@@ -949,7 +950,16 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, pensc
   }
   if (inherits(fit, "try-error")) {
     warning("At M step, Lasso regression failed.")
-    return(list(beta_0 = 0, shifts = NULL, costs = Inf))
+    if (is.list(D)){
+      p = length(D)
+      ret <- vector("list", p)
+      for (l in 1:p){
+        ret[[l]] <- list(beta_0 = 0, shifts = NULL, costs = Inf)
+      }
+      return(ret)
+    } else {
+      return(list(beta_0 = 0, shifts = NULL, costs = Inf))
+    }
   } else {
     # Define shifts
     shifts <- shifts.matrix_to_list(t(fit$delta.gauss))

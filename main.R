@@ -4258,7 +4258,7 @@ plot(tree); edgelabels()
 p <- 3
 variance <- diag(1:p/10, p, p)
 h_tree <- max(diag(node.depth.edgelength(tree))[1:ntaxa])
-alpha <- diag(log(2) / (1:p/10 * h_tree))
+alpha <- diag(log(2) / (1:p/20 * h_tree))
 
 root.state <- list(random = TRUE,
                    stationary.root = TRUE,
@@ -4266,9 +4266,9 @@ root.state <- list(random = TRUE,
                    exp.root = c(0, 0, 1),
                    var.root = diag(diag(variance) / (2 * diag(alpha))))
 
-shifts = list(edges = c(7, 92),
-              values=cbind(c(5, -5, 0),
-                           c(2, 2, 2)),
+shifts = list(edges = c(15, 92),
+              values=cbind(c(2, -5, 3),
+                           c(3, -3, 5)),
               relativeTimes = 0)
 
 optimal.value <- c(0, 0, 1)
@@ -4343,6 +4343,25 @@ sapply(test$params_history, function(z) diag(z$variance))
 sapply(test$params_history, function(z) diag(z$shifts$edges))
 sapply(test$params_history, function(z) diag(z$shifts$values))
 sapply(test$params_history, function(z) diag(z$optimal.value))
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- test$params
+  params$shifts$values <- params$shifts$values[l, ]
+  params$optimal.value<- params$optimal.value[l]
+  plot.data.process.actual(Y.state = test$m_Y_estim[l,],
+                           phylo = tree, 
+                           params = params,
+                           process = "OU",
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3",
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = test$ReconstructedNodesStates[l,])
+}
 
 res <- PhyloEM(phylo = tree, Y_data = Y_data,
                process = "OU",
