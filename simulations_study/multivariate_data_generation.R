@@ -161,7 +161,7 @@ shifts_grid[["128_3"]] <- list(edges = c(8, 72, 193),
                            values=cbind(rep(2.1, p_base),
                                         rep(-2.1, p_base),
                                         rep(2.1, p_base)),
-                           relativeTimes = 0)
+                           relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 plot.data.process.actual(Y.state = NULL,
@@ -191,7 +191,7 @@ shifts_grid[["128_7"]] <- list(edges = c(8, 72, 193,
                                           rep(-2.1, p_base),
                                           rep(2.4, p_base),
                                           rep(4.4, p_base)),
-                           relativeTimes = 0)
+                           relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_7"]])
@@ -226,7 +226,7 @@ shifts_grid[["128_11"]] <- list(edges = c(8, 72, 193,
                                            rep(2.4, p_base),
                                            rep(2.2, p_base),
                                            rep(-2.5, p_base)),
-                            relativeTimes = 0)
+                            relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_11"]])
@@ -266,7 +266,7 @@ shifts_grid[["128_15"]] <- list(edges = c(8, 72, 193,
                                            rep(2.6, p_base),
                                            rep(-4.5, p_base),
                                            rep(-2.5, p_base)),
-                            relativeTimes = 0)
+                            relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_15"]])
@@ -292,7 +292,7 @@ shifts_grid[["32_3"]] <- list(edges = c(6, 20, 48),
                                 values = cbind(rep(2.4, p_base),
                                                rep(-2.4, p_base),
                                                rep(2.1, p_base)),
-                                relativeTimes = 0)
+                                relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["32"]], shifts_grid[["32_3"]])
@@ -318,7 +318,7 @@ shifts_grid[["64_3"]] <- list(edges = c(3, 43, 92),
                               values = cbind(rep(2.2, p_base),
                                              rep(-2.2, p_base),
                                              rep(2.2, p_base)),
-                              relativeTimes = 0)
+                              relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["64"]], shifts_grid[["64_3"]])
@@ -344,7 +344,7 @@ shifts_grid[["96_3"]] <- list(edges = c(47, 80, 115),
                               values = cbind(rep(2.2, p_base),
                                              rep(-2.2, p_base),
                                              rep(2.2, p_base)),
-                              relativeTimes = 0)
+                              relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["96"]], shifts_grid[["96_3"]])
@@ -370,7 +370,7 @@ shifts_grid[["160_3"]] <- list(edges = c(107, 62, 255),
                               values = cbind(rep(2.2, p_base),
                                              rep(-2.2, p_base),
                                              rep(2.2, p_base)),
-                              relativeTimes = 0)
+                              relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_3"]])
@@ -396,7 +396,7 @@ shifts_grid[["192_3"]] <- list(edges = c(57, 160, 307),
                                values = cbind(rep(2.2, p_base),
                                               rep(-2.2, p_base),
                                               rep(2.2, p_base)),
-                               relativeTimes = 0)
+                               relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["192"]], shifts_grid[["192_3"]])
@@ -422,7 +422,7 @@ shifts_grid[["215_3"]] <- list(edges = c(24, 282, 335),
                                values = cbind(rep(2.2, p_base),
                                               rep(-2.2, p_base),
                                               rep(2.2, p_base)),
-                               relativeTimes = 0)
+                               relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["215"]], shifts_grid[["215_3"]])
@@ -454,6 +454,8 @@ datestamp_data <- format(Sys.time(), "%Y-%m-%d")
 ## simulation function 
 ##############
 
+moments_list <- vector("list") # keep the moments (avoid multiple computations)
+
 # Return list of parameters + list of shifts + data at tips
 datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                        ntaxa, NA_per, nrep, grp) {
@@ -477,6 +479,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
     shifts <- NULL
   }
   var_mat <- diag(rep(2 * alpha * gamma - 2 * rd, p_base)) + matrix(2 * rd, p_base, p_base)
+  var_mat <- as(var_mat, "symmetricMatrix")
   root.state <- list(random = TRUE,
                      stationary.root = TRUE,
                      value.root = NA,
@@ -494,7 +497,8 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                  variance = var_mat,
                  shifts = shifts, 
                  selection.strength = alpha_mat, 
-                 optimal.value = beta_0)
+                 optimal.value = beta_0,
+                 checks = TRUE)
   sim <- list(alpha = alpha,
               gamma = gamma,
               K = K,
@@ -510,38 +514,55 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
               Y_true = extract.simulate(XX, what="states", where="tips"),
               Z_true = extract.simulate(XX, what = "states", where = "nodes"),
               m_Y_true = extract.simulate(XX, what="expectations", where="tips"))
-  ## Compute true likelihood and difficulty of the problem
-  attr(params, "p_dim") <- p_base
-  sim$params_simu <- params
-  moments <- compute_mean_variance.simple(phylo = tree,
-                                          times_shared = times_shared[[paste0(ntaxa)]],
-                                          distances_phylo = distances_phylo[[paste0(ntaxa)]],
-                                          process = process_temp,
-                                          params_old = params)
-  sim$log_likelihood.true <- compute_log_likelihood.simple(phylo = tree,
-                                                           Y_data_vec = as.vector(sim$Y_true),
-                                                           sim = moments$sim,
-                                                           Sigma = moments$Sigma,
-                                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
-  ## Difficulty
-  Sigma_YY_inv <- tcrossprod(moments$Sigma_YY_chol_inv)
-  mu_0 <- (sum(Sigma_YY_inv))^(-1) * sum(Sigma_YY_inv %*% as.vector(sim$m_Y_true))
-  sim$difficulty <- as.vector(t(as.vector(sim$m_Y_true - mu_0)) %*% Sigma_YY_inv %*% as.vector(sim$m_Y_true - mu_0))
-  sim$maha_data_mean <- compute_mahalanobis_distance.simple(phylo = tree,
-                                                            Y_data_vec = as.vector(sim$Y_true),
-                                                            sim = moments$sim,
-                                                            Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv)
   ## NAs
   sim$Y_data <- sim$Y_true
   if (NA_per > 0){
-    nMiss <- floor(ntaxa * p_base / 100) * NA_per
+    nMiss <- floor(ntaxa * p_base * NA_per)
     miss <- sample(1:(p_base * ntaxa), nMiss, replace = FALSE)
     chars <- (miss - 1) %% p_base + 1
     tips <- (miss - 1) %/% p_base + 1
     for (i in 1:nMiss){
       sim$Y_data[chars[i], tips[i]] <- NA
     }
-}
+  }
+  miss <- as.vector(is.na(sim$Y_data))
+  Y_data_vec <- as.vector(sim$Y_data)
+  Y_data_vec_known <- as.vector(sim$Y_data[!miss])
+  # Vectorized Data Mask
+  masque_data <- rep(FALSE, (sim$ntaxa + tree$Nnode) * p_base)
+  masque_data[1:(p_base*sim$ntaxa)] <- !miss
+  ## Compute true likelihood and difficulty of the problem
+  attr(params, "p_dim") <- p_base
+  sim$params_simu <- params
+  name_config <- paste(alpha, gamma, K, rd, rs, s, factor_shift,
+                       ntaxa, NA_per, sep = "_")
+  if (is.null(moments_list[[name_config]])){
+    moments_list[[name_config]] <<- compute_mean_variance.simple(phylo = tree,
+                                    times_shared = times_shared[[paste0(ntaxa)]],
+                                    distances_phylo = distances_phylo[[paste0(ntaxa)]],
+                                    process = process_temp,
+                                    params_old = params,
+                                    masque_data = masque_data,
+                                    sim = XX)
+  }
+  moments <- moments_list[[name_config]]
+  sim$log_likelihood.true <- compute_log_likelihood.simple(phylo = tree,
+                                                           Y_data_vec = Y_data_vec_known,
+                                                           sim = moments$sim,
+                                                           Sigma = moments$Sigma,
+                                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                           miss = miss,
+                                                           masque_data = masque_data)
+  ## Difficulty
+  Sigma_YY_inv <- tcrossprod(moments$Sigma_YY_chol_inv)
+  mu_0 <- (sum(Sigma_YY_inv))^(-1) * sum(Sigma_YY_inv %*% Y_data_vec_known)
+  as.vector(t(Y_data_vec_known - mu_0) %*% Sigma_YY_inv %*% (Y_data_vec_known - mu_0))
+  # sim$difficulty <- as.vector(t(as.vector(sim$m_Y_true - mu_0)) %*% Sigma_YY_inv %*% as.vector(sim$m_Y_true - mu_0))
+  sim$maha_data_mean <- compute_mahalanobis_distance.simple(phylo = tree,
+                                                            Y_data_vec = Y_data_vec_known,
+                                                            sim = moments$sim,
+                                                            Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                            miss = miss)
   return(sim)
 }
 
@@ -554,6 +575,7 @@ set.seed(18051804)
 ## Sequencial simulations (for reproductability)
 simlist <- foreach(i = 1:nrow(simparams)) %do% {
 # simlist <- foreach(i = which(simparams$nrep == 1)) %do% {
+# simlist <- foreach(i = c(5201, 5204)) %do% {
   sim <- datasetsim(alpha = simparams[i, "alpha"],
                     gamma = simparams[i, "gamma"],
                     K = simparams[i, "K"],
