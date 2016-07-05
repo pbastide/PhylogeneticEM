@@ -755,3 +755,70 @@ compute_entropy.simple <- function(Sigma, Sigma_YY_inv){
 compute_log_likelihood_with_entropy.simple <- function(CLL, H){
   return(CLL + H)
 }
+
+# ## Likelihood and Mahalanobis computation for independent traits
+# lik_maha_ind <- function(phylo,
+#                          times_shared,
+#                          distances_phylo,
+#                          process,
+#                          independent,
+#                          params_old,
+#                          Y_data,
+#                          masque_data = c(rep(TRUE, dim(Y_data)[1] * length(phylo$tip.label)),
+#                                          rep(FALSE, dim(Y_data)[1] * phylo$Nnode)),
+#                          F_moments = NULL,
+#                          Y_data_vec_known = as.vector(Y_data),
+#                          miss = rep(FALSE, dim(Y_data)[1] * length(phylo$tip.label))){
+#   if (independent){
+#     # if independent, params_old is a list of p params
+#     params_old <- split_params_independent(params_old)
+#     masque_data_matr <- matrix(masque_data,
+#                                ncol = length(phylo$tip.label) + phylo$Nnode)
+#     miss_matr <- matrix(miss,
+#                         ncol = length(phylo$tip.label))
+#     res <- vector(mode = "list", length = length(params_old))
+#     for (i in 1:length(res)){
+#       res[[i]] <- lik_maha_ind(phylo = phylo,
+#                                times_shared = times_shared,
+#                                distances_phylo = distances_phylo,
+#                                process = process,
+#                                params_old = params_old[[i]],
+#                                masque_data = masque_data_matr[i, ],
+#                                F_moments = F_moments,
+#                                independent = FALSE,
+#                                Y_data_vec_known = Y_data[i, !miss_matr[i, ]],
+#                                miss = miss_matr[i, ],
+#                                Y_data = Y_data[i, , drop = F])
+#     }
+#     return(res)
+#   }
+#   moments <- compute_mean_variance.simple(phylo = phylo,
+#                                           times_shared = times_shared,
+#                                           distances_phylo = distances_phylo,
+#                                           process = process,
+#                                           params_old = params_old,
+#                                           masque_data = masque_data,
+#                                           F_moments = F_moments)
+#   log_likelihood <- compute_log_likelihood.simple(phylo = phylo,
+#                                                   Y_data_vec = Y_data_vec_known,
+#                                                   sim = moments$sim,
+#                                                   Sigma = moments$Sigma,
+#                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+#                                                   miss = miss, 
+#                                                   masque_data = masque_data,
+#                                                   C_YY = F_moments$C_YY,
+#                                                   Y_data = Y_data,
+#                                                   C_YY_chol_inv = F_moments$C_YY_chol_inv,
+#                                                   R = params_old$variance)
+#   ## Compute Mahalanobis norm between data and mean at tips
+#   maha_data_mean <- compute_mahalanobis_distance.simple(phylo = phylo,
+#                                                         Y_data_vec = Y_data_vec_known,
+#                                                         sim = moments$sim,
+#                                                         Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+#                                                         miss = miss,
+#                                                         Y_data = Y_data,
+#                                                         C_YY_chol_inv = F_moments$C_YY_chol_inv,
+#                                                         R = params_old$variance)
+#   return(list(log_likelihood = log_likelihood,
+#               maha_data_mean = maha_data_mean))
+# }
