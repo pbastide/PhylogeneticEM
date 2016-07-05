@@ -349,12 +349,12 @@ check.selection.strength <- function(process, selection.strength = NA, eps = 10^
 #'
 #' 28/05/14 - Initial release
 ##
-test.root.state <- function(root.state, process=c("BM","OU"), ...) {
+test.root.state <- function(root.state, process=c("BM","OU", "scOU"), ...) {
   process <- match.arg(process)
   process <- check.selection.strength(process, ...)
   if (process == "BM") {
     return(test.root.state.BM(root.state))
-  } else if (process == "OU") {
+  } else if (process %in% c("OU", "scOU")) {
     return(test.root.state.OU(root.state, ...))
   }
 }
