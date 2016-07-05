@@ -494,19 +494,26 @@ compute_variance_covariance.OU <- function(times_shared, params_old, ...) {
       vv[q, r] <- 1/(eig_alpha$values[q] + eig_alpha$values[r])
     }
   }
+  ee <- exp(eig_alpha$values)
   for (i in 1:ntaxa){
     for (j in 1:ntaxa){
       ti <- times_shared[i, i]
       tj <- times_shared[j, j]
       tij <- times_shared[i, j]
-      temp <- vv * exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * (exp(eig_alpha$values * tij) %*% t(exp(eig_alpha$values * tij)) - 1)
-      varr[((i-1)*(p)+1):(i*p),((j-1)*(p)+1):(j*p)] <- as.matrix(P %*% (temp * sigma_trans + exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * var_root_trans) %*% t(P))
+      cpij <- tcrossprod(ee^(-ti), ee^(-tj))
+      temp <- vv * (tcrossprod(ee^tij) - 1)
+      temp <- cpij * (temp * sigma_trans + var_root_trans)
+      varr[((i-1)*(p)+1):(i*p), ((j-1)*(p)+1):(j*p)] <- as.matrix(P %*% temp %*% t(P))
+#       temp <- vv * exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * (exp(eig_alpha$values * tij) %*% t(exp(eig_alpha$values * tij)) - 1)
+#       varr[((i-1)*(p)+1):(i*p),((j-1)*(p)+1):(j*p)] <- as.matrix(P %*% (temp * sigma_trans + exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * var_root_trans) %*% t(P))
     }
   }
   attr(varr, "p_dim") <- p
   attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
   return(varr)
 }
+
+
 
 ##
 #' @title Compute moments of params_old
@@ -542,7 +549,8 @@ compute_mean_variance.simple <- function (phylo,
                                           process=c("BM", "OU", "rBM", "scOU"),
                                           params_old,
                                           masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
-                                                          rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)), ...) {
+                                                          rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)),
+                                          sim = NULL,...) {
   ## Choose process 
   process  <- match.arg(process)
   compute_variance_covariance  <- switch(process, 
@@ -550,14 +558,16 @@ compute_mean_variance.simple <- function (phylo,
                                          OU = compute_variance_covariance.OU,
                                          scOU = compute_variance_covariance.scOU)
   ## Mean
-  sim <- simulate(phylo = phylo, 
-                  process = process,
-                  p = attr(params_old, "p_dim"),
-                  root.state = params_old$root.state, 
-                  shifts = params_old$shifts, 
-                  variance = params_old$variance, 
-                  optimal.value = params_old$optimal.value, 
-                  selection.strength = params_old$selection.strength)
+  if (is.null(sim)){
+    sim <- simulate(phylo = phylo, 
+                    process = process,
+                    p = attr(params_old, "p_dim"),
+                    root.state = params_old$root.state, 
+                    shifts = params_old$shifts, 
+                    variance = params_old$variance, 
+                    optimal.value = params_old$optimal.value, 
+                    selection.strength = params_old$selection.strength)
+  }
   ## Variance Covariance
   Sigma <- compute_variance_covariance(times_shared = times_shared, 
                                        distances_phylo = distances_phylo,
