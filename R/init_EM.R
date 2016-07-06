@@ -1348,19 +1348,34 @@ init.variance.BM.estimation <- function(phylo,
   }
   # centered_data <- centered_data[, colSums(is.na(centered_data)) < 1]
   R_0 <- try(suppressWarnings(covMcd(t(centered_data), nsamp = "deterministic")))
-  if (inherits(R_0, "try-error")) {
-    warning("Robust intial estimation of the variance with covMcd failed. Doing a standart variance initialization with function cov.")
-    Cov0 <- cov(t(centered_data), use = "na.or.complete")
-  } else {
+  # Robust did not fail
+  if (!inherits(R_0, "try-error")) {
     Cov0 <- R_0$cov
+    if (any(is.na(Cov0))) {
+      warning("The initial estimation of the variance by covMcd gave some NAs. Replacing them by default value of 0.1.")
+      Cov0[is.na(Cov0)] <- 0.1
+    }
+    Cov0 <- 1 / (h_tree + phylo$root.edge) * Cov0
+    Cov0 <- try(suppressWarnings(nearPD(Cov0))) # Make sure the matrix is positive definite
+    if (!inherits(Cov0, "try-error")) {
+      return(Cov0$mat)
+    }    
   }
+  # Robust did fail
+  warning("Robust intial estimation of the variance with covMcd failed or did not give a positive definite matrix. Doing a standard variance initialization with function cov.")
+  Cov0 <- cov(t(centered_data), use = "na.or.complete")
   if (any(is.na(Cov0))) {
     warning("The initial estimation of the variance by covMcd gave some NAs. Replacing them by default value of 0.1.")
     Cov0[is.na(Cov0)] <- 0.1
   }
   Cov0 <- 1 / (h_tree + phylo$root.edge) * Cov0
-  Cov0 <- nearPD(Cov0)$mat # Make sure the matrix is positive definite
-  return(Cov0)
+  Cov0 <- try(suppressWarnings(nearPD(Cov0))) # Make sure the matrix is positive definite
+  if (!inherits(Cov0, "try-error")) {
+    return(Cov0$mat)
+  }
+  # Everything failed
+  warning("Standard cov failed too. Returning default initialization with identity matrix for the covariance.")
+  return(diag(rep(1, nrow(Y_data))))
 }
 
 ## Regression on normalized half life to have the good tolerence.
