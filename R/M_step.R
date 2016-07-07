@@ -390,11 +390,12 @@ compute_var_diff.BM <- function(phylo, conditional_law_X) {
     dauvar <- get_variance_node(daughters[e], conditional_law_X$variances)
     parvar <- get_variance_node(parents[e], conditional_law_X$variances)
     daucov <- get_variance_node(daughters[e], conditional_law_X$covariances)
-    tmp <- dauvar + parvar - daucov - t(daucov)
-    if (!isSymmetric(tmp, tol = 1000 * .Machine$double.eps)){
-      stop("var_diff[", e, "] should be symmetric.")
-    }
-    var_diff[1:p, 1:p, e] <- as.matrix(forceSymmetric(tmp))
+    var_diff[1:p, 1:p, e] <- dauvar + parvar - daucov - t(daucov)
+#     tmp <- dauvar + parvar - daucov - t(daucov)
+#     if (!isSymmetric(tmp, tol = 1000 * .Machine$double.eps)){
+#       stop("var_diff[", e, "] should be symmetric.")
+#     }
+#     var_diff[1:p, 1:p, e] <- as.matrix(forceSymmetric(tmp))
   }
   return(var_diff)
 }
