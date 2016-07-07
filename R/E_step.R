@@ -198,7 +198,9 @@ compute_fixed_moments <- function(times_shared, ntaxa){
   temp <- C_YZ %*% C_YY_chol_inv
   F_means <- tcrossprod(C_YY_chol_inv, temp)  # solve(C_YY) %*% t(C_YZ)
   F_vars <- C_ZZ - tcrossprod(temp)
-  if (!isSymmetric(F_vars)) stop("Something went wrong, matrix F_vars sould be symmetric.")
+  if (!isSymmetric(F_vars, tol = 1000 * .Machine$double.eps)){
+    stop("Something went wrong, matrix F_vars sould be symmetric.")
+  }
   F_vars <- forceSymmetric(F_vars)
   return(list(C_YY = C_YY, C_YY_chol_inv = C_YY_chol_inv,
               F_means = F_means, F_vars = F_vars))
