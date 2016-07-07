@@ -4266,9 +4266,9 @@ root.state <- list(random = TRUE,
                    exp.root = c(0, 0, 1),
                    var.root = diag(diag(variance) / (2 * diag(alpha))))
 
-shifts = list(edges = c(15, 92),
-              values=cbind(c(2, -5, 3),
-                           c(3, -3, 5)),
+shifts = list(edges = c(15, 50),
+              values=cbind(c(-5, -5, 3),
+                           c(5, 3, -5)),
               relativeTimes = 0)
 
 optimal.value <- c(0, 0, 1)

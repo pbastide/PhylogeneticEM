@@ -368,6 +368,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
     K_original <- K
   }
   ## fit
+  co <- capture.output(
   fit <- gglasso(x = Xp_orth,
                  y = Yp_orth,
                  group = group,
@@ -376,10 +377,12 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                  intercept = intercept,
                  dfmax = K + 10,
                  pf = penscale)
+  )
   df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K > max(df)) {
+    co <- capture.output(
     fit <- gglasso(x = Xp_orth,
                    y = Yp_orth,
                    group = group,
@@ -389,6 +392,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                    dfmax = K + 10,
                    pf = penscale,
                    lambda.factor = 0)
+    )
     df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
   }
   if (K > max(df)) {
@@ -416,6 +420,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
     lambda_sup <- fit$lambda[head(which(K_sup == df), n = 1)]
     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
     fit_tmp <- fit
+    co <- capture.output(
     fit <- gglasso(x = Xp_orth,
                    y = Yp_orth,
                    group = group,
@@ -425,6 +430,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                    dfmax = K + 10,
                    pf = penscale,
                    lambda = lambda)
+    )
     df_prev <- df
     df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
     if (identical(df, df_prev)) break
@@ -462,6 +468,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
   if (dim(Xproj)[2] != qr(Xproj)$rank) {
     warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
     # Re-do a fit and try again.
+    co <- capture.output(
     fit <- gglasso(x = Xp_orth,
                    y = Yp_orth,
                    group = group,
@@ -470,6 +477,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                    intercept = intercept,
                    dfmax = K + 10,
                    pf = penscale)
+    )
     delta <- try(find_independent_regression_vectors.gglasso(Xkro, K,
                                                              fit, root,
                                                              p, group))
