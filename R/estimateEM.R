@@ -333,7 +333,12 @@ estimateEM <- function(phylo,
     if(!alpha_known) {
       if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
         ## Only if not all NAs ot infinite
-        init.selection.strength <- colMeans(init.a.g$alpha_0, na.rm = TRUE)
+        tmp <- colMeans(init.a.g$alpha_0, na.rm = TRUE)
+        if (anyNA(tmp)){
+          warning("Estimating selection strength failed for some traits. Replacing corresponding values of alpha by default ones.")
+          tmp[is.na(tmp)] <- init.selection.strength[is.na(tmp)]
+        }
+        init.selection.strength <- tmp
       }
     } else {
       init.selection.strength <- known.selection.strength
