@@ -99,6 +99,45 @@ test_that("split/merge independent parameters ", {
   params_bis <- merge_params_independent(params_split)
   
   expect_that(params, equals(params_bis))
+  
+  # Dimension p - BM - no shift
+  p <- 4
+  ntaxa <- 236
+  
+  params <- init.EM.default.BM(p = p,
+                               variance.init = diag(1:p, p, p),
+                               random.init = FALSE,
+                               value.root.init = 1:p,
+                               exp.root.init = 1:p,
+                               var.root.init = 1:p,
+                               edges.init = NULL,
+                               values.init = NULL)
+  
+  params_split <- split_params_independent(params)
+  params_bis <- merge_params_independent(params_split)
+  
+  expect_that(params, equals(params_bis))
+  
+  # Dimension p - OU - one shift
+  p <- 4
+  ntaxa <- 236
+  
+  params <- init.EM.default.OU(p = p,
+                               variance.init = diag(1:p),
+                               random.init = FALSE,
+                               stationary.root.init = FALSE,
+                               value.root.init = 1:p,
+                               exp.root.init = NA,
+                               var.root.init = NA,
+                               edges.init = c(11),
+                               values.init = matrix(1:(p*1), p, 1),
+                               selection.strength.init = diag(1:p),
+                               optimal.value.init = 1:p)
+  
+  params_split <- split_params_independent(params)
+  params_bis <- merge_params_independent(params_split)
+  
+  expect_that(params, equals(params_bis))
 })
 
 compute_mean_variance <- compute_mean_variance.simple

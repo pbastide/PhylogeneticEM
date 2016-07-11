@@ -734,7 +734,14 @@ merge_params_independent <- function(params_split){
   if (!is.null(params$selection.strength)){
     params$selection.strength <- diag(sapply(params_split, function(z) return(z$selection.strength)))
   }
-  params$shifts$values <- t(sapply(params_split, function(z) return(z$shifts$values)))
+  if (length(params$shifts$edges) > 1){
+    params$shifts$values <- t(sapply(params_split, function(z) return(z$shifts$values)))
+  } else if (length(params$shifts$edges) == 1) {
+    params$shifts$values <- sapply(params_split, function(z) return(z$shifts$values))
+    dim(params$shifts$values) <- c(p,1)
+  } else {
+    params$shifts$values <- matrix(0, p, 0)
+  }
   if (!is.na(params$root.state$value.root)){
     params$root.state$value.root <- sapply(params_split, function(z) return(z$root.state$value.root))
   }
