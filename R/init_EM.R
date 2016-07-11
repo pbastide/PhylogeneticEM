@@ -425,9 +425,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                    y = Yp_orth,
                    group = group,
                    loss = "ls",
-                   nlambda = 500,
                    intercept = intercept,
-                   dfmax = K + 10,
                    pf = penscale,
                    lambda = lambda)
     )
@@ -1748,11 +1746,11 @@ estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
   set.seed(18051220)
-  low_bound = c(gam = gamma_0/5,
+  low_bound = c(gam = unname(gamma_0)/5,
                 t_half = 0.01 * h_tree)
-  up_bound = c(gam = 5 * gamma_0,
+  up_bound = c(gam = 5 * unname(gamma_0),
                t_half = 10 * h_tree)
-  fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
+  fit.rob <- nlrob(square_diff ~ (2 * gam * (1 - exp(-log(2) / t_half * dists))),
                    data = df,
                    tol = tol_t_half,
                    lower = low_bound,
