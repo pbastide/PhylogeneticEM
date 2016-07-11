@@ -338,7 +338,20 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
       shifts_olds$edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
     }
     segs <- sapply("same_shifts", segmentation.OU.specialCase, simplify = FALSE)
-    var.roots <- sapply("same_shifts", compute_var_M)
+    if (p == 1){
+      var.roots <- sapply("same_shifts", compute_var_M)
+    } else {
+      for (l in 1:p){
+        compute_var_M <- function(method.segmentation){
+          return(compute_var_M.OU.specialCase(phylo = phylo, 
+                                              var_diff = var_diff[[l]], 
+                                              costs = segs[[method.segmentation]][[l]]$costs, 
+                                              selection.strength = known.selection.strength[l],
+                                              conditional_root_variance = unname(conditional_law_X[[l]]$variances[ntaxa+1])))
+        }
+        var.roots[[l]] <- sapply(methods.segmentation, compute_var_M)
+      }
+    }
     best.method.seg <- 1
   }
   ## Actualize paremters with the ones found by the best segmentation method
@@ -592,7 +605,7 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
   nNodes <- phylo$Nnode
   ee <- exp(- selection.strength * phylo$edge.length )
   #return(1/(ntaxa + nNodes) * ( conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff ) + sum( costs0[-edges_max]) ))
-  return(1/(ntaxa + nNodes) * ( conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff ) + sum(costs) ))
+  return(1/(ntaxa + nNodes) * (conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff) + sum(costs)))
 }
 
 ################################################################
@@ -1210,7 +1223,16 @@ segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, X
   }
   ## If no shifts, there is no such thing as a "single move"
   if (is.null(shifts_old$edges)){
-    return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
+    if (is.list(D)){
+      p = length(D)
+      ret <- vector("list", p)
+      for (l in 1:p){
+        ret[[l]] <- list(beta_0 = 0, shifts = NULL, costs = Inf)
+      }
+      return(ret)
+    } else {
+      return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
+    }
   }
   ## Construct scenarii
   ntaxa <- length(phylo$tip.label)
