@@ -131,6 +131,7 @@ estimateEM <- function(phylo,
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
   if (independent && 
+      alpha_known &&
       !missing(known.selection.strength) && 
       (length(known.selection.strength) != p)){
     warning("The vector of known selection strength provided has not the correct dimention (should be of length p). It will be recycled.")

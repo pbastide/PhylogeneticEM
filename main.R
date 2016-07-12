@@ -4248,7 +4248,7 @@ D_3_brut # dépend de la topologie, autour de -130 pour r = 0.6
 #######################################
 ## Tree
 set.seed(18850706)
-ntaxa <- 64
+ntaxa <- 100
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
                         lambda = 0.1, mu = 0,
                         age = 1, mrca = TRUE)[[1]]
@@ -4266,9 +4266,9 @@ root.state <- list(random = TRUE,
                    exp.root = c(0, 0, 1),
                    var.root = diag(diag(variance) / (2 * diag(alpha))))
 
-shifts = list(edges = c(15, 50),
-              values=cbind(c(-5, -5, 3),
-                           c(5, 3, -5)),
+shifts = list(edges = c(27, 162),
+              values=cbind(c(-5, -5, 5),
+                           c(5, 5, -5)),
               relativeTimes = 0)
 
 optimal.value <- c(0, 0, 1)
@@ -4322,18 +4322,24 @@ test <- estimateEM(phylo = tree,
                    Y_data = Y_data, 
                    process = "OU", 
                    independent = TRUE,
-                   Nbr_It_Max = 1000, 
+                   Nbr_It_Max = 500, 
                    method.init = "lasso", #"default",
                    method.init.alpha = "estimation",
-                   nbr_of_shifts = 2,
+                   nbr_of_shifts = 1,
                    random.root = TRUE,
                    stationary.root = TRUE,
                    shifts_at_nodes = TRUE,
                    alpha_known = FALSE,
                    eps = 10^(-3),
+                   tol = list(variance = 10^(-2), 
+                              exp.root = 10^(-2), 
+                              var.root = 10^(-2),
+                              selection.strength = 10^(-2),
+                              normalized_half_life = 10^(-2),
+                              log_likelihood = 10^(-2)),
                    # known.selection.strength = diag(alpha),
                    init.selection.strength = diag(alpha),
-                   methods.segmentation = c("lasso", "same_shifts"),#, "best_single_move"),
+                   methods.segmentation = c("lasso"),
                    convergence_mode = "relative",
                    impute_init_Rphylopars = FALSE)
 
@@ -4363,11 +4369,33 @@ for (l in 1:p){
                            ancestral_states = test$ReconstructedNodesStates[l,])
 }
 
-res <- PhyloEM(phylo = tree, Y_data = Y_data,
-               process = "OU",
+temps <- system.time(res <- PhyloEM(phylo = tree, Y_data = Y_data,
+               process = "OU", 
                independent = TRUE,
+               Nbr_It_Max = 500, 
                K_max = 10,
-               random.root = FALSE,
-               alpha = alpha_grid,
-               save_step = FALSE)
+               random.root = TRUE,
+               stationary.root = TRUE,
+               alpha_grid = FALSE,
+               save_step = FALSE))
+
+par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
+for (l in 1:p){
+  params <- res$alpha_max$DDSE_BM1$params_select
+  params$shifts$values <- params$shifts$values[l, ]
+  params$optimal.value<- params$optimal.value[l]
+  plot.data.process.actual(Y.state = res$alpha_max$DDSE_BM1$m_Y_estim[l,],
+                           phylo = tree, 
+                           params = params,
+                           process = "OU",
+                           adj.root = 0,
+                           automatic_colors = TRUE,
+                           margin_plot = NULL,
+                           cex = 2,
+                           bg_shifts = "lightgoldenrod3",
+                           bg_beta_0 = "lightgoldenrod3",
+                           plot_ancestral_states = TRUE,
+                           ancestral_states = res$alpha_max$DDSE_BM1$Zhat[l,])
+}
+
 save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=3_n=64.RData")

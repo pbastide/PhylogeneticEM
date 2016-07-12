@@ -1595,7 +1595,7 @@ init.alpha.gamma.estimation <- function(phylo,
     if (length(tips) > 1){
       for (l in 1:p){
         hat_gam[grp+1, l] <- var(na.omit(Y_data[l, tips]))
-        hat_gam_mad[grp+1, l] <- mad(Y_data[l, tips])^2
+        hat_gam_mad[grp+1, l] <- mad(Y_data[l, tips], na.rm = TRUE)^2
         Z <- outer(Y_data[l, tips], Y_data[l, tips],
                    function(x,y){x-y} )
         square_diff[[l]] <- c(square_diff[[l]], (Z[upper.tri(Z)])^2)
