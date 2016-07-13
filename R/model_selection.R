@@ -119,7 +119,7 @@ penalty_BirgeMassart_shape2 <- function(K, p, model_complexity, C = 2.5){
 
 model_selection_BM2 <- function(res, C.BM2, ...){
   p <- nrow(res$params_estim$`0`$variance)
-  pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try,
+  pen_shape <- penalty_BirgeMassart_shape2(res$results_summary$K_try,
                                            p,
                                            res$results_summary$complexity,
                                            C.BM2)
