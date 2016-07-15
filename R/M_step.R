@@ -391,11 +391,11 @@ compute_var_diff.BM <- function(phylo, conditional_law_X) {
     parvar <- get_variance_node(parents[e], conditional_law_X$variances)
     daucov <- get_variance_node(daughters[e], conditional_law_X$covariances)
     var_diff[1:p, 1:p, e] <- dauvar + parvar - daucov - t(daucov)
-#     tmp <- dauvar + parvar - daucov - t(daucov)
-#     if (!isSymmetric(tmp, tol = 1000 * .Machine$double.eps)){
+    # tmp <- dauvar + parvar - daucov - t(daucov)
+#     if (!isSymmetric(tmp, tol = 10000 * .Machine$double.eps)){
 #       stop("var_diff[", e, "] should be symmetric.")
 #     }
-#     var_diff[1:p, 1:p, e] <- as.matrix(forceSymmetric(tmp))
+    # var_diff[1:p, 1:p, e] <- as.matrix(forceSymmetric(tmp))
   }
   return(var_diff)
 }
@@ -432,7 +432,7 @@ compute_sum_var_diff <- function(phylo, var_diff){
     # vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
     # arr <- array(vv, dim = c(p, p, nEdges))
     res <- apply(vv, 1, rowSums)
-    if (!isSymmetric(res, tol = 1000 * .Machine$double.eps)){
+    if (!isSymmetric(res, tol = 10000 * .Machine$double.eps)){
       stop("Sum of variances should be symmetric. It is not.")
     }
     return(forceSymmetric(res))
