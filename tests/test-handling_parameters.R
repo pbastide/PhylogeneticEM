@@ -177,7 +177,7 @@ test_that("test.root.state", {
                           var.root = as.matrix(5, 1, 1))
   optimal.value <- 2
   selection.strength <- matrix(3, 1, 1)
-  variance <- compute_variance_from_stationnary(root.state_test$var.root, selection.strength)
+  variance <- compute_variance_from_stationary(root.state_test$var.root, selection.strength)
   root.state_correct <- list(random = TRUE,
                              stationary.root = TRUE, 
                              value.root = NA,
@@ -200,7 +200,7 @@ test_that("test.root.state", {
                           var.root = as.matrix(5, p, p))
   optimal.value <- rep(2, p) 
   selection.strength <- matrix(3, 1, 1)
-  variance <- compute_variance_from_stationnary(root.state_test$var.root, selection.strength)
+  variance <- compute_variance_from_stationary(root.state_test$var.root, selection.strength)
   root.state_correct <- list(random = TRUE,
                           stationary.root = TRUE, 
                           value.root = NA,
@@ -223,7 +223,7 @@ test_that("test.root.state", {
   optimal.value <- rep(2, p) 
   selection.strength <- matrix(3, 1, 1)
   variance <- as.matrix(5, p, p)
-  var.root <- compute_stationnary_variance(variance, selection.strength)
+  var.root <- compute_stationary_variance(variance, selection.strength)
   root.state_correct <- list(random = TRUE,
                              stationary.root = TRUE, 
                              value.root = NA,
@@ -245,7 +245,7 @@ test_that("test.root.state", {
                           var.root = as.matrix(5, p, p))
   optimal.value <- rep(5, p) 
   selection.strength <- matrix(3, 1, 1)
-  variance <- compute_variance_from_stationnary(root.state_test$var.root, selection.strength)
+  variance <- compute_variance_from_stationary(root.state_test$var.root, selection.strength)
   root.state_correct <- list(random = TRUE,
                              stationary.root = TRUE, 
                              value.root = NA,

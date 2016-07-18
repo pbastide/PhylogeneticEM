@@ -565,7 +565,7 @@ write.table.history <- function(history, params_algo_EM, PATH, ...) {
   write.csv2(history, name, ...)
 }
 
-plot.history.OU.stationnary <- function(params_history, tree, params_ref, Y_data_ref, PATH, name, ref = "true"){
+plot.history.OU.stationary <- function(params_history, tree, params_ref, Y_data_ref, PATH, name, ref = "true"){
   if (missing(params_ref)){
     ref <- NULL
     history <- list_to_table.history(params_history)
@@ -581,11 +581,11 @@ plot.history.OU.stationnary <- function(params_history, tree, params_ref, Y_data
   ## Title of the page
   #title <- paste("Initialization : ", params_algo_EM$method.init, "\n", "Alpha Initialization : ", params_algo_EM$method.init.alpha, sep="")
   ## Plot
-  plot.history.OU.stationnary.actual(history, ref)
+  plot.history.OU.stationary.actual(history, ref)
   dev.off()
 }
 
-plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
+plot.history.OU.stationary.actual <- function (history, ref = "true", title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
   ## Discriminate
   if (!is.null(ref)){
     params_simu <- history[, ref]

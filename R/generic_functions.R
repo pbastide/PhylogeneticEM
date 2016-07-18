@@ -323,7 +323,7 @@ check.selection.strength <- function(process, selection.strength = NA, eps = 10^
   if (process == "BM") {
     return("BM")
   } else if (sum(abs(selection.strength)) < eps) {
-    warning(paste("The selection strength is too low (1-norm<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
+    warning(paste("The selection strength is too low (L1-norm<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
     return("BM")
   } else {
     return(process)
@@ -407,31 +407,31 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
 #     root.state$exp.root <- optimal.value
 #     root.state$var.root <- variance/(2 * selection.strength)
 #   }
-  root.state <- coherence_stationnary_case(root.state, optimal.value,
+  root.state <- coherence_stationary_case(root.state, optimal.value,
                                            variance, selection.strength)
   return(root.state)
 }
 
-coherence_stationnary_case <- function(root.state, optimal.value,
+coherence_stationary_case <- function(root.state, optimal.value,
                                        variance, selection.strength){
   if (!root.state$stationary.root){
     return(root.state) ## Do nothing
   } else {
     if (!isTRUE(all.equal(root.state$exp.root, optimal.value))){
       root.state$exp.root <- optimal.value
-      warning("As root is supposed to be in stationnary case, root expectation was set to be equal to optimal value.")
+      warning("As root is supposed to be in stationary case, root expectation was set to be equal to optimal value.")
     }
     
-    root_var_expected <- compute_stationnary_variance(variance, selection.strength)
+    root_var_expected <- compute_stationary_variance(variance, selection.strength)
     if(!isTRUE(all.equal(root.state$var.root, root_var_expected))){
       root.state$var.root <- as(root_var_expected, "symmetricMatrix")
-      warning("As the root is supposed to be in stationnary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
+      warning("As the root is supposed to be in stationary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
     }
     return(root.state)
   }
 }
 
-compute_stationnary_variance <- function(variance, selection.strength){
+compute_stationary_variance <- function(variance, selection.strength){
   if (is.null(selection.strength)) return(NA)
   if (length(as.vector(selection.strength)) == 1){
     vv <- variance / (2 * selection.strength)
@@ -444,12 +444,12 @@ compute_stationnary_variance <- function(variance, selection.strength){
     kro_sum_A_inv <- solve(kro_sum_A)
     root_var_vec <- kro_sum_A_inv %*% variance_vec
     gamma <- matrix(root_var_vec, dim(variance))
-    if (!isSymmetric(gamma)) stop("Error in computation of stationnary variance: matrix computed was not symmetric.")
+    if (!isSymmetric(gamma)) stop("Error in computation of stationary variance: matrix computed was not symmetric.")
     return(forceSymmetric(gamma))
   }
 }
 
-compute_variance_from_stationnary <- function(var.root, selection.strength){
+compute_variance_from_stationary <- function(var.root, selection.strength){
   if (dim(var.root)[1] == 1){
     return(var.root * (2 * selection.strength))
   } else {
@@ -539,6 +539,9 @@ check_dimensions <- function(p,
   variance <- check_dimensions.matrix(p, p, variance, "variance")
   variance <- as(variance, "symmetricMatrix")
   if (!is.null(selection.strength))
+    if (is.vector(selection.strength) && length(selection.strength) == p){
+      selection.strength <- diag(selection.strength, ncol = length(selection.strength))
+    }
     selection.strength <- check_dimensions.matrix(p, p, selection.strength, "selection strength")
   if (!is.null(optimal.value))
     optimal.value <- check_dimensions.vector(p, optimal.value, "optimal value")
@@ -557,7 +560,7 @@ check_dimensions.matrix <- function(p, q, matrix, name = "matrix"){
       stop(paste0(matrix, " should be a scalar in dimension q = ", q, "."))
     dim(matrix) <- c(1, q)
   }
-  if (!all(dim(matrix) == c(p, q))) 
+  if (is.vector(matrix) || !all(dim(matrix) == c(p, q))) 
     stop(paste0("Dimensions of ", matrix, " matrix do not match"))
   return(matrix)
 }
@@ -667,5 +670,97 @@ transform_branch_length <- function(phylo, alp){
 scale_params <- function(params, f){
   if (!is.null(params$variance)) params$variance <- f * params$variance
   if (!is.null(params$selection.strength)) params$selection.strength <- f * params$selection.strength
+  return(params)
+}
+
+##
+#' @title Split independent parameters into a list of parameters
+#' 
+#' @description \code{split_params_independent} split a params object for a 
+#' process with p independent traits into p params objects.
+#' The reverse operation is done by \code{merge_params_independent}
+#'
+#' @param params: parameters
+#'     
+#' @return A list of p parameters
+#' 
+##
+split_params_independent <- function(params){
+  p <- dim(params$variance)[1]
+  params_split <- vector(mode = "list", length = p)
+  for (l in 1:p){
+    params_split[[l]] <- params
+    params_split[[l]]$variance <- params$variance[l, l]
+    params_split[[l]]$selection.strength <- params$selection.strength[l, l]
+    if (!is.null(params$shifts$edges)){
+      params_split[[l]]$shifts$values <- params$shifts$values[l, ]
+    }
+    if (!anyNA(params$root.state$value.root)){
+      params_split[[l]]$root.state$value.root <- params$root.state$value.root[l]
+    }
+    if (!anyNA(params$root.state$exp.root)){
+      params_split[[l]]$root.state$exp.root <- params$root.state$exp.root[l]
+    }
+    if (!anyNA(params$root.state$var.root)){
+      params_split[[l]]$root.state$var.root <- params$root.state$var.root[l, l]
+    }
+    params_split[[l]]$optimal.value <- params$optimal.value[l]
+    params_split[[l]] <- check_dimensions(1,
+                                          params_split[[l]]$root.state,
+                                          params_split[[l]]$shifts,
+                                          params_split[[l]]$variance,
+                                          params_split[[l]]$selection.strength,
+                                          params_split[[l]]$optimal.value)
+    if (!is.null(attr(params, "p_dim"))) attr(params_split[[l]], "p_dim") <- 1
+  }
+  return(params_split)
+}
+
+##
+#' @title Merge a list of independent parameters into into one parameter
+#' 
+#' @description \code{merge_params_independent} merges a list of p params
+#' objects into one param object of dimension p
+#' The reverse operation is done by \code{split_params_independent}
+#'
+#' @param params_split: a list of parameters
+#'     
+#' @return A parameter object
+#' 
+##
+merge_params_independent <- function(params_split){
+  p <- length(params_split)
+  params <- params_split[[1]]
+  params$variance <- diag(sapply(params_split, function(z) return(as.vector(z$variance))))
+  if (!is.null(params$selection.strength)){
+    params$selection.strength <- diag(sapply(params_split, function(z) return(z$selection.strength)))
+  }
+  if (length(params$shifts$edges) > 1){
+    params$shifts$values <- t(sapply(params_split, function(z) return(z$shifts$values)))
+  } else if (length(params$shifts$edges) == 1) {
+    params$shifts$values <- sapply(params_split, function(z) return(z$shifts$values))
+    dim(params$shifts$values) <- c(p,1)
+  } else {
+    params$shifts$values <- matrix(0, p, 0)
+  }
+  if (!is.na(params$root.state$value.root)){
+    params$root.state$value.root <- sapply(params_split, function(z) return(z$root.state$value.root))
+  }
+  if (!is.na(params$root.state$exp.root)){
+    params$root.state$exp.root <- sapply(params_split, function(z) return(z$root.state$exp.root))
+  }
+  if (!is.na(as.vector(params$root.state$var.root))){
+    params$root.state$var.root <- diag(sapply(params_split, function(z) return(as.vector(z$root.state$var.root))))
+  }
+  if (!is.null(params$optimal.value)){
+    params$optimal.value <- sapply(params_split, function(z) return(z$optimal.value))
+  }
+  params <- check_dimensions(p,
+                             params$root.state,
+                             params$shifts,
+                             params$variance,
+                             params$selection.strength,
+                             params$optimal.value)
+  if (!is.null(attr(params_split[[1]], "p_dim"))) attr(params_split[[l]], "p_dim") <- p
   return(params)
 }

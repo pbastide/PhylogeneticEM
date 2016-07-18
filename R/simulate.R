@@ -169,7 +169,7 @@ simulate <- function(phylo,
       stationnary_variance <- compute_stationnary_variance(variance, selection.strength)
     }
   } else {
-    stationnary_variance <- NA
+    stationary_variance <- NA
   }
 #   ## If independent, do p univariate (faster)
 #   if (independent && (p > 1) && (process == "OU")){
@@ -202,7 +202,7 @@ simulate <- function(phylo,
                              variance = variance,
                              eps = eps,
                              selection.strength = selection.strength,
-                             stationnary_variance = stationnary_variance)
+                             stationary_variance = stationary_variance)
   attr(paramSimu, "ntaxa") <- ntaxa
   return(paramSimu)
 }
@@ -393,7 +393,7 @@ update.simulate.OU <- function(edgeNbr, ancestral,
 #   plus_exp <- (I - ee_d) %*% beta + (I - ee_p) %*% ancestral[ , , 3]
   Sim <- mvrnorm(1,
                  mu = ee %*% ancestral[ , , 1] + plus_exp,
-                 Sigma = stationnary_variance - ee %*% stationnary_variance %*% t(ee))
+                 Sigma = stationary_variance - ee %*% stationary_variance %*% t(ee))
   Exp <- ee %*% ancestral[ , , 2] + plus_exp
   Exp <- as.matrix(Exp)
   child <- ancestral

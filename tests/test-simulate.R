@@ -46,7 +46,7 @@ test_that("Mean of the OU", {
   optimal.value <- c(-3, 5, 0)
   selection.strength <- diag(3, p, p) + tcrossprod(c(0.1, 0.2, 0.3))
   exp.stationary <- optimal.value
-  var.stationary  <- compute_stationnary_variance(variance, selection.strength)
+  var.stationary  <- compute_stationary_variance(variance, selection.strength)
   root.state <- list(random = TRUE,
                      stationary.root = TRUE,
                      value.root = NA,

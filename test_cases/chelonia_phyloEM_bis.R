@@ -63,7 +63,7 @@ alpha_grid <- find_grid_alpha(tree,
 res <- PhyloEM(phylo = tree,
                Y_data = data, process = "scOU",
                K_max = K_max,
-               random.root = TRUE, stationnary.root = TRUE,
+               random.root = TRUE, stationary.root = TRUE,
                alpha = alpha_grid[-1], save_step = FALSE,
                Nbr_It_Max = 1000, tol = list(variance = 10^(-2), 
                                              value.root = 10^(-2),
@@ -71,24 +71,24 @@ res <- PhyloEM(phylo = tree,
                method.init = "lasso", use_previous = FALSE,
                method.OUsun = "raw")
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_50.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationary_root_50.RData"))
 
-params_select_stationnary <- res$alpha_max$BGH$params_select
+params_select_stationary <- res$alpha_max$BGH$params_select
 total_time <- sum(sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$time))
 
-OU_EM_stationary <- list(Nbr_shifts = length(params_select_stationnary$shifts$edges),
-                         Nbr_regimes = length(params_select_stationnary$shifts$edges) + 1,
-                         lnL = attr(params_select_stationnary, "log_likelihood"),
+OU_EM_stationary <- list(Nbr_shifts = length(params_select_stationary$shifts$edges),
+                         Nbr_regimes = length(params_select_stationary$shifts$edges) + 1,
+                         lnL = attr(params_select_stationary, "log_likelihood"),
                          MlnL = NaN,
-                         alpha = as.vector(params_select_stationnary$selection.strength),
-                         half_life = log(2) / as.vector(params_select_stationnary$selection.strength),
-                         sigma = as.vector(params_select_stationnary$variance),
-                         gamma = as.vector(params_select_stationnary$variance / (2 * params_select_stationnary$selection.strength)),
+                         alpha = as.vector(params_select_stationary$selection.strength),
+                         half_life = log(2) / as.vector(params_select_stationary$selection.strength),
+                         sigma = as.vector(params_select_stationary$variance),
+                         gamma = as.vector(params_select_stationary$variance / (2 * params_select_stationary$selection.strength)),
                          time = total_time)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_50.RData"))
-save(params_select_stationnary, OU_EM_stationary,
-     file = paste0(PATH, data_type, "_EM_stationnary_summary_50.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationary_root_50.RData"))
+save(params_select_stationary, OU_EM_stationary,
+     file = paste0(PATH, data_type, "_EM_stationary_summary_50.RData"))
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
@@ -118,7 +118,7 @@ alpha_grid <- find_grid_alpha(tree,
 
 res_new <- PhyloEM(phylo = tree, Y_data = data, process = "scOU",
                    K_max = K_max,
-                   random.root = TRUE, stationnary.root = TRUE,
+                   random.root = TRUE, stationary.root = TRUE,
                    alpha = alpha_grid[-1],
                    save_step = FALSE,
                    Nbr_It_Max = 1000,
@@ -127,7 +127,7 @@ res_new <- PhyloEM(phylo = tree, Y_data = data, process = "scOU",
                               log_likelihood = 10^(-2)),
                    method.init = "lasso", use_previous = FALSE)
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM_method_50.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationary_root_rBM_method_50.RData"))
 
 res_new$alpha_max$results_summary$alpha_name
 res$alpha_max$results_summary$alpha_name
@@ -136,24 +136,24 @@ res$alpha_max$results_summary$alpha_name
 rbind(sapply(res_new[-c(1, 2, 3, length(res_new))], function(z) z$results_summary$log_likelihood)[5, ],
 sapply(res[-c(1, 2, 3, length(res))], function(z) z$results_summary$log_likelihood)[5, ])
 
-params_select_stationnary_rBM <- res_new$alpha_max$BGH$params_select
+params_select_stationary_rBM <- res_new$alpha_max$BGH$params_select
 total_time <- sum(sapply(res_new[-c(1, 2, 3, length(res_new))], function(z) z$results_summary$time))
 
-OU_EM_stationary_rBM <- list(Nbr_shifts = length(params_select_stationnary_rBM$shifts$edges),
-                             Nbr_regimes = length(params_select_stationnary_rBM$shifts$edges) + 1,
-                             lnL = attr(params_select_stationnary_rBM, "log_likelihood"),
+OU_EM_stationary_rBM <- list(Nbr_shifts = length(params_select_stationary_rBM$shifts$edges),
+                             Nbr_regimes = length(params_select_stationary_rBM$shifts$edges) + 1,
+                             lnL = attr(params_select_stationary_rBM, "log_likelihood"),
                              MlnL = NaN,
-                             alpha = as.vector(params_select_stationnary_rBM$selection.strength),
-                             half_life = log(2) / as.vector(params_select_stationnary_rBM$selection.strength),
-                             sigma = as.vector(params_select_stationnary_rBM$variance),
-                             gamma = as.vector(params_select_stationnary_rBM$variance / (2 * params_select_stationnary_rBM$selection.strength)),
+                             alpha = as.vector(params_select_stationary_rBM$selection.strength),
+                             half_life = log(2) / as.vector(params_select_stationary_rBM$selection.strength),
+                             sigma = as.vector(params_select_stationary_rBM$variance),
+                             gamma = as.vector(params_select_stationary_rBM$variance / (2 * params_select_stationary_rBM$selection.strength)),
                              time = total_time)
 
-sum_sols_stationnary_rBM <- res_new$alpha_max$BGH
+sum_sols_stationary_rBM <- res_new$alpha_max$BGH
 
-save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM_50.RData"))
-save(params_select_stationnary_rBM, OU_EM_stationary_rBM, sum_sols_stationnary_rBM, alpha_grid,
-     file = paste0(PATH, data_type, "_EM_stationnary_rBM_summary_50.RData"))
+save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationary_root_rBM_50.RData"))
+save(params_select_stationary_rBM, OU_EM_stationary_rBM, sum_sols_stationary_rBM, alpha_grid,
+     file = paste0(PATH, data_type, "_EM_stationary_rBM_summary_50.RData"))
 
 plot.data.process.actual(Y.state = data,
                          phylo = tree, 
@@ -410,8 +410,8 @@ save.image(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_fix
 
 ## Comparison of OUs and OUs rBM method #######################################
 load(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_fixed_root_rescaled_tree_lasso_init_R_init_new.RData"))
-load(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationnary_root_rBM_method.RData"))
-params_select_stationnary_rBM <- res_new$alpha_max$BGH$params_select
+load(paste0(PATH, data_type, "_estimation_K_max=", K_max, "_alpha_grid_stationary_root_rBM_method.RData"))
+params_select_stationary_rBM <- res_new$alpha_max$BGH$params_select
 
 ## Variance covariance matrices of parameters
 masque_data <- c(rep(TRUE, ntaxa * 1), rep(FALSE, tree$Nnode * 1))
@@ -431,40 +431,40 @@ log_likelihood_fixed <- compute_log_likelihood.simple(phylo = tree,
                                                       miss = rep(FALSE, ntaxa * 1),
                                                       masque_data = masque_data)
 
-moments_stationnary <- compute_mean_variance.simple(phylo = tree,
+moments_stationary <- compute_mean_variance.simple(phylo = tree,
                                                     times_shared = compute_times_ca(tree),
                                                     distances_phylo = compute_dist_phy(tree),
                                                     process = "scOU",
-                                                    params_old = params_select_stationnary_rBM,
+                                                    params_old = params_select_stationary_rBM,
                                                     masque_data = masque_data)
 
-log_likelihood_stationnary <- compute_log_likelihood.simple(phylo = tree,
+log_likelihood_stationary <- compute_log_likelihood.simple(phylo = tree,
                                                             Y_data_vec = as.vector(data),
-                                                            sim = moments_stationnary$sim,
-                                                            Sigma = moments_stationnary$Sigma,
-                                                            Sigma_YY_chol_inv = moments_stationnary$Sigma_YY_chol_inv,
+                                                            sim = moments_stationary$sim,
+                                                            Sigma = moments_stationary$Sigma,
+                                                            Sigma_YY_chol_inv = moments_stationary$Sigma_YY_chol_inv,
                                                             miss = rep(FALSE, ntaxa * 1),
                                                             masque_data = masque_data)
 
 # Log likelihoods
 log_likelihood_fixed
 attr(params_select_fixed, "log_likelihood")
-log_likelihood_stationnary
-attr(params_select_stationnary_rBM, "log_likelihood")
+log_likelihood_stationary
+attr(params_select_stationary_rBM, "log_likelihood")
 
 # difference between variance matrices
 Sig_fix <- extract.variance_covariance(moments_fixed$Sigma, what="YY", masque_data)
-Sig_sta <- extract.variance_covariance(moments_stationnary$Sigma, what="YY", masque_data)
+Sig_sta <- extract.variance_covariance(moments_stationary$Sigma, what="YY", masque_data)
 diff <- Sig_fix - Sig_sta
 
 # This should be the constant difference
-diff_th <- matrix(exp(-2 * params_select_stationnary_rBM$selection.strength * 1), ntaxa, ntaxa)
+diff_th <- matrix(exp(-2 * params_select_stationary_rBM$selection.strength * 1), ntaxa, ntaxa)
 
 # Log det
 determinant(Sig_fix, logarithm = TRUE)
 determinant(Sig_sta, logarithm = TRUE)
 
-## Use fixed parameters but compute moments as if stationnary
+## Use fixed parameters but compute moments as if stationary
 params_sta_fix <- params_select_fixed
 params_sta_fix$root.state$random <- TRUE
 params_sta_fix$root.state$stationary.root <- TRUE
@@ -488,7 +488,7 @@ log_likelihood_sta_fix <- compute_log_likelihood.simple(phylo = tree,
                                                         masque_data = masque_data)
 
 log_likelihood_fixed
-log_likelihood_stationnary
+log_likelihood_stationary
 log_likelihood_sta_fix
 
 log_likelihood_sta_fix - log_likelihood_fixed

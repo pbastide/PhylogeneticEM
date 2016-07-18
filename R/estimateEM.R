@@ -58,12 +58,13 @@ estimateEM <- function(phylo,
                        Y_data, 
                        Y_data_imp = Y_data,
                        process = c("BM", "OU", "scOU", "rBM"), 
+                       independent = FALSE,
                        tol = list(variance = 10^(-3), 
                                   value.root = 10^(-3), 
                                   exp.root = 10^(-3), 
                                   var.root = 10^(-3),
-                                  selection.strength = 10^(-3),
-                                  normalized_half_life = 10^(-3),
+                                  selection.strength = 10^(-2),
+                                  normalized_half_life = 10^(-2),
                                   log_likelihood = 10^(-3)),  
                        Nbr_It_Max = 500, 
                        method.variance = c("simple"), 
@@ -74,7 +75,7 @@ estimateEM <- function(phylo,
                                                         "median"),
                        nbr_of_shifts = 0,
                        random.root = TRUE,
-                       stationnary.root = TRUE,
+                       stationary.root = TRUE,
                        shifts_at_nodes = TRUE,
                        alpha_known = FALSE,
                        eps = 10^(-3),
@@ -83,11 +84,11 @@ estimateEM <- function(phylo,
                        max_selection.strength = 100,
                        use_sigma_for_lasso = TRUE,
                        max_triplet_number = 10000,
-                       min_params=list(variance = 10^(-5), 
+                       min_params=list(variance = 0, 
                                        value.root = -10^(5), 
                                        exp.root = -10^(5), 
-                                       var.root = 10^(-5),
-                                       selection.strength = 10^(-5)),
+                                       var.root = 0,
+                                       selection.strength = 0),
                        max_params=list(variance = 10^(5), 
                                        value.root = 10^(5), 
                                        exp.root = 10^(5), 
@@ -118,17 +119,32 @@ estimateEM <- function(phylo,
                        ...){
   
   ntaxa <- length(phylo$tip.label)
-  ## Check that the vector of data is in the correct order and dimensions ################
+  ## Check that the vector of data is in the correct order and dimensions ####
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   ## Find dimension
   p <- nrow(Y_data)
   
-  ## Root edge of the tree ###############################################################
+  ## Root edge of the tree ###################################################
   if (is.null(phylo$root.edge)) phylo$root.edge <- 0
   
   ########## Check consistancy ################################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
 #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
+  if (independent && 
+      alpha_known &&
+      !missing(known.selection.strength) && 
+      (length(known.selection.strength) != p)){
+    warning("The vector of known selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+    known.selection.strength <- rep(known.selection.strength, p)[1:p]
+  }
+  if (independent && 
+      # !missing(init.selection.strength) && 
+      (length(init.selection.strength) != p)){
+    if (!missing(init.selection.strength)) {
+      warning("The vector of init selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+    }
+    init.selection.strength <- rep(init.selection.strength, p)[1:p]
+  }
   if (sBM_variance){
     if (!random.root){
       warning("Process sBM assumes a random root. Switching to a random root.")
@@ -144,12 +160,13 @@ estimateEM <- function(phylo,
   original_process <- process
   temp <- choose_process_EM(process = process, p = p,
                             random.root = random.root,
-                            stationnary.root = stationnary.root,
+                            stationary.root = stationary.root,
                             alpha_known = alpha_known,
                             known.selection.strength = known.selection.strength,
                             eps = eps,
                             sBM_variance = sBM_variance,
-                            method.OUsun = method.OUsun)
+                            method.OUsun = method.OUsun,
+                            independent = independent)
   process <- temp$process
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
@@ -169,34 +186,34 @@ estimateEM <- function(phylo,
   masque_data[1:(p*ntaxa)] <- !miss
   
   ########## Choose functions #################################################
-  # specialCase <- stationnary.root && shifts_at_nodes && alpha_known
+  # specialCase <- stationary.root && shifts_at_nodes && alpha_known
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
-                       OU = compute_M.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                       OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
-                        OU = shutoff.EM.OU(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life))
+                        OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, alpha_known, tol_half_life))
   has_converged  <- switch(convergence_mode[1], 
                            relative = has_converged_relative,
                            absolute = has_converged_absolute)
   is.finite.params  <- switch(process, 
                               BM = is.finite.params.BM,
-                              OU = is.finite.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                              OU = is.finite.params.OU(stationary.root, shifts_at_nodes, alpha_known))
   is.in.ranges.params  <- switch(process, 
                                  BM = is.in.ranges.params.BM,
-                                 OU = is.in.ranges.params.OU(stationnary.root, shifts_at_nodes, alpha_known))
+                                 OU = is.in.ranges.params.OU(stationary.root, shifts_at_nodes, alpha_known))
 #   compute_MaxCompleteLogLik <- switch(process, 
 #                                       BM = compute_MaxCompleteLogLik.BM,
-#                                       OU = compute_MaxCompleteLogLik.OU(stationnary.root, shifts_at_nodes))
+#                                       OU = compute_MaxCompleteLogLik.OU(stationary.root, shifts_at_nodes))
 #   conditional_expectation_log_likelihood <- switch(process, 
 #                                                    BM = conditional_expectation_log_likelihood.BM,
-#                                                    OU = conditional_expectation_log_likelihood.OU(stationnary.root, shifts_at_nodes))
+#                                                    OU = conditional_expectation_log_likelihood.OU(stationary.root, shifts_at_nodes))
 
   ########## init alpha #######################################################
   method.init.alpha  <- match.arg(method.init.alpha)
-  if (!stationnary.root && (method.init.alpha == "estimation")){
+  if (!stationary.root && (method.init.alpha == "estimation")){
     method.init.alpha <- "default"
-    warning("The estimation initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+    warning("The estimation initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
   }
   init.alpha<- switch(process, 
                       BM = init.alpha.BM,
@@ -225,16 +242,27 @@ estimateEM <- function(phylo,
 
   ########## Initialization Method ############################################
   method.init  <- match.arg(method.init)
-  # Lasso initialization for OU only works for stationnary root
-#   if (!stationnary.root && (method.init == "lasso")){
+  # Lasso initialization for OU only works for stationary root
+#   if (!stationary.root && (method.init == "lasso")){
 #     method.init <- "default"
-#     warning("The lasso initialization of alpha does only work when the root is stationnary. The initialization is set to the default one.")
+#     warning("The lasso initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
 #   }
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
+  if (independent){
+    tmp <- methods.segmentation %in% c("lasso_one_move")
+    if (any(tmp)){
+      warning("Lasso segmentation methods are not implemented for multivariate independent OU. Removing these methods from the list.")
+      methods.segmentation <- methods.segmentation[!tmp]
+      if (length(methods.segmentation) == 0) {
+        warning("The list of segmentations methods was empty. Adding the best single move method.")
+        methods.segmentation <- "best_single_move"
+      }
+    }
+  }
   method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
   
   ########## Fixed Quantities #################################################
@@ -294,18 +322,25 @@ estimateEM <- function(phylo,
                                                   T_tree = T_tree,
                                                   subtree.list = subtree.list,
                                                   miss = miss,
+                                                  masque_data = masque_data,
+                                                  independent = independent,
                                                   ...)
   if (is.null(init.a.g$gamma_0)){
     init.var.root <- NULL
   } else {
-    init.var.root <- mean(init.a.g$gamma_0[is.finite(init.a.g$gamma_0)])
-    init.var.root <- as.matrix(init.var.root)
+    init.var.root <- colMeans(init.a.g$gamma_0, na.rm = TRUE)
+    init.var.root <- diag(init.var.root, ncol = length(init.var.root))
   }
   if (process == "OU"){
     if(!alpha_known) {
       if ((sum(is.finite(init.a.g$alpha_0)) != 0)){
         ## Only if not all NAs ot infinite
-        init.selection.strength <- mean(init.a.g$alpha_0[is.finite(init.a.g$alpha_0)])
+        tmp <- colMeans(init.a.g$alpha_0, na.rm = TRUE)
+        if (anyNA(tmp)){
+          warning("Estimating selection strength failed for some traits. Replacing corresponding values of alpha by default ones.")
+          tmp[is.na(tmp)] <- init.selection.strength[is.na(tmp)]
+        }
+        init.selection.strength <- tmp
       }
     } else {
       init.selection.strength <- known.selection.strength
@@ -348,7 +383,7 @@ estimateEM <- function(phylo,
                          nbr_of_shifts = nbr_of_shifts, 
                          selection.strength.init = init.selection.strength, 
                          random.init = random.root,
-                         stationnary.root.init = stationnary.root,
+                         stationary.root.init = stationary.root,
                          use_sigma = use_sigma_for_lasso,
                          method.init.alpha = method.init.alpha,
                          var.root.init = init.var.root,
@@ -359,6 +394,7 @@ estimateEM <- function(phylo,
                          sBM_variance = sBM_variance,
                          impute_init_Rphylopars = impute_init_Rphylopars,
                          masque_data = masque_data,
+                         independent = independent,
                          ...)
   params <- params_init
   params$root.state <- test.root.state(root.state = params$root.state, 
@@ -369,6 +405,84 @@ estimateEM <- function(phylo,
   attr(params, "ntaxa")  <- ntaxa
   attr(params, "p_dim")  <- p
   params_old <- NULL
+  
+ ########## Wrapper for E step ################################################
+    wrapper_E_step <- function(phylo,
+                               times_shared,
+                               distances_phylo,
+                               process,
+                               params_old,
+                               masque_data,
+                               F_moments,
+                               independent,
+                               Y_data_vec_known,
+                               miss,
+                               Y_data){
+      if (independent){
+        # if independent, params_old is a list of p params
+        masque_data_matr <- matrix(masque_data,
+                                   ncol = length(phylo$tip.label) + phylo$Nnode)
+        miss_matr <- matrix(miss,
+                            ncol = length(phylo$tip.label))
+        res <- vector(mode = "list", length = length(params_old))
+        for (i in 1:length(res)){
+          res[[i]] <- wrapper_E_step(phylo = phylo,
+                                     times_shared = times_shared,
+                                     distances_phylo = distances_phylo,
+                                     process = process,
+                                     params_old = params_old[[i]],
+                                     masque_data = masque_data_matr[i, ],
+                                     F_moments = F_moments,
+                                     independent = FALSE,
+                                     Y_data_vec_known = Y_data[i, !miss_matr[i, ]],
+                                     miss = miss_matr[i, ],
+                                     Y_data = Y_data[i, , drop = F])
+        }
+        return(res)
+      }
+      moments <- compute_mean_variance(phylo = phylo,
+                                       times_shared = times_shared,
+                                       distances_phylo = distances_phylo,
+                                       process = process,
+                                       params_old = params_old,
+                                       masque_data = masque_data,
+                                       F_moments = F_moments)
+      log_likelihood_old <- compute_log_likelihood(phylo = phylo,
+                                                   Y_data_vec = Y_data_vec_known,
+                                                   sim = moments$sim,
+                                                   Sigma = moments$Sigma,
+                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                   miss = miss, 
+                                                   masque_data = masque_data,
+                                                   C_YY = F_moments$C_YY,
+                                                   Y_data = Y_data,
+                                                   C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                                   R = params_old$variance)
+      ## Compute Mahalanobis norm between data and mean at tips
+      maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
+                                                     Y_data_vec = Y_data_vec_known,
+                                                     sim = moments$sim,
+                                                     Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                     miss = miss,
+                                                     Y_data = Y_data,
+                                                     C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                                     R = params_old$variance)
+      conditional_law_X <- compute_E(phylo = phylo,
+                                     Y_data_vec = Y_data_vec_known,
+                                     sim = moments$sim,
+                                     Sigma = moments$Sigma,
+                                     Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                     miss = miss,
+                                     masque_data = masque_data,
+                                     F_means = F_moments$F_means,
+                                     F_vars = F_moments$F_vars,
+                                     R = params_old$variance,
+                                     Y_data = Y_data)
+      return(list(log_likelihood_old = log_likelihood_old,
+                  maha_data_mean = maha_data_mean,
+                  conditional_law_X = conditional_law_X,
+                  moments = moments))
+    }
   
   ########## Iterations #######################################################
   Nbr_It <- 0
@@ -384,59 +498,53 @@ estimateEM <- function(phylo,
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
-    ########## Log Likelihood #################################################
+    ########## Log Likelihood and E step ####################################
     # Check convergence of loglik ?
     if (check_convergence_likelihood && Nbr_It > 1){
       log_likelihood_old_old <- log_likelihood_old
+    }    
+    # Independent ?
+    if (independent){
+      params_old <- split_params_independent(params_old)
     }
-    moments <- compute_mean_variance(phylo = phylo,
-                                     times_shared = times_shared,
-                                     distances_phylo = distances_phylo,
-                                     process = process,
-                                     params_old = params_old,
-                                     masque_data = masque_data,
-                                     F_moments = F_moments)
-    log_likelihood_old <- compute_log_likelihood(phylo = phylo,
-                                                 Y_data_vec = Y_data_vec_known,
-                                                 sim = moments$sim,
-                                                 Sigma = moments$Sigma,
-                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                 miss = miss, 
-                                                 masque_data = masque_data,
-                                                 C_YY = F_moments$C_YY,
-                                                 Y_data = Y_data,
-                                                 C_YY_chol_inv = F_moments$C_YY_chol_inv,
-                                                 R = params_old$variance)
-    attr(params_old, "log_likelihood") <- log_likelihood_old
+    ## result
+    temp <- wrapper_E_step(phylo = phylo,
+                           times_shared = times_shared,
+                           distances_phylo = distances_phylo,
+                           process = process,
+                           params_old = params_old,
+                           masque_data = masque_data,
+                           F_moments = F_moments,
+                           independent = independent,
+                           Y_data_vec_known = Y_data_vec_known,
+                           miss = miss,
+                           Y_data = Y_data)
+    ## Format result if independent
+    if (independent){
+      log_likelihood_old <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
+      # Store params for history
+      params_history[[paste(Nbr_It - 1, sep="")]] <- merge_params_independent(params_old)
+      attr(params_history[[paste(Nbr_It - 1, sep="")]], "log_likelihood") <- log_likelihood_old
+      attr(params_history[[paste(Nbr_It - 1, sep="")]], "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+      # Conditional law
+      conditional_law_X <- lapply(temp, function(z) return(z$conditional_law_X))
+    } else {
+      log_likelihood_old <- as.vector(temp$log_likelihood_old)
+      attr(params_old, "log_likelihood") <- log_likelihood_old
+      attr(params_old, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
+      # Store params for history
+      params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
+      # Conditional law
+      conditional_law_X <- temp$conditional_law_X
+    }
+    rm(temp)
     if (check_convergence_likelihood && Nbr_It > 1){
-      CV_log_lik <- has_converged_absolute(log_likelihood_old_old, log_likelihood_old, tol$log_likelihood)
+      CV_log_lik <- has_converged_absolute(log_likelihood_old_old,
+                                           log_likelihood_old,
+                                           tol$log_likelihood)
     }
-    ## Compute Mahalanobis norm between data and mean at tips
-    maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                   Y_data_vec = Y_data_vec_known,
-                                                   sim = moments$sim,
-                                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                   miss = miss,
-                                                   Y_data = Y_data,
-                                                   C_YY_chol_inv = F_moments$C_YY_chol_inv,
-                                                   R = params_old$variance)
-    attr(params_old, "mahalanobis_distance_data_mean") <- maha_data_mean
-    
-    ########## E step #########################################################
-    conditional_law_X <- compute_E(phylo = phylo,
-                                   Y_data_vec = Y_data_vec_known,
-                                   sim = moments$sim,
-                                   Sigma = moments$Sigma,
-                                   Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                   miss = miss,
-                                   masque_data = masque_data,
-                                   F_means = F_moments$F_means,
-                                   F_vars = F_moments$F_vars,
-                                   R = params_old$variance,
-                                   Y_data = Y_data)
-    rm(moments)
-    if (process == "OU"){
-      if (p > 1) stop("Multivariate OU not yet implemented.")
+
+    if (process == "OU" && p == 1){
       conditional_law_X$expectations <- as.vector(conditional_law_X$expectations)
       conditional_law_X$variances <- as.vector(conditional_law_X$variances)
       conditional_law_X$covariances <- as.vector(conditional_law_X$covariances)
@@ -451,31 +559,47 @@ estimateEM <- function(phylo,
     #                                               alpha = params_old$selection.strength)
     #         log_likelihood_bis <- compute_log_likelihood_with_entropy.simple(CLL, H)
     #         attr(params_old, "log_likelihood_bis") <- log_likelihood_bis
-    ## Store params for history
-    params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
+
     
     ########## M step #########################################################
+    if (independent){
+      # correct format for selection strength case independent
+      alpha_old = sapply(params_old, function(z) z$selection.strength)
+    } else {
+      alpha_old = params_old$selection.strength
+    }
     params <- compute_M(phylo = phylo, 
                         Y_data = Y_data, 
                         conditional_law_X = conditional_law_X, 
                         nbr_of_shifts = nbr_of_shifts, 
                         random.root = random.root,
                         known.selection.strength = known.selection.strength,
-                        alpha_old = params_old$selection.strength,
+                        alpha_old = alpha_old,
                         max_selection.strength = max_selection.strength,
                         eps = eps,
                         methods.segmentation = methods.segmentation,
-                        beta_0_old = params_old$optimal.value,
-                        shifts_old = params_old$shifts,
-                        variance_old = params_old$variance,
-                        mu_old = params_old$root.state$value.root,
+                        beta_0_old = params_history[[paste(Nbr_It - 1, sep="")]]$optimal.value,
+                        shifts_old = params_history[[paste(Nbr_It - 1, sep="")]]$shifts,
+                        variance_old = params_history[[paste(Nbr_It - 1, sep="")]]$variance,
+                        mu_old = params_history[[paste(Nbr_It - 1, sep="")]]$root.state$value.root,
                         subtree.list = subtree.list,
-                        sBM_variance = sBM_variance)
+                        sBM_variance = sBM_variance,
+                        params_old = params_old)
+    # If independent, go back to merged parameters.
+    if (independent){
+      params <- merge_params_independent(params)
+      params_old <- params_history[[paste(Nbr_It - 1, sep="")]]
+    }
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p_dim")  <- p
     ## Number of shifts that changed position ?
-    number_new_shifts <- c(number_new_shifts,
-                           sum(!(params$shifts$edges %in% params_old$shifts$edges)))
+    if (independent){
+      number_new_shifts <- c(number_new_shifts,
+                             sum(!(params$shifts$edges %in% params_old[[1]]$shifts$edges)))
+    } else {
+      number_new_shifts <- c(number_new_shifts,
+                             sum(!(params$shifts$edges %in% params_old$shifts$edges))) 
+    }
     #   ## Check that the M step rised the conditional expectation of the completed likelihood
     #         CLL_old <- conditional_expectation_log_likelihood(phylo = phylo,
     #                                         conditional_law_X = conditional_law_X, 
@@ -554,40 +678,58 @@ estimateEM <- function(phylo,
   compute_log_likelihood  <- compute_log_likelihood.simple
   compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
   
-  moments <- compute_mean_variance(phylo = phylo,
-                                   times_shared = times_shared,
-                                   distances_phylo = distances_phylo,
-                                   process = process,
-                                   params_old = params_scOU,
-                                   masque_data = masque_data)
-  log_likelihood <- compute_log_likelihood(phylo = phylo,
-                                           Y_data_vec = Y_data_vec_known,
-                                           sim = moments$sim,
-                                           Sigma = moments$Sigma,
-                                           Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                           miss = miss,
-                                           masque_data = masque_data)
-  attr(params_scOU, "log_likelihood") <- log_likelihood
-  params_history[[paste(Nbr_It, sep="")]] <- params_scOU
-  ## Compute Mahalanobis norm between data and mean at tips
-  maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                 Y_data_vec = Y_data_vec_known,
-                                                 sim = moments$sim,
-                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                 miss = miss)
-  attr(params_scOU, "mahalanobis_distance_data_mean") <- maha_data_mean
-  ## "Ancestral state reconstruction"
-  conditional_law_X <- compute_E(phylo = phylo,
-                                 Y_data_vec = Y_data_vec_known,
-                                 sim = moments$sim,
-                                 Sigma = moments$Sigma,
-                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                 miss = miss,
-                                 masque_data = masque_data)
-  ## Mean at tips with estimated parameters
-  m_Y_estim <- extract.simulate(moments$sim, where="tips", what="expectations")
+  if (independent){
+    params_scOU <- split_params_independent(params_scOU)
+  }
+  
+  temp <- wrapper_E_step(phylo = phylo,
+                         times_shared = times_shared,
+                         distances_phylo = distances_phylo,
+                         process = process,
+                         params_old = params_scOU,
+                         masque_data = masque_data,
+                         F_moments = NULL,
+                         independent = independent,
+                         Y_data_vec_known = Y_data_vec_known,
+                         miss = miss,
+                         Y_data = Y_data)
+  ## Format result if independent
+  if (independent){
+    ## Likelihood and Mahalanobis of last parameters
+    params_scOU <- merge_params_independent(params_scOU)
+    attr(params_scOU, "log_likelihood") <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
+    attr(params_scOU, "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+    params_history[[paste(Nbr_It, sep="")]] <- params_scOU
+    ## "Ancestral States Reconstruction"
+    condlaw <- lapply(temp, function(z) return(z$conditional_law_X))
+    condlaw <- do.call(rbind, condlaw)
+    conditional_law_X <- vector("list")
+    conditional_law_X$expectations <- do.call(rbind, condlaw[, "expectations"])
+    conditional_law_X$optimal.values <- do.call(rbind, condlaw[, "optimal.values"])
+    conditional_law_X$variances <- do.call(rbind, condlaw[, "variances"])
+    conditional_law_X$variances <- aaply(conditional_law_X$variances, 2, diag)
+    conditional_law_X$variances <- aperm(conditional_law_X$variances, c(2, 3, 1))
+    conditional_law_X$covariances <- do.call(rbind, condlaw[, "covariances"])
+    conditional_law_X$covariances <- aaply(conditional_law_X$covariances, 2, diag)
+    conditional_law_X$covariances <- aperm(conditional_law_X$covariances, c(2, 3, 1))
+    rm(condlaw)
+    ## Mean at tips with estimated parameters
+    m_Y_estim <- lapply(temp, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
+    m_Y_estim <- do.call(rbind, m_Y_estim)
+  } else {
+    ## Likelihood and Mahalanobis of last parameters
+    attr(params_scOU, "log_likelihood") <- as.vector(temp$log_likelihood_old)
+    attr(params_scOU, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
+    params_history[[paste(Nbr_It, sep="")]] <- params_scOU
+    ## "Ancestral States Reconstruction"
+    conditional_law_X <- temp$conditional_law_X
+    ## Mean at tips with estimated parameters
+    m_Y_estim <- extract.simulate(temp$moments$sim, where="tips", what="expectations")
+  }
+  rm(temp)
   ## Number of equivalent solutions
-  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges, part.list = subtree.list)
+  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges,
+                                       part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params_scOU, "Neq") <- Neq
@@ -631,7 +773,7 @@ estimateEM <- function(phylo,
 #' K.
 #' The EMs are parralelized thanks to packages \code{foreach} and 
 #' \code{doParallel}.
-#' WARNING : this code only work of OU with stationnary root, on an ultrametric
+#' WARNING : this code only work of OU with stationary root, on an ultrametric
 #' tree.
 #' 
 #'
@@ -789,18 +931,19 @@ compute_K_max <- function(ntaxa, kappa = 0.9){
 }
 
 PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                    independent = FALSE,
                     K_max, use_previous = TRUE,
                     order = TRUE,
                     method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
                     C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
                     method.variance = "simple",
-                    method.init = "default",
-                    method.init.alpha = "default",
+                    method.init = "lasso",
+                    method.init.alpha = "estimation",
                     method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
                     methods.segmentation = c("lasso", "best_single_move"),
-                    alpha_known = TRUE,
+                    alpha_grid = TRUE,
                     random.root = FALSE,
-                    stationnary.root = FALSE,
+                    stationary.root = FALSE,
                     alpha = NULL,
                     check.tips.names = FALSE,
                     progress.bar = TRUE,
@@ -811,7 +954,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     parallel_alpha = FALSE,
                     Ncores = 3,
                     exportFunctions = ls(),
-                    impute_init_Rphylopars = TRUE,
+                    impute_init_Rphylopars = FALSE,
                     ...){
   ## Required packages
   library(doParallel)
@@ -819,7 +962,6 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   library(ape)
   library(glmnet) # For Lasso initialization
   library(robustbase) # For robust fitting of alpha
-  reqpckg <- c("ape", "glmnet", "robustbase")
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
   ## Check that the vector of data is in the correct order and dimensions ################
@@ -835,201 +977,73 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   }
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2") library(capushe)
   
-  ## Save Original process and tree
-  process <- match.arg(process)
-  process_original <- process
-  original_phy <- phylo
-  
-  ## Compute alpha
-  if (process == "BM") {
-    alpha <- 0
-  } else {
-    alpha <- find_grid_alpha(phylo, alpha, ...)
-  }
-  
-  if (!is.null(estimates)){
-    ## Set Up
+  ## Inference per se
+  if (!is.null(estimates)){ # If the user already has the estimates
     X <- estimates ## Get estimations from presiously computed results
-  } else {
-    ## Loop on alpha
-    estimate_alpha_several_K <- function(alp, 
-                                         original_phy, Y_data,
-                                         process_original,
-                                         process,
-                                         K_max, 
-                                         use_previous,
-                                         order,
-                                         method.variance,
-                                         method.init,
-                                         method.init.alpha,
-                                         method.init.alpha.estimation, 
-                                         methods.segmentation,
-                                         alpha_known,
-                                         random.root,
-                                         stationnary.root,
-                                         sBM_variance,
-                                         method.OUsun,
-                                         impute_init_Rphylopars = TRUE,
-                                         p,
-                                         ntaxa,
-                                         ...){
-      ## Process
-#       process <- match.arg(process)
-#       process_original <- process
-#       original_phy <- phylo
-      temp <- choose_process_EM(process = process_original,
-                                p = p,
-                                random.root = random.root,
-                                stationnary.root = stationnary.root,
-                                alpha_known = alpha_known,
-                                known.selection.strength = alp,
-                                sBM_variance = sBM_variance,
-                                method.OUsun = method.OUsun)
-      
-      rescale_tree <- temp$rescale_tree # Rescale the tree ?
-      transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
-      sBM_variance <- temp$sBM_variance
-      if (sBM_variance){ # process sBM : need a root branch.
-        original_phy$root.edge <- 1
-      }
-      ## Transform branch lengths if needed
-      phylo <- original_phy
-      if (rescale_tree) {
-        phylo <- transform_branch_length(phylo, alp)
-      }
-      ## Fixed quantities
-      times_shared <- compute_times_ca(phylo)
-      distances_phylo <- compute_dist_phy(phylo)
-      subtree.list <- enumerate_tips_under_edges(phylo)
-      T_tree <- incidence.matrix(phylo)
-      h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
-      ## Fixed Quantities if no missing data
-      Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
-      if (!Flag_Missing){
-        # Add root edge to the branch lengths (root assumed fixed by default)
-        F_moments <- compute_fixed_moments(times_shared + phylo$root.edge, ntaxa)
-      } else {
-        F_moments = NULL
-      }
-      ## Impute data if needed
-      if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
-        warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be infered. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
-        impute_init_Rphylopars <- TRUE
-      }
-      Y_data_imp <- Y_data
-      if (any(is.na(Y_data_imp))
-          && impute_init_Rphylopars
-          && temp$process == "BM"){
-        ## Re-scale tree to unit height
-        factor_rescale <- 1 / h_tree # total height to 1
-        phylo_temp <- phylo
-        phylo_temp$edge.length <- factor_rescale * phylo$edge.length
-        phylo_temp$root.edge <- factor_rescale * phylo$root.edge
-        Y_data_imp <- try(impute.data.Rphylopars(phylo_temp,
-                                                 Y_data,
-                                                 temp$process,
-                                                 random.init))
-        if (inherits(Y_data_imp, "try-error")) { # If fails, replace with mean of the trait
-          Y_data_imp <- Y_data
-          for (j in 1:(dim(Y_data_imp)[1])){
-            Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
-          }
-        }
-        rm(phylo_temp)
-      }
-      ## Estimations
-      X <- Phylo_EM_sequencial(phylo = original_phy,
-                               Y_data = Y_data,
-                               Y_data_imp = Y_data_imp,
-                               process = process,
-                               K_max = K_max,
-                               # curent = X,
-                               use_previous = use_previous,
-                               order = order,
-                               method.variance = method.variance,
-                               method.init = method.init,
-                               method.init.alpha = method.init.alpha,
-                               method.init.alpha.estimation = method.init.alpha.estimation, 
-                               methods.segmentation = methods.segmentation,
-                               alpha_known = alpha_known,
-                               random.root = random.root,
-                               stationnary.root = stationnary.root,
-                               alp = alp,
-                               check.tips.names = check.tips.names,
-                               progress.bar = progress.bar,
-                               times_shared = times_shared,
-                               distances_phylo = distances_phylo,
-                               subtree.list = subtree.list,
-                               T_tree = T_tree,
-                               h_tree = h_tree,
-                               F_moments = F_moments,
-                               save_step = save_step,
-                               sBM_variance = sBM_variance,
-                               method.OUsun = method.OUsun,
-                               impute_init_Rphylopars = impute_init_Rphylopars,
-                               ...)
+  } else if (alpha_grid) { # For a grid estimation of alpha
+    X <- PhyloEM_grid_alpha(phylo = phylo,
+                            Y_data = Y_data,
+                            process = process, 
+                            independent = independent, 
+                            K_max = K_max,
+                            use_previous = use_previous, 
+                            order = order, 
+                            method.selection = method.selection, 
+                            C.BM1 = C.BM1, 
+                            C.BM2 = C.BM2, 
+                            C.BGH = C.BGH, 
+                            method.variance = method.variance, 
+                            method.init = method.init, 
+                            method.init.alpha = "default", 
+                            method.init.alpha.estimation = method.init.alpha.estimation, 
+                            methods.segmentation = methods.segmentation, 
+                            alpha_known = TRUE, 
+                            random.root = random.root, 
+                            stationary.root = stationary.root, 
+                            alpha = alpha, 
+                            check.tips.names = check.tips.names, 
+                            progress.bar = progress.bar, 
+                            estimates = estimates, 
+                            save_step = save_step, 
+                            sBM_variance = sBM_variance, 
+                            method.OUsun = method.OUsun, 
+                            parallel_alpha = parallel_alpha, 
+                            Ncores = Ncores, 
+                            exportFunctions = exportFunctions, 
+                            impute_init_Rphylopars = impute_init_Rphylopars, 
+                            ...)
+  } else { # For an in-loop estimation of alpha (independent = TRUE)
+    if (!independent){
+      stop("Estimation of alpha outside of a grid is only implemented for independent traits. Please consider either use a grid for alpha values (parameter alpha_grid = TRUE), or independent traits (parameter independent = TRUE). See documentation.")
     }
-    if (parallel_alpha){
-      cl <- makeCluster(Ncores)
-      registerDoParallel(cl)
-      X <- foreach(alp = alpha, .packages = reqpckg, .export = exportFunctions) %dopar%
-      {
-        estimate_alpha_several_K(alp,
-                                 original_phy = original_phy, Y_data = Y_data,
-                                 process_original = process_original,
-                                 process = process,
-                                 K_max = K_max, 
-                                 use_previous = use_previous,
-                                 order = order,
-                                 method.variance = method.variance,
-                                 method.init = method.init,
-                                 method.init.alpha = method.init.alpha,
-                                 method.init.alpha.estimation = method.init.alpha.estimation, 
-                                 methods.segmentation = methods.segmentation,
-                                 alpha_known = alpha_known,
-                                 random.root = random.root,
-                                 stationnary.root = stationnary.root,
-                                 sBM_variance = sBM_variance,
-                                 method.OUsun = method.OUsun,
-                                 impute_init_Rphylopars = impute_init_Rphylopars,
-                                 p = p,
-                                 ntaxa = ntaxa,
-                                 ...)
-      }
-      stopCluster(cl)
-    } else {
-      X <- foreach(alp = alpha, .packages = reqpckg) %do%
-      {
-        estimate_alpha_several_K(alp,
-                                 original_phy = original_phy, Y_data = Y_data,
-                                 process_original = process_original,
-                                 process = process,
-                                 K_max = K_max, 
-                                 use_previous = use_previous,
-                                 order = order,
-                                 method.variance = method.variance,
-                                 method.init = method.init,
-                                 method.init.alpha = method.init.alpha,
-                                 method.init.alpha.estimation = method.init.alpha.estimation, 
-                                 methods.segmentation = methods.segmentation,
-                                 alpha_known = alpha_known,
-                                 random.root = random.root,
-                                 stationnary.root = stationnary.root,
-                                 sBM_variance = sBM_variance,
-                                 method.OUsun = method.OUsun,
-                                 impute_init_Rphylopars = impute_init_Rphylopars,
-                                 p = p,
-                                 ntaxa = ntaxa,
-                                 ...)
-      }
-    }
-    names(X) <- paste0("alpha_", alpha)
-    X$Y_data <- Y_data
-    X$K_try <- 0:K_max
-    X$ntaxa <- ntaxa
+    X <- PhyloEM_alpha_estim(phylo = phylo,
+                             Y_data = Y_data,
+                             process = process, 
+                             independent = TRUE, 
+                             K_max = K_max,
+                             use_previous = use_previous, 
+                             order = order, 
+                             method.selection = method.selection, 
+                             C.BM1 = C.BM1, 
+                             C.BM2 = C.BM2, 
+                             C.BGH = C.BGH, 
+                             method.variance = method.variance, 
+                             method.init = method.init, 
+                             method.init.alpha = method.init.alpha, 
+                             method.init.alpha.estimation = method.init.alpha.estimation, 
+                             methods.segmentation = methods.segmentation, 
+                             alpha_known = FALSE, 
+                             random.root = random.root, 
+                             stationary.root = stationary.root, 
+                             alpha = NULL, 
+                             check.tips.names = check.tips.names, 
+                             progress.bar = progress.bar, 
+                             estimates = estimates, 
+                             save_step = save_step, 
+                             method.OUsun = "raw", 
+                             impute_init_Rphylopars = impute_init_Rphylopars, 
+                             ...)
   }
-  ## Select max solution for each K
-  X <- merge_max_grid_alpha(X, alpha)
   ## Model Selection
   model_selection <- function(one.method.selection){
     mod_sel  <- switch(one.method.selection, 
@@ -1052,24 +1066,354 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   return(X)
 }
 
+PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                               independent = FALSE,
+                               K_max, use_previous = TRUE,
+                               order = TRUE,
+                               method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
+                               C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                               method.variance = "simple",
+                               method.init = "default",
+                               method.init.alpha = "default",
+                               method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
+                               methods.segmentation = c("lasso", "best_single_move"),
+                               alpha_known = TRUE,
+                               random.root = FALSE,
+                               stationary.root = FALSE,
+                               alpha = NULL,
+                               check.tips.names = FALSE,
+                               progress.bar = TRUE,
+                               estimates = NULL,
+                               save_step = FALSE,
+                               sBM_variance = FALSE,
+                               method.OUsun = "rescale",
+                               parallel_alpha = FALSE,
+                               Ncores = 3,
+                               exportFunctions = ls(),
+                               impute_init_Rphylopars = TRUE,
+                               ...){
+  reqpckg <- c("ape", "glmnet", "robustbase")
+  ## Save Original process and tree
+  process <- match.arg(process)
+  process_original <- process
+  original_phy <- phylo
+  
+  ## Compute alpha
+  if (process == "BM") {
+    alpha <- 0
+  } else {
+    alpha <- find_grid_alpha(phylo, alpha, ...)
+  }
+  ## Loop on alpha
+  estimate_alpha_several_K <- function(alp, 
+                                       original_phy, Y_data,
+                                       process_original,
+                                       process,
+                                       independent,
+                                       K_max, 
+                                       use_previous,
+                                       order,
+                                       method.variance,
+                                       method.init,
+                                       method.init.alpha,
+                                       method.init.alpha.estimation, 
+                                       methods.segmentation,
+                                       alpha_known,
+                                       random.root,
+                                       stationary.root,
+                                       sBM_variance,
+                                       method.OUsun,
+                                       impute_init_Rphylopars,
+                                       p,
+                                       ntaxa,
+                                       progress.bar,
+                                       ...){
+    temp <- choose_process_EM(process = process_original,
+                              p = p,
+                              random.root = random.root,
+                              stationary.root = stationary.root,
+                              alpha_known = alpha_known,
+                              known.selection.strength = alp,
+                              sBM_variance = sBM_variance,
+                              method.OUsun = method.OUsun,
+                              independent = independent)
+    
+    rescale_tree <- temp$rescale_tree # Rescale the tree ?
+    transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
+    sBM_variance <- temp$sBM_variance
+    if (sBM_variance){ # process sBM : need a root branch.
+      original_phy$root.edge <- 1
+    }
+    ## Transform branch lengths if needed
+    phylo <- original_phy
+    if (rescale_tree) {
+      phylo <- transform_branch_length(phylo, alp)
+    }
+    ## Fixed quantities
+    times_shared <- compute_times_ca(phylo)
+    distances_phylo <- compute_dist_phy(phylo)
+    subtree.list <- enumerate_tips_under_edges(phylo)
+    T_tree <- incidence.matrix(phylo)
+    h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+    ## Fixed Quantities if no missing data
+    Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
+    if (!Flag_Missing){
+      # Add root edge to the branch lengths (root assumed fixed by default)
+      F_moments <- compute_fixed_moments(times_shared + phylo$root.edge, ntaxa)
+    } else {
+      F_moments = NULL
+    }
+    ## Impute data if needed
+    if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
+      warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be infered. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
+      impute_init_Rphylopars <- TRUE
+    }
+    Y_data_imp <- Y_data
+    if (any(is.na(Y_data_imp))
+        && impute_init_Rphylopars
+        && temp$process == "BM"){
+      ## Re-scale tree to unit height
+      factor_rescale <- 1 / h_tree # total height to 1
+      phylo_temp <- phylo
+      phylo_temp$edge.length <- factor_rescale * phylo$edge.length
+      phylo_temp$root.edge <- factor_rescale * phylo$root.edge
+      Y_data_imp <- try(impute.data.Rphylopars(phylo_temp,
+                                               Y_data,
+                                               temp$process,
+                                               random.init))
+      if (inherits(Y_data_imp, "try-error")) { # If fails, replace with mean of the trait
+        Y_data_imp <- Y_data
+        for (j in 1:(dim(Y_data_imp)[1])){
+          Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
+        }
+      }
+      rm(phylo_temp)
+    }
+    ## Estimations
+    X <- Phylo_EM_sequencial(phylo = original_phy,
+                             Y_data = Y_data,
+                             Y_data_imp = Y_data_imp,
+                             process = process,
+                             independent = independent,
+                             K_max = K_max,
+                             # curent = X,
+                             use_previous = use_previous,
+                             order = order,
+                             method.variance = method.variance,
+                             method.init = method.init,
+                             method.init.alpha = method.init.alpha,
+                             method.init.alpha.estimation = method.init.alpha.estimation, 
+                             methods.segmentation = methods.segmentation,
+                             alpha_known = alpha_known,
+                             random.root = random.root,
+                             stationary.root = stationary.root,
+                             alp = alp,
+                             check.tips.names = check.tips.names,
+                             progress.bar = progress.bar,
+                             times_shared = times_shared,
+                             distances_phylo = distances_phylo,
+                             subtree.list = subtree.list,
+                             T_tree = T_tree,
+                             h_tree = h_tree,
+                             F_moments = F_moments,
+                             save_step = save_step,
+                             sBM_variance = sBM_variance,
+                             method.OUsun = method.OUsun,
+                             impute_init_Rphylopars = impute_init_Rphylopars,
+                             ...)
+  }
+  if (parallel_alpha){
+    cl <- makeCluster(Ncores)
+    registerDoParallel(cl)
+    X <- foreach(alp = alpha, .packages = reqpckg, .export = exportFunctions) %dopar%
+    {
+      ## Progress Bar
+      if(progress.bar){
+        message(paste0("Alpha ", alp))
+      }
+      estimate_alpha_several_K(alp,
+                               original_phy = original_phy, Y_data = Y_data,
+                               process_original = process_original,
+                               process = process,
+                               independent = independent,
+                               K_max = K_max, 
+                               use_previous = use_previous,
+                               order = order,
+                               method.variance = method.variance,
+                               method.init = method.init,
+                               method.init.alpha = method.init.alpha,
+                               method.init.alpha.estimation = method.init.alpha.estimation, 
+                               methods.segmentation = methods.segmentation,
+                               alpha_known = alpha_known,
+                               random.root = random.root,
+                               stationary.root = stationary.root,
+                               sBM_variance = sBM_variance,
+                               method.OUsun = method.OUsun,
+                               impute_init_Rphylopars = impute_init_Rphylopars,
+                               p = p,
+                               ntaxa = ntaxa,
+                               progress.bar = progress.bar,
+                               ...)
+    }
+    stopCluster(cl)
+  } else {
+    X <- foreach(alp = alpha, .packages = reqpckg) %do%
+    {
+      ## Progress Bar
+      if(progress.bar){
+        message(paste0("Alpha ", alp))
+      }
+      estimate_alpha_several_K(alp,
+                               original_phy = original_phy, Y_data = Y_data,
+                               process_original = process_original,
+                               process = process,
+                               independent = independent,
+                               K_max = K_max, 
+                               use_previous = use_previous,
+                               order = order,
+                               method.variance = method.variance,
+                               method.init = method.init,
+                               method.init.alpha = method.init.alpha,
+                               method.init.alpha.estimation = method.init.alpha.estimation, 
+                               methods.segmentation = methods.segmentation,
+                               alpha_known = alpha_known,
+                               random.root = random.root,
+                               stationary.root = stationary.root,
+                               sBM_variance = sBM_variance,
+                               method.OUsun = method.OUsun,
+                               impute_init_Rphylopars = impute_init_Rphylopars,
+                               p = p,
+                               ntaxa = ntaxa,
+                               progress.bar = progress.bar,
+                               ...)
+    }
+  }
+  
+  ## Format Output
+  names(X) <- paste0("alpha_", alpha)
+  X$Y_data <- Y_data
+  X$K_try <- 0:K_max
+  X$ntaxa <- ntaxa
+
+  ## Select max solution for each K
+  X <- merge_max_grid_alpha(X, alpha)
+  
+  return(X)
+}
+
+PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                                independent = TRUE,
+                                K_max, use_previous = TRUE,
+                                order = TRUE,
+                                method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
+                                C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                                method.variance = "simple",
+                                method.init = "default",
+                                method.init.alpha = "default",
+                                method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
+                                methods.segmentation = c("lasso", "best_single_move"),
+                                alpha_known = FALSE,
+                                random.root = FALSE,
+                                stationary.root = FALSE,
+                                alpha = NULL,
+                                check.tips.names = FALSE,
+                                progress.bar = TRUE,
+                                estimates = NULL,
+                                save_step = FALSE,
+                                method.OUsun = "raw",
+                                impute_init_Rphylopars = FALSE,
+                                ...){
+  ## Fixed quantities
+  times_shared <- compute_times_ca(phylo)
+  distances_phylo <- compute_dist_phy(phylo)
+  subtree.list <- enumerate_tips_under_edges(phylo)
+  T_tree <- incidence.matrix(phylo)
+  h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+  
+  Y_data_imp <- Y_data
+  #     if (any(is.na(Y_data_imp))
+  #         && impute_init_Rphylopars
+  #         && temp$process == "BM"){
+  #       ## Re-scale tree to unit height
+  #       factor_rescale <- 1 / h_tree # total height to 1
+  #       phylo_temp <- phylo
+  #       phylo_temp$edge.length <- factor_rescale * phylo$edge.length
+  #       phylo_temp$root.edge <- factor_rescale * phylo$root.edge
+  #       Y_data_imp <- try(impute.data.Rphylopars(phylo_temp,
+  #                                                Y_data,
+  #                                                temp$process,
+  #                                                random.init))
+  #       if (inherits(Y_data_imp, "try-error")) { # If fails, replace with mean of the trait
+  #         Y_data_imp <- Y_data
+  #         for (j in 1:(dim(Y_data_imp)[1])){
+  #           Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
+  #         }
+  #       }
+  #       rm(phylo_temp)
+  #     }
+  ## Estimations
+  X <- Phylo_EM_sequencial(phylo = phylo,
+                           Y_data = Y_data,
+                           Y_data_imp = Y_data_imp,
+                           process = process,
+                           independent = independent,
+                           K_max = K_max,
+                           # curent = X,
+                           use_previous = use_previous,
+                           order = order,
+                           method.variance = method.variance,
+                           method.init = method.init,
+                           method.init.alpha = method.init.alpha,
+                           method.init.alpha.estimation = method.init.alpha.estimation, 
+                           methods.segmentation = methods.segmentation,
+                           alpha_known = alpha_known,
+                           random.root = random.root,
+                           stationary.root = stationary.root,
+                           alp = NULL,
+                           check.tips.names = check.tips.names,
+                           progress.bar = progress.bar,
+                           times_shared = times_shared,
+                           distances_phylo = distances_phylo,
+                           subtree.list = subtree.list,
+                           T_tree = T_tree,
+                           h_tree = h_tree,
+                           save_step = save_step,
+                           method.OUsun = method.OUsun,
+                           impute_init_Rphylopars = impute_init_Rphylopars,
+                           ...)
+  
+  ## Format Output
+  X2 <- vector("list", 4)
+  names(X2) <- c("alpha_max", "Y_data", "K_try", "ntaxa")
+  X2$alpha_max <- X
+  X2$Y_data <- Y_data
+  X2$K_try <- 0:K_max
+  X2$ntaxa <- ntaxa
+  
+  return(X2)
+}
+
 Phylo_EM_sequencial <- function(phylo, Y_data,
                                 Y_data_imp,
-                                process, K_max,
-                                #                                 curent = list(Y_data = Y_data,
-                                #                                               K_try = 0:K_max,
-                                #                                               ntaxa = length(phylo$tip.label)),
+                                process,
+                                independent,
+                                K_max,
+#                               curent = list(Y_data = Y_data,
+#                                             K_try = 0:K_max,
+#                                             ntaxa = length(phylo$tip.label)),
                                 use_previous = TRUE,
                                 order = TRUE,
                                 method.variance = "simple",
                                 method.init = "default",
                                 method.init.alpha = "default",
                                 method.init.alpha.estimation = c("regression",
-                                                                 "regression.MM", "median"), 
+                                                                 "regression.MM",
+                                                                 "median"), 
                                 methods.segmentation = c("lasso", "best_single_move"),
                                 alpha_known = FALSE,
                                 random.root = TRUE,
-                                stationnary.root = TRUE,
-                                alp = alp,
+                                stationary.root = TRUE,
+                                alp = NULL,
                                 check.tips.names = FALSE,
                                 progress.bar = TRUE,
                                 times_shared = NULL,
@@ -1102,7 +1446,6 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
   names(XX) <- 0:K_max
   ## Progress Bar
   if(progress.bar){
-    message(paste0("Alpha ", alp))
     pb <- txtProgressBar(min = 0, max = K_max + 1, style = 3)
   }
   ## First
@@ -1110,10 +1453,11 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       Y_data = Y_data,
                                                       Y_data_imp = Y_data_imp,
                                                       process = process,
+                                                      independent = independent,
                                                       K_t = K_first,
                                                       method.variance = method.variance,
                                                       random.root = random.root,
-                                                      stationnary.root = stationnary.root,
+                                                      stationary.root = stationary.root,
                                                       alpha_known = alpha_known,
                                                       alpha = alp,
                                                       method.init = method.init,
@@ -1152,11 +1496,12 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                           Y_data = Y_data,
                                                           Y_data_imp = Y_data_imp,
                                                           process = process,
+                                                          independent = independent,
                                                           K_t = K_t,
                                                           prev = XX[[paste0(prev_it(K_t))]],
                                                           method.variance = method.variance,
                                                           random.root = random.root,
-                                                          stationnary.root = stationnary.root,
+                                                          stationary.root = stationary.root,
                                                           alpha_known = alpha_known,
                                                           alpha = alp,
                                                           method.init = method.init,
@@ -1229,9 +1574,11 @@ estimateEM_wrapper <- function(use_previous){
 
 estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         Y_data_imp,
-                                        process, K_t, prev,
+                                        process,
+                                        independent = independent,
+                                        K_t, prev,
                                         method.variance,
-                                        random.root, stationnary.root,
+                                        random.root, stationary.root,
                                         alpha_known, alpha,
                                         methods.segmentation,
                                         method.init,
@@ -1244,12 +1591,13 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    Y_data = Y_data, 
                                                    Y_data_imp = Y_data_imp,
                                                    process = process, 
+                                                   independent = independent,
                                                    method.variance = method.variance, 
                                                    method.init = method.init,
                                                    method.init.alpha = method.init.alpha,
                                                    nbr_of_shifts = K_t,
                                                    random.root = random.root,
-                                                   stationnary.root = stationnary.root,
+                                                   stationary.root = stationary.root,
                                                    alpha_known = alpha_known,
                                                    known.selection.strength = alpha,
                                                    init.selection.strength = prev$alpha_estim,
@@ -1270,9 +1618,11 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
 
 estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        Y_data_imp,
-                                       process, K_t,
+                                       process,
+                                       independent,
+                                       K_t,
                                        method.variance,
-                                       random.root, stationnary.root,
+                                       random.root, stationary.root,
                                        alpha_known, alpha,
                                        methods.segmentation,
                                        method.init,
@@ -1285,12 +1635,13 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    Y_data = Y_data, 
                                                    Y_data_imp = Y_data_imp,
                                                    process = process, 
+                                                   independent = independent,
                                                    method.variance = method.variance, 
                                                    method.init = method.init,
                                                    method.init.alpha = method.init.alpha,
                                                    nbr_of_shifts = K_t,
                                                    random.root = random.root,
-                                                   stationnary.root = stationnary.root,
+                                                   stationary.root = stationary.root,
                                                    alpha_known = alpha_known,
                                                    known.selection.strength = alpha,
                                                    methods.segmentation = methods.segmentation,
@@ -1302,6 +1653,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 }
 
 PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                         independent = FALSE,
                          K_max, use_previous = TRUE,
                          order = TRUE,
                          method.variance = "simple",
@@ -1311,7 +1663,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                          methods.segmentation = c("lasso", "best_single_move"),
                          alpha_known = TRUE,
                          random.root = FALSE,
-                         stationnary.root = FALSE,
+                         stationary.root = FALSE,
                          alpha = NULL,
                          check.tips.names = FALSE,
                          progress.bar = TRUE,
@@ -1331,11 +1683,12 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   original_phy <- phylo
   temp <- choose_process_EM(process = process, p = p,
                             random.root = random.root,
-                            stationnary.root = stationnary.root,
+                            stationary.root = stationary.root,
                             alpha_known = alpha_known,
                             known.selection.strength = alpha,
                             sBM_variance = sBM_variance,
-                            method.OUsun = method.OUsun)
+                            method.OUsun = method.OUsun,
+                            independent = independent)
   
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
   transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
@@ -1378,6 +1731,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              Y_data = Y_data,
                              Y_data_imp = Y_data_imp,
                              process = process,
+                             independent = independent,
                              K_max = K_max,
                              # curent = X,
                              use_previous = use_previous,
@@ -1389,7 +1743,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              methods.segmentation = methods.segmentation,
                              alpha_known = alpha_known,
                              random.root = random.root,
-                             stationnary.root = stationnary.root,
+                             stationary.root = stationary.root,
                              alp = alp,
                              check.tips.names = check.tips.names,
                              progress.bar = progress.bar,
@@ -1422,7 +1776,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #' K.
 #' The EMs are parralelized thanks to packages \code{foreach} and 
 #' \code{doParallel}.
-#' WARNING : this code only work of OU with stationnary root, on an ultrametric
+#' WARNING : this code only work of OU with stationary root, on an ultrametric
 #' tree.
 #' 
 #'
@@ -1504,11 +1858,11 @@ estimateEM_several_K.OUsr <- function(phylo,
 }
 
 ##
-#' @title A wrapper for estimateEM for OU with stationnary root.
+#' @title A wrapper for estimateEM for OU with stationary root.
 #'
 #' @description
 #' \code{estimation_wrapper.OUsr} call estimateEM with a set of parameters well
-#' suited for the OU with stationnary root.
+#' suited for the OU with stationary root.
 #' It is used in \code{estimateEM_several_K.OUsr}.
 #'
 #' @param K_t the number of shifts allowed
@@ -1632,19 +1986,22 @@ check_data <- function(phylo, Y_data, check.tips.names){
   return(as.matrix(Y_data))
 }
 
-choose_process_EM <- function(process, p, random.root, stationnary.root,
+choose_process_EM <- function(process, p, random.root, stationary.root,
                               alpha_known,
                               known.selection.strength = 1, eps = 10^(-3),
                               sBM_variance = FALSE,
-                              method.OUsun = "rescale"){
+                              method.OUsun = "rescale",
+                              independent = FALSE){
   ## Reduce Process
   transform_scOU <- FALSE # Should we re-transform back the parameters to get an OU ?
   rescale_tree <- FALSE # Should we re-scale the tree ?
   if (process == "OU"){
-    if (p > 1) {
-      warning("The general OU is not implemented in the multivariate case. Switching to the scalar OU (scOU).")
+    if (p > 1 && !independent) {
+      stop("The EM algorithm for shift detection for the general OU is not implemented in the multivariate case. Please consider choosing one of the two following assumptions: (1) the selection strength matrix A is scalar (A = a*I), and the rate matrix R is full (choose process = scOU) or (2) both matices A and R are diagonal, i.e. all the trait are independent (choose independent = TRUE).")
     }
-    process <- "scOU"
+    if (p == 1) {
+      process <- "scOU"
+    }
   }
   if (process == "scOU"){
     if (random.root){
@@ -1653,13 +2010,16 @@ choose_process_EM <- function(process, p, random.root, stationnary.root,
           stop("The re-scaled scalar OU is only implemented for known selection strength. Please consider using a grid.")
         }
         sBM_variance <- TRUE
-        if (!stationnary.root){
-          warning("The scalar OU process with a general random root is not implemented for the multivariate case. The root is taken to be in the stationnary state.")
+        if (!stationary.root){
+          warning("The scalar OU process with a general random root is not implemented for the multivariate case. The root is taken to be in the stationary state.")
         }
         transform_scOU <- TRUE
         rescale_tree <- TRUE
         process <- "BM"
       } else {
+        if (p > 1){
+          stop("Only the re-scale method is available for a multivariate scOU.")
+        }
         process <- "OU"
       }
     } else {

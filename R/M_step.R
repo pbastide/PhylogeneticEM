@@ -197,30 +197,42 @@ compute_root_value.BM <- function(phylo,
   }
 }
 
-compute_M.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+compute_M.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(compute_M.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(compute_M.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(compute_M.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the univariate raw OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
-compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, known.selection.strength, methods.segmentation, beta_0_old, shifts_old, subtree.list, ...){
+compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
+                                     nbr_of_shifts, known.selection.strength,
+                                     methods.segmentation, beta_0_old,
+                                     shifts_old, subtree.list, params_old, ...){
   ## Initialization
+  p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   params <- init.EM.default.OU(selection.strength.init=known.selection.strength,
-                               stationnary.root.init=TRUE,
+                               p = p,
+                               stationary.root.init=TRUE,
                                random.init=TRUE,
                                ...)
+  if (p > 1){
+    params <- split_params_independent(params)
+  }
   ## Comutation of regression matrix idoine
-  regMat <- compute_regression_matrices(phylo = phylo,
-                                        conditional_law_X = conditional_law_X,
-                                        selection.strength = known.selection.strength)
-  D <- regMat$D
-  D <- matrix(D, nrow = 1)
-  Xp <- regMat$Xp
+  D <- vector("list", p)
+  Xp <- vector("list", p)
+  for (l in 1:p){
+    regMat <- compute_regression_matrices(phylo = phylo,
+                                          conditional_law_X = conditional_law_X[[l]],
+                                          selection.strength = known.selection.strength[l])
+    D[[l]] <- regMat$D
+    D[[l]] <- matrix(D[[l]], nrow = 1)
+    Xp[[l]] <- regMat$Xp
+  }
   ## Choose method(s) for segmentation
   segmentation.OU.specialCase <- function(method.segmentation){
     segmentation <- switch(method.segmentation, 
@@ -237,40 +249,86 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
                         beta_0_old = beta_0_old,
                         shifts_old = shifts_old,
                         D = D,
-                        Xp = Xp))
+                        Xp = Xp,
+                        params_old = params_old))
   }
   ## Segmentation
-  segs <- sapply(methods.segmentation, segmentation.OU.specialCase, simplify = FALSE)
+  segs <- sapply(methods.segmentation, segmentation.OU.specialCase,
+                 simplify = FALSE)
+  ## If everyone failed, keep the same shifts
+  if (all(sapply(segs, function(z) (length(z$costs) > 0 && is.infinite(z$costs))
+                                  || any(is.infinite(z[[1]]$costs))))){
+    methods.segmentation <- "same_shifts"
+    segs <- sapply(methods.segmentation, segmentation.OU.specialCase, simplify = FALSE)
+  }
   #edges_max <- seg$edges_max
   ## Variance
-  var_diff <- compute_var_diff.OU(phylo=phylo, 
-                                  conditional_law_X=conditional_law_X, 
-                                  selection.strength=known.selection.strength)
-  # Function to compute gamma2 for all parameters obtained by all segmentations
-  compute_var_M <- function(method.segmentation){
-    return(compute_var_M.OU.specialCase(phylo=phylo, 
-                                        var_diff=var_diff, 
-                                        costs=segs[[method.segmentation]]$costs, 
-                                        selection.strength=known.selection.strength,
-                                        conditional_root_variance=unname(conditional_law_X$variances[ntaxa+1])))
+  if (p == 1){
+    var_diff <- compute_var_diff.OU(phylo = phylo, 
+                                    conditional_law_X = conditional_law_X, 
+                                    selection.strength = known.selection.strength)
+    # Function to compute gamma2 for all parameters obtained by all segmentations
+    compute_var_M <- function(method.segmentation){
+      return(compute_var_M.OU.specialCase(phylo=phylo, 
+                                          var_diff=var_diff, 
+                                          costs=segs[[method.segmentation]]$costs, 
+                                          selection.strength=known.selection.strength,
+                                          conditional_root_variance=unname(conditional_law_X$variances[ntaxa+1])))
+    }
+    var.roots <- sapply(methods.segmentation, compute_var_M)
+    # cond log lik
+    cond_exp_log_lik <- function(method.segmentation){
+      return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
+                                                                                                   conditional_law_X = conditional_law_X, 
+                                                                                                   sigma2 = 2 * known.selection.strength * var.roots[method.segmentation],
+                                                                                                   mu = segs[[method.segmentation]]$beta_0,
+                                                                                                   shifts = segs[[method.segmentation]]$shifts,
+                                                                                                   alpha = known.selection.strength))
+    }
+    obj_funcs <- sapply(methods.segmentation, cond_exp_log_lik)
+    obj_funcs <- matrix(obj_funcs, ncol = length(methods.segmentation))
+  } else {
+    var_diff <- vector("list", p)
+    var.roots <- vector("list", p)
+    obj_funcs <- matrix(NA, nrow = p, ncol = length(methods.segmentation))
+    for (l in 1:p){
+      var_diff[[l]] <- compute_var_diff.OU(phylo = phylo, 
+                                           conditional_law_X = conditional_law_X[[l]], 
+                                           selection.strength = known.selection.strength[l])
+      # Function to compute gamma2 for all parameters obtained by all segmentations
+      compute_var_M <- function(method.segmentation){
+        return(compute_var_M.OU.specialCase(phylo = phylo, 
+                                            var_diff = var_diff[[l]], 
+                                            costs = segs[[method.segmentation]][[l]]$costs, 
+                                            selection.strength = known.selection.strength[l],
+                                            conditional_root_variance = unname(conditional_law_X[[l]]$variances[ntaxa+1])))
+      }
+      var.roots[[l]] <- sapply(methods.segmentation, compute_var_M)
+      # cond log lik
+      cond_exp_log_lik <- function(method.segmentation){
+        return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
+                                                                                                     conditional_law_X = conditional_law_X[[l]], 
+                                                                                                     sigma2 = 2 * known.selection.strength[l] * var.roots[[l]][method.segmentation],
+                                                                                                     mu = segs[[method.segmentation]][[l]]$beta_0,
+                                                                                                     shifts = segs[[method.segmentation]][[l]]$shifts,
+                                                                                                     alpha = known.selection.strength[l]))
+      }
+      obj_funcs[l, ] <- sapply(methods.segmentation, cond_exp_log_lik)
+    }
   }
-  var.roots <- sapply(methods.segmentation, compute_var_M)
   ## Compute objective function for each set of parameters, and choose the best one
-  cond_exp_log_lik <- function(method.segmentation){
-    return(unname(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes(phylo = phylo,
-                                                                                          conditional_law_X = conditional_law_X, 
-                                                                                                        sigma2 = 2 * known.selection.strength * var.roots[method.segmentation],
-                                                                                                        mu = segs[[method.segmentation]]$beta_0,
-                                                                                                        shifts = segs[[method.segmentation]]$shifts,
-                                                                                                        alpha = known.selection.strength)))
-  }
-  obj_funcs <- sapply(methods.segmentation, cond_exp_log_lik)
-  best.method.seg <- which.max(obj_funcs)
+  best.method.seg <- which.max(colSums(obj_funcs))
+  sh_ed <- segs[[best.method.seg]]$shifts$edges
+  if (p > 1) sh_ed <- segs[[best.method.seg]][[1]]$shifts$edges
   ## Take the best method, that provides a parsimonious solution
-  while(!check_parsimony_ism(phylo, segs[[best.method.seg]]$shifts$edges, subtree.list) && 
-          any(is.finite(obj_funcs))){
-    obj_funcs[best.method.seg] <- -Inf
-    best.method.seg <- which.max(obj_funcs)
+  while(!check_parsimony_ism(phylo,
+                             sh_ed,
+                             subtree.list)
+          && any(is.finite(obj_funcs))){
+    obj_funcs[, best.method.seg] <- rep(-Inf, p)
+    best.method.seg <- which.max(colSums(obj_funcs))
+    sh_ed <- segs[[best.method.seg]]$shifts$edges
+    if (p > 1) sh_ed <- segs[[best.method.seg]][[1]]$shifts$edges
   }
   ## If no solution is parsimonious, keep the same one.
   if (prod(is.infinite(obj_funcs)) == 1){
@@ -280,32 +338,80 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X, nbr_of_sh
       shifts_olds$edges <- sample_shifts_edges(phylo, nbr_of_shifts, part.list = subtree.list)
     }
     segs <- sapply("same_shifts", segmentation.OU.specialCase, simplify = FALSE)
-    var.roots <- sapply("same_shifts", compute_var_M)
+    if (p == 1){
+      var.roots <- sapply("same_shifts", compute_var_M)
+    } else {
+      for (l in 1:p){
+        compute_var_M <- function(method.segmentation){
+          return(compute_var_M.OU.specialCase(phylo = phylo, 
+                                              var_diff = var_diff[[l]], 
+                                              costs = segs[[method.segmentation]][[l]]$costs, 
+                                              selection.strength = known.selection.strength[l],
+                                              conditional_root_variance = unname(conditional_law_X[[l]]$variances[ntaxa+1])))
+        }
+        var.roots[[l]] <- sapply(methods.segmentation, compute_var_M)
+      }
+    }
     best.method.seg <- 1
   }
   ## Actualize paremters with the ones found by the best segmentation method
-  params$root.state$var.root <- unname(var.roots[best.method.seg])
-  params$variance <- 2 * known.selection.strength * params$root.state$var.root
-  params$shifts <- segs[[best.method.seg]]$shifts
-  params$root.state$exp.root <- segs[[best.method.seg]]$beta_0
-  params$optimal.value <- params$root.state$exp.root
-  attr(params, "segmentation_algorithm_used") <- names(best.method.seg)
-  ## Dimensions
-  pp <- check_dimensions(1,
-                         params$root.state,
-                         params$shifts,
-                         params$variance,
-                         params$selection.strength,
-                         params$optimal.value)
-  params$root.state <- pp$root.state
-  params$shifts <- pp$shifts
-  params$variance <- pp$variance
-  params$selection.strength <- pp$selection.strength
-  params$optimal.value <- pp$optimal.value
-  return(params)
+  if (p == 1){
+    params$root.state$var.root <- unname(var.roots[best.method.seg])
+    params$variance <- 2 * known.selection.strength * params$root.state$var.root
+    params$shifts <- segs[[best.method.seg]]$shifts
+    params$root.state$exp.root <- segs[[best.method.seg]]$beta_0
+    params$optimal.value <- params$root.state$exp.root
+    attr(params, "segmentation_algorithm_used") <- names(best.method.seg)
+    ## Dimensions
+    pp <- check_dimensions(1,
+                           params$root.state,
+                           params$shifts,
+                           params$variance,
+                           params$selection.strength,
+                           params$optimal.value)
+    params$root.state <- pp$root.state
+    params$shifts <- pp$shifts
+    params$variance <- pp$variance
+    params$selection.strength <- pp$selection.strength
+    params$optimal.value <- pp$optimal.value
+    return(params)
+  } else {
+    for (l in 1:p){
+      params[[l]]$root.state$var.root <- unname(var.roots[[l]][best.method.seg])
+      params[[l]]$variance <- 2 * known.selection.strength[l] * params[[l]]$root.state$var.root
+      params[[l]]$shifts <- segs[[best.method.seg]][[l]]$shifts
+      params[[l]]$root.state$exp.root <- segs[[best.method.seg]][[l]]$beta_0
+      params[[l]]$optimal.value <- params[[l]]$root.state$exp.root
+      attr(params[[l]], "segmentation_algorithm_used") <- methods.segmentation[best.method.seg]
+      ## Dimensions
+      pp <- check_dimensions(1,
+                             params[[l]]$root.state,
+                             params[[l]]$shifts,
+                             params[[l]]$variance,
+                             params[[l]]$selection.strength,
+                             params[[l]]$optimal.value)
+      params[[l]]$root.state <- pp$root.state
+      params[[l]]$shifts <- pp$shifts
+      params[[l]]$variance <- pp$variance
+      params[[l]]$selection.strength <- pp$selection.strength
+      params[[l]]$optimal.value <- pp$optimal.value
+    }
+      return(params)
+  }
 }
 
-compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, conditional_law_X, nbr_of_shifts, alpha_old, max_selection.strength, eps, methods.segmentation, beta_0_old = beta_0_old, shifts_old = shifts_old, subtree.list, ...){
+compute_M.OU.stationary.root_AND_shifts_at_nodes <- function(phylo,
+                                                    Y_data,
+                                                    conditional_law_X,
+                                                    nbr_of_shifts,
+                                                    alpha_old,
+                                                    max_selection.strength,
+                                                    eps,
+                                                    methods.segmentation,
+                                                    beta_0_old,
+                                                    shifts_old,
+                                                    subtree.list,
+                                                    params_old, ...){
   ## Estimate all parameters with alpha of the previous step
   params <- compute_M.OU.specialCase(phylo = phylo, 
                                      Y_data = Y_data, 
@@ -315,17 +421,33 @@ compute_M.OU.stationnary.root_AND_shifts_at_nodes <- function(phylo, Y_data, con
                                      methods.segmentation = methods.segmentation,
                                      beta_0_old = beta_0_old,
                                      shifts_old = shifts_old, 
-                                     subtree.list = subtree.list)
+                                     subtree.list = subtree.list,
+                                     params_old = params_old)
   ## Estimate new alpha
-  params$selection.strength <- estimate.alpha(phylo = phylo,
-                                              conditional_law_X = conditional_law_X, 
-                                              sigma2 = params$variance,
-                                              mu = params$root.state$exp.root,
-                                              shifts = params$shifts,
-                                              alpha_old = alpha_old,
-                                              max_selection.strength = max_selection.strength)
-  ## Change value of the root (stationnary) accordingly
-  params$variance <- 2 * params$selection.strength * params$root.state$var.root
+  p <- nrow(Y_data)
+  if (p > 1){
+    for (l in 1:p){
+      params[[l]]$selection.strength <- estimate.alpha(phylo = phylo,
+                                                       conditional_law_X = conditional_law_X[[l]], 
+                                                       sigma2 = params[[l]]$variance,
+                                                       mu = params[[l]]$root.state$exp.root,
+                                                       shifts = params[[l]]$shifts,
+                                                       alpha_old = alpha_old[l],
+                                                       max_selection.strength = max_selection.strength)
+      ## Change value of the root (stationary) accordingly
+      params[[l]]$variance <- 2 * params[[l]]$selection.strength * params[[l]]$root.state$var.root
+    }
+  } else {
+    params$selection.strength <- estimate.alpha(phylo = phylo,
+                                                conditional_law_X = conditional_law_X, 
+                                                sigma2 = params$variance,
+                                                mu = params$root.state$exp.root,
+                                                shifts = params$shifts,
+                                                alpha_old = alpha_old,
+                                                max_selection.strength = max_selection.strength)
+    ## Change value of the root (stationary) accordingly
+    params$variance <- 2 * params$selection.strength * params$root.state$var.root
+  }
   return(params)
 }
 
@@ -490,7 +612,7 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
   nNodes <- phylo$Nnode
   ee <- exp(- selection.strength * phylo$edge.length )
   #return(1/(ntaxa + nNodes) * ( conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff ) + sum( costs0[-edges_max]) ))
-  return(1/(ntaxa + nNodes) * ( conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff ) + sum(costs) ))
+  return(1/(ntaxa + nNodes) * (conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff) + sum(costs)))
 }
 
 ################################################################
@@ -509,7 +631,7 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}
@@ -525,7 +647,13 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #'09/07/14 - Initial release
 #'02/10/14 - Take newly estimated shifts into consideration
 ##
-estimate.alpha <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha_old, max_selection.strength){
+estimate.alpha <- function(phylo,
+                           conditional_law_X,
+                           sigma2,
+                           mu,
+                           shifts,
+                           alpha_old,
+                           max_selection.strength){
   #opt <- optimize(R_function, phylo=phylo, conditional_law_X=conditional_law_X, sigma2=sigma2, mu=mu, interval=c(alpha_old/2, alpha_old*2))
   betas <- compute_betas(phylo = phylo, optimal.value = mu, shifts = shifts)
   opt2 <- optimize(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes.from_betas, 
@@ -546,11 +674,11 @@ estimate.alpha <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha_o
 ## Objective function computation
 #########################################################
 
-conditional_expectation_log_likelihood.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes) {
+conditional_expectation_log_likelihood.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes) {
     return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -567,7 +695,7 @@ conditional_expectation_log_likelihood.OU <- function(stationnary.root, shifts_a
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}, containing
@@ -617,7 +745,7 @@ conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
 #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationnary, and shifts at nodes.
+#' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
 #' @param conditional_law_X result of function \code{compute_E.OU}, containing
@@ -673,7 +801,7 @@ conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_
   ee <- exp(- alpha * phylo$edge.length )
   LogLik <- LogLik - (nNodes + ntaxa)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
   ## Terms with the variance
-  K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
+  K_1 <- as.vector(conditional_law_X$variances)[ntaxa+1] + (as.vector(conditional_law_X$expectations)[ntaxa+1] - mu)^2
   var_diff <- compute_var_diff.OU(phylo=phylo, 
                                   conditional_law_X=conditional_law_X, 
                                   selection.strength=alpha)
@@ -686,7 +814,7 @@ conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_
   daughters <- phylo$edge[,2]
   betas <- betas[daughters]
   LogLik <- LogLik - (alpha / sigma2) * sum((1 - ee^2)^(-1) * (diff_exp - betas * (1-ee))^2)
-  return(LogLik)
+  return(unname(as.vector(LogLik)))
 }
 
 #######################################################################
@@ -814,16 +942,44 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 #'                           
 #'06/10/14 - Initial release
 ##
-segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, penscale = rep(1, ncol(Xp)), ...){
+segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, penscale = rep(1, (nrow(phylo$edge) + 1)), ...){
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   ## Computation of answer matrix D : already done by now.
-  ## Segmentation per se
-  # Lasso regression
-  fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp, K = nbr_of_shifts, root = ntaxa + nNodes, penscale = penscale))
+  if(is.list(D)){ # p independent traits
+    Dvec <- as.vector(do.call(cbind, D))
+    Xkro <- bdiag(Xp)
+    ## Re-order by branches
+    traittoedge <- as.vector(sapply(1:((nrow(phylo$edge) + 1)),
+                                    function(z) ((0:(p-1)) * (nrow(phylo$edge) + 1) + z)))
+    Dvec <- Dvec[traittoedge]
+    Xkro <- as.matrix(Xkro[traittoedge, traittoedge])
+    ## Segmentation per se
+    group <- rep(1:(ntaxa + nNodes), each = length(D))
+    # Lasso regression
+    fit <- try(lasso_regression_K_fixed.gglasso(Yvec = Dvec, Xkro = Xkro,
+                                                K = nbr_of_shifts,
+                                                root = ntaxa + nNodes,
+                                                penscale = penscale,
+                                                group = group))
+  } else { # Only one trait
+    fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp,
+                                                            K = nbr_of_shifts,
+                                                            root = ntaxa+nNodes,
+                                                            penscale = penscale))
+  }
   if (inherits(fit, "try-error")) {
     warning("At M step, Lasso regression failed.")
-    return(list(beta_0 = 0, shifts = NULL, costs = Inf))
+    if (is.list(D)){
+      p = length(D)
+      ret <- vector("list", p)
+      for (l in 1:p){
+        ret[[l]] <- list(beta_0 = 0, shifts = NULL, costs = Inf)
+      }
+      return(ret)
+    } else {
+      return(list(beta_0 = 0, shifts = NULL, costs = Inf))
+    }
   } else {
     # Define shifts
     shifts <- shifts.matrix_to_list(t(fit$delta.gauss))
@@ -831,7 +987,24 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, pensc
     beta_0 <- fit$E0.gauss
     # Compute new costs
     costs <- fit$residuals^2
-    return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
+    if (is.list(D)){ # Split independent traits
+      p <- length(D)
+      # re-order costs
+      edgetotrait <- as.vector(sapply(1:p,
+                                      function(z) ((0:(nrow(phylo$edge))) * p + z)))
+      costs <- costs[edgetotrait]
+      ret <- vector("list", p)
+      for (l in 1:p){
+        ret[[l]] <- list(beta_0 = beta_0[l],
+                         shifts = list(edges = shifts$edges,
+                                       values = shifts$values[l, ],
+                                       relativeTimes = shifts$relativeTimes),
+                         costs = costs[(l-1) * (nrow(phylo$edge) + 1) + 1:(nrow(phylo$edge) + 1)])
+      }
+      return(ret)
+    } else { # One single trait
+      return(list(beta_0 = beta_0, shifts = shifts, costs = costs))
+    }
   }
 }
 
@@ -1050,10 +1223,23 @@ optimize_costs_given_shift_position.OU.specialCase <- function(phylo, conditiona
   return(list(beta_0 = beta_values[1], shifts = shifts, costs = costs))
 }
 
-segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, Xp, ...){
+segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, Xp, params_old, ...){
+  if (is.list(D)){ # case p > 1, independent
+    p <- length(D)
+    shifts_old <- params_old[[1]]$shifts
+  }
   ## If no shifts, there is no such thing as a "single move"
   if (is.null(shifts_old$edges)){
-    return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
+    if (is.list(D)){
+      p = length(D)
+      ret <- vector("list", p)
+      for (l in 1:p){
+        ret[[l]] <- list(beta_0 = 0, shifts = NULL, costs = Inf)
+      }
+      return(ret)
+    } else {
+      return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
+    }
   }
   ## Construct scenarii
   ntaxa <- length(phylo$tip.label)
@@ -1069,11 +1255,10 @@ segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, X
     scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
   }
   ## Choose the best scenario
-  return(best_scenario(as.vector(D), Xp, scenarii, root))
+  return(best_scenario(D, Xp, scenarii, root))
 }
 
-
-best_scenario <- function (D, Xp, scenarii, root) {
+test_all_scenarii <- function(D, Xp, scenarii, root){
   # Function to be applyed to each row
   fun <- function(sh_ed){
     fit.lm <- lm.fit(x = Xp[, c(root, sh_ed), drop = FALSE], y = D)
@@ -1085,12 +1270,67 @@ best_scenario <- function (D, Xp, scenarii, root) {
   }
   # Apply to each row and take the minimal total cost
   allSegs <- apply(scenarii, 1, fun)
-  dd <- do.call(rbind, allSegs)
-  min_conf <- which.min(dd[,"totalCost"])
-  # Go back to good format
-  res <- dd[min_conf,]
-  delta <- rep(0, dim(Xp)[2])
-  delta[res$shifts_edges] <- res$coef[-1]
-  shifts <- shifts.vector_to_list(delta)
-  return(list(beta_0 = res$coef[1], shifts = shifts, costs = res$costs))
+  return(allSegs)
 }
+
+best_scenario <- function (D, Xp, scenarii, root) {
+  if (!is.list(D)){
+    allSegs <- test_all_scenarii(as.vector(D), Xp, scenarii, root)
+    dd <- do.call(rbind, allSegs)
+    min_conf <- which.min(dd[,"totalCost"])
+    # Go back to good format
+    res <- dd[min_conf,]
+    delta <- rep(0, dim(Xp)[2])
+    delta[res$shifts_edges] <- res$coef[-1]
+    shifts <- shifts.vector_to_list(delta)
+    return(list(beta_0 = res$coef[1], shifts = shifts, costs = res$costs))
+  } else {
+    p <- length(D)
+    # apply previous method to each dimension
+    allSegslist <- vector("list", p)
+    for (l in 1:p) {
+      allSegslist[[l]] <- test_all_scenarii(as.vector(D[[l]]), Xp[[l]],
+                                            scenarii, root)
+    }
+    # Find lowest total cost
+    totalCostsAll <- vector("double", dim(scenarii)[1])
+    for (i in 1:length(totalCostsAll)){
+      tmp <- lapply(allSegslist, function(z) return(z[[i]]))
+      totalCostsAll[i] <- sum(sapply(tmp, function(z) return(z$totalCost)))
+    }
+    min_conf <- which.min(totalCostsAll)
+    # Go back to good format
+    ret <- vector("list", p)
+    for (l in 1:p){
+      dd <- do.call(rbind, allSegslist[[l]])
+      res <- dd[min_conf,]
+      delta <- rep(0, dim(Xp[[l]])[2])
+      delta[res$shifts_edges] <- res$coef[-1]
+      shifts <- shifts.vector_to_list(delta)
+      ret[[l]] <- list(beta_0 = res$coef[1], shifts = shifts, costs = res$costs)
+    }
+    return(ret)
+  }
+}
+
+# best_scenario <- function (D, Xp, scenarii, root) {
+#   # Function to be applyed to each row
+#   fun <- function(sh_ed){
+#     fit.lm <- lm.fit(x = Xp[, c(root, sh_ed), drop = FALSE], y = D)
+#     squared_res <- residuals(fit.lm)^2
+#     return(list(shifts_edges = sh_ed,
+#                 coefs = unname(coef(fit.lm)),
+#                 costs = squared_res,
+#                 totalCost = sum(squared_res)))
+#   }
+#   # Apply to each row and take the minimal total cost
+#   allSegs <- apply(scenarii, 1, fun)
+#   dd <- do.call(rbind, allSegs)
+#   min_conf <- which.min(dd[,"totalCost"])
+#   # Go back to good format
+#   res <- dd[min_conf,]
+#   delta <- rep(0, dim(Xp)[2])
+#   delta[res$shifts_edges] <- res$coef[-1]
+#   shifts <- shifts.vector_to_list(delta)
+#   return(list(beta_0 = res$coef[1], shifts = shifts, costs = res$costs))
+# }

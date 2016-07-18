@@ -119,7 +119,7 @@ init.EM.default.OU <- function(phylo = NULL,
                                values.init = matrix(0, p, length(edges.init)),
                                relativeTimes.init = NULL,
                                selection.strength.init=1,
-                               optimal.value.init=0,
+                               optimal.value.init = rep(0, p),
                                nbr_of_shifts = length(edges.init),
                                subtree.list = NULL, ...) {
   if (random.init) {
@@ -169,7 +169,7 @@ init.EM.default.OU <- function(phylo = NULL,
                                   params_init$optimal.value)
   params_init$root.state <- test.root.state(params_init$root.state, "OU",
                                             variance = variance.init,
-                                            selection.strength = selection.strength.init,
+                                            selection.strength = params_init$selection.strength,
                                             optimal.value = optimal.value.init)
   params_init$variance <- as(params_init$variance, "symmetricMatrix")
   return(params_init)
@@ -206,9 +206,9 @@ init.EM.default.OU <- function(phylo = NULL,
 #'06/10/14 - Initial release
 ##
 
-lasso_regression_K_fixed.glmnet_multivariate <- function (Yp, Xp, K,
-                                                          root = NULL,
-                                                          penscale = rep(1, ncol(Xp))) {
+lasso_regression_K_fixed.glmnet_multivariate <- function(Yp, Xp, K,
+                                                         root = NULL,
+                                                         penscale = rep(1, ncol(Xp))) {
   library(glmnet)
   p <- nrow(Yp)
   ## Root is the intercept, should be excluded from varaiable selection
@@ -347,118 +347,138 @@ lasso_regression_K_fixed.glmnet_multivariate <- function (Yp, Xp, K,
   return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
 }
 
-  lasso_regression_K_fixed.gglasso <- function (Yp, Xp, K,
-                                                root = NULL,
-                                                penscale = rep(1, ncol(Xp))) {
+lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
+                                             root = NULL,
+                                             penscale = rep(1,
+                                                            length(unique(group))),
+                                             group = 1:ncol(Xkro)) {
   library(gglasso)
-  p <- nrow(Yp)
   ## Root is the intercept, should be excluded from varaiable selection
-  # In that case, project Yp on the orthogonal of the root
   if (!is.null(root)){
-    #     L <- Xp[ , root]
-    #     norme_L <- drop(crossprod(L))
-    #     Xp_noroot <- Xp[ , -root, drop = FALSE]
-    #     Xp_orth <- Xp_noroot - (tcrossprod(L) %*% Xp_noroot) / norme_L
-    #     Yp_orth <- Yp - crossprod(Yp, L) / (norme_L) * L
-    #     intercept <- FALSE
-    #     penscale <- penscale[-root]
-    Xp_orth <- Xp
-    Yp_orth <- Yp
+    Xp_orth <- Xkro
+    Yp_orth <- Yvec
     intercept <- FALSE
     penscale[root] <- 0
     K_original <- K
     K <- K + 1 ## the root does not count in the number of non zero parameters.
   } else {
-    Xp_orth <- Xp
-    Yp_orth <- Yp
+    Xp_orth <- Xkro
+    Yp_orth <- Yvec
     intercept <- TRUE
     K_original <- K
   }
   ## fit
-  fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
-                 y = as.vector(Yp_orth),
-                 group = rep(1:dim(Xp_orth)[2], each = p),
+  co <- capture.output(
+  fit <- gglasso(x = Xp_orth,
+                 y = Yp_orth,
+                 group = group,
                  loss = "ls",
                  nlambda = 500,
                  intercept = intercept,
-                 dfmax = p * (K + 10),
+                 dfmax = K + 10,
                  pf = penscale)
-  df <- fit$df
+  )
+  df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
-  if (p * K > max(df)) {
-    fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
-                   y = as.vector(Yp_orth),
-                   group = rep(1:dim(Xp_orth)[2], each = p),
+  if (K > max(df)) {
+    co <- capture.output(
+    fit <- gglasso(x = Xp_orth,
+                   y = Yp_orth,
+                   group = group,
                    loss = "ls",
                    nlambda = 500,
                    intercept = intercept,
-                   lambda.factor = 0,
-                   pf = penscale)
-    df <- fit$df
+                   dfmax = K + 10,
+                   pf = penscale,
+                   lambda.factor = 0)
+    )
+    df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
   }
-  if (p * K > max(df)) {
+  if (K > max(df)) {
     stop("Lasso regression failed. There are too many variables.")
   }
   ## If the right lambda does not exists, find it.
   count <- 0
-  while (!any(df == p * K) && count < 500) {
+  fit_tmp <- fit
+  while (!any(df == K) && count < 500) {
     count <- count + 1
-    K_inf <- K - 1
-    while (!any(p * K_inf == df) && (K_inf >= 0)) {
+    K_inf <- max(K - 2, min(df))
+    while (!any(K_inf == df) && (K_inf >= 0)) {
       K_inf <- K_inf - 1
     }
-    lambda_inf <- fit$lambda[tail(which(p * K_inf == df), n = 1)]
-    K_sup <- K + 1
-    while (!any(p * K_sup == df) && (p * K_sup <= max(df))) {
+    lambda_inf <- fit$lambda[tail(which(K_inf == df), n = 1)]
+    K_sup <- min(K + 2, max(df))
+    if (K > max(df)){
+      fit <- fit_tmp
+      df <- fit_tmp$df
+      break
+    }
+    while (!any(K_sup == df) && (K_sup <= max(df))) {
       K_sup <- K_sup + 1
     }
-    lambda_sup <- fit$lambda[head(which(p * K_sup == df), n = 1)]
+    lambda_sup <- fit$lambda[head(which(K_sup == df), n = 1)]
     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
-    fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
-                   y = as.vector(Yp_orth),
-                   group = rep(1:dim(Xp_orth)[2], each = p),
+    fit_tmp <- fit
+    co <- capture.output(
+    fit <- gglasso(x = Xp_orth,
+                   y = Yp_orth,
+                   group = group,
                    loss = "ls",
-                   nlambda = 500,
                    intercept = intercept,
-                   lambda = lambda,
-                   pf = penscale)
-    df <- fit$df
+                   pf = penscale,
+                   lambda = lambda)
+    )
+    df_prev <- df
+    df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
+    if (identical(df, df_prev)) break
   }
+  rm(fit_tmp)
   ## If the right lambda does not exists, raise the number of shifts
   K_2 <- K
-  while (!any(df == p * K_2) && K_2 <= min(dim(Xp))) {
-    warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+  while (!any(df == K_2) && K_2 <= max(group)) {
+    if (K_2 == K){
+      warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+    }
     K_2 <- K_2 + 1
   }
   ## If could not find the right lambda, do a default initialization
-  if (!any(df == p * K_2)) {
+  if (!any(df == K_2)) {
     stop("Lasso Initialisation failed : could not find a satisfying number of shifts.")
   }
   ## Select the row with the right number of coefficients
-  index <- min(which(df == p * K_2))
-  delta <- fit$beta[, index]
-  delta <- t(matrix(delta, nrow = p))
-  #   # If we put aside the root, replace it in the coefficients
-  #   if (!is.null(root)){
-  #     #deltabis <- unname(c(delta[1:(root - 1)], 0, tail(delta, n = max(0, length(delta) - root + 1))))
-  #     delta <- append(delta, 0, after = root - 1)
-  #   }
+  index <- min(which(df == K_2))
+  if (p == 1){
+    delta <- fit$beta[, index]
+    delta <- matrix(delta, nrow = length(delta))
+  } else {
+    delta <- fit$beta[, index]
+    delta <- t(matrix(delta, nrow = p))
+  }
+#   # If we put aside the root, replace it in the coefficients
+#   if (!is.null(root)){
+#     #deltabis <- unname(c(delta[1:(root - 1)], 0, tail(delta, n = max(0, length(delta) - root + 1))))
+#     delta <- append(delta, 0, after = root - 1)
+#   }
   # Check that the matrix is of full rank
-  projection <- which(rowSums(delta) != 0)
-  Xproj <- Xp[ , projection, drop = FALSE]
+  projection <- which(fit$beta[, index] != 0)
+  Xproj <- Xkro[ , projection, drop = FALSE]
   if (dim(Xproj)[2] != qr(Xproj)$rank) {
     warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
     # Re-do a fit and try again.
-    fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
-                   y = as.vector(Yp_orth),
-                   group = rep(1:dim(Xp_orth)[2], each = p),
+    co <- capture.output(
+    fit <- gglasso(x = Xp_orth,
+                   y = Yp_orth,
+                   group = group,
                    loss = "ls",
                    nlambda = 500,
                    intercept = intercept,
-                   dfmax = p * (K + 10),
+                   dfmax = K + 10,
                    pf = penscale)
-    delta <- try(find_independent_regression_vectors.gglasso(Xp, K, fit, root))
+    )
+    delta <- try(find_independent_regression_vectors.gglasso(Xkro, K,
+                                                             fit, root,
+                                                             p, group))
     if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
   }
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
@@ -472,8 +492,136 @@ lasso_regression_K_fixed.glmnet_multivariate <- function (Yp, Xp, K,
     delta.bis[edges, ] <- delta[edges, ]
   }
   ## Gauss lasso
-  return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+  return(compute_gauss_lasso.gglasso(Yvec, Xkro, delta.bis, root, group, p))
 }
+
+# lasso_regression_K_fixed.gglasso <- function (Yp, Xp, K,
+#                                               root = NULL,
+#                                               penscale = rep(1, ncol(Xp))) {
+#   library(gglasso)
+#   p <- nrow(Yp)
+#   ## Root is the intercept, should be excluded from varaiable selection
+#   # In that case, project Yp on the orthogonal of the root
+#   if (!is.null(root)){
+#     #     L <- Xp[ , root]
+#     #     norme_L <- drop(crossprod(L))
+#     #     Xp_noroot <- Xp[ , -root, drop = FALSE]
+#     #     Xp_orth <- Xp_noroot - (tcrossprod(L) %*% Xp_noroot) / norme_L
+#     #     Yp_orth <- Yp - crossprod(Yp, L) / (norme_L) * L
+#     #     intercept <- FALSE
+#     #     penscale <- penscale[-root]
+#     Xp_orth <- Xp
+#     Yp_orth <- Yp
+#     intercept <- FALSE
+#     penscale[root] <- 0
+#     K_original <- K
+#     K <- K + 1 ## the root does not count in the number of non zero parameters.
+#   } else {
+#     Xp_orth <- Xp
+#     Yp_orth <- Yp
+#     intercept <- TRUE
+#     K_original <- K
+#   }
+#   ## fit
+#   fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
+#                  y = as.vector(Yp_orth),
+#                  group = rep(1:dim(Xp_orth)[2], each = p),
+#                  loss = "ls",
+#                  nlambda = 500,
+#                  intercept = intercept,
+#                  dfmax = p * (K + 10),
+#                  pf = penscale)
+#   df <- fit$df
+#   ## Find the lambda that gives the right number of ruptures
+#   # Check that lambda goes far enought
+#   if (p * K > max(df)) {
+#     fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
+#                    y = as.vector(Yp_orth),
+#                    group = rep(1:dim(Xp_orth)[2], each = p),
+#                    loss = "ls",
+#                    nlambda = 500,
+#                    intercept = intercept,
+#                    lambda.factor = 0,
+#                    pf = penscale)
+#     df <- fit$df
+#   }
+#   if (p * K > max(df)) {
+#     stop("Lasso regression failed. There are too many variables.")
+#   }
+#   ## If the right lambda does not exists, find it.
+#   count <- 0
+#   while (!any(df == p * K) && count < 500) {
+#     count <- count + 1
+#     K_inf <- K - 1
+#     while (!any(p * K_inf == df) && (K_inf >= 0)) {
+#       K_inf <- K_inf - 1
+#     }
+#     lambda_inf <- fit$lambda[tail(which(p * K_inf == df), n = 1)]
+#     K_sup <- K + 1
+#     while (!any(p * K_sup == df) && (p * K_sup <= max(df))) {
+#       K_sup <- K_sup + 1
+#     }
+#     lambda_sup <- fit$lambda[head(which(p * K_sup == df), n = 1)]
+#     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+#     fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
+#                    y = as.vector(Yp_orth),
+#                    group = rep(1:dim(Xp_orth)[2], each = p),
+#                    loss = "ls",
+#                    nlambda = 500,
+#                    intercept = intercept,
+#                    lambda = lambda,
+#                    pf = penscale)
+#     df <- fit$df
+#   }
+#   ## If the right lambda does not exists, raise the number of shifts
+#   K_2 <- K
+#   while (!any(df == p * K_2) && K_2 <= min(dim(Xp))) {
+#     warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+#     K_2 <- K_2 + 1
+#   }
+#   ## If could not find the right lambda, do a default initialization
+#   if (!any(df == p * K_2)) {
+#     stop("Lasso Initialisation failed : could not find a satisfying number of shifts.")
+#   }
+#   ## Select the row with the right number of coefficients
+#   index <- min(which(df == p * K_2))
+#   delta <- fit$beta[, index]
+#   delta <- t(matrix(delta, nrow = p))
+#   #   # If we put aside the root, replace it in the coefficients
+#   #   if (!is.null(root)){
+#   #     #deltabis <- unname(c(delta[1:(root - 1)], 0, tail(delta, n = max(0, length(delta) - root + 1))))
+#   #     delta <- append(delta, 0, after = root - 1)
+#   #   }
+#   # Check that the matrix is of full rank
+#   projection <- which(rowSums(delta) != 0)
+#   Xproj <- Xp[ , projection, drop = FALSE]
+#   if (dim(Xproj)[2] != qr(Xproj)$rank) {
+#     warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
+#     # Re-do a fit and try again.
+#     fit <- gglasso(x = kronecker(Xp_orth, diag(rep(1, p))),
+#                    y = as.vector(Yp_orth),
+#                    group = rep(1:dim(Xp_orth)[2], each = p),
+#                    loss = "ls",
+#                    nlambda = 500,
+#                    intercept = intercept,
+#                    dfmax = p * (K + 10),
+#                    pf = penscale)
+#     delta <- try(find_independent_regression_vectors.gglasso(Xp, K, fit, root))
+#     if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
+#   }
+#   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
+#   if (is.null(root)){
+#     edges <- order(-rowSums(abs(delta)))[1:K]
+#     delta.bis <- matrix(0, dim(delta)[1], dim(delta)[2])
+#     delta.bis[edges, ] <- delta[edges, ]
+#   } else {
+#     edges <- order(-rowSums(abs(delta[-root, , drop = F])))[1:K_original]
+#     delta.bis <- matrix(0, dim(delta)[1] - 1, dim(delta)[2])
+#     delta.bis[edges, ] <- delta[edges, ]
+#   }
+#   ## Gauss lasso
+#   return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+# }
 
 lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
   ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
@@ -693,26 +841,19 @@ find_independent_regression_vectors.glmnet_multivariate <- function(Xp, K, fit, 
   }
 }
 
-find_independent_regression_vectors.gglasso <- function(Xp, K, fit, root){
-  if (p == 1){
-    deltas <- fit$beta
-    deltas <- matrix(delta, dim = c(1, dim(delta)))
-  } else {
-    library(plyr)
-    deltas <- laply(fit$beta, function(z) as.matrix(z))
-  }
-  nsets <- dim(deltas)[3]
-#   if (!is.null(root)){
-#     deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
-#   }
-  projections <- t(apply(deltas, 3, function(z) return(colSums(z) != 0)))
-  check_independance <- function(projection, Xp){
-    Xproj <- Xp[ , projection, drop = FALSE]
+find_independent_regression_vectors.gglasso <- function(Xkro, K, fit, root, p, group){
+  nsets <- ncol(fit$beta)
+  #   if (!is.null(root)){
+  #     deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
+  #   }
+  projections <- t(fit$beta != 0)
+  check_independance <- function(projection, Xkro){
+    Xproj <- Xkro[ , projection, drop = FALSE]
     return(dim(Xproj)[2] == qr(Xproj)$rank)
   }
   for (i in 1:nsets){
     # If not independent : go back to the previous state.
-    if (!check_independance(projections[i, ], Xp)){
+    if (!check_independance(projections[i, ], Xkro)){
       # Variables that were activated or inactivated
       changes <- xor(projections[i - 1, ], projections[i, ])
       # Activated variables : inactivate them for the futur
@@ -724,16 +865,67 @@ find_independent_regression_vectors.gglasso <- function(Xp, K, fit, root){
     }
   }
   ## Find the right number of selected variables
-  n_select <- rowSums(projections)
-  right_ones <- n_select == K
+  # n_select <- rowSums(projections)
+  n_select <- apply(projections, 1, function(z) length(unique(group[z])))
+  right_ones <- n_select >= K
   if (!any(right_ones)){
     stop("Could not find K independant vectors in the regression path provided.")
   } else {
     right_one <- which(right_ones)[1]
-    return(matrix(rep(0 + projections[right_one, ], 3),
-                  nrow = length(projections[right_one, ])))
+    ## If too many, take the K largests.
+    delta_ind <- t(matrix(fit$beta[, right_one], nrow = p))
+    edges <- which(rowSums(delta_ind) != 0)
+    delta.bis <- matrix(0, dim(delta_ind)[1], dim(delta_ind)[2])
+    values <- delta_ind[edges, , drop = FALSE]
+    values[rowSums(values) == 0, ] <- 1 # If projection selected edges not initially present
+    delta.bis[edges, ] <- values
+    return(delta.bis)
+    #     return(matrix(rep(0 + projections[right_one, ], 3),
+    #                   nrow = length(projections[right_one, ])))
   }
 }
+
+# find_independent_regression_vectors.gglasso <- function(Xp, K, fit, root){
+#   if (p == 1){
+#     deltas <- fit$beta
+#     deltas <- matrix(delta, dim = c(1, dim(delta)))
+#   } else {
+#     library(plyr)
+#     deltas <- laply(fit$beta, function(z) as.matrix(z))
+#   }
+#   nsets <- dim(deltas)[3]
+# #   if (!is.null(root)){
+# #     deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
+# #   }
+#   projections <- t(apply(deltas, 3, function(z) return(colSums(z) != 0)))
+#   check_independance <- function(projection, Xp){
+#     Xproj <- Xp[ , projection, drop = FALSE]
+#     return(dim(Xproj)[2] == qr(Xproj)$rank)
+#   }
+#   for (i in 1:nsets){
+#     # If not independent : go back to the previous state.
+#     if (!check_independance(projections[i, ], Xp)){
+#       # Variables that were activated or inactivated
+#       changes <- xor(projections[i - 1, ], projections[i, ])
+#       # Activated variables : inactivate them for the futur
+#       new_vars <- changes & projections[i, ]
+#       projections[i:nsets, new_vars] <- FALSE
+#       # Inactivated variables : re-activate them for the futur
+#       del_vars <- changes & projections[i - 1, ]
+#       projections[i:nsets, del_vars] <- TRUE
+#     }
+#   }
+#   ## Find the right number of selected variables
+#   n_select <- rowSums(projections)
+#   right_ones <- n_select == K
+#   if (!any(right_ones)){
+#     stop("Could not find K independant vectors in the regression path provided.")
+#   } else {
+#     right_one <- which(right_ones)[1]
+#     return(matrix(rep(0 + projections[right_one, ], 3),
+#                   nrow = length(projections[right_one, ])))
+#   }
+# }
 
 find_independent_regression_vectors.quadrupen <- function(Xp, K, fit, root){
   deltas <- fit@coefficients
@@ -825,6 +1017,37 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
               residuals = residuals(fit.gauss)))
 }
 
+compute_gauss_lasso.gglasso <- function (Yvec, Xkro, delta, root, group, p) {
+  projection <- which(as.vector(t(delta)) != 0)
+  if (is.null(root)) { # If no one is excluded, "real" intercept
+    Xproj <- 0 + Xkro[, projection, drop = FALSE]
+    fit.gauss <- lm(Yvec ~ Xproj)
+    delta.gauss <- rep(0, dim(delta)[1] * dim(delta)[2])
+    coefs_gauss <- coef(fit.gauss)
+    E0.gauss <- coefs_gauss[1:p]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coefs_gauss[-(1:p)]
+    delta.gauss <- t(matrix(delta.gauss, ncol = nrow(delta)))
+  } else { # take intercept (root) into consideration
+    Xproj <- 0 + Xkro[, c(which(group == root), projection), drop = FALSE]
+    fit.gauss <- lm(Yvec ~ Xproj - 1)
+    delta.gauss <- rep(0, dim(delta)[1] * dim(delta)[2])
+    coefs_gauss <- coef(fit.gauss)
+    E0.gauss <- coefs_gauss[1:p]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coefs_gauss[-(1:p)]
+    delta.gauss <- t(matrix(delta.gauss, ncol = nrow(delta)))
+  }
+  # If lm fails to find some coeficients
+  if (anyNA(delta.gauss)) {
+    warning("There were some NA in the lm fit for the Gauss Lasso. These were replaced with the values obtained from the Lasso. This is not the optimal solution.")
+    delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
+  }
+  # Result
+  # shifts.gauss <- shifts.matrix_to_list(t(delta.gauss));
+  return(list(E0.gauss = E0.gauss, 
+              delta.gauss = delta.gauss,
+              residuals = residuals(fit.gauss)))
+}
+
 ##
 #' @title Initialisation of the shifts using Lasso.
 #'
@@ -872,14 +1095,15 @@ init.EM.lasso <- function(phylo,
                           values.init = matrix(0, p, length(edges.init)),
                           relativeTimes.init = NULL,
                           selection.strength.init = 1,
-                          optimal.value.init = 0,
+                          optimal.value.init = rep(0, p),
                           T_tree = incidence.matrix(phylo),
                           subtree.list = NULL,
                           miss = FALSE,
                           sBM_variance = FALSE,
-                          stationnary.root.init = FALSE,
+                          stationary.root.init = FALSE,
                           impute_init_Rphylopars = TRUE,
                           masque_data,
+                          independent = FALSE,
                           ...) {
   ntaxa <- length(phylo$tip.label)
   p <- nrow(Y_data)
@@ -899,7 +1123,7 @@ init.EM.lasso <- function(phylo,
                                    random.init = random.init, 
                                    var.root.init = var.root.init,
                                    variance.init = variance.init,
-                                   stationnary.root.init = stationnary.root.init,
+                                   stationary.root.init = stationary.root.init,
                                    sBM_variance = sBM_variance,
                                    phylo = phylo, ...)
     return(params_init)
@@ -911,10 +1135,16 @@ init.EM.lasso <- function(phylo,
   }
   ## Actualization of incidence matrix
   Tr <- T_tree
-  ac_tree <- incidence_matrix_actualization_factors(tree = phylo, 
-                                                    selection.strength = selection.strength.init,
-                                                    times_shared = times_shared)
-  Tr <- T_tree * ac_tree
+  if (independent){
+    ac_tree <- lapply(selection.strength.init,
+                      function(z) return(incidence_matrix_actualization_factors(tree = phylo, selection.strength = z, times_shared = times_shared)))
+    Tr <- lapply(ac_tree, function(z) return(T_tree * z))
+  } else {
+    ac_tree <- incidence_matrix_actualization_factors(tree = phylo, 
+                                                      selection.strength = selection.strength.init,
+                                                      times_shared = times_shared)
+    Tr <- T_tree * ac_tree
+  }
   ## Choose the norm :
   if (use_sigma) {
     if (is.null(params_sigma)){
@@ -922,7 +1152,7 @@ init.EM.lasso <- function(phylo,
       params_sigma <- init.EM.default(Y_data = Y_data_imp,
                                       selection.strength.init = selection.strength.init, 
                                       random.init = random.init,
-                                      stationnary.root.init = stationnary.root.init,
+                                      stationary.root.init = stationary.root.init,
                                       var.root.init = var.root.init,
                                       variance.init = variance.init,
                                       value.root.init = value.root.init,
@@ -935,7 +1165,7 @@ init.EM.lasso <- function(phylo,
                                       phylo = phylo,
                                       sBM_variance = sBM_variance)
     }
-    if (!any(is.na(Y_data_imp))){ # If there are no NA, do matrix computations
+    if (!any(is.na(Y_data_imp)) && !independent){ # If there are no NA, do matrix computations
       # Choose process
       compute_tree_correlations_matrix  <- switch(process, 
                                                   BM = compute_tree_correlations_matrix.BM,
@@ -961,23 +1191,118 @@ init.EM.lasso <- function(phylo,
       fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = Yp, Xp = Tp,
                                           K = nbr_of_shifts, root = dim(Tr)[2]))
       chol_data <- TRUE
-      } # else { # If there are some NAs, use vectors.
-#       moments <- compute_mean_variance(phylo = phylo,
-#                                        times_shared = times_shared,
-#                                        distances_phylo = distances_phylo,
-#                                        process = process,
-#                                        params_old = params_sigma,
-#                                        masque_data = masque_data)
-#       Vd <- moments$Sigma_YY_chol_inv
-#       Yp <- Vd %*% Y_data_vec_known
-#       Xp <- kronecker(Tr, diag(rep(1, p)))
-#       Xp <- Xp[masque_data[1:(p*ntaxa)], masque_data[1:(p*ntaxa)]]
-#     }
+      } else { # If there are some NAs, use vectors.
+        attr(params_sigma, "p_dim") <- p
+        fun <- function(i){
+          return(compute_mean_variance.simple(phylo = phylo,
+                                                times_shared = times_shared,
+                                                distances_phylo = distances_phylo,
+                                                process = process,
+                                                params_old = params,
+                                                masque_data = masque_data))
+        }
+        if (independent){
+          params_list <- split_params_independent(params_sigma)
+          # Compute Sigma_YY^{-1/2} for each trait
+          masque_data_matr <- matrix(masque_data,
+                                     ncol = length(phylo$tip.label) + phylo$Nnode)
+          moments <- vector(mode = "list", length = length(params_list))
+          for (i in 1:length(params_list)){
+            moments[[i]] <- compute_mean_variance.simple(phylo = phylo,
+                                                         times_shared = times_shared,
+                                                         distances_phylo = distances_phylo,
+                                                         process = process,
+                                                         params_old = params_list[[i]],
+                                                         masque_data = masque_data_matr[i,])$Sigma_YY_chol_inv
+          }
+          Vp <- bdiag(moments)
+          # Normalize data
+          missbis <- as.vector(t(matrix(miss, nrow = p)))
+          Yp <- Vp %*% as.vector(t(Y_data))[!missbis]
+          # Regressor
+          Tr <- lapply(Tr, function(z) return(cbind(z, rep(1, dim(z)[1]))))
+          Xp <- bdiag(Tr)
+          # Reorder matrices
+          corrdata <- as.vector(sapply(1:ntaxa,
+                                       function(z) ((0:(p-1)) * ntaxa + z)))
+          corrdata <- corrdata[!miss]
+          corrreg <- as.vector(sapply(1:((nrow(phylo$edge) + 1)),
+                                      function(z) ((0:(p-1)) * (nrow(phylo$edge) + 1) + z)))
+          Xp <- Xp[corrdata, corrreg]
+          # Data
+          Ytemp <- rep(NA, ntaxa * p)
+          Ytemp[!missbis] <- as.vector(Yp)
+          Yp <- Ytemp[corrdata]
+          # root
+          root <- ncol(Tr[[1]])
+        } else { # Case BM with missing values
+          # Normalize data
+          Vp <- compute_mean_variance.simple(phylo = phylo,
+                                                  times_shared = times_shared,
+                                                  distances_phylo = distances_phylo,
+                                                  process = process,
+                                                  params_old = params_sigma,
+                                                  masque_data = masque_data)$Sigma_YY_chol_inv
+          Yp <- Vp %*% Y_data_vec_known
+          # Regressor
+          Xp <- kronecker(Tr, diag(rep(1, p)))
+          Xp <- Xp[masque_data[1:(p*ntaxa)], ]
+          # Root
+          root <- ncol(Tr)
+        }
+      # Normalize predictor
+      Xp <- Vp %*% Xp
+      # Fit
+      group <- rep(1:root, each = p)
+      fit <- try(lasso_regression_K_fixed.gglasso(Yvec = as.vector(Yp),
+                                                  Xkro = as.matrix(Xp),
+                                                  K = nbr_of_shifts,
+                                                  root = root,
+                                                  group = group))
+      chol_data <- FALSE
+    }
   } else {
     # Return untransformed Y_data and T
-    Tp <- Tr
-    Yp <- Y_data_imp
-    fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = Yp, Xp = Tp, K = nbr_of_shifts))
+    if (!any(is.na(Y_data_imp)) && !independent){
+      Tr <- cbind(Tr, rep(1, dim(Tr)[1])) # Here we use hypothesis : beta_0 = mu if OU
+      Yp <- Y_data_imp
+      fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = Yp, Xp = Tp,
+                                                              K = nbr_of_shifts,
+                                                              root = dim(Tr)[2]))
+    } else {
+      if (independent){
+        Tr <- lapply(Tr, function(z) return(cbind(z, rep(1, dim(z)[1]))))
+        Xp <- bdiag(Tr)
+        # Reorder matrices
+        corrdata <- as.vector(sapply(1:ntaxa,
+                                     function(z) ((0:(p-1)) * ntaxa + z)))
+        corrdata <- corrdata[!miss]
+        corrreg <- as.vector(sapply(1:((nrow(phylo$edge) + 1)),
+                                    function(z) ((0:(p-1)) * (nrow(phylo$edge) + 1) + z)))
+        Xp <- Xp[corrdata, corrreg]
+        # Data
+        Ytemp <- rep(NA, ntaxa * p)
+        missbis <- as.vector(t(matrix(miss, nrow = p)))
+        Ytemp[!missbis] <- as.vector(t(Y_data))[!missbis]
+        Yp <- Ytemp[corrdata]
+        # root
+        root <- ncol(Tr[[1]])
+      } else { # Case BM with missing values
+        Yp <- Y_data_vec_known
+        # Regressor
+        Xp <- kronecker(Tr, diag(rep(1, p)))
+        Xp <- Xp[masque_data[1:(p*ntaxa)], ]
+        # Root
+        root <- ncol(Tr)
+      }
+      # Fit
+      group <- rep(1:root, each = p)
+      fit <- try(lasso_regression_K_fixed.gglasso(Yvec = as.vector(Yp),
+                                                  Xkro = as.matrix(Xp),
+                                                  K = nbr_of_shifts,
+                                                  group = group,
+                                                  root = root))
+    }
     chol_data <- FALSE
   }
   ## Fit
@@ -994,7 +1319,7 @@ init.EM.lasso <- function(phylo,
                            random.init = random.init, 
                            var.root.init = var.root.init,
                            variance.init = variance.init,
-                           stationnary.root.init = stationnary.root.init,
+                           stationary.root.init = stationary.root.init,
                            nbr_of_shifts = nbr_of_shifts,
                            phylo = phylo,
                            sBM_variance = sBM_variance, ...))
@@ -1026,7 +1351,7 @@ init.EM.lasso <- function(phylo,
                                    random.init = random.init, 
                                    var.root.init = var.root.init,
                                    variance.init = variance.init,
-                                   stationnary.root.init = stationnary.root.init,
+                                   stationary.root.init = stationary.root.init,
                                    sBM_variance = sBM_variance,
                                    phylo = phylo, ...)
     return(params_init)
@@ -1076,9 +1401,9 @@ init.alpha.gamma.OU <- function(method.init.alpha){
 
 init.alpha.default <- function(init.selection.strength, known.selection.strength, alpha_known, ...){
   if (alpha_known) {
-    return(known.selection.strength)
+    return(matrix(known.selection.strength, 1, length(known.selection.strength)))
   } else {
-    return(init.selection.strength)
+    return(matrix(init.selection.strength, 1, length(init.selection.strength)))
   }
 }
 
@@ -1199,21 +1524,35 @@ estimate_covariance_from_triplet <- function(Y_data, distances_phylo, v){
 }
 
 init.alpha.gamma.default <- function(init.selection.strength, known.selection.strength, alpha_known, init.var.root, ...){
-  return(list(alpha_0 = init.alpha.default(init.selection.strength, known.selection.strength, alpha_known),
-              gamma_0 = init.var.root))
+  if (!is.vector(init.var.root)){
+    gamma_0 <- diag(init.var.root) 
+  } else {
+    gamma_0 <- init.var.root
+  }
+  gamma_0 <- matrix(gamma_0, 1, length(gamma_0))
+  return(list(alpha_0 = init.alpha.default(init.selection.strength,
+                                           known.selection.strength,
+                                           alpha_known),
+              gamma_0 = gamma_0))
 }
 
 init.alpha.gamma.estimation <- function(phylo, 
                                         Y_data, 
                                         nbr_of_shifts, 
+                                        times_shared,
                                         distances_phylo, 
+                                        T_tree,
+                                        subtree.list,
                                         max_triplet_number, 
                                         alpha_known,
                                         method.init.alpha.estimation,
-                                        tol, h_tree, ...){
+                                        tol, h_tree,
+                                        miss,
+                                        independent, ...){
   ## Initialize a vector with the group of each tip
   tips_groups <- rep(0, length(phylo$tip.label))
   names(tips_groups) <- phylo$tip.label
+  p <- nrow(Y_data)
   ## Initialize shifts by a lasso without sigma
   if (nbr_of_shifts > 0) {
     lasso <- init.EM.lasso(phylo = phylo,
@@ -1222,68 +1561,88 @@ init.alpha.gamma.estimation <- function(phylo,
                            nbr_of_shifts = nbr_of_shifts,
                            use_sigma = FALSE,
                            random.init = TRUE,
-                           stationnary.root.init = TRUE)
+                           stationary.root.init = TRUE,
+                           times_shared = times_shared,
+                           distances_phylo = distances_phylo,
+                           T_tree = T_tree,
+                           subtree.list = subtree.list,
+                           miss = miss,
+                           impute_init_Rphylopars = FALSE,
+                           masque_data = masque_data,
+                           independent = independent,
+                           selection.strength.init = rep(1, p))
     ## Roeorder phylo and trace edges
     phy <- reorder(phylo, order = "cladewise")
-    edges_shifts <- correspondanceEdges(edges=lasso$shifts$edges,from=phylo,to=phy)
+    edges_shifts <- correspondanceEdges(edges = lasso$shifts$edges,
+                                        from = phylo, to = phy)
     ## Set groups of tips (one group = all the tips under a given shift)
     Tr <- incidence.matrix(phy)
     for (ed in order(edges_shifts)) { # Do it in order so that edges with higher numbers erase groups (edges closer from the tips)
       ed_sh <- edges_shifts[ed]
-      tips_groups[phy$tip.label[Tr[,ed_sh]]] <- ed
+      tips_groups[phy$tip.label[Tr[, ed_sh]]] <- ed
     }
   } else {
     edges_shifts <- NULL
   }
   ## For each group, take all the triplets of tips to estimate the covariance sigma_ij
   cor_hat <- NULL # estimations from trilpets of pairs corelations
-  square_diff <- NULL # (Y_i-Y_j)^2
+  square_diff <- vector("list", p) # (Y_i-Y_j)^2
   dists <- NULL # corresponding phylogenetic distances between pairs
-  hat_gam <- rep(NA, length(edges_shifts)+1)
-  hat_gam_mad <- rep(NA, length(edges_shifts)+1)
+  hat_gam <- matrix(NA, nrow = length(edges_shifts)+1, ncol = p)
+  hat_gam_mad <- matrix(NA, nrow = length(edges_shifts)+1, ncol = p)
   for (grp in 0:length(edges_shifts)) {
     tips <- which(tips_groups==grp)
     if (length(tips) > 1){
-      hat_gam[grp+1] <- var(Y_data[tips])
-      hat_gam_mad[grp+1] <- mad(Y_data[tips])^2
-      Z <- outer(Y_data[tips], Y_data[tips], function(x,y){x-y} )
-      square_diff <- c(square_diff, (Z[upper.tri(Z)])^2)
+      for (l in 1:p){
+        hat_gam[grp+1, l] <- var(na.omit(Y_data[l, tips]))
+        hat_gam_mad[grp+1, l] <- mad(Y_data[l, tips], na.rm = TRUE)^2
+        Z <- outer(Y_data[l, tips], Y_data[l, tips],
+                   function(x,y){x-y} )
+        square_diff[[l]] <- c(square_diff[[l]], (Z[upper.tri(Z)])^2)
+      }
       Z <- distances_phylo[tips,tips]
       dists <- c(dists, Z[upper.tri(Z)])
     }
   }
   ## Estimation of gamma
-  gamma_0 <- rep(NA, length.out = length(method.init.alpha.estimation) + 2)
-  names(gamma_0) <- c("var", "mad", method.init.alpha.estimation)
-  gamma_0["var"] <- mean(hat_gam, na.rm = TRUE) # Simple variance
-  gamma_0["mad"] <- median(hat_gam_mad, na.rm = TRUE) # MAD
+  gamma_0 <- matrix(NA, nrow = length(method.init.alpha.estimation) + 2, ncol = p)
+  rownames(gamma_0) <- c("var", "mad", method.init.alpha.estimation)
+  gamma_0["var", ] <- colMeans(hat_gam, na.rm = TRUE) # Simple variance
+  gamma_0["mad", ] <- colMedians(hat_gam_mad, na.rm = TRUE) # MAD
                
   ## Estimation of alpha
   # Supress couple "too far away"
   too_far <- (dists > h_tree)
-  dists <- dists[too_far]
-  square_diff <- square_diff[too_far]
+  dists <- dists[!too_far]
+  square_diff <- do.call(rbind, square_diff)
+  square_diff <- square_diff[, !too_far]
   if (alpha_known) {
     return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
                 gamma_0 = gamma_0[c("var", "mad")]))
   } else {
-    alpha_0 <- rep(NA, length.out = length(method.init.alpha.estimation))
-    names(alpha_0) <- method.init.alpha.estimation
+    alpha_0 <- matrix(NA, nrow = length(method.init.alpha.estimation), ncol = p)
+    rownames(alpha_0) <- method.init.alpha.estimation
     for (method in method.init.alpha.estimation){
       estimate.alpha  <- switch(method, 
                                 regression = estimate.alpha.regression,
                                 regression.MM = estimate.alpha.regression.MM,
                                 median = estimate.alpha.median)
       
-      ag_0_try <- try(estimate.alpha(square_diff, dists, gamma_0[["mad"]], tol, h_tree))
-      
-      if (inherits(ag_0_try, "try-error")) {
-        warning(paste0("Robust estimation of alpha by ", method, " failed. Going back to default value."))
-        alpha_0[method] <- NA # init.alpha.gamma.default(alpha_known, ...)$alpha_0
-        gamma_0[method] <- NA
-      } else {
-        alpha_0[method] <- ag_0_try[["alpha_0"]]
-        gamma_0[method] <- ag_0_try[["gamma_0"]]
+      for (l in 1:p){
+        mask <- !is.na(square_diff[l, ])
+        ag_0_try <- try(estimate.alpha(square_diff[l, mask],
+                                       dists[mask],
+                                       gamma_0["mad", l],
+                                       tol, h_tree), silent = TRUE)
+        
+        if (inherits(ag_0_try, "try-error")) {
+          message(paste0("Robust estimation of alpha by ", method, " failed."))
+          alpha_0[method, l] <- NA # init.alpha.gamma.default(alpha_known, ...)$alpha_0
+          gamma_0[method, l] <- NA
+        } else {
+          alpha_0[method, l] <- ag_0_try[["alpha_0"]]
+          gamma_0[method, l] <- ag_0_try[["gamma_0"]]
+        }
       }
     }
     return(list(alpha_0 = alpha_0, 
@@ -1404,11 +1763,11 @@ estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
   set.seed(18051220)
-  low_bound = c(gam = gamma_0/5,
-                     t_half = 0.01 * h_tree)
-  up_bound = c(gam = 5 * gamma_0,
-                    t_half = 10 * h_tree)
-  fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
+  low_bound = c(gam = unname(gamma_0)/5,
+                t_half = 0.01 * h_tree)
+  up_bound = c(gam = 5 * unname(gamma_0),
+               t_half = 10 * h_tree)
+  fit.rob <- nlrob(square_diff ~ (2 * gam * (1 - exp(-log(2) / t_half * dists))),
                    data = df,
                    tol = tol_t_half,
                    lower = low_bound,

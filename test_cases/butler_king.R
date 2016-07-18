@@ -101,7 +101,7 @@ results_estim_EM$params_history[["B-K"]] <- paramsBK
 history <- list_to_table.history(results_estim_EM$params_history)
 history[,"B-K"]["log_likelihood"] <-log_likelihood.OU(Y_data_bimac, bimac_ape_tree, paramsBK)
 write.csv2(history, paste0(PATH, "boite_noire_BK", name, ".csv"))
-plot.history.OU.stationnary(results_estim_EM$params_history, paramsBK, bimac_ape_tree, Y_data_bimac, paramsBK, PATH=PATH, paste0("history_plot", name), "B-K")
+plot.history.OU.stationary(results_estim_EM$params_history, paramsBK, bimac_ape_tree, Y_data_bimac, paramsBK, PATH=PATH, paste0("history_plot", name), "B-K")
 
 ## Save plots
 plot.process.actual(Y.state = Y_data_bimac,

@@ -589,7 +589,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                      stationary.root = TRUE,
                      value.root = NA,
                      exp.root = beta_0,
-                     var.root = compute_stationnary_variance(var_mat, alpha_mat))
+                     var.root = compute_stationary_variance(var_mat, alpha_mat))
   params <-  list(variance = var_mat,
                   root.state = root.state,
                   shifts = shifts,
