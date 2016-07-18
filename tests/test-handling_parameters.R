@@ -149,7 +149,7 @@ test_that("test.root.state", {
                           exp.root = 2,
                           var.root = as(as.matrix(5, 1, 1), "symmetricMatrix"))
   
-  root.state_test <- test.root.state(root.state_test, "BM")
+  expect_warning(root.state_test <- test.root.state(root.state_test, "BM"))
   expect_that(root.state_test, equals(root.state_correct))
   
   # Dimension p
@@ -165,7 +165,7 @@ test_that("test.root.state", {
                           exp.root = NA,
                           var.root = NA)
   
-  root.state_test <- test.root.state(root.state_test, "BM")
+  expect_warning(root.state_test <- test.root.state(root.state_test, "BM"))
   expect_that(root.state_test, equals(root.state_correct))
   
   ## OU
@@ -184,10 +184,11 @@ test_that("test.root.state", {
                              exp.root = 2,
                              var.root = as(as.matrix(5, 1, 1), "symmetricMatrix"))
   
-  root.state_test <- test.root.state(root.state_test, "OU",
-                                     optimal.value = optimal.value,
-                                     variance = variance,
-                                     selection.strength = selection.strength)
+  expect_warning(root.state_test <- test.root.state(root.state_test, "OU",
+                                                    optimal.value = optimal.value,
+                                                    variance = variance,
+                                                    selection.strength = selection.strength),
+                 "As root state is supposed random, its value is not defined and set to NA")
   expect_that(root.state_test, equals(root.state_correct))
   
   ## OU
@@ -207,10 +208,11 @@ test_that("test.root.state", {
                           exp.root = rep(2, p),
                           var.root = as(as.matrix(5, p, p), "symmetricMatrix"))
   
-  root.state_test <- test.root.state(root.state_test, "OU",
-                                     optimal.value = optimal.value,
-                                     variance = variance,
-                                     selection.strength = selection.strength)
+  expect_warning(root.state_test <- test.root.state(root.state_test, "OU",
+                                                    optimal.value = optimal.value,
+                                                    variance = variance,
+                                                    selection.strength = selection.strength),
+                 "As root state is supposed random, its value is not defined and set to NA")
   expect_that(root.state_test, equals(root.state_correct))
   
   # Dimension p
@@ -230,10 +232,10 @@ test_that("test.root.state", {
                              exp.root = rep(2, p),
                              var.root = as(var.root, "symmetricMatrix"))
   
-  root.state_test <- test.root.state(root.state_test, "OU",
-                                     optimal.value = optimal.value,
-                                     variance = variance,
-                                     selection.strength = selection.strength)
+  expect_warning(root.state_test <- test.root.state(root.state_test, "OU",
+                                                    optimal.value = optimal.value,
+                                                    variance = variance,
+                                                    selection.strength = selection.strength))
   expect_that(root.state_test, equals(root.state_correct))
   
   # optimal value
@@ -252,10 +254,10 @@ test_that("test.root.state", {
                              exp.root = rep(5, p),
                              var.root = as(as.matrix(5, p, p), "symmetricMatrix"))
   
-  root.state_test <- test.root.state(root.state_test, "OU",
-                                     optimal.value = optimal.value,
-                                     variance = variance,
-                                     selection.strength = selection.strength)
+  expect_warning(root.state_test <- test.root.state(root.state_test, "OU",
+                                                    optimal.value = optimal.value,
+                                                    variance = variance,
+                                                    selection.strength = selection.strength))
   expect_that(root.state_test, equals(root.state_correct))
 })
 
@@ -280,7 +282,7 @@ test_that("check data",{
   expect_that(check_data(tree, Y_data, TRUE), equals(Y_data))
   
   colnames(Y_data) <- sample(tree$tip.label, ntaxa)
-  expect_that(check_data(tree, Y_data, TRUE), equals(Y_data[ , tree$tip.label]))
-  expect_that(check_data(tree, Y_data, TRUE), gives_warning())
+  expect_that(data_new <- check_data(tree, Y_data, TRUE), gives_warning())
+  expect_that(data_new, equals(Y_data[ , tree$tip.label]))
   expect_that(check_data(tree, Y_data, FALSE), equals(Y_data))
 })

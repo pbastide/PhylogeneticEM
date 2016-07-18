@@ -113,14 +113,14 @@ test_that("Multivariate Scalar (scOU)", {
                    selection.strength = selection.strength,
                    shifts = shifts)
   
-  Xsc <- simulate(tree,
-                  p = p,
-                  root.state = root.state,
-                  process = "scOU",
-                  variance = variance,
-                  optimal.value = optimal.value,
-                  selection.strength = selection.strength,
-                  shifts = shifts)
+  expect_warning(Xsc <- simulate(tree,
+                                 p = p,
+                                 root.state = root.state,
+                                 process = "scOU",
+                                 variance = variance,
+                                 optimal.value = optimal.value,
+                                 selection.strength = selection.strength,
+                                 shifts = shifts))
   
   expect_that(Xnot[,,2:3], equals(Xsc[,,2:3]))
 })

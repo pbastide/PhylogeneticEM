@@ -83,17 +83,17 @@ test_that("split/merge independent parameters ", {
   p <- 4
   ntaxa <- 236
   
-  params <- init.EM.default.OU(p = p,
-                               variance.init = diag(1:p),
-                               random.init = FALSE,
-                               stationary.root.init = FALSE,
-                               value.root.init = 1:p,
-                               exp.root.init = 1:p,
-                               var.root.init = diag(1:p),
-                               edges.init = c(11, 14, 23),
-                               values.init = matrix(1:(p*3), p, 3),
-                               selection.strength.init = diag(1:p),
-                               optimal.value.init = 1:p)
+  expect_warning(params <- init.EM.default.OU(p = p,
+                                              variance.init = diag(1:p),
+                                              random.init = FALSE,
+                                              stationary.root.init = FALSE,
+                                              value.root.init = 1:p,
+                                              exp.root.init = 1:p,
+                                              var.root.init = diag(1:p),
+                                              edges.init = c(11, 14, 23),
+                                              values.init = matrix(1:(p*3), p, 3),
+                                              selection.strength.init = diag(1:p),
+                                              optimal.value.init = 1:p))
   
   params_split <- split_params_independent(params)
   params_bis <- merge_params_independent(params_split)
