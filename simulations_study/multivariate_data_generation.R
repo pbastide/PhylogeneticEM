@@ -35,7 +35,7 @@ p_base <- 4 # number of traits
 beta_0 <- rep(0, p_base) # ancestral optimum
 alpha_base <- 3 # selection strength
 sigma_base <- 6 # sigma squared variance
-gamma_base <- 1 # gamma squared stationnary variance
+gamma_base <- 1 # gamma squared stationary variance
 K_base <- 3 # number of shifts
 ntaxa_base <- 160 # number of taxa
 factor_shift_base <- 1 # multiplicative factor for shifts

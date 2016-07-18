@@ -1093,6 +1093,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                impute_init_Rphylopars = TRUE,
                                ...){
   reqpckg <- c("ape", "glmnet", "robustbase")
+  ntaxa <- length(phylo$tip.label)
   ## Save Original process and tree
   process <- match.arg(process)
   process_original <- process

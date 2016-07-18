@@ -542,6 +542,9 @@ check_dimensions <- function(p,
     if (is.vector(selection.strength) && length(selection.strength) == p){
       selection.strength <- diag(selection.strength, ncol = length(selection.strength))
     }
+    if (is.vector(selection.strength) && length(selection.strength) == 1){
+      selection.strength <- diag(rep(selection.strength, p))
+    }
     selection.strength <- check_dimensions.matrix(p, p, selection.strength, "selection strength")
   if (!is.null(optimal.value))
     optimal.value <- check_dimensions.vector(p, optimal.value, "optimal value")
