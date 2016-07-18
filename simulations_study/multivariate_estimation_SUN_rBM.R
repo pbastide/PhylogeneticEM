@@ -140,7 +140,8 @@ estimations_several_K_ak <- function(X){
                  method.init = "lasso",
                  use_previous = FALSE,
                  method.selection = c("BirgeMassart1", "BirgeMassart2"),
-                 impute_init_Rphylopars = FALSE)
+                 impute_init_Rphylopars = FALSE,
+                 K_lag_init = 5)
   res <- add_total_time(res)
   ret <- list(sim = X,
               res = res)
