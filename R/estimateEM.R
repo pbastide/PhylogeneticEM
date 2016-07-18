@@ -116,6 +116,7 @@ estimateEM <- function(phylo,
                        sBM_variance = FALSE,
                        method.OUsun = c("rescale", "raw"),
                        impute_init_Rphylopars = TRUE,
+                       K_lag_init = 0,
                        ...){
   
   ntaxa <- length(phylo$tip.label)
@@ -380,7 +381,7 @@ estimateEM <- function(phylo,
                          process = process, 
                          times_shared = times_shared, 
                          distances_phylo = distances_phylo, 
-                         nbr_of_shifts = nbr_of_shifts, 
+                         nbr_of_shifts = nbr_of_shifts + K_lag_init, 
                          selection.strength.init = init.selection.strength, 
                          random.init = random.root,
                          stationary.root.init = stationary.root,
@@ -812,7 +813,7 @@ estimateEM <- function(phylo,
 format_output <- function(results_estim_EM, phylo, time = NA){
   params <- results_estim_EM$params
   params_raw <- results_estim_EM$params_raw
-  params_init <- results_estim_EM$params_history['0']$'0'
+  params_init <- results_estim_EM$params_history[['0']]
   X <- NULL
   X$params <- params
   X$params_raw <- params_raw
@@ -860,6 +861,11 @@ format_output <- function(results_estim_EM, phylo, time = NA){
   )
 #   X$summary <- as.data.frame(c(X$summary, X$alpha_0))
 #   X$summary <- as.data.frame(c(X$summary, X$gamma_0))
+  ## shifts to be kept for init.
+  kpsh <- order(-colSums(params_init$shifts$values))[0:length(params$shifts$edges)]
+  results_estim_EM$params_history[['0']]$shifts$edges <- params_init$shifts$edges[kpsh]
+  results_estim_EM$params_history[['0']]$shifts$values <- params_init$shifts$values[kpsh]
+  results_estim_EM$params_history[['0']]$shifts$relativeTimes <- params_init$shifts$relativeTimes[kpsh]
   ## Compute edge quality
   extract.edges <- function(x) {
     z <- unlist(lapply(x, function(y) y$shifts$edges))
@@ -955,6 +961,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     Ncores = 3,
                     exportFunctions = ls(),
                     impute_init_Rphylopars = FALSE,
+                    K_lag_init = 0,
                     ...){
   ## Required packages
   library(doParallel)
@@ -1011,6 +1018,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             Ncores = Ncores, 
                             exportFunctions = exportFunctions, 
                             impute_init_Rphylopars = impute_init_Rphylopars, 
+                            K_lag_init = K_lag_init,
                             ...)
   } else { # For an in-loop estimation of alpha (independent = TRUE)
     if (!independent){
@@ -1042,6 +1050,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              save_step = save_step, 
                              method.OUsun = "raw", 
                              impute_init_Rphylopars = impute_init_Rphylopars, 
+                             K_lag_init = K_lag_init,
                              ...)
   }
   ## Model Selection
@@ -1091,6 +1100,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                Ncores = 3,
                                exportFunctions = ls(),
                                impute_init_Rphylopars = TRUE,
+                               K_lag_init = 0,
                                ...){
   reqpckg <- c("ape", "glmnet", "robustbase")
   ntaxa <- length(phylo$tip.label)
@@ -1221,6 +1231,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              sBM_variance = sBM_variance,
                              method.OUsun = method.OUsun,
                              impute_init_Rphylopars = impute_init_Rphylopars,
+                             K_lag_init = K_lag_init,
                              ...)
   }
   if (parallel_alpha){
@@ -1323,6 +1334,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                                 save_step = FALSE,
                                 method.OUsun = "raw",
                                 impute_init_Rphylopars = FALSE,
+                                K_lag_init = 0,
                                 ...){
   ## Fixed quantities
   times_shared <- compute_times_ca(phylo)
@@ -1381,6 +1393,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                            save_step = save_step,
                            method.OUsun = method.OUsun,
                            impute_init_Rphylopars = impute_init_Rphylopars,
+                           K_lag_init = K_lag_init,
                            ...)
   
   ## Format Output
@@ -1427,6 +1440,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 sBM_variance = FALSE,
                                 method.OUsun = "rescale", 
                                 impute_init_Rphylopars = TRUE,
+                                K_lag_init = 0,
                                 ...){
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
@@ -1474,6 +1488,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       sBM_variance = sBM_variance,
                                                       method.OUsun = method.OUsun,
                                                       impute_init_Rphylopars = impute_init_Rphylopars,
+                                                      K_lag_init = min(K_lag_init, K_max - K_first),
                                                       ...)
   if (K_first == 0 && any(is.na(Y_data))){
     Y_data_imp <- XX[["0"]]$Yhat
@@ -1518,6 +1533,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                           sBM_variance = sBM_variance,
                                                           method.OUsun = method.OUsun,
                                                           impute_init_Rphylopars = impute_init_Rphylopars,
+                                                          K_lag_init = min(K_lag_init, K_max - K_t),
                                                           ...)
     pp <- check_dimensions(p,
                            XX[[paste0(K_t)]]$params$root.state,
@@ -1587,6 +1603,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         sBM_variance,
                                         method.OUsun,
                                         impute_init_Rphylopars,
+                                        K_lag_init,
                                         ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -1613,6 +1630,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    sBM_variance = sBM_variance,
                                                    method.OUsun = method.OUsun,
                                                    impute_init_Rphylopars = impute_init_Rphylopars,
+                                                   K_lag_init = K_lag_init,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -1631,6 +1649,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        sBM_variance,
                                        method.OUsun,
                                        impute_init_Rphylopars,
+                                       K_lag_init,
                                        ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -1649,6 +1668,8 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    sBM_variance = sBM_variance,
                                                    method.OUsun = method.OUsun,
                                                    impute_init_Rphylopars = impute_init_Rphylopars,
+                                                   K_lag_init = K_lag_init,
+
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -1756,6 +1777,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              save_step = save_step,
                              sBM_variance = sBM_variance,
                              method.OUsun = method.OUsun,
+                             K_lag_init = K_lag_init,
                              ...)
   }
   ## Select max solution for each K
