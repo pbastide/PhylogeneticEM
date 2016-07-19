@@ -830,3 +830,98 @@ compute_log_likelihood_with_entropy.simple <- function(CLL, H){
 #   return(list(log_likelihood = log_likelihood,
 #               maha_data_mean = maha_data_mean))
 # }
+
+##
+#' @title Wrapper for E step in EM
+#'
+#' @description
+#' \code{wrapper_E_step} is used in the EM algorithm. It calls itself
+#' recursivelly in case of independent parameters.
+##
+wrapper_E_step <- function(phylo,
+                           times_shared,
+                           distances_phylo,
+                           process,
+                           params_old,
+                           masque_data,
+                           F_moments,
+                           independent,
+                           Y_data_vec_known,
+                           miss,
+                           Y_data,
+                           U_tree,
+                           compute_mean_variance,
+                           compute_log_likelihood,
+                           compute_mahalanobis_distance,
+                           compute_E){
+  if (independent){
+    # if independent, params_old is a list of p params
+    masque_data_matr <- matrix(masque_data,
+                               ncol = length(phylo$tip.label) + phylo$Nnode)
+    miss_matr <- matrix(miss,
+                        ncol = length(phylo$tip.label))
+    res <- vector(mode = "list", length = length(params_old))
+    for (i in 1:length(res)){
+      res[[i]] <- wrapper_E_step(phylo = phylo,
+                                 times_shared = times_shared,
+                                 distances_phylo = distances_phylo,
+                                 process = process,
+                                 params_old = params_old[[i]],
+                                 masque_data = masque_data_matr[i, ],
+                                 F_moments = F_moments,
+                                 independent = FALSE,
+                                 Y_data_vec_known = Y_data[i, !miss_matr[i, ]],
+                                 miss = miss_matr[i, ],
+                                 Y_data = Y_data[i, , drop = F],
+                                 U_tree = U_tree,
+                                 compute_mean_variance = compute_mean_variance,
+                                 compute_log_likelihood = compute_log_likelihood,
+                                 compute_mahalanobis_distance = compute_mahalanobis_distance,
+                                 compute_E = compute_E)
+    }
+    return(res)
+  }
+  moments <- compute_mean_variance(phylo = phylo,
+                                   times_shared = times_shared,
+                                   distances_phylo = distances_phylo,
+                                   process = process,
+                                   params_old = params_old,
+                                   masque_data = masque_data,
+                                   F_moments = F_moments,
+                                   U_tree = U_tree)
+  log_likelihood_old <- compute_log_likelihood(phylo = phylo,
+                                               Y_data_vec = Y_data_vec_known,
+                                               sim = moments$sim,
+                                               Sigma = moments$Sigma,
+                                               Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                               miss = miss, 
+                                               masque_data = masque_data,
+                                               C_YY = F_moments$C_YY,
+                                               Y_data = Y_data,
+                                               C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                               R = params_old$variance)
+  ## Compute Mahalanobis norm between data and mean at tips
+  maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
+                                                 Y_data_vec = Y_data_vec_known,
+                                                 sim = moments$sim,
+                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                 miss = miss,
+                                                 Y_data = Y_data,
+                                                 C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                                 R = params_old$variance)
+  conditional_law_X <- compute_E(phylo = phylo,
+                                 Y_data_vec = Y_data_vec_known,
+                                 sim = moments$sim,
+                                 Sigma = moments$Sigma,
+                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                 miss = miss,
+                                 masque_data = masque_data,
+                                 F_means = F_moments$F_means,
+                                 F_vars = F_moments$F_vars,
+                                 R = params_old$variance,
+                                 Y_data = Y_data)
+  return(list(log_likelihood_old = log_likelihood_old,
+              maha_data_mean = maha_data_mean,
+              conditional_law_X = conditional_law_X,
+              moments = moments))
+}
