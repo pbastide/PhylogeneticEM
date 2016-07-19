@@ -568,7 +568,8 @@ compute_mean_variance.simple <- function(phylo,
                     shifts = params_old$shifts, 
                     variance = params_old$variance, 
                     optimal.value = params_old$optimal.value, 
-                    selection.strength = params_old$selection.strength)
+                    selection.strength = params_old$selection.strength,
+                    simulate_random = FALSE)
   }
   ## Variance Covariance
   Sigma <- compute_variance_covariance(times_shared = times_shared, 
@@ -593,7 +594,8 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
                   shifts = params_old$shifts, 
                   variance = params_old$variance, 
                   optimal.value = params_old$optimal.value, 
-                  selection.strength = params_old$selection.strength)
+                  selection.strength = params_old$selection.strength,
+                  simulate_random = FALSE)
   return(list(sim = sim, C_YY = F_moments$C_YY,
               C_YY_chol_inv = F_moments$C_YY_chol_inv,
               F_means = F_moments$F_means, F_vars = F_moments$F_vars))

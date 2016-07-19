@@ -33,6 +33,17 @@ test_that("Mean of the BM", {
   X1.tips.exp.mat <- tcrossprod(Delta, T_tree) + root.state$value.root
   
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
+  
+  ## Without simulating
+  X2 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "BM",
+                 variance = variance,
+                 shifts = shifts,
+                 simulate_random = FALSE)
+  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  expect_that(X1.tips.exp, equals(X2.tips.exp))
 })
 
 test_that("Mean of the OU", {
@@ -79,6 +90,19 @@ test_that("Mean of the OU", {
   X1.tips.exp.mat <- matrix(vec_Y, p, ntaxa) + optimal.value
   
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
+  
+  ## Without simulate
+  X2 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "OU",
+                 variance = variance,
+                 optimal.value = optimal.value,
+                 selection.strength = selection.strength,
+                 shifts = shifts,
+                 simulate_random = FALSE)
+  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
 
 test_that("Multivariate Scalar (scOU)", {
@@ -104,6 +128,7 @@ test_that("Multivariate Scalar (scOU)", {
                              c(-5, 5, 0, -7, 5, -4)),
                 relativeTimes = 0)
   
+  ## Forget that it is scalar
   Xnot <- simulate(tree,
                    p = p,
                    root.state = root.state,
@@ -112,7 +137,7 @@ test_that("Multivariate Scalar (scOU)", {
                    optimal.value = optimal.value,
                    selection.strength = selection.strength,
                    shifts = shifts)
-  
+  ## Use that it is scalar
   expect_warning(Xsc <- simulate(tree,
                                  p = p,
                                  root.state = root.state,
@@ -123,6 +148,18 @@ test_that("Multivariate Scalar (scOU)", {
                                  shifts = shifts))
   
   expect_that(Xnot[,,2:3], equals(Xsc[,,2:3]))
+  ## Do not simulate
+  expect_warning(Xsc2 <- simulate(tree,
+                                 p = p,
+                                 root.state = root.state,
+                                 process = "scOU",
+                                 variance = variance,
+                                 optimal.value = optimal.value,
+                                 selection.strength = selection.strength,
+                                 shifts = shifts,
+                                 simulate_random = FALSE))
+  
+  expect_that(Xnot[,,2:3], equals(Xsc2[,,2:3]))
 })
 
 # test_that("Multivariate Independent (BM)", {
