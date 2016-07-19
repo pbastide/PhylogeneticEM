@@ -173,7 +173,6 @@ estimateEM <- function(phylo,
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
   sBM_variance <- temp$sBM_variance
-  if (sBM_variance) phylo$root.edge <- 1
   
   ########## Missing Data #####################################################
   ntaxa <- length(phylo$tip.label)
@@ -272,6 +271,7 @@ estimateEM <- function(phylo,
   ## Transform the branch lengths if needed
   phy_original <- phylo
   if (rescale_tree){
+    if (sBM_variance) phylo$root.edge <- 1
     phylo <- transform_branch_length(phylo, known.selection.strength)
   }
   if (is.null(times_shared)) times_shared <- compute_times_ca(phylo)
@@ -530,24 +530,6 @@ estimateEM <- function(phylo,
       number_new_shifts <- c(number_new_shifts,
                              sum(!(params$shifts$edges %in% params_old$shifts$edges))) 
     }
-    #   ## Check that the M step rised the conditional expectation of the completed likelihood
-    #         CLL_old <- conditional_expectation_log_likelihood(phylo = phylo,
-    #                                         conditional_law_X = conditional_law_X, 
-    #                                         sigma2 = params_old$variance,
-    #                                         mu = params_old$root.state$exp.root,
-    #                                         shifts = params_old$shifts,
-    #                                         alpha = params_old$selection.strength)
-    #         names(CLL_old) <- "CCL_old"
-    #         CLL_new <- conditional_expectation_log_likelihood(phylo = phylo,
-    #                                         conditional_law_X = conditional_law_X, 
-    #                                         sigma2 = params$variance,
-    #                                         mu = params$root.state$exp.root,
-    #                                         shifts = params$shifts,
-    #                                         alpha = params$selection.strength)
-    #         names(CLL_new) <- "CCL_new"
-    #         if (CLL_old > CLL_new) { warning("The conditional expectation of the completed log likelihood decreased after step M !")}
-    #         CLL_history <- cbind(CLL_history, c(CLL_old, CLL_new))
-    #         attr(params, "MaxCompleteLogLik") <- CLL_new
   }
   
   ########## Scale back parameters to original tree ###########################
@@ -571,42 +553,32 @@ estimateEM <- function(phylo,
   variance.init <- variance.init * factor_rescale
   
   ########## Go back to OU parameters if needed ###############################
-  params_scOU <- params # If a BM, params_scOU = params
   if (transform_scOU){
     ## Go back to original tree and process
     phylo <- phy_original
-    times_shared <- compute_times_ca(phy_original)
-    distances_phylo <- compute_dist_phy(phy_original)
     process <- suppressWarnings(check.selection.strength(original_process,
                                                          known.selection.strength,
                                                          eps))
-    ## lambda parameter
-    if (sBM_variance){
-      params_scOU$lambda <- params$root.state$exp.root
-    } else {
-      params_scOU$lambda <- params$root.state$value.root
-    }
-    ## Default: beta_0 = mu = lambda
-    params_scOU$optimal.value <- params_scOU$lambda
-    ## shifts values
-    params_scOU$shifts <- transform_shifts_values(params$shifts,
-                                                  from = 0,
-                                                  to = known.selection.strength,
-                                                  phylo = phylo)
-    params_scOU$selection.strength <- known.selection.strength
-    params_scOU$root.state$stationary.root <- FALSE
-    if (sBM_variance){
-      params_scOU$root.state$var.root <- params_scOU$variance / (2 * params_scOU$selection.strength)
-      params_scOU$root.state$stationary.root <- TRUE
-    }
+    times_shared <- compute_times_ca(phy_original)
+    distances_phylo <- compute_dist_phy(phy_original)
+    ## Compute equivalent parameters
+    params_scOU <- go_back_to_original_process(phy_original = phy_original,
+                                              known.selection.strength = known.selection.strength,
+                                              sBM_variance = sBM_variance,
+                                              params = params)
+  } else {
+    params_scOU <- params # If a BM, params_scOU = params
   }
   
   ########## Compute scores and ancestral states for final parameters ##########
-  ## Compute log-likelihood for final parameters
-  compute_E <- compute_E.simple
-  compute_mean_variance  <- compute_mean_variance.simple
-  compute_log_likelihood  <- compute_log_likelihood.simple
-  compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
+  if ((original_process %in% c("OU", "scOU"))
+       && (method.variance == "simple.nomissing.BM")){
+    ## Go back to simple method if switched to a different one.
+    compute_E <- compute_E.simple
+    compute_mean_variance  <- compute_mean_variance.simple
+    compute_log_likelihood  <- compute_log_likelihood.simple
+    compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
+  }
   
   if (independent){
     params_scOU <- split_params_independent(params_scOU)
@@ -618,13 +590,18 @@ estimateEM <- function(phylo,
                          process = process,
                          params_old = params_scOU,
                          masque_data = masque_data,
-                         F_moments = NULL,
+                         F_moments = F_moments,
                          independent = independent,
                          Y_data_vec_known = Y_data_vec_known,
                          miss = miss,
-                         Y_data = Y_data)
-  ## Format result if independent
-  if (independent){
+                         Y_data = Y_data,
+                         U_tree = U_tree,
+                         compute_mean_variance = compute_mean_variance,
+                         compute_log_likelihood = compute_log_likelihood,
+                         compute_mahalanobis_distance = compute_mahalanobis_distance,
+                         compute_E = compute_E)
+  ## Format results
+  if (independent){ # Independent
     ## Likelihood and Mahalanobis of last parameters
     params_scOU <- merge_params_independent(params_scOU)
     attr(params_scOU, "log_likelihood") <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
@@ -646,7 +623,7 @@ estimateEM <- function(phylo,
     ## Mean at tips with estimated parameters
     m_Y_estim <- lapply(temp, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
     m_Y_estim <- do.call(rbind, m_Y_estim)
-  } else {
+  } else { ## NOT independent
     ## Likelihood and Mahalanobis of last parameters
     attr(params_scOU, "log_likelihood") <- as.vector(temp$log_likelihood_old)
     attr(params_scOU, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
@@ -657,7 +634,8 @@ estimateEM <- function(phylo,
     m_Y_estim <- extract.simulate(temp$moments$sim, where="tips", what="expectations")
   }
   rm(temp)
-  ## Number of equivalent solutions
+  
+  ########## Number of equivalent solutions ###################################
   clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges,
                                        part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
@@ -687,6 +665,50 @@ estimateEM <- function(phylo,
   attr(result, "Divergence") <- !is.in.ranges.params(result$params_raw, min=min_params, max=max_params) # TRUE if has diverged (use raw parameters for diagnostic)
   if (Nbr_It == Nbr_It_Max) warning(paste("The maximum number of iterations (Nbr_It_Max = ",Nbr_It_Max,") was reached.",sep=""))
   return(result)
+}
+
+##
+#' @title Scale the parameters back to the original process
+#'
+#' @description
+#' \code{go_back_to_original_process} takes the infered parameters with a BM
+#' on a rescaled tree, and gives back the equivalent parameters of the OU on 
+#' the original process.
+#'
+#' @param phy_original: the original phylogenetic tree
+#' @param known.selection.strength: the known selection strength of the original
+#' OU.
+#' @param sBM_variance: boolean. Is the root random ?
+#' @param params: the infered parameters of the BM on the re-scaled tree.
+#' 
+#' 
+#' @return params_scOU the equivalent parameters of the OU on the original tree.
+#'
+##
+go_back_to_original_process <- function (phy_original,
+                                         known.selection.strength,
+                                         sBM_variance, params) {
+  params_scOU <- params
+  ## lambda parameter
+  if (sBM_variance){
+    params_scOU$lambda <- params$root.state$exp.root
+  } else {
+    params_scOU$lambda <- params$root.state$value.root
+  }
+  ## Default: beta_0 = mu = lambda
+  params_scOU$optimal.value <- params_scOU$lambda
+  ## shifts values
+  params_scOU$shifts <- transform_shifts_values(params$shifts,
+                                                from = 0,
+                                                to = known.selection.strength,
+                                                phylo = phy_original)
+  params_scOU$selection.strength <- known.selection.strength
+  params_scOU$root.state$stationary.root <- FALSE
+  if (sBM_variance){
+    params_scOU$root.state$var.root <- params_scOU$variance / (2 * params_scOU$selection.strength)
+    params_scOU$root.state$stationary.root <- TRUE
+  }
+  return(params_scOU)
 }
 
 ##
@@ -1038,6 +1060,25 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   process_original <- process
   original_phy <- phylo
   
+  ## Fixed Quantities
+  times_shared_original <- compute_times_ca(phylo)
+  distances_phylo_original <- compute_dist_phy(phylo)
+  subtree.list_original <- enumerate_tips_under_edges(phylo)
+  h_tree_original <- max(diag(as.matrix(times_shared_original))[1:ntaxa])
+  T_tree = incidence.matrix(phylo)
+  U_tree = incidence.matrix.full(phylo)
+  
+  ## Missing informations
+  miss <- as.vector(is.na(Y_data))
+  Y_data_vec <- as.vector(Y_data)
+  Y_data_vec_known <- as.vector(Y_data[!miss])
+  # Vectorized Data Mask
+  ntaxa <- length(phylo$tip.label)
+  nNodes <- phylo$Nnode
+  p <- nrow(Y_data)
+  masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
+  masque_data[1:(p*ntaxa)] <- !miss
+  
   ## Compute alpha
   if (process == "BM") {
     alpha <- 0
@@ -1067,6 +1108,12 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        p,
                                        ntaxa,
                                        progress.bar,
+                                       times_shared_original,
+                                       distances_phylo_original,
+                                       subtree.list_original,
+                                       h_tree_original,
+                                       T_tree,
+                                       U_tree,
                                        ...){
     temp <- choose_process_EM(process = process_original,
                               p = p,
@@ -1081,21 +1128,26 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     rescale_tree <- temp$rescale_tree # Rescale the tree ?
     transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
     sBM_variance <- temp$sBM_variance
-    if (sBM_variance){ # process sBM : need a root branch.
-      original_phy$root.edge <- 1
-    }
     ## Transform branch lengths if needed
     phylo <- original_phy
+    if (sBM_variance){ # process sBM : need a root branch.
+      phylo$root.edge <- 1
+    }
     if (rescale_tree) {
       phylo <- transform_branch_length(phylo, alp)
     }
     ## Fixed quantities
-    times_shared <- compute_times_ca(phylo)
-    distances_phylo <- compute_dist_phy(phylo)
-    subtree.list <- enumerate_tips_under_edges(phylo)
-    T_tree <- incidence.matrix(phylo)
-    U_tree <- incidence.matrix.full(phylo)
-    h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+    if (rescale_tree){
+      times_shared <- compute_times_ca(phylo)
+      distances_phylo <- compute_dist_phy(phylo)
+      subtree.list <- enumerate_tips_under_edges(phylo)
+      h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+    } else {
+      times_shared <- times_shared_original
+      distances_phylo <- distances_phylo_original
+      subtree.list <- subtree.list_original
+      h_tree <- h_tree_original
+    }
     ## Fixed Quantities if no missing data
     Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
     if (!Flag_Missing){
@@ -1131,10 +1183,10 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       rm(phylo_temp)
     }
     ## Estimations
-    X <- Phylo_EM_sequencial(phylo = original_phy,
+    X <- Phylo_EM_sequencial(phylo = phylo,
                              Y_data = Y_data,
                              Y_data_imp = Y_data_imp,
-                             process = process,
+                             process = temp$process,
                              independent = independent,
                              K_max = K_max,
                              # curent = X,
@@ -1164,6 +1216,50 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              impute_init_Rphylopars = impute_init_Rphylopars,
                              K_lag_init = K_lag_init,
                              ...)
+    ## Trnasform back parameters to OU if needed
+    if (transform_scOU){
+      ## Compute equivalent parameters
+      fun <- function(params){
+        params_scOU <- go_back_to_original_process(phy_original = original_phy,
+                                                   known.selection.strength = alp,
+                                                   sBM_variance = sBM_variance,
+                                                   params = params)
+      }
+      X$params_estim <- lapply(X$params_estim, fun)
+      ## Ancestral state reconstruction
+      fun <- function(params_scOU){
+        temp <- wrapper_E_step(phylo = original_phy,
+                               times_shared = times_shared_original,
+                               distances_phylo = distances_phylo_original,
+                               process = process_original,
+                               params_old = params_scOU,
+                               masque_data = masque_data,
+                               F_moments = NULL,
+                               independent = FALSE,
+                               Y_data_vec_known = Y_data_vec_known,
+                               miss = miss,
+                               Y_data = Y_data,
+                               U_tree = U_tree,
+                               compute_mean_variance = compute_mean_variance.simple,
+                               compute_log_likelihood = compute_log_likelihood.simple,
+                               compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
+                               compute_E = compute_E.simple)
+        if (!all.equal(as.vector(temp$log_likelihood_old),
+                       attr(params_scOU, "log_likelihood"))){
+          stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
+        }
+        return(temp)
+      }
+      temp_list <- lapply(X$params_estim, fun)
+      ## "Ancestral States Reconstruction"
+      X$Zhat <- lapply(temp_list, function(z) z$conditional_law_X$expectations[ , (ntaxa+1):ncol(z$conditional_law_X$expectations)])
+      X$Yhat <- lapply(temp_list, function(z) z$conditional_law_X$expectations[ , 1:ntaxa])
+      X$Zvar <- lapply(temp_list, function(z) z$conditional_law_X$variances[ , , (ntaxa+1):ncol(z$conditional_law_X$expectations)])
+      X$Yvar <- lapply(temp_list, function(z) z$conditional_law_X$variances[ , , 1:ntaxa])
+      X$m_Y_estim <- lapply(temp_list, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
+      rm(temp_list)
+    }
+    return(X)
   }
   if (parallel_alpha){
     cl <- makeCluster(Ncores)
@@ -1196,6 +1292,12 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                p = p,
                                ntaxa = ntaxa,
                                progress.bar = progress.bar,
+                               times_shared_original = times_shared_original,
+                               distances_phylo_original = distances_phylo_original,
+                               subtree.list_original = subtree.list_original,
+                               h_tree_original = h_tree_original,
+                               T_tree = T_tree,
+                               U_tree = U_tree,
                                ...)
     }
     stopCluster(cl)
@@ -1228,6 +1330,12 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                p = p,
                                ntaxa = ntaxa,
                                progress.bar = progress.bar,
+                               times_shared_original = times_shared_original,
+                               distances_phylo_original = distances_phylo_original,
+                               subtree.list_original = subtree.list_original,
+                               h_tree_original = h_tree_original,
+                               T_tree = T_tree,
+                               U_tree = U_tree,
                                ...)
     }
   }
