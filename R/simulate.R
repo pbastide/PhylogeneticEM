@@ -72,8 +72,10 @@ simulate <- function(phylo,
                      variance = NULL,
                      optimal.value = NULL,
                      checks = TRUE,
-                     simulate_random = TRUE) {
+                     simulate_random = TRUE,
+                     U_tree = NULL) {
   library(MASS)
+  ntaxa <- length(phylo$tip.label)
   ## Set branch stochastic process
   process <- match.arg(process)
   if (process == "scOU"){
@@ -129,6 +131,15 @@ simulate <- function(phylo,
   if (is.null(optimal.value) && process %in% c("OU", "scOU")){
     stop("Optimal values for the OU simulation must be specified.")
   }
+  ## Special case BM
+  if ((process == "BM") && !simulate_random){
+    paramSimu <- compute_expectations.BM(phylo,
+                                         root.state = root.state,
+                                         shifts = shifts,
+                                         U_tree = U_tree)
+    attr(paramSimu, "ntaxa") <- ntaxa
+    return(paramSimu)
+  }
   ## Reorder tree
   phy <- reorder(phylo, order = "cladewise")
   # Trace edges
@@ -158,11 +169,11 @@ simulate <- function(phylo,
                                   optimal.value = optimal.value)
   }
   ## Initialisation and setting root state
-  ntaxa <- length(phy$tip.label)
   paramSimu <- init(phy = phy,
                     p = p,
                     root.state = root.state,
-                    optimal.value = optimal.value)
+                    optimal.value = optimal.value,
+                    simulate_random = simulate_random)
   if (process %in% c("scOU", "OU")){
     if (root.state$stationary.root){
       stationary_variance <- root.state$var.root
@@ -172,27 +183,6 @@ simulate <- function(phylo,
   } else {
     stationary_variance <- NA
   }
-#   ## If independent, do p univariate (faster)
-#   if (independent && (p > 1) && (process == "OU")){
-#     for (l in 1:p){
-#       shifts_ordered_uni <- shifts_ordered
-#       shifts_ordered_uni$values <- shifts_ordered$values[l, , drop = F]
-#       if (!is.null(stationary_variance)){
-#         stationary_variance_uni <- stationary_variance[l,l, drop = F]
-#       }
-#       paramSimu[l, , ] <- recursionDown(phy = phy,
-#                                         params = paramSimu[l, , , drop = F],
-#                                         updateDown = updateDown,
-#                                         subset_node = subset_node.simulate,
-#                                         allocate_subset_node = allocate_subset_node.simulate,
-#                                         shifts = shifts_ordered_uni,
-#                                         variance = variance[l,l, drop = F],
-#                                         eps = eps,
-#                                         selection.strength = selection.strength[l,l, drop = F],
-#                                         stationary_variance = stationary_variance_uni)
-#     }
-#     return(paramSimu)
-#   }
   ## Tree recursion
   paramSimu <- recursionDown(phy = phy,
                              params = paramSimu,
@@ -251,7 +241,7 @@ subset_node.simulate <- function(node, array){
 #'  
 ##
 
-init.simulate.StateAndExp <- function(phy, p, root.state){
+init.simulate.StateAndExp <- function(phy, p, root.state, simulate_random){
   ntaxa <- length(phy$tip.label)
   paramSimu <- array(NA, dim = c(p, 1 + nrow(phy$edge), 2))
   if (!root.state$random) { # The root is not random
@@ -259,9 +249,14 @@ init.simulate.StateAndExp <- function(phy, p, root.state){
                                                cbind(root.state$value.root,
                                                      root.state$value.root))
   } else { # The value of the root is random N(exp.root, var.root)
+    if (simulate_random){
+      sim_rand <- mvrnorm(1, mu = root.state$exp.root,
+                          Sigma = root.state$var.root)
+    } else {
+      sim_rand <- root.state$exp.root
+    }
     paramSimu <- allocate_subset_node.simulate(ntaxa + 1, paramSimu,
-                                               cbind(mvrnorm(1, mu = root.state$exp.root,
-                                                             Sigma = root.state$var.root),
+                                               cbind(sim_rand,
                                                      root.state$exp.root))
   }
   return(paramSimu)
@@ -284,8 +279,8 @@ init.simulate.StateAndExp <- function(phy, p, root.state){
 #'  
 ##
 
-init.simulate.BM <- function(phy, p, root.state,...){
-  return(init.simulate.StateAndExp(phy, p, root.state))
+init.simulate.BM <- function(phy, p, root.state, simulate_random, ...){
+  return(init.simulate.StateAndExp(phy, p, root.state, simulate_random))
 }
 
 ##
@@ -305,9 +300,11 @@ init.simulate.BM <- function(phy, p, root.state,...){
 #'  
 ##
 
-init.simulate.OU <- function(phy, p, root.state, optimal.value, ...){
+init.simulate.OU <- function(phy, p, root.state, optimal.value,
+                             simulate_random, ...){
   paramSimu <- array(NA, dim = c(p, 1 + nrow(phy$edge), 3))
-  paramSimu[, , c(1,2)] <- init.simulate.StateAndExp(phy, p, root.state)
+  paramSimu[, , c(1,2)] <- init.simulate.StateAndExp(phy, p, root.state,
+                                                     simulate_random)
   ntaxa <- length(phy$tip.label)
   beta <- array(NA, dim = c(p, 1 + nrow(phy$edge))) # selection strength
   beta[ , ntaxa + 1] <- optimal.value
@@ -341,7 +338,7 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance,
   if (simulate_random){
     sim_value = mvrnorm(1, mu = shiftsValues, Sigma = length*variance)
   } else {
-    sim_value = 0
+    sim_value = shiftsValues
   }
   return(cbind(ancestral[, , 1, drop = F] + sim_value,
                ancestral[, , 2, drop = F] + shiftsValues))
@@ -481,4 +478,41 @@ extract.simulate <- function(paramSimu,
   } else {
     return(matrix(paramSimu[, rows, col], nrow = dim(paramSimu)[1]))
   }
+}
+
+##
+#' @title Compute the expected states of a BM
+#'
+#' @description
+#' \code{compute_expectations.BM} use the matrix formulation to compute the 
+#' expected values at all the nodes.
+#'
+#' @param phylo: Input tree.
+#' @param root.state (list): state of the root, with:
+#'     random : random state (TRUE) or deterministic state (FALSE)
+#'     value.root : if deterministic, value of the character at the root
+#'     exp.root : if random, expectation of the character at the root
+#'     var.root : if random, variance of the character at the root (pxp matrix)
+#' @param shifts (list) position and values of the shifts :
+#'     edges : vector of the K id of edges where the shifts are
+#'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
+#'     relativeTimes : vector of dimension K of relative time of the shift from the
+#'     parentnode of edges
+#'     
+#' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+#'  paramSimu[t, , ] has two columns, both containing the expected values for
+#'  all the nodes.
+##
+compute_expectations.BM <- function(phylo, root.state, shifts, U_tree = NULL){
+  if (is.null(U_tree)) U_tree <- incidence.matrix.full(phylo)
+  Delta <- shifts.list_to_matrix(phylo, shifts)
+  if (root.state$random){
+    root_value = root.state$exp.root
+  } else {
+    root_value = root.state$value.root
+  }
+  paramSimu <- tcrossprod(Delta, U_tree) + root_value
+  # Put in the right format (for extraction)
+  paramSimu <- array(rep(paramSimu, 2), c(dim(paramSimu), 2))
+  return(paramSimu)
 }

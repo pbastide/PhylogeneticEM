@@ -551,7 +551,8 @@ compute_mean_variance.simple <- function(phylo,
                                          params_old,
                                          masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
                                                          rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)),
-                                         sim = NULL,...) {
+                                         sim = NULL, 
+                                         U_tree = NULL, ...) {
   ## Choose process 
   process  <- match.arg(process)
   if (attr(params_old, "p_dim") == 1 && process == "OU") process <- "scOU" 
@@ -569,7 +570,8 @@ compute_mean_variance.simple <- function(phylo,
                     variance = params_old$variance, 
                     optimal.value = params_old$optimal.value, 
                     selection.strength = params_old$selection.strength,
-                    simulate_random = FALSE)
+                    simulate_random = FALSE,
+                    U_tree = U_tree)
   }
   ## Variance Covariance
   Sigma <- compute_variance_covariance(times_shared = times_shared, 
@@ -585,7 +587,8 @@ compute_mean_variance.simple <- function(phylo,
 compute_mean_variance.simple.nomissing.BM <- function (phylo,
                                                        process = "BM",
                                                        params_old,
-                                                       F_moments, ...) {
+                                                       F_moments,
+                                                       U_tree = NULL, ...) {
   ## Mean
   sim <- simulate(phylo = phylo, 
                   process = process,
@@ -595,7 +598,8 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
                   variance = params_old$variance, 
                   optimal.value = params_old$optimal.value, 
                   selection.strength = params_old$selection.strength,
-                  simulate_random = FALSE)
+                  simulate_random = FALSE,
+                  U_tree = U_tree)
   return(list(sim = sim, C_YY = F_moments$C_YY,
               C_YY_chol_inv = F_moments$C_YY_chol_inv,
               F_means = F_moments$F_means, F_vars = F_moments$F_vars))

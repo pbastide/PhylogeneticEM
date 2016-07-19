@@ -107,6 +107,7 @@ estimateEM <- function(phylo,
                        distances_phylo = NULL, 
                        subtree.list = NULL,
                        T_tree = NULL, 
+                       U_tree = NULL,
                        h_tree = NULL,
                        F_moments = NULL,
                        tol_half_life = TRUE,
@@ -277,6 +278,7 @@ estimateEM <- function(phylo,
   if (is.null(distances_phylo)) distances_phylo <- compute_dist_phy(phylo)
   if (is.null(subtree.list)) subtree.list <- enumerate_tips_under_edges(phylo)
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
+  if (is.null(U_tree)) U_tree <- incidence.matrix.full(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   if (is.null(F_moments) && !Flag_Missing && process == "BM"){
     # Add root edge to the branch lengths (root assumed fixed by default)
@@ -418,7 +420,8 @@ estimateEM <- function(phylo,
                                independent,
                                Y_data_vec_known,
                                miss,
-                               Y_data){
+                               Y_data,
+                               U_tree){
       if (independent){
         # if independent, params_old is a list of p params
         masque_data_matr <- matrix(masque_data,
@@ -437,7 +440,8 @@ estimateEM <- function(phylo,
                                      independent = FALSE,
                                      Y_data_vec_known = Y_data[i, !miss_matr[i, ]],
                                      miss = miss_matr[i, ],
-                                     Y_data = Y_data[i, , drop = F])
+                                     Y_data = Y_data[i, , drop = F],
+                                     U_tree = U_tree)
         }
         return(res)
       }
@@ -447,7 +451,8 @@ estimateEM <- function(phylo,
                                        process = process,
                                        params_old = params_old,
                                        masque_data = masque_data,
-                                       F_moments = F_moments)
+                                       F_moments = F_moments,
+                                       U_tree = U_tree)
       log_likelihood_old <- compute_log_likelihood(phylo = phylo,
                                                    Y_data_vec = Y_data_vec_known,
                                                    sim = moments$sim,
@@ -519,7 +524,8 @@ estimateEM <- function(phylo,
                            independent = independent,
                            Y_data_vec_known = Y_data_vec_known,
                            miss = miss,
-                           Y_data = Y_data)
+                           Y_data = Y_data,
+                           U_tree = U_tree)
     ## Format result if independent
     if (independent){
       log_likelihood_old <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
@@ -1165,6 +1171,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     distances_phylo <- compute_dist_phy(phylo)
     subtree.list <- enumerate_tips_under_edges(phylo)
     T_tree <- incidence.matrix(phylo)
+    U_tree <- incidence.matrix.full(phylo)
     h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
     ## Fixed Quantities if no missing data
     Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
@@ -1225,6 +1232,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              distances_phylo = distances_phylo,
                              subtree.list = subtree.list,
                              T_tree = T_tree,
+                             U_tree = U_tree,
                              h_tree = h_tree,
                              F_moments = F_moments,
                              save_step = save_step,
@@ -1341,6 +1349,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
   distances_phylo <- compute_dist_phy(phylo)
   subtree.list <- enumerate_tips_under_edges(phylo)
   T_tree <- incidence.matrix(phylo)
+  U_tree <- incidence.matrix.full(phylo)
   h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   
   Y_data_imp <- Y_data
@@ -1389,6 +1398,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                            distances_phylo = distances_phylo,
                            subtree.list = subtree.list,
                            T_tree = T_tree,
+                           U_tree = U_tree,
                            h_tree = h_tree,
                            save_step = save_step,
                            method.OUsun = method.OUsun,
@@ -1434,6 +1444,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 distances_phylo = NULL,
                                 subtree.list = NULL,
                                 T_tree = NULL,
+                                U_tree = NULL,
                                 h_tree = NULL,
                                 F_moments = NULL,
                                 save_step = TRUE,
@@ -1482,6 +1493,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       distances_phylo = distances_phylo,
                                                       subtree.list = subtree.list,
                                                       T_tree = T_tree,
+                                                      U_tree = U_tree,
                                                       h_tree = h_tree,
                                                       F_moments = F_moments,
                                                       warning_several_solutions = FALSE,
@@ -1527,6 +1539,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                           distances_phylo = distances_phylo,
                                                           subtree.list = subtree.list,
                                                           T_tree = T_tree, 
+                                                          U_tree = U_tree,
                                                           h_tree = h_tree,
                                                           F_moments = F_moments,
                                                           warning_several_solutions = FALSE,
@@ -1742,6 +1755,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     distances_phylo <- compute_dist_phy(phylo)
     subtree.list <- enumerate_tips_under_edges(phylo)
     T_tree <- incidence.matrix(phylo)
+    U_tree <- incidence.matrix.full(phylo)
     h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
     ## Impute data if needed
     Y_data_imp <- Y_data
@@ -1773,6 +1787,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              distances_phylo = distances_phylo,
                              subtree.list = subtree.list,
                              T_tree = T_tree,
+                             U_tree = U_tree,
                              h_tree = h_tree,
                              save_step = save_step,
                              sBM_variance = sBM_variance,
@@ -1841,6 +1856,7 @@ estimateEM_several_K.OUsr <- function(phylo,
   distances_phylo <- compute_dist_phy(phylo)
   subtree.list <- enumerate_tips_under_edges(phylo)
   T_tree <- incidence.matrix(phylo)
+  U_tree <- incidence.matrix.full(phylo)
   ## With no shift
   X_0 <- estimation_wrapper.OUsr(0, 
                                  phylo = phylo, 
@@ -1848,7 +1864,9 @@ estimateEM_several_K.OUsr <- function(phylo,
                                  times_shared = times_shared, 
                                  distances_phylo = distances_phylo,
                                  subtree.list = subtree.list,
-                                 T_tree = T_tree, ...)
+                                 T_tree = T_tree,
+                                 U_tree = U_tree,
+                                 ...)
   beta_0_noshift  <-  X_0$summary$beta_0_estim
   gamma_noshift <- X_0$summary$gamma_estim
   alpha_noshift <- X_0$summary$alpha_estim
@@ -1863,6 +1881,7 @@ estimateEM_several_K.OUsr <- function(phylo,
                             distances_phylo = distances_phylo,
                             subtree.list = subtree.list,
                             T_tree = T_tree,
+                            U_tree = U_tree,
                             method.init.alpha = "default",
                             exp.root.init = beta_0_noshift,
                             var.init.root = gamma_noshift,

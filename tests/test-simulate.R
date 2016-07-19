@@ -34,6 +34,16 @@ test_that("Mean of the BM", {
   
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
   
+  ## Compute expectations of internal nodes
+  U_tree <- incidence.matrix.full(tree)
+  Delta <- shifts.list_to_matrix(tree, shifts)
+  X1.all.exp.mat <- tcrossprod(Delta, U_tree) + root.state$value.root
+  
+  X1.nodes.exp <- extract.simulate(X1, where = "nodes", what = "exp")
+  X1.all.exp <- cbind(X1.tips.exp, X1.nodes.exp)
+  
+  expect_that(X1.all.exp.mat, equals(X1.all.exp))
+  
   ## Without simulating
   X2 <- simulate(tree,
                  p = p,
@@ -42,6 +52,75 @@ test_that("Mean of the BM", {
                  variance = variance,
                  shifts = shifts,
                  simulate_random = FALSE)
+  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  expect_that(X1.tips.exp, equals(X2.tips.exp))
+})
+
+test_that("Mean of the BM - random root", {
+  set.seed(586)
+  ntaxa <- 20
+  tree <- rtree(ntaxa)
+  
+  ## Simulate Process
+  p <- 3
+  variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+  root.state <- list(random = TRUE,
+                     value.root = NA,
+                     exp.root = c(1, -1, 2),
+                     var.root = matrix(0.1, p, p))
+  shifts = list(edges = c(18, 32),
+                values=cbind(c(4, -10, 3),
+                             c(-5, 5, 0)),
+                relativeTimes = 0)
+  
+  X1 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "BM",
+                 variance = variance,
+                 shifts = shifts)
+  
+  X1.tips.exp <- extract.simulate(X1, where = "tips", what = "exp")
+  
+  ## Does adding a root edge change anything ?
+  tree$root.edge <- 1
+  X2 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "BM",
+                 variance = variance,
+                 shifts = shifts)
+  
+  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  expect_that(X1.tips.exp, equals(X2.tips.exp))
+  
+  ## Compute expectations with tree matrix
+  T_tree <- incidence.matrix(tree)
+  Delta <- shifts.list_to_matrix(tree, shifts)
+  
+  X1.tips.exp.mat <- tcrossprod(Delta, T_tree) + root.state$exp.root
+  
+  expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
+  
+  ## Compute expectations of internal nodes
+  U_tree <- incidence.matrix.full(tree)
+  Delta <- shifts.list_to_matrix(tree, shifts)
+  X1.all.exp.mat <- tcrossprod(Delta, U_tree) + root.state$exp.root
+  
+  X1.nodes.exp <- extract.simulate(X1, where = "nodes", what = "exp")
+  X1.all.exp <- cbind(X1.tips.exp, X1.nodes.exp)
+  
+  expect_that(X1.all.exp.mat, equals(X1.all.exp))
+  
+  ## Without simulating
+  X2 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "BM",
+                 variance = variance,
+                 shifts = shifts,
+                 simulate_random = FALSE,
+                 U_tree = U_tree)
   X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
   expect_that(X1.tips.exp, equals(X2.tips.exp))
 })

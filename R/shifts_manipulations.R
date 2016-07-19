@@ -249,7 +249,7 @@ shifts.list_to_vector <- function(phy, shifts){
 shifts.list_to_matrix <- function(phy, shifts, p = nrow(shifts$values)){
   if (p == 0) stop("In shifts.list_to_matrix the dimension p must be specified when shift is NULL.")
   delta <- matrix(0, p, nrow(phy$edge))
-  delta[1:p, shifts$edges] <- shifts$values[1:p, ]
+  delta[1:p, shifts$edges] <- as.matrix(shifts$values[1:p, ])
   return(delta)
 }
 
