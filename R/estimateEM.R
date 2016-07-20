@@ -416,6 +416,7 @@ estimateEM <- function(phylo,
   number_new_shifts <- NULL
   CV_log_lik <- FALSE
   while ( Nbr_It == 0 || # Initialisation
+          K_lag_init > 0 || 
             ( !(CV_log_lik && # CV of log-Likelihood ?
               shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
                 is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
@@ -423,6 +424,7 @@ estimateEM <- function(phylo,
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
+    if (K_lag_init > 0) K_lag_init <- K_lag_init - K_lag_init # reduce lag progressivelly
     ########## Log Likelihood and E step ####################################
     # Check convergence of loglik ?
     if (check_convergence_likelihood && Nbr_It > 1){
@@ -501,7 +503,7 @@ estimateEM <- function(phylo,
     params <- compute_M(phylo = phylo, 
                         Y_data = Y_data, 
                         conditional_law_X = conditional_law_X, 
-                        nbr_of_shifts = nbr_of_shifts, 
+                        nbr_of_shifts = nbr_of_shifts + K_lag_init, 
                         random.root = random.root,
                         known.selection.strength = known.selection.strength,
                         alpha_old = alpha_old,
