@@ -351,7 +351,8 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                                              root = NULL,
                                              penscale = rep(1,
                                                             length(unique(group))),
-                                             group = 1:ncol(Xkro)) {
+                                             group = 1:ncol(Xkro),
+                                             p_dim) {
   library(gglasso)
   ## Root is the intercept, should be excluded from varaiable selection
   if (!is.null(root)){
@@ -448,12 +449,12 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
   }
   ## Select the row with the right number of coefficients
   index <- min(which(df == K_2))
-  if (p == 1){
+  if (p_dim == 1){
     delta <- fit$beta[, index]
     delta <- matrix(delta, nrow = length(delta))
   } else {
     delta <- fit$beta[, index]
-    delta <- t(matrix(delta, nrow = p))
+    delta <- t(matrix(delta, nrow = p_dim))
   }
 #   # If we put aside the root, replace it in the coefficients
 #   if (!is.null(root)){
@@ -478,7 +479,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
     )
     delta <- try(find_independent_regression_vectors.gglasso(Xkro, K,
                                                              fit, root,
-                                                             p, group))
+                                                             p_dim, group))
     if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
   }
   ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
@@ -492,7 +493,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
     delta.bis[edges, ] <- delta[edges, ]
   }
   ## Gauss lasso
-  return(compute_gauss_lasso.gglasso(Yvec, Xkro, delta.bis, root, group, p))
+  return(compute_gauss_lasso.gglasso(Yvec, Xkro, delta.bis, root, group, p_dim))
 }
 
 # lasso_regression_K_fixed.gglasso <- function (Yp, Xp, K,
@@ -1258,7 +1259,8 @@ init.EM.lasso <- function(phylo,
                                                   Xkro = as.matrix(Xp),
                                                   K = nbr_of_shifts,
                                                   root = root,
-                                                  group = group))
+                                                  group = group,
+                                                  p_dim = p))
       chol_data <- FALSE
     }
   } else {
@@ -1301,7 +1303,8 @@ init.EM.lasso <- function(phylo,
                                                   Xkro = as.matrix(Xp),
                                                   K = nbr_of_shifts,
                                                   group = group,
-                                                  root = root))
+                                                  root = root,
+                                                  p_dim = p))
     }
     chol_data <- FALSE
   }

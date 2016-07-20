@@ -947,6 +947,7 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, pensc
   nNodes <- phylo$Nnode
   ## Computation of answer matrix D : already done by now.
   if(is.list(D)){ # p independent traits
+    p <- length(D)
     Dvec <- as.vector(do.call(cbind, D))
     Xkro <- bdiag(Xp)
     ## Re-order by branches
@@ -961,7 +962,8 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, pensc
                                                 K = nbr_of_shifts,
                                                 root = ntaxa + nNodes,
                                                 penscale = penscale,
-                                                group = group))
+                                                group = group,
+                                                p_dim = p))
   } else { # Only one trait
     fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp,
                                                             K = nbr_of_shifts,
