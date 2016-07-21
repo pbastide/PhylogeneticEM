@@ -357,15 +357,29 @@ lasso_regression_K_fixed.glmnet_multivariate <- function(Yp, Xp, K,
   #   delta.bis[edges, ] <- delta[edges, ]
   # }
   # ## Gauss lasso
-  # return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+  # return(compute_gauss_lasso(t(Yp), Xp, delta.bis, root))
   ## Gauss lasso, going back to the right number of shifts
   if (is.null(root)){
-    edges <- which(rowSums(abs(delta)) != 0)
+    vals <- rowSums(abs(delta))
+    edges <- unname(which(vals != 0))
   } else {
-    edges <- which(rowSums(abs(delta[-root, , drop = F])) != 0)
+    vals <- rowSums(abs(delta[-root, , drop = F]))
+    edges <- unname(which(vals != 0))
   }
-  posibilities <- combn(edges, K_original, simplify = FALSE) # All possible combinaisons
+  ## Handle case wher combinatoire is too expensive
+  K_choose <- K_original
+  ed_or <- order(-vals)
+  n_ed <- length(edges)
+  fixed_edges <- NULL
+  while((choose(length(edges), K_choose) > 50000) && (K_choose > 0)){
+    K_choose <- K_choose - 1
+    fixed_edges <- ed_or[1:(K_original - K_choose)]
+    edges <- ed_or[(K_original - K_choose + 1):n_ed]
+  }
+  posibilities <- combn(edges, K_choose, simplify = FALSE) # All possible combinaisons
+  Ypt <- t(Yp) # Do the transpose only once
   fun <- function(posi){
+    posi <- c(fixed_edges, posi)
     if (is.null(root)){
       delta.bis <- matrix(0, dim(delta)[1], dim(delta)[2])
       delta.bis[posi, ] <- delta[posi, ]
@@ -373,7 +387,7 @@ lasso_regression_K_fixed.glmnet_multivariate <- function(Yp, Xp, K,
       delta.bis <- matrix(0, dim(delta)[1] - 1, dim(delta)[2])
       delta.bis[posi, ] <- delta[posi, ]
     }
-    return(suppressWarnings(compute_gauss_lasso(Yp, Xp, delta.bis, root)))
+    return(suppressWarnings(compute_gauss_lasso(Ypt, Xp, delta.bis, root, projection = posi)))
   }
   res_try <- lapply(posibilities, fun)
   scores <- sapply(res_try, function(z) sum(z$residuals^2))
@@ -525,14 +539,27 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
       if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
     }
   }
-  ## Gauss lasso, going back to the right number of shifts
   if (is.null(root)){
-    edges <- which(rowSums(abs(delta)) != 0)
+    vals <- rowSums(abs(delta))
+    edges <- unname(which(vals != 0))
   } else {
-    edges <- which(rowSums(abs(delta[-root, , drop = F])) != 0)
+    vals <- rowSums(abs(delta[-root, , drop = F]))
+    edges <- unname(which(vals != 0))
   }
-  posibilities <- combn(edges, K_original, simplify = FALSE) # All possible combinaisons
+  ## Handle case wher combinatoire is too expensive
+  K_choose <- K_original
+  ed_or <- order(-vals)
+  n_ed <- length(edges)
+  fixed_edges <- NULL
+  while((choose(length(edges), K_choose) > 50000) && (K_choose > 0)){
+    K_choose <- K_choose - 1
+    fixed_edges <- ed_or[1:(K_original - K_choose)]
+    edges <- ed_or[(K_original - K_choose + 1):n_ed]
+  }
+  posibilities <- combn(edges, K_choose, simplify = FALSE) # All possible combinaisons
+ combinaisons
   fun <- function(posi){
+    posi <- c(fixed_edges, posi)
     if (is.null(root)){
       delta.bis <- matrix(0, dim(delta)[1], dim(delta)[2])
       delta.bis[posi, ] <- delta[posi, ]
@@ -541,7 +568,8 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
       delta.bis[posi, ] <- delta[posi, ]
     }
     return(suppressWarnings(compute_gauss_lasso.gglasso(Yvec, Xkro, delta.bis,
-                                                        root, group, p_dim)))
+                                                        root, group, p_dim,
+                                                        projection = posi)))
   }
   res_try <- lapply(posibilities, fun)
   scores <- sapply(res_try, function(z) sum(z$residuals^2))
@@ -698,7 +726,7 @@ lasso_regression_K_fixed.quadrupen <- function (Yp, Xp, K, root = NULL, penscale
   delta.bis <- rep(0, length(delta))
   delta.bis[edges] <- delta[edges]
   ## Gauss lasso
-  return(compute_gauss_lasso(Yp, Xp, delta.bis, root))
+  return(compute_gauss_lasso(t(Yp), Xp, delta.bis, root))
 }
 
 ##
@@ -922,21 +950,22 @@ find_independent_regression_vectors.quadrupen <- function(Xp, K, fit, root){
 #' @return residuals the residuals of the regression
 #'
 ##
-compute_gauss_lasso <- function (Yp, Xp, delta, root) {
-  projection <- which(rowSums(delta) != 0)
+compute_gauss_lasso <- function (Ypt, Xp, delta, root,
+                                 projection = which(rowSums(delta) != 0)) {
+  # projection <- which(rowSums(delta) != 0)
   if (is.null(root)) { # If no one is excluded, "real" intercept
     Xproj <- 0 + Xp[, projection, drop = FALSE]
-    fit.gauss <- lm(t(Yp) ~ Xproj)
-    delta.gauss <- matrix(0, dim(Xp)[2], dim(Yp)[1])
-    coefs_gauss <- matrix(coef(fit.gauss), ncol = dim(Yp)[1])
+    fit.gauss <- lm(Ypt ~ Xproj)
+    delta.gauss <- matrix(0, dim(Xp)[2], dim(Ypt)[2])
+    coefs_gauss <- matrix(coef(fit.gauss), ncol = dim(Ypt)[2])
     E0.gauss <- coefs_gauss[1, ]; names(E0.gauss) <- NULL
     delta.gauss[projection, ] <- coefs_gauss[-1, ]
   } else { # take intercept (root) into consideration
     Xproj <- 0 + Xp[, c(root, projection), drop = FALSE]
-    fit.gauss <- lm(t(Yp) ~ Xproj - 1)
-    delta.gauss <- matrix(0, dim(Xp)[2] - 1, dim(Yp)[1])
-    coefs_gauss <- matrix(coef(fit.gauss), ncol = dim(Yp)[1])
-    E0.gauss <- coefs_gauss[1, ]; names(E0.gauss) <- NULL
+    fit.gauss <- lm.fit(Xproj, Ypt)
+    delta.gauss <- matrix(0, dim(Xp)[2] - 1, dim(Ypt)[2])
+    coefs_gauss <- matrix(coef(fit.gauss), ncol = dim(Ypt)[2])
+    E0.gauss <- coefs_gauss[1, ];# names(E0.gauss) <- NULL
     delta.gauss[projection, ] <- coefs_gauss[-1, ]
   }
   # If lm fails to find some coeficients
@@ -951,8 +980,9 @@ compute_gauss_lasso <- function (Yp, Xp, delta, root) {
               residuals = residuals(fit.gauss)))
 }
 
-compute_gauss_lasso.gglasso <- function (Yvec, Xkro, delta, root, group, p) {
-  projection <- which(as.vector(t(delta)) != 0)
+compute_gauss_lasso.gglasso <- function (Yvec, Xkro, delta, root, group, p,
+                                         projection = which(as.vector(t(delta)) != 0)) {
+  # projection <- which(as.vector(t(delta)) != 0)
   if (is.null(root)) { # If no one is excluded, "real" intercept
     Xproj <- 0 + Xkro[, projection, drop = FALSE]
     fit.gauss <- lm(Yvec ~ Xproj)
