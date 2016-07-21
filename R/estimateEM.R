@@ -358,11 +358,12 @@ estimateEM <- function(phylo,
     if (impute_init_Rphylopars && any(is.na(Y_data_imp))){
       # Impute the data only once, if needed.
       message("Imputing data for lasso initialization.")
-      Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.init)
+      Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.root)
     }
     variance.init <- init.variance.BM.estimation(phylo = phylo, 
                                                  Y_data = Y_data, 
                                                  Y_data_imp = Y_data_imp,
+                                                 Y_data_vec_known = Y_data_vec_known,
                                                  nbr_of_shifts = nbr_of_shifts, 
                                                  times_shared = times_shared,
                                                  distances_phylo = distances_phylo, 
@@ -372,6 +373,8 @@ estimateEM <- function(phylo,
                                                  subtree.list = subtree.list,
                                                  miss = miss,
                                                  selection.strength.init = init.selection.strength,
+                                                 impute_init_Rphylopars = impute_init_Rphylopars,
+                                                 masque_data = masque_data,
                                                  ...)
   }
 
@@ -383,7 +386,8 @@ estimateEM <- function(phylo,
                          process = process, 
                          times_shared = times_shared, 
                          distances_phylo = distances_phylo, 
-                         nbr_of_shifts = nbr_of_shifts + K_lag_init, 
+                         nbr_of_shifts = nbr_of_shifts, 
+                         K_lag_init = K_lag_init,
                          selection.strength.init = init.selection.strength, 
                          random.init = random.root,
                          stationary.root.init = stationary.root,
@@ -1116,6 +1120,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        h_tree_original,
                                        T_tree,
                                        U_tree,
+                                       K_lag_init,
                                        ...){
     temp <- choose_process_EM(process = process_original,
                               p = p,
@@ -1159,10 +1164,10 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       F_moments = NULL
     }
     ## Impute data if needed
-    if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
-      warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be infered. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
-      impute_init_Rphylopars <- TRUE
-    }
+    # if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
+    #   warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be infered. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
+    #   impute_init_Rphylopars <- TRUE
+    # }
     Y_data_imp <- Y_data
     if (any(is.na(Y_data_imp))
         && impute_init_Rphylopars
@@ -1300,6 +1305,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                h_tree_original = h_tree_original,
                                T_tree = T_tree,
                                U_tree = U_tree,
+                               K_lag_init = K_lag_init,
                                ...)
     }
     stopCluster(cl)
@@ -1338,6 +1344,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                h_tree_original = h_tree_original,
                                T_tree = T_tree,
                                U_tree = U_tree,
+                               K_lag_init = K_lag_init,
                                ...)
     }
   }
@@ -1533,7 +1540,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       sBM_variance = sBM_variance,
                                                       method.OUsun = method.OUsun,
                                                       impute_init_Rphylopars = impute_init_Rphylopars,
-                                                      K_lag_init = min(K_lag_init, K_max - K_first),
+                                                      K_lag_init = K_lag_init,
                                                       ...)
   if (K_first == 0 && any(is.na(Y_data))){
     Y_data_imp <- XX[["0"]]$Yhat
@@ -1579,7 +1586,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                           sBM_variance = sBM_variance,
                                                           method.OUsun = method.OUsun,
                                                           impute_init_Rphylopars = impute_init_Rphylopars,
-                                                          K_lag_init = min(K_lag_init, K_max - K_t),
+                                                          K_lag_init = K_lag_init,
                                                           ...)
     pp <- check_dimensions(p,
                            XX[[paste0(K_t)]]$params$root.state,
