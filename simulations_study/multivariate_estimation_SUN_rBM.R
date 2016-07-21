@@ -6,7 +6,10 @@ library(foreach)
 library(ape)
 library(glmnet) # For Lasso initialization
 library(robustbase) # For robust fitting of alpha
-reqpckg <- c("ape", "glmnet", "robustbase")
+library(gglasso)
+library(capushe)
+library(Matrix)
+reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe")
 
 ## Set number of parallel cores
 Ncores <- 3
@@ -123,7 +126,7 @@ estimations_several_K_ak <- function(X){
   res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
                  Y_data = X$Y_data,
                  process = "scOU",
-                 K_max = max(K_try[[paste0(X$ntaxa)]]),
+                 K_max = max(K_try[[paste0(X$ntaxa)]]) + 5,
                  random.root = TRUE,
                  stationary.root = TRUE,
                  alpha = alpha_grid,
