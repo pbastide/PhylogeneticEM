@@ -641,7 +641,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   sim$params_simu <- params
   name_config <- paste(alpha, gamma, K, rd, rs, s, factor_shift,
                        ntaxa, NA_per, sep = "_")
-  if (is.null(moments_list[[name_config]])){
+  if (is.null(moments_list[[name_config]]) || (NA_per > 0)){
     moments_list[[name_config]] <<- compute_mean_variance.simple(phylo = tree,
                                     times_shared = times_shared[[paste0(ntaxa)]],
                                     distances_phylo = distances_phylo[[paste0(ntaxa)]],
@@ -696,6 +696,8 @@ simlist <- foreach(i = 1:nrow(simparams)) %do% {
   sim$it <- i
   return(sim)
 }
+
+rm(moments_list)
 
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
 
