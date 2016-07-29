@@ -557,7 +557,6 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
     edges <- ed_or[(K_original - K_choose + 1):n_ed]
   }
   posibilities <- combn(edges, K_choose, simplify = FALSE) # All possible combinaisons
- combinaisons
   fun <- function(posi){
     posi <- c(fixed_edges, posi)
     if (is.null(root)){
@@ -568,8 +567,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
       delta.bis[posi, ] <- delta[posi, ]
     }
     return(suppressWarnings(compute_gauss_lasso.gglasso(Yvec, Xkro, delta.bis,
-                                                        root, group, p_dim,
-                                                        projection = posi)))
+                                                        root, group, p_dim)))
   }
   res_try <- lapply(posibilities, fun)
   scores <- sapply(res_try, function(z) sum(z$residuals^2))

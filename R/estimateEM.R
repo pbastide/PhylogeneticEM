@@ -282,7 +282,9 @@ estimateEM <- function(phylo,
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
   if (is.null(F_moments) && !Flag_Missing && process == "BM"){
     # Add root edge to the branch lengths (root assumed fixed by default)
-    F_moments <- compute_fixed_moments(times_shared + phylo$root.edge, ntaxa)
+    root_edge_length <- 0
+    if (!is.null(phylo$root.edge)) root_edge_length <- phylo$root.edge
+    F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
   } 
   
   ########## Re-scale tree to 100 #############################################
@@ -936,10 +938,13 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   method.selection  <- match.arg(method.selection, several.ok = TRUE)
   if (p > 1 && "BGH" %in% method.selection){
     method.selection <- method.selection[-which(method.selection == "BGH")]
-    if (length(method.selection) == 0) stop("BGH is not implemented for multivariate data.")
     warning("BGH is not implemented for multivariate data.")
   }
-  if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2") library(capushe)
+  if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2"){
+    if (K_max < 10) warning("Slope and Jump heuristics need at least 10 observations. Consider choosing K_max >= 10.")
+    library(capushe) 
+  }
+  if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevent warnings). Please fix before carying on.")
   
   ## Inference per se
   if (!is.null(estimates)){ # If the user already has the estimates
@@ -1159,7 +1164,9 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
     if (!Flag_Missing){
       # Add root edge to the branch lengths (root assumed fixed by default)
-      F_moments <- compute_fixed_moments(times_shared + phylo$root.edge, ntaxa)
+      root_edge_length <- 0
+      if (!is.null(phylo$root.edge)) root_edge_length <- phylo$root.edge
+      F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
     } else {
       F_moments = NULL
     }
@@ -1251,19 +1258,26 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                compute_log_likelihood = compute_log_likelihood.simple,
                                compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
                                compute_E = compute_E.simple)
-        if (!all.equal(as.vector(temp$log_likelihood_old),
-                       attr(params_scOU, "log_likelihood"))){
+        if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
+                       attr(params_scOU, "log_likelihood"),
+                       tol = .Machine$double.eps ^ 0.3))){
           stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
         }
-        return(temp)
+        return(list(Zhat = temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
+                    Yhat = temp$conditional_law_X$expectations[ , 1:ntaxa],
+                    Zvar = temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
+                    Yvar = temp$conditional_law_X$variances[ , , 1:ntaxa],
+                    m_Y_estim = extract.simulate(temp$moments$sim,
+                                                   where="tips",
+                                                   what="expectations")))
       }
       temp_list <- lapply(X$params_estim, fun)
       ## "Ancestral States Reconstruction"
-      X$Zhat <- lapply(temp_list, function(z) z$conditional_law_X$expectations[ , (ntaxa+1):ncol(z$conditional_law_X$expectations)])
-      X$Yhat <- lapply(temp_list, function(z) z$conditional_law_X$expectations[ , 1:ntaxa])
-      X$Zvar <- lapply(temp_list, function(z) z$conditional_law_X$variances[ , , (ntaxa+1):ncol(z$conditional_law_X$expectations)])
-      X$Yvar <- lapply(temp_list, function(z) z$conditional_law_X$variances[ , , 1:ntaxa])
-      X$m_Y_estim <- lapply(temp_list, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
+      X$Zhat <- lapply(temp_list, function(z) z$Zhat)
+      X$Yhat <- lapply(temp_list, function(z) z$Yhat)
+      X$Zvar <- lapply(temp_list, function(z) z$Zvar)
+      X$Yvar <- lapply(temp_list, function(z) z$Yvar)
+      X$m_Y_estim <- lapply(temp_list, function(z) z$m_Y_estim)
       rm(temp_list)
     }
     return(X)
@@ -1385,6 +1399,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                                 K_lag_init = 0,
                                 ...){
   ## Fixed quantities
+  ntaxa <- length(phylo$tip.label)
   times_shared <- compute_times_ca(phylo)
   distances_phylo <- compute_dist_phy(phylo)
   subtree.list <- enumerate_tips_under_edges(phylo)

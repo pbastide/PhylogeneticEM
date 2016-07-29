@@ -1,31 +1,17 @@
 rm(list=ls())
 
+library(doParallel)
+library(foreach)
 library(ape)
-library(plyr)
-# library(quadrupen)
-library(combinat) # For alpha prior robust estimation
+library(glmnet) # For Lasso initialization
 library(robustbase) # For robust fitting of alpha
-# library(TreeSim)
+library(gglasso)
+library(capushe)
 library(Matrix)
-
-
-source("R/simulate.R")
-source("R/estimateEM.R")
-source("R/init_EM.R")
-source("R/E_step.R")
-source("R/M_step.R")
-source("R/shutoff.R")
-source("R/generic_functions.R")
-source("R/shifts_manipulations.R")
-source("R/plot_functions.R")
-source("R/parsimonyNumber.R")
-source("R/partitionsNumber.R")
-source("R/model_selection.R")
-
-exportFunctions <- ls() # All the functions for parallel computations.
+reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe")
 
 ## Load Ericaceae data
-load("../data/ericaceae_data_2016-03-03.RData")
+load("../data/ericaceae_data_2016-07-27.RData")
 
 source("R/simulate.R")
 source("R/estimateEM.R")
@@ -55,18 +41,14 @@ mean_linear_measures_length <- aggregate(cbind(corolla_tube_length, total_large_
                                          na.action = na.pass)
 ## Add PC1 and PC2 from Corolla and Anther Shape
 # anther
-# pca_anthers <- data.frame(pca_efou_anthers$x[, 1:2])
 pca_anthers <- data.frame(all_data_pcs_anthers_unique[, 1:3])
 colnames(pca_anthers) <- c("species", "anther.PC1", "anther.PC2")
-# pca_anthers$species <- rownames(pca_anthers)
 # Corolla
-# pca_corolla <- data.frame(pca_efou_flowers$x[, 1:2])
 pca_corolla <- data.frame(all_data_pcs_flowers_unique[, 1:3])
 colnames(pca_corolla) <- c("species", "corolla.PC1", "corolla.PC2")
-# pca_corolla$species <- rownames(pca_corolla)
 # Merge
 dd <- merge(mean_linear_measures_length, pca_anthers,
-            by = "species", all = TRUE) # Match: 4 !!
+            by = "species", all = TRUE)
 traits_data <- merge(dd, pca_corolla, by = "species", all = TRUE)
 ## Drop NA (entire ligne is NA)
 traits_data_all <- vector("list", 6)
@@ -109,12 +91,12 @@ replace_zeros <- function(x){
 }
 
 ###############################################################################
-## EM inferences - without model selection ####################################
+## EM inferences ######################### ####################################
 ###############################################################################
 
 ## Select data
-phylo <- subtree_traits[[3]]
-trait_matrix <- trait_matrix_all[[3]]
+phylo <- subtree_traits[[6]]
+trait_matrix <- trait_matrix_all[[6]]
 # 0 values
 set.seed(17910402)
 temp_cl <- replace_zeros(trait_matrix[1, ])
@@ -144,11 +126,13 @@ res <- PhyloEM(phylo = phylo,
                process = "scOU",
                random.root = FALSE,
                K_max = 30,
-               alpha_known = TRUE,
-               alpha = alpha_grid,
+               K_lag_init = 5,
+               alpha = alpha_grid[11],
                tol = list(variance = 10^(-2), 
                           value.root = 10^(-2),
                           log_likelihood = 10^(-2)),
+               save_step = FALSE,
+               Nbr_It_Max = 2000,
                use_previous = FALSE,
                method.init = "lasso",
                method.selection = c("BirgeMassart1", "BirgeMassart2"),

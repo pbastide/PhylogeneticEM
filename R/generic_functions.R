@@ -764,6 +764,6 @@ merge_params_independent <- function(params_split){
                              params$variance,
                              params$selection.strength,
                              params$optimal.value)
-  if (!is.null(attr(params_split[[1]], "p_dim"))) attr(params_split[[l]], "p_dim") <- p
+  if (!is.null(attr(params_split[[1]], "p_dim"))) attr(params, "p_dim") <- p
   return(params)
 }
