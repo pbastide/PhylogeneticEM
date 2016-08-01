@@ -33,8 +33,8 @@ savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 process <- "OU"
 p_base <- 4 # number of traits
 beta_0 <- rep(0, p_base) # ancestral optimum
-alpha_base <- 3 # selection strength
-sigma_base <- 6 # sigma squared variance
+alpha_base <- 1 # selection strength
+sigma_base <- 2 # sigma squared variance
 gamma_base <- 1 # gamma squared stationary variance
 K_base <- 3 # number of shifts
 ntaxa_base <- 160 # number of taxa
@@ -44,17 +44,17 @@ s_base <- 0 # non diagonal coefficient
 NA_base <- 0 # % of NAs
 
 ## alpha grid
-alpha_grid <- c(1, 2) # alpha varies with gamma squared fixed to 1
+alpha_grid <- c(2, 3) # alpha varies with gamma squared fixed to 1
 
 ## Number of shifts for simulation
 K_grid <- c(0, 3, 7, 11, 15) # number of shifts
-factor_shift_grid <- c(0.5, 1, 1.5, 2) # multiplicative factor
+factor_shift_grid <- c(0.5, 1, 1.5, 2, 2.5, 3) # multiplicative factor
 
 ## correlations
-r_grid <- c(0.2, 0.4, 0.6) # non diagonal elements for A (r) or R (2r)
+r_grid <- c(0.2, 0.4, 0.6, 0.8) # non diagonal elements for A (r) or R (2r)
 
 ## Non scalar
-s_grid <- c(0.5, 1, 1.5) # additive diagonal for two lowers of A
+s_grid <- 1:4 # additive diagonal for two lowers of A
 
 ## NAs
 NA_grid <- c(0.05, 0.1, 0.2, 0.5)
@@ -123,7 +123,7 @@ mask <- (simparams$K == K_base) & (simparams$factor_shift == factor_shift_base) 
 simparams <- simparams[!mask, ]
 # zero shift
 mask <- (simparams$K == 0) & (simparams$factor_shift != 1) & (simparams$grp == "K_var")
-simparams <- simparams[!mask, ] # 38*200 x 11
+simparams <- simparams[!mask, ] # 49*200 x 11
 
 ##############
 ## Generation of trees
@@ -158,9 +158,9 @@ shifts_grid <- vector(mode = "list")
 
 ## 128 - 3
 shifts_grid[["128_3"]] <- list(edges = c(9, 72, 209),
-                               values=cbind(rep(2.4, p_base),
-                                            rep(-2.1, p_base),
-                                            rep(2.2, p_base)),
+                               values=cbind(rep(1.9, p_base),
+                                            rep(-1.7, p_base),
+                                            rep(1.7, p_base)),
                                relativeTimes = 0)
 
 # Means at the tips ?
@@ -289,9 +289,9 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism
 ## 32 -  3
 plot(trees[["32"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["32_3"]] <- list(edges = c(6, 20, 48),
-                                values = cbind(rep(2.4, p_base),
-                                               rep(-2.4, p_base),
-                                               rep(2.1, p_base)),
+                                values = cbind(rep(2.1, p_base),
+                                               rep(-2.0, p_base),
+                                               rep(1.6, p_base)),
                                 relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -315,9 +315,9 @@ extract.parsimonyNumber(parsimonyNumber(trees[["32"]], clusters_from_shifts_ism(
 ## 64 -  3
 plot(trees[["64"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["64_3"]] <- list(edges = c(3, 44, 92),
-                              values = cbind(rep(2.2, p_base),
-                                             rep(-2.2, p_base),
-                                             rep(2.2, p_base)),
+                              values = cbind(rep(1.8, p_base),
+                                             rep(-1.9, p_base),
+                                             rep(1.8, p_base)),
                               relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -341,9 +341,9 @@ extract.parsimonyNumber(parsimonyNumber(trees[["64"]], clusters_from_shifts_ism(
 ## 96 -  3
 plot(trees[["96"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["96_3"]] <- list(edges = c(48, 80, 116),
-                              values = cbind(rep(2.2, p_base),
-                                             rep(-2.2, p_base),
-                                             rep(2.2, p_base)),
+                              values = cbind(rep(1.7, p_base),
+                                             rep(-1.8, p_base),
+                                             rep(1.8, p_base)),
                               relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -367,9 +367,9 @@ extract.parsimonyNumber(parsimonyNumber(trees[["96"]], clusters_from_shifts_ism(
 ## 160 -  3
 plot(trees[["160"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["160_3"]] <- list(edges = c(107, 62, 255),
-                              values = cbind(rep(2.2, p_base),
-                                             rep(-2.2, p_base),
-                                             rep(2.2, p_base)),
+                              values = cbind(rep(1.7, p_base),
+                                             rep(-1.7, p_base),
+                                             rep(1.7, p_base)),
                               relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -393,13 +393,13 @@ extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism
 ## 160 - 7
 shifts_grid[["160_7"]] <- list(edges = c(107, 62, 255,
                                          18, 204, 175, 276),
-                               values = cbind(rep(2.2, p_base),
-                                              rep(-2.2, p_base),
-                                              rep(2.2, p_base),
-                                              rep(2.2, p_base),
-                                              rep(-2.2, p_base),
-                                              rep(2.8, p_base),
-                                              rep(2.4, p_base)),
+                               values = cbind(rep(1.7, p_base),
+                                              rep(-1.7, p_base),
+                                              rep(1.7, p_base),
+                                              rep(1.7, p_base),
+                                              rep(-1.8, p_base),
+                                              rep(2.9, p_base),
+                                              rep(2.2, p_base)),
                                relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -424,17 +424,17 @@ extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism
 shifts_grid[["160_11"]] <- list(edges = c(107, 62, 255,
                                          18, 204, 175, 276,
                                          145, 219, 314, 83),
-                               values = cbind(rep(2.2, p_base),
-                                              rep(-2.2, p_base),
+                               values = cbind(rep(1.7, p_base),
+                                              rep(-1.7, p_base),
+                                              rep(1.7, p_base),
+                                              rep(1.7, p_base),
+                                              rep(-1.8, p_base),
+                                              rep(2.9, p_base),
                                               rep(2.2, p_base),
-                                              rep(2.2, p_base),
-                                              rep(-2.2, p_base),
-                                              rep(2.8, p_base),
-                                              rep(2.4, p_base),
-                                              rep(2.8, p_base),
-                                              rep(-3.1, p_base),
-                                              rep(-3, p_base),
-                                              rep(-2.4, p_base)),
+                                              rep(2.3, p_base),
+                                              rep(-3.4, p_base),
+                                              rep(-1.8, p_base),
+                                              rep(-2.1, p_base)),
                                relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -460,21 +460,21 @@ shifts_grid[["160_15"]] <- list(edges = c(107, 62, 255,
                                           18, 204, 175, 276,
                                           145, 219, 314, 83,
                                           282, 265, 119, 47),
-                                values = cbind(rep(2.2, p_base),
-                                               rep(-2.2, p_base),
+                                values = cbind(rep(1.7, p_base),
+                                               rep(-1.7, p_base),
+                                               rep(1.7, p_base),
+                                               rep(1.7, p_base),
+                                               rep(-1.8, p_base),
+                                               rep(2.9, p_base),
                                                rep(2.2, p_base),
-                                               rep(2.2, p_base),
-                                               rep(-2.2, p_base),
-                                               rep(2.8, p_base),
-                                               rep(2.4, p_base),
-                                               rep(2.8, p_base),
-                                               rep(-3.1, p_base),
-                                               rep(-3, p_base),
-                                               rep(-2.4, p_base),
-                                               rep(3.2, p_base),
-                                               rep(-4.5, p_base),
-                                               rep(-4.8, p_base),
-                                               rep(-3, p_base)),
+                                               rep(2.3, p_base),
+                                               rep(-3.4, p_base),
+                                               rep(-1.8, p_base),
+                                               rep(-2.1, p_base),
+                                               rep(4.0, p_base),
+                                               rep(-3.8, p_base),
+                                               rep(-4.1, p_base),
+                                               rep(-2.9, p_base)),
                                 relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -498,9 +498,9 @@ extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism
 ## 192 -  3
 plot(trees[["192"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["192_3"]] <- list(edges = c(57, 160, 307),
-                               values = cbind(rep(2.2, p_base),
-                                              rep(-2.2, p_base),
-                                              rep(2.2, p_base)),
+                               values = cbind(rep(1.7, p_base),
+                                              rep(-1.7, p_base),
+                                              rep(1.7, p_base)),
                                relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -524,9 +524,9 @@ extract.parsimonyNumber(parsimonyNumber(trees[["192"]], clusters_from_shifts_ism
 ## 215 -  3
 plot(trees[["215"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["215_3"]] <- list(edges = c(24, 234, 335),
-                               values = cbind(rep(2.2, p_base),
-                                              rep(-2.2, p_base),
-                                              rep(2.2, p_base)),
+                               values = cbind(rep(1.7, p_base),
+                                              rep(-1.7, p_base),
+                                              rep(1.7, p_base)),
                                relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
@@ -549,6 +549,19 @@ extract.parsimonyNumber(parsimonyNumber(trees[["215"]], clusters_from_shifts_ism
 
 ## Clean up
 rm(W, vec_Y, X1.tips.exp.mat, Delta)
+
+# ################################################
+# ## Renormalization of shifts to get a snr ~ 1
+# ################################################
+# ## factor
+# renom_fact <-  1 / ((1-exp(-1))/(1-exp(-3)) * 2)
+# 
+# fun <- function(z){
+#   z$values <- z$values * renom_fact
+#   return(z)
+# }
+# 
+# shifts_grid <- lapply(shifts_grid, fun)
 
 ##############
 ## Define date-stamp for file names
