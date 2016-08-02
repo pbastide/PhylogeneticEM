@@ -179,6 +179,8 @@ paramsSimu <- list(variance = variance,
                    root.state = root.state)
 
 set.seed(17920902)
+source("~/Dropbox/These/Code/Phylogenetic-EM/R/simulate.R")
+source("~/Dropbox/These/Code/Phylogenetic-EM/R/generic_functions.R")
 X1 <- simulate(tree,
                p = p,
                root.state = root.state,
