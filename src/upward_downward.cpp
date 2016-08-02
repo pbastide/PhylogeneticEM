@@ -162,6 +162,8 @@ Rcpp::List upward_downward(arma::mat const & data, arma::mat const & ed) {
 
 /*** R
 library(ape)
+library(TreeSim)
+library(Matrix)
 tree <- sim.bd.taxa.age(n = 50, numbsim = 1, lambda = 0.1, mu = 0, 
                         age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "cladewise")
