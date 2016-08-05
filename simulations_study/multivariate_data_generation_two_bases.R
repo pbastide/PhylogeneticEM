@@ -33,14 +33,14 @@ savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 process <- "OU"
 p_base <- 4 # number of traits
 beta_0 <- rep(0, p_base) # ancestral optimum
-alpha_base <- 1 # selection strength
+alpha_base <- c(1,2) # selection strength
+sigma_base <- 2 # sigma squared variance
 gamma_base <- 1 # gamma squared stationary variance
-sigma_base <- 2*alpha_base*gamma_base # sigma squared variance
 K_base <- 3 # number of shifts
 ntaxa_base <- 160 # number of taxa
-factor_shift_base <- 1.25 # multiplicative factor for shifts
+factor_shift_base <- 1 # multiplicative factor for shifts
 r_base <- 0 # correlation coefficients
-s_base <- 1 # non diagonal coefficient
+s_base <- 0 # non diagonal coefficient
 NA_base <- 0 # % of NAs
 
 ## alpha grid
@@ -48,10 +48,10 @@ alpha_grid <- c(2, 3) # alpha varies with gamma squared fixed to 1
 
 ## Number of shifts for simulation
 K_grid <- c(0, 3, 7, 11, 15) # number of shifts
-factor_shift_grid <- c(0.5, 1, 1.25, 1.5, 2, 2.5, 3) # multiplicative factor
+factor_shift_grid <- c(0.5, 1, 1.5, 2, 2.5, 3) # multiplicative factor
 
 ## correlations
-r_grid <- c(0.2, 0.4, 0.6, 0.8) # non diagonal elements for A (alpha_base*r) or R (sigma_base*r)
+r_grid <- c(0.2, 0.4, 0.6, 0.8) # non diagonal elements for A (r) or R (2r)
 
 ## Non scalar
 s_grid <- c(2, 4, 6, 8) # additive diagonal for two lowers of A
@@ -77,7 +77,7 @@ simparams_alpha <- expand.grid(alpha_grid, gamma_base, K_base,
                                factor_shift_base, ntaxa_base, NA_base, nrep,
                                "alpha_var")
 # K AND Factors
-simparams_K <- expand.grid(alpha_base, gamma_base, K_grid,
+simparams_K <- expand.grid(alpha_base[1], gamma_base, K_grid,
                            r_base, r_base, s_base,
                            factor_shift_grid, ntaxa_base, NA_base, nrep,
                            "K_var")
@@ -114,7 +114,7 @@ simparams <- rbind(simparams_base,
                    simparams_s,
                    simparams_NA,
                    simparams_ntaxa
-                  )
+)
 colnames(simparams) <- c("alpha", "gamma", "K", "rd", "rs", "s", "factor_shift",
                          "ntaxa", "NA_per", "nrep", "grp")
 ## Remove redondancies
@@ -123,7 +123,10 @@ mask <- (simparams$K == K_base) & (simparams$factor_shift == factor_shift_base) 
 simparams <- simparams[!mask, ]
 # zero shift
 mask <- (simparams$K == 0) & (simparams$factor_shift != 1) & (simparams$grp == "K_var")
-simparams <- simparams[!mask, ] # 53*200 x 11
+simparams <- simparams[!mask, ] # 49*200 x 11
+
+simparams$easy_base <- simparams$alpha == alpha_base[2]
+simparams$easy_base[simparams$grp == "alpha_var"] <- FALSE
 
 ##############
 ## Generation of trees
@@ -289,10 +292,10 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism
 ## 32 -  3
 plot(trees[["32"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["32_3"]] <- list(edges = c(6, 20, 48),
-                                values = cbind(rep(2.1, p_base),
-                                               rep(-2.0, p_base),
-                                               rep(1.6, p_base)),
-                                relativeTimes = rep(0, p_base))
+                              values = cbind(rep(2.1, p_base),
+                                             rep(-2.0, p_base),
+                                             rep(1.6, p_base)),
+                              relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["32"]], shifts_grid[["32_3"]])
@@ -367,10 +370,10 @@ extract.parsimonyNumber(parsimonyNumber(trees[["96"]], clusters_from_shifts_ism(
 ## 160 -  3
 plot(trees[["160"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["160_3"]] <- list(edges = c(107, 62, 255),
-                              values = cbind(rep(1.7, p_base),
-                                             rep(-1.7, p_base),
-                                             rep(1.7, p_base)),
-                              relativeTimes = rep(0, p_base))
+                               values = cbind(rep(1.7, p_base),
+                                              rep(-1.7, p_base),
+                                              rep(1.7, p_base)),
+                               relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_3"]])
@@ -422,20 +425,20 @@ extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism
 
 ## 160 - 11
 shifts_grid[["160_11"]] <- list(edges = c(107, 62, 255,
-                                         18, 204, 175, 276,
-                                         145, 219, 314, 83),
-                               values = cbind(rep(1.7, p_base),
-                                              rep(-1.7, p_base),
-                                              rep(1.7, p_base),
-                                              rep(1.7, p_base),
-                                              rep(-1.8, p_base),
-                                              rep(2.9, p_base),
-                                              rep(2.2, p_base),
-                                              rep(2.3, p_base),
-                                              rep(-3.4, p_base),
-                                              rep(-1.8, p_base),
-                                              rep(-2.1, p_base)),
-                               relativeTimes = rep(0, p_base))
+                                          18, 204, 175, 276,
+                                          145, 219, 314, 83),
+                                values = cbind(rep(1.7, p_base),
+                                               rep(-1.7, p_base),
+                                               rep(1.7, p_base),
+                                               rep(1.7, p_base),
+                                               rep(-1.8, p_base),
+                                               rep(2.9, p_base),
+                                               rep(2.2, p_base),
+                                               rep(2.3, p_base),
+                                               rep(-3.4, p_base),
+                                               rep(-1.8, p_base),
+                                               rep(-2.1, p_base)),
+                                relativeTimes = rep(0, p_base))
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_11"]])
@@ -577,16 +580,13 @@ moments_list <- vector("list") # keep the moments (avoid multiple computations)
 # Return list of parameters + list of shifts + data at tips
 datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                        ntaxa, NA_per, nrep, grp) {
-  if (rs == 0 && s == 1){
-   process_temp <- "scOU"
-   alpha_mat <- alpha
+  if (rs == 0 && s == 0){
+    process_temp <- "scOU"
+    alpha_mat <- alpha
   } else {
     process_temp <- "OU"
-    if (rs != 0){
-      alpha_mat <- alpha * (diag(rep(1 - rs, p_base)) + matrix(rs, p_base, p_base))
-    } else {
-      alpha_mat <- alpha * diag(s^(-(p_base+1)/2 + 1:p_base))
-    }
+    alpha_mat <- diag(rep(alpha - rs, p_base)) + matrix(rs, p_base, p_base)
+    alpha_mat <- alpha_mat + diag(c(rep(0, p_base / 2), rep(s, p_base / 2)))
   }
   tree <- trees[[paste0(ntaxa)]]
   if (K > 0){
@@ -599,7 +599,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   } else {
     shifts <- NULL
   }
-  var_mat <- 2 * alpha * gamma * (diag(rep(1 - rd, p_base)) + matrix(rd, p_base, p_base))
+  var_mat <- diag(rep(2 * alpha * gamma - 2 * rd, p_base)) + matrix(2 * rd, p_base, p_base)
   var_mat <- as(var_mat, "symmetricMatrix")
   root.state <- list(random = TRUE,
                      stationary.root = TRUE,
@@ -659,12 +659,12 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                        ntaxa, NA_per, sep = "_")
   if (is.null(moments_list[[name_config]]) || (NA_per > 0)){
     moments_list[[name_config]] <<- compute_mean_variance.simple(phylo = tree,
-                                    times_shared = times_shared[[paste0(ntaxa)]],
-                                    distances_phylo = distances_phylo[[paste0(ntaxa)]],
-                                    process = process_temp,
-                                    params_old = params,
-                                    masque_data = masque_data,
-                                    sim = XX)
+                                                                 times_shared = times_shared[[paste0(ntaxa)]],
+                                                                 distances_phylo = distances_phylo[[paste0(ntaxa)]],
+                                                                 process = process_temp,
+                                                                 params_old = params,
+                                                                 masque_data = masque_data,
+                                                                 sim = XX)
   }
   moments <- moments_list[[name_config]]
   moments$sim <- XX
@@ -685,16 +685,6 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                                                             sim = moments$sim,
                                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
                                                             miss = miss)
-  ## MANOVA
-  if (NA_per == 0 && K > 0){
-    Y_manova <- t(moments$Sigma_YY_chol_inv) %*% Y_data_vec_known
-    Y_manova <- t(matrix(Y_manova, nrow = p_base))
-    groups <- as.factor(allocate_regimes_from_shifts(tree, shifts$edges)[1:ntaxa])
-    fit_manova <- manova(Y_manova ~ groups)
-    sim$manova <- summary(fit_manova, test = "Pillai")$stat[1, 2]
-  } else {
-    sim$manova <- NA # Deal with NAs ? K= 0 ?
-  }
   return(sim)
 }
 
@@ -706,8 +696,8 @@ set.seed(18051804)
 
 ## Sequencial simulations (for reproductability)
 simlist <- foreach(i = 1:nrow(simparams)) %do% {
-# simlist <- foreach(i = which(simparams$nrep == 1)) %do% {
-# simlist <- foreach(i = c(5201, 5204)) %do% {
+  # simlist <- foreach(i = which(simparams$nrep == 1)) %do% {
+  # simlist <- foreach(i = c(5201, 5204)) %do% {
   sim <- datasetsim(alpha = simparams[i, "alpha"],
                     gamma = simparams[i, "gamma"],
                     K = simparams[i, "K"],
