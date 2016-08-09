@@ -577,17 +577,23 @@ moments_list <- vector("list") # keep the moments (avoid multiple computations)
 # Return list of parameters + list of shifts + data at tips
 datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                        ntaxa, NA_per, nrep, grp) {
+  browser()
   if (rs == 0 && s == 1){
    process_temp <- "scOU"
    alpha_mat <- alpha
+   var_mat <- 2 * alpha * gamma * (diag(rep(1 - rd, p_base)) + matrix(rd, p_base, p_base))
   } else {
     process_temp <- "OU"
     if (rs != 0){
       alpha_mat <- alpha * (diag(rep(1 - rs, p_base)) + matrix(rs, p_base, p_base))
+      sig2 <- 2 * alpha * gamma * (1-rs) * (1 + (p_base - 1) * rs) / (1 + (p_base - 2) * rs)
+      var_mat <- sig2 * diag(rep(1, p_base))  # !! rd = 0 !! 
     } else {
       alpha_mat <- alpha * diag(s^(-(p_base+1)/2 + 1:p_base))
+      var_mat <- 2 * gamma * alpha_mat # !! rd = 0 !! 
     }
   }
+  var_mat <- as(var_mat, "symmetricMatrix")
   tree <- trees[[paste0(ntaxa)]]
   if (K > 0){
     shifts <- shifts_grid[[paste0(ntaxa, "_", K)]]
@@ -599,8 +605,6 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   } else {
     shifts <- NULL
   }
-  var_mat <- 2 * alpha * gamma * (diag(rep(1 - rd, p_base)) + matrix(rd, p_base, p_base))
-  var_mat <- as(var_mat, "symmetricMatrix")
   root.state <- list(random = TRUE,
                      stationary.root = TRUE,
                      value.root = NA,
