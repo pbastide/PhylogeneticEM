@@ -577,7 +577,6 @@ moments_list <- vector("list") # keep the moments (avoid multiple computations)
 # Return list of parameters + list of shifts + data at tips
 datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                        ntaxa, NA_per, nrep, grp) {
-  browser()
   if (rs == 0 && s == 1){
    process_temp <- "scOU"
    alpha_mat <- alpha
