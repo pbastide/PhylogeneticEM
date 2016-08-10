@@ -85,6 +85,7 @@ private:
   
 public:
   // Constructors
+  Model(int siz);
   // For a BM:
   Model(arma::mat const & Delta, arma::mat const & Variance,
         arma::vec const & edge_length,
@@ -104,6 +105,8 @@ public:
   Model_Node Mod(int i) const;
   unsigned int Size() const;
   
+  // Allocate Fields
+  void allocate_edge(int i, Model_Node mod_node);
   
   // Export to R (test only)
   Rcpp::List exportModel2R(int i) const;
@@ -170,6 +173,9 @@ public:
   Upward_Node Up(int i) const;
   unsigned int Size() const;
   arma::vec Likelihood() const;
+  
+  // Allocate Fields
+  void allocate_node(int i, Upward_Node up_node);
   
   // Recursion
   void recursion(Model const & mod, arma::umat const & ed);

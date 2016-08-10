@@ -81,6 +81,14 @@ Model_Node::Model_Node(){
   sigma.set_size(0, 0);
 }
 
+Model::Model(int siz){
+  size = siz;
+  mod = new Model_Node [size];
+  for (int i = 0; i < size; i++){
+    mod[i] = Model_Node();
+  }
+}
+
 // Constructor for BM Model _Node -------------------------------------------//
 Model_Node::Model_Node(arma::vec const & delta, arma::mat const & Variance,
                        double const & edge_length, arma::uvec no_miss){
@@ -133,15 +141,6 @@ Model::~Model(){
   size = 0;
 }
 
-// // Remove the missing values ------------------------------------------------//
-// Model Model::removeMissing(arma::mat const & miss, arma::mat const & ed){
-//   int nEdges = e.n_rows;
-//   int ntaxa = miss.n_cols;
-//   int p_d = miss.nrows;
-//   
-// }
-
-
 // [[Rcpp::export]]
 Rcpp::List create_model(arma::mat const & Delta, arma::mat const & Variance,
                         arma::vec const & edge_length,
@@ -173,6 +172,11 @@ Model_Node Model::Mod(int i) const {
 }
 unsigned int Model::Size() const {
   return size;
+}
+
+// Allocate to fields Model -------------------------------------------------//
+void Model::allocate_edge(int i, Model_Node mod_node) {
+  mod[i] = mod_node;
 }
 
 // Export to R (test) -------------------------------------------------------//
@@ -244,6 +248,7 @@ void Upward_Node::condvar_zeros() {
 //---------------------------------------------------------------------------//
 // Class Upward -------------------------------------------------------------//
 //---------------------------------------------------------------------------//
+
 // Constructor from edge matrix and dimension -------------------------------//
 Upward::Upward(int siz, int p_d){
   size = siz;
@@ -309,21 +314,47 @@ arma::vec Upward::Likelihood() const {
   return up[size - 1].Cst();
 }
 
+// Allocate to fields Upward ------------------------------------------------//
+void Upward::allocate_node(int i, Upward_Node up_node) {
+  up[i] = up_node;
+}
+
 // Recursion ----------------------------------------------------------------//
+arma::uvec findEdges(int father, arma::umat const & ed){
+  arma::uvec edges_children = arma::find(ed.col(0) == father + 1);
+  return edges_children;
+}
+
 arma::uvec findChildren(int father, arma::umat const & ed){
-  arma::uvec edges_children = arma::find(ed.col(0) == father);
+  arma::uvec edges_children = findEdges(father, ed);
   arma::umat rows_children = ed.rows( edges_children );
   return rows_children.col(1);
 }
 
-// Upward & actualize_upward_children(arma::uvec const & children){
-//   int nChild = childern.n_rows;
-//   
-//   Upward *res = new Upward(nChild, p_d);
-//   
-//   
+// Model & findModelEdges(int father, arma::umat const & ed, Model const & mod){
+//   arma::uvec edges_children = arma::find(ed.col(0) == father + 1);
+//   int nChild = edges_children.n_rows;
+//   Model *res = new Model(nChild);
+//   for (int i = 0; i < nChild; i++){
+//     (*res).allocate_edge(i, mod.Mod(edges_children(i)));
+//   }
 //   return *res;
 // }
+
+Upward & actualize_upward_children(arma::uvec const & child_nodes,
+                                   arma::uvec const & child_edges,
+                                   Upward & upw,
+                                   Model const & mod){
+  int nChild = child_nodes.n_rows;
+  Upward *res = new Upward(nChild, p_d);
+  for (int i = 0; i < nChild; i++){
+    if (child_nodes(i) < ntaxa){
+      *(res).allocate_node(i, actualize_upward_tip(upw.Up(child_nodes(i)),
+                                                   mod.Mod(child_edges(i))));
+    }
+  }
+  return *res;
+}
 
 void Upward::recursion(Model const & mod, arma::umat const & ed) {
   int nEdges = ed.n_rows;
@@ -333,9 +364,12 @@ void Upward::recursion(Model const & mod, arma::umat const & ed) {
       break; // This node has already been visited.
     }
     // Find children of the node
-    arma::uvec children = findChildren(father, ed) - 1;
+    arma::uvec child_nodes = findChildren(father, ed) - 1;
+    // Find Models associated to edges
+    arma::uvec child_edges = findEdges(father, ed);
     // Create an array with actualized quantities at each child
-    // Upward up_child = actualize_upward_children(children);
+    Upward up_child = actualize_upward_children(child_nodes, child_edges,
+                                                *this, mod);
     // Compute the quantity for the node
     // Up[father] = merge_upward(up_child);
   }
