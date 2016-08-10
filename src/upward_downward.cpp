@@ -341,6 +341,11 @@ arma::uvec findChildren(int father, arma::umat const & ed){
 //   return *res;
 // }
 
+Upward_Node actualize_upward_tip(Upward_Node, Model_Node){
+  Upward_Node res(p_d);
+  
+}
+
 Upward & actualize_upward_children(arma::uvec const & child_nodes,
                                    arma::uvec const & child_edges,
                                    Upward & upw,
