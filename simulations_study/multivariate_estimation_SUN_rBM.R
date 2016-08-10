@@ -12,14 +12,14 @@ library(Matrix)
 reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe")
 
 ## Set number of parallel cores
-Ncores <- 3
+Ncores <- 5
 
 ## Define date-stamp for file names
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-07-26" # 
+datestamp_data <- "2016-08-09" # 
 savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 saveresultfile <- "../Results/Simulations_Multivariate/multivariate_estimations_SUN_rBM"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
@@ -167,7 +167,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_fav <- system.time(
-  simestimations_fav <- foreach(i = simlist[favorables][1:3], .packages = reqpckg) %dopar%
+  simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }
@@ -189,7 +189,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_unfav <- system.time(
-  simestimations_unfav <- foreach(i = simlist[!favorables][1:3], .packages = reqpckg) %dopar%
+  simestimations_unfav <- foreach(i = simlist[!favorables], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }
