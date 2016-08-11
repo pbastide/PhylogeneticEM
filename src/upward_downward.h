@@ -35,7 +35,35 @@ public:
   arma::cube Covars() const;
 };
 
+
 //---------------------------------------------------------------------------//
+// Class Root_State ---------------------------------------------------------//
+//---------------------------------------------------------------------------//
+/*
+* The root state
+*/
+
+class Root_State
+{
+private:
+  
+  bool random;
+  arma::vec exp;
+  arma::mat var;
+  
+public:
+  // Constructors
+  Root_State(arma::vec state); // Default non random
+  Root_State(arma::vec expe, arma::mat vari); // Default random
+  Root_State(bool rootRand, arma::vec rootExp, arma::mat rootVar);
+  
+  
+  // Access to fields
+  bool Random() const;
+  arma::vec Exp() const;
+  arma::mat Var() const;
+  
+};//---------------------------------------------------------------------------//
 // Class Model --------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 /*
@@ -123,7 +151,7 @@ class Upward_Node
 {
 private:
   
-  arma::vec cst; // constant
+  double cst; // constant
   arma::vec condexp; // vector of expectations
   arma::mat condvar; // variance matrix
   
@@ -133,15 +161,15 @@ public:
   Upward_Node(int p_d);
   
   // Access to fields
-  arma::vec Cst() const;
+  double Cst() const;
   arma::vec Condexp() const;
   arma::mat Condvar() const;
   
   // Allocate Fields
-  void allocate_cst(arma::vec c);
+  void allocate_cst(double c);
   void cst_ones();
   void allocate_condexp(arma::vec exp);
-  void Condvar(arma::mat var);
+  void allocate_condvar(arma::mat var);
   void condvar_zeros();
   
   // Export to R (test only)
@@ -172,13 +200,14 @@ public:
   // Access to fields
   Upward_Node Up(int i) const;
   unsigned int Size() const;
-  arma::vec Likelihood() const;
+  double Log_Likelihood(Root_State root, int ntaxa) const;
   
   // Allocate Fields
   void allocate_node(int i, Upward_Node up_node);
   
   // Recursion
-  void recursion(Model const & mod, arma::umat const & ed);
+  void recursion(Model const & mod, arma::umat const & ed,
+                 int p_d, int ntaxa);
   
   // Export to R (test only)
   Rcpp::List exportUpward2R(int i) const;
