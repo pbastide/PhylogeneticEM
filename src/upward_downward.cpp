@@ -296,8 +296,6 @@ Upward::Upward(arma::mat const & data, int nE){
   for (int i = 0; i < ntaxa; i++){
     // int p_d_tip = findDimensionsNAs(data.col(i));
     up[i] = Upward_Node(p_d);
-    // Fill constants with ones
-    up[i].cst_ones();
     // Nas positions
     arma::uvec na_position = arma::find_nonfinite(data.col(i));
     arma::uvec miss_data(p_d);
@@ -314,6 +312,9 @@ Upward::Upward(arma::mat const & data, int nE){
     var.rows(na_position).fill(arma::datum::inf);
     var.cols(na_position).fill(arma::datum::inf);
     up[i].allocate_condvar(var);
+    // Fill constants with right coef
+    int nMiss = arma::sum(miss_data);
+    up[i].allocate_cst(std::sqrt(pow(2 * arma::datum::pi, nMiss)));
   }
   // Rest with NAs
   for (int  i = ntaxa; i < size; i++){
@@ -444,12 +445,15 @@ Upward_Node & actualize_upward_simple(Upward_Node const &  up_child,
                                       Model_Node const & mod_edge,
                                       int p_d){
   Upward_Node *res = new Upward_Node(p_d);
+  arma::uvec missing_data = up_child.Missing_Data();
   arma::mat check_S = up_child.Condvar() + mod_edge.Sigma();
+  // Rcpp::Rcout << "check S " << check_S << std::endl;
   arma::mat Q_inv = arma::inv_sympd(mod_edge.Q());
-  arma::mat tQ_checkS_Q_inv = crossprod_na(mod_edge.Q(), check_S, up_child.Missing_Data());
+  arma::mat tQ_checkS_Q_inv = crossprod_na(mod_edge.Q(), check_S, missing_data);
   // Rcpp::Rcout << "isisng up " << up_child.Missing_Data() << std::endl;
-  arma::vec Q_inv_diff = Q_inv * (up_child.Condexp() - mod_edge.R());
-  double constant = std::sqrt(arma::det(Q_inv)) * up_child.Cst();
+  arma::vec Q_inv_diff = prod_na(Q_inv, (up_child.Condexp() - mod_edge.R()), missing_data);
+    // Q_inv * (up_child.Condexp() - mod_edge.R());
+  double constant = 1 / std::sqrt(det_na(mod_edge.Q(), missing_data)) * up_child.Cst();
   
   (*res).allocate_condvar(tQ_checkS_Q_inv);
   (*res).allocate_condexp(Q_inv_diff);
@@ -466,17 +470,17 @@ Upward & actualize_upward_children(arma::uvec const & child_nodes,
   int nChild = child_nodes.n_rows;
   Upward *res = new Upward(nChild, p_d);
   for (int i = 0; i < nChild; i++){
-    if (upw.Up(child_nodes(i)).Condvar().n_rows < p_d){
-      // Rcpp::Rcout << "missing; child: " << child_nodes(i)+1 << " edge: " << child_edges(i)+1 << std::endl;
-      (*res).allocate_node(i, actualize_upward_missing(upw.Up(child_nodes(i)),
-                                                       mod.Mod(child_edges(i)),
-                                                       p_d));
-    } else {
+    // if (upw.Up(child_nodes(i)).Condvar().n_rows < p_d){
+    //   // Rcpp::Rcout << "missing; child: " << child_nodes(i)+1 << " edge: " << child_edges(i)+1 << std::endl;
+    //   (*res).allocate_node(i, actualize_upward_missing(upw.Up(child_nodes(i)),
+    //                                                    mod.Mod(child_edges(i)),
+    //                                                    p_d));
+    // } else {
       // Rcpp::Rcout << "no missing; child: " << child_nodes(i)+1 << " edge: " << child_edges(i)+1 << std::endl;
       (*res).allocate_node(i, actualize_upward_simple(upw.Up(child_nodes(i)),
                                                       mod.Mod(child_edges(i)),
                                                       p_d));
-    }
+    // }
   }
   return *res;
 }
@@ -494,6 +498,7 @@ Upward_Node & merge_upward(Upward const & up_child){
   double det_prod = 1;
   double cst_prod = 1;
   arma::uvec merge_missing(p_d);
+  merge_missing.ones();
   
   for (int i = 0; i < nChild; i++){
     arma::mat S_inv = inv_na(up_child.Up(i).Condvar(), up_child.Up(i).Missing_Data(), 0);
@@ -501,7 +506,7 @@ Upward_Node & merge_upward(Upward const & up_child){
     S_sum += S_inv;
     S_m_sum += S_inv_m;
     m_S_m_sum += arma::as_scalar(up_child.Up(i).Condexp().t() * S_inv_m);
-    det_prod *= std::sqrt(det_na(S_inv, up_child.Up(i).Missing_Data()));
+    det_prod *= 1 / std::sqrt(det_na(up_child.Up(i).Condvar(), up_child.Up(i).Missing_Data()));
     cst_prod *= up_child.Up(i).Cst();
     merge_missing = merge_missing % up_child.Up(i).Missing_Data(); // intersection of missing
   }
@@ -512,6 +517,9 @@ Upward_Node & merge_upward(Upward const & up_child){
   constant *= std::sqrt(det_na(S_bar, merge_missing)) * det_prod;
   constant *= std::exp(- arma::as_scalar(m_S_m_sum -  m_bar.t() * S_sum * m_bar) / 2);
   constant *= cst_prod;
+  // // number of missing values
+  // int nMiss = arma::sum(merge_missing);
+  // constant *= std::sqrt(pow(2 * arma::datum::pi, -nMiss));
   
   (*res).allocate_condvar(S_bar);
   (*res).allocate_condexp(m_bar);
@@ -616,7 +624,7 @@ Rcpp::List upward_downward(arma::mat const & data, arma::umat const & ed,
   // BM
   Model mod(Delta, Variance, edge_length, data, ed);
   // Upward Recursion
-  // upw.recursion(mod, ed, p_d, ntaxa);
+  upw.recursion(mod, ed, p_d, ntaxa);
   
   
   // Return to R in list format
@@ -655,14 +663,14 @@ library(ape)
 library(TreeSim)
 library(Matrix)
 set.seed(17920902)
-ntaxa = 100
+ntaxa = 300
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
                         age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
-p <- 2
-variance <- matrix(-0.9, p, p) + diag(1.9, p, p)
+p <- 4
+variance <- matrix(0.8, p, p) + diag(0.2, p, p)
 root.state <- list(random = FALSE,
-                   value.root = c(0, 0),
+                   value.root = rep(0, p),
                    exp.root = NA,
                    var.root = NA)
 shifts = list(edges = c(12),
@@ -673,7 +681,6 @@ paramsSimu <- list(variance = variance,
                    root.state = root.state)
 attr(paramsSimu, "p_dim") <- p
 
-set.seed(17920902)
 source("~/Dropbox/These/Code/Phylogenetic-EM/R/simulate.R")
 source("~/Dropbox/These/Code/Phylogenetic-EM/R/generic_functions.R")
 source("~/Dropbox/These/Code/Phylogenetic-EM/R/shifts_manipulations.R")
@@ -686,7 +693,14 @@ X1 <- simulate(tree,
                shifts = shifts)
 
 traits <- extract.simulate(X1, where = "tips", what = "state")
-traits[2, 3] <- traits[1, 10] <- traits[, 6] <- NA
+nMiss <- floor(ntaxa * p * 0.2)
+miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+chars <- (miss - 1) %% p + 1
+tips <- (miss - 1) %/% p + 1
+for (i in 1:nMiss){
+  traits[chars[i], tips[i]] <- NA
+}
+# traits[2, 3] <- traits[1, 10] <- traits[, 6] <- NA
 
 ## Log lik old way
 miss <- as.vector(is.na(traits))
@@ -721,7 +735,7 @@ edge_length <- tree$edge.length
 ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
                          FALSE, root.state$value.root, matrix(NA, 1, 1))
 all.equal(ll_new, as.vector(ll_old))
-# upward_downward(traits, tree$edge, Delta, variance, edge_length, 51)
+# upward_downward(traits, tree$edge, Delta, variance, edge_length, ntaxa + 1)
 # upward_downward(traits, tree$edge, Delta, variance, edge_length, 3)
 # upward_downward(traits, tree$edge, Delta, variance, edge_length, 6)
 
