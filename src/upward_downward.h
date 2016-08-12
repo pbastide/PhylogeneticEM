@@ -154,6 +154,7 @@ private:
   double cst; // constant
   arma::vec condexp; // vector of expectations
   arma::mat condvar; // variance matrix
+  arma::uvec missing_data; // Position of the missing data (bool vector)
   
 public:
   // Constructors
@@ -164,6 +165,7 @@ public:
   double Cst() const;
   arma::vec Condexp() const;
   arma::mat Condvar() const;
+  arma::uvec Missing_Data() const;
   
   // Allocate Fields
   void allocate_cst(double c);
@@ -171,6 +173,8 @@ public:
   void allocate_condexp(arma::vec exp);
   void allocate_condvar(arma::mat var);
   void condvar_zeros();
+  void allocate_missing_data(arma::uvec miss_data);
+  
   
   // Export to R (test only)
   //Rcpp::List exportUpward2R() const;
