@@ -7,14 +7,14 @@ library(l1ou)
 reqpckg <- c("l1ou")
 
 ## Set number of parallel cores
-Ncores <- 3
+Ncores <- 5
 
 ## Define date-stamp for file names
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-05-06" # 
+datestamp_data <- "2016-08-09" # 
 savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 saveresultfile <- "../Results/Simulations_Multivariate/multivariate_estimations_l1ou"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
@@ -98,7 +98,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_l1ou <- system.time(
-  simestimations <- foreach(i = simlist[((1:41) - 1) * 200 + 1], .packages = reqpckg) %dopar%
+  simestimations <- foreach(i = simlist, .packages = reqpckg) %dopar%
   {
     estimations_l1ou(i)
   }
