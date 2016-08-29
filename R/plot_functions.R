@@ -248,8 +248,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
                                                 start = 0, v = 0.5))
     } else {
-      levels(color_characters) <- gray.colors(length(levels(color_edges)),
-                                              start = 0, end = 0.8)
+      levels(color_edges) <- gray.colors(length(levels(color_edges)),
+                                         start = 0, end = 0.8)
     }
   }
   ## Plot ancestral states ?
