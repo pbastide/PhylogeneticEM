@@ -5,73 +5,6 @@
 # include "upward_downward.h"
 
 //---------------------------------------------------------------------------//
-// Class Moments ------------------------------------------------------------//
-//---------------------------------------------------------------------------//
-
-// Default constructor ------------------------------------------------------//
-Moments::Moments(int nE, int p_d) {
-  // nEdges = nE;
-  // p_dim = p_d;
-  edge.set_size(nE, 2);
-  edge.fill(NA_REAL);
-  exps.set_size(p_d, nE + 1);
-  exps.fill(NA_REAL);
-  vars.set_size(p_d, p_d, nE + 1);
-  vars.fill(NA_REAL);
-  covars.set_size(p_d, p_d, nE + 1);
-  covars.fill(NA_REAL);
-}
-
-// Constructor from edge matrix and dimension -------------------------------//
-Moments::Moments(arma::umat const & ed, int p_d){
-  int nE = ed.n_rows; // number of edges
-  edge = ed;
-  exps.set_size(p_d, nE + 1);
-  exps.fill(NA_REAL);
-  vars.set_size(p_d, p_d, nE + 1);
-  vars.fill(NA_REAL);
-  covars.set_size(p_d, p_d, nE + 1);
-  covars.fill(NA_REAL);
-}
-
-// Constructor from data and edge matrix ------------------------------------//
-Moments::Moments(arma::mat const & data, arma::umat const & ed){
-  // init all NAs
-  int p_d = data.n_rows;
-  *this = Moments(ed, p_d);
-  // Fill exp with data
-  int ntaxa = data.n_cols;
-  exps.head_cols(ntaxa) = data;
-  // Zeros variances / covariance for known values
-  for (arma::uword i = 0; i < ntaxa; i++){
-    for (arma::uword l = 0; l < p_d; l++){
-      if (! Rcpp::NumericVector::is_na(exps(l, i))){
-        vars.subcube(0, l, i, p_d - 1, l, i).zeros(); // column var
-        vars.subcube(l, 0, i, l, p_d - 1, i).zeros(); // line var
-        covars.subcube(0, l, i, p_d - 1, l, i).zeros(); // column covar
-      }
-    }
-  }
-}
-
-// Access to fields ---------------------------------------------------------//
-arma::mat Moments::Exps() const {
-  return exps;
-}
-arma::cube Moments::Vars() const {
-  return vars;
-}
-arma::cube Moments::Covars() const {
-  return covars;
-}
-
-Rcpp::List Moments::exportMoments2R() const {
-  return Rcpp::List::create(Rcpp::Named("expectation") = exps,
-                            Rcpp::Named("variances") = vars,
-                            Rcpp::Named("covariances") = covars);
-}
-
-//---------------------------------------------------------------------------//
 // Class Model --------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
@@ -355,6 +288,7 @@ double Upward::Log_Likelihood(Root_State root_state, int ntaxa) const {
   } else {
     var = up[ntaxa + 1 - 1].Condvar();
   }
+   Rcpp::Rcout << "var: " << var << std::endl;
   res += Log_Likelihood_Gauss(mean, var, point);
   return res;
 }
@@ -438,6 +372,14 @@ arma::vec prod_na(arma::mat const & S, arma::vec const & m, arma::uvec const & m
   arma::uvec non_na_pos = find(miss == 0); // position of non missing
   arma::vec res(size(m), arma::fill::zeros);
   res(non_na_pos) = S(non_na_pos, non_na_pos) * m(non_na_pos);
+  return res;
+}
+
+arma::mat prod_na_mat(arma::mat const & S, arma::mat const & M, arma::uvec const & miss, double ff){
+  arma::uvec non_na_pos = find(miss == 0); // position of non missing
+  arma::mat res(S.n_rows, M.n_cols);
+  res.fill(ff);
+  res(non_na_pos, non_na_pos) = S(non_na_pos, non_na_pos) * M(non_na_pos, non_na_pos);
   return res;
 }
 
@@ -586,12 +528,18 @@ Root_State::Root_State(arma::vec expe, arma::mat vari){
   var = vari;
 }
 
-Root_State::Root_State(bool rootRand, arma::vec rootExp, arma::mat rootVar){
+Root_State::Root_State(bool rootRand, arma::vec rootVal,
+                       arma::vec rootExp, arma::mat rootVar){
   if (rootRand){
     *this = Root_State(rootExp, rootVar);
   } else {
-    *this = Root_State(rootExp);
+    *this = Root_State(rootVal);
   }
+}
+
+Root_State::Root_State(Rcpp::List root_state){
+  *this = Root_State(root_state["random"], root_state["value.root"],
+                     root_state["exp.root"], root_state["var.root"]);
 }
 
 // Acces t fields -----------------------------------------------------------//
@@ -606,6 +554,162 @@ arma::mat Root_State::Var() const{
 }
 
 //---------------------------------------------------------------------------//
+// Class Moments ------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+
+// Default constructor ------------------------------------------------------//
+Moments::Moments(int nE, int p_d) {
+  // nEdges = nE;
+  // p_dim = p_d;
+  // edge.set_size(nE, 2);
+  // edge.fill(NA_REAL);
+  exps.set_size(p_d, nE + 1);
+  exps.fill(NA_REAL);
+  vars.set_size(p_d, p_d, nE + 1);
+  vars.fill(NA_REAL);
+  covars.set_size(p_d, p_d, nE + 1);
+  covars.fill(NA_REAL);
+}
+
+// Constructor for initialisation -------------------------------------------//
+Moments::Moments(Upward const & up, Root_State const & root_state, int ntaxa){
+  // init all NAs
+  int n_E = up.Size() - 1;
+  int p_d = root_state.Exp().n_rows;
+  *this = Moments(n_E, p_d);
+  // Root
+  // (No covariance at the root)
+  if (root_state.Random()){
+    arma::uvec missing_data = up.Up(ntaxa).Missing_Data();
+    arma::mat gamma_inv = inv_sympd(root_state.Var());
+    arma::mat S_inv = inv_na(up.Up(ntaxa).Condvar(), missing_data, 0);
+    vars.slice(ntaxa + 1 - 1) = inv_na(gamma_inv + S_inv, missing_data, arma::datum::inf);
+    exps.col(ntaxa + 1 - 1) = vars.slice(ntaxa) * (gamma_inv * root_state.Exp() + S_inv * up.Up(ntaxa).Condexp());
+  } else {
+    vars.slice(ntaxa + 1 - 1).zeros();
+    exps.col(ntaxa + 1 - 1) = root_state.Exp();
+  }
+}
+
+// Constructor from edge matrix and dimension (USELESS) ---------------------//
+Moments::Moments(arma::umat const & ed, int p_d){
+  int nE = ed.n_rows; // number of edges
+  // edge = ed;
+  exps.set_size(p_d, nE + 1);
+  exps.fill(NA_REAL);
+  vars.set_size(p_d, p_d, nE + 1);
+  vars.fill(NA_REAL);
+  covars.set_size(p_d, p_d, nE + 1);
+  covars.fill(NA_REAL);
+}
+
+// Constructor from data and edge matrix (USELESS) --------------------------//
+Moments::Moments(arma::mat const & data, arma::umat const & ed){
+  // init all NAs
+  int p_d = data.n_rows;
+  *this = Moments(ed, p_d);
+  // Fill exp with data
+  int ntaxa = data.n_cols;
+  exps.head_cols(ntaxa) = data;
+  // Zeros variances / covariance for known values
+  for (arma::uword i = 0; i < ntaxa; i++){
+    for (arma::uword l = 0; l < p_d; l++){
+      if (! Rcpp::NumericVector::is_na(exps(l, i))){
+        vars.subcube(0, l, i, p_d - 1, l, i).zeros(); // column var
+        vars.subcube(l, 0, i, l, p_d - 1, i).zeros(); // line var
+        covars.subcube(0, l, i, p_d - 1, l, i).zeros(); // column covar
+      }
+    }
+  }
+}
+
+// Downward -----------------------------------------------------------------//
+
+void Moments::actualize_downward(Upward_Node const & up_child, 
+                                 Model_Node const & mod_edge,
+                                 int child, int father){
+  arma::uvec missing_data = up_child.Missing_Data();
+  arma::mat checkS_inv = inv_na(up_child.Condvar() + mod_edge.Sigma(), missing_data, 0);
+  arma::mat S_checkS_inv = prod_na_mat(up_child.Condvar(), checkS_inv, missing_data, arma::datum::inf);
+  covars.slice(child) = S_checkS_inv * mod_edge.Q() * vars.slice(father);
+  exps.col(child) = S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R());
+  exps.col(child) += prod_na(mod_edge.Sigma(), prod_na(checkS_inv, up_child.Condexp(), missing_data), missing_data);
+  vars.slice(child) = S_checkS_inv * mod_edge.Sigma();
+  vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child).t();
+  if (child == 3-1){
+    Rcpp::Rcout << "missing_data " << missing_data << std::endl; 
+    Rcpp::Rcout << "checkS_inv " << checkS_inv << std::endl; 
+    Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl; 
+    Rcpp::Rcout << "S_checkS_inv " << S_checkS_inv << std::endl;  
+    Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl;  
+    // Rcpp::Rcout << "exp 1 " << S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) << std::endl;
+    // Rcpp::Rcout << "exp 2 " << mod_edge.Sigma() * checkS_inv * up_child.Condexp() << std::endl;
+    Rcpp::Rcout << "exp" << exps.col(child) << std::endl;
+  }
+}
+
+void Moments::actualize_downward_miss(Upward_Node const & up_child, 
+                                      Model_Node const & mod_edge,
+                                      int child, int father){
+  arma::uvec missing_data = up_child.Missing_Data();
+  arma::uvec na_pos = find(missing_data == 1);
+  arma::mat Sigma_bar(size(mod_edge.Sigma()), arma::fill::zeros);
+  Sigma_bar(na_pos, na_pos) = mod_edge.Sigma()(na_pos, na_pos);
+  arma::mat S_checkS_inv = Sigma_bar * arma::inv_sympd(mod_edge.Sigma());
+  covars.slice(child) = S_checkS_inv * mod_edge.Q() * vars.slice(father);
+  exps.col(child) = S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R());
+  arma::vec values = up_child.Condexp();
+  values.rows(na_pos).zeros();
+  exps.col(child) += values;
+  vars.slice(child) = Sigma_bar;
+  vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child).t();
+  if (child == 3-1){
+    Rcpp::Rcout << "missing_data " << missing_data << std::endl; 
+    Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl; 
+    Rcpp::Rcout << "Sigma_bar " << Sigma_bar << std::endl;  
+    Rcpp::Rcout << "S_checkS_inv " << S_checkS_inv << std::endl;  
+    Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl;  
+    // Rcpp::Rcout << "exp 1 " << S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) << std::endl;
+    // Rcpp::Rcout << "exp 2 " << mod_edge.Sigma() * checkS_inv * up_child.Condexp() << std::endl;
+    Rcpp::Rcout << "exp" << exps.col(child) << std::endl;
+  }
+}
+
+
+void Moments::downward(Upward const & up, Model const & mod,
+                       arma::umat const & ed) {
+  int nEdges = ed.n_rows;
+  for (int i = nEdges - 1; i >= 0; i--){ // Loop on the edges (rows of ed)
+    // Rcpp::Rcout << "i " << i << std::endl;
+    int father = ed(i, 0) - 1; // Father node of the edge
+    int child = ed(i, 1) - 1; // Child edge of the edge
+    // Rcpp::Rcout << "child " << child << std::endl;
+    if (arma::sum(up.Up(child).Missing_Data()) > 0){ // Some missing data
+      (*this).actualize_downward_miss(up.Up(child), mod.Mod(i), child, father);
+    } else {
+      (*this).actualize_downward(up.Up(child), mod.Mod(i), child, father);
+    }
+  }
+}
+
+// Access to fields ---------------------------------------------------------//
+arma::mat Moments::Exps() const {
+  return exps;
+}
+arma::cube Moments::Vars() const {
+  return vars;
+}
+arma::cube Moments::Covars() const {
+  return covars;
+}
+
+Rcpp::List Moments::exportMoments2R() const {
+  return Rcpp::List::create(Rcpp::Named("expectations") = exps,
+                            Rcpp::Named("variances") = vars,
+                            Rcpp::Named("covariances") = covars);
+}
+
+//---------------------------------------------------------------------------//
 // Function per se ----------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
@@ -613,7 +717,7 @@ arma::mat Root_State::Var() const{
 Rcpp::List upward_downward(arma::mat const & data, arma::umat const & ed,
                            arma::mat const & Delta, arma::mat const & Variance,
                            arma::vec const & edge_length,
-                           int i) {
+                           Rcpp::List root_state_list) {
   // Numbers
   int nE = ed.n_rows;
   int ntaxa = data.n_cols;
@@ -625,18 +729,22 @@ Rcpp::List upward_downward(arma::mat const & data, arma::umat const & ed,
   Model mod(Delta, Variance, edge_length, data, ed);
   // Upward Recursion
   upw.recursion(mod, ed, p_d, ntaxa);
+  // Downward Init
+  Root_State root_state = Root_State(root_state_list);
+  Moments mom(upw, root_state, ntaxa);
+  mom.downward(upw, mod, ed);
   
   
   // Return to R in list format
-  return upw.exportUpward2R(i-1);
-  //return mom.exportMoments2R();
+  // return upw.exportUpward2R(i-1);
+  return mom.exportMoments2R();
 }
 
 // [[Rcpp::export]]
 double log_likelihood(arma::mat const & data, arma::umat const & ed,
                       arma::mat const & Delta, arma::mat const & Variance,
                       arma::vec const & edge_length,
-                      bool rootRand, arma::vec rootExp, arma::mat rootVar) {
+                      Rcpp::List const & root_state_list) {
   // Numbers
   int nE = ed.n_rows;
   int ntaxa = data.n_cols;
@@ -651,7 +759,7 @@ double log_likelihood(arma::mat const & data, arma::umat const & ed,
   
   
   // Return to R in list format
-  Root_State root_state = Root_State(rootRand, rootExp, rootVar);
+  Root_State root_state = Root_State(root_state_list);
   double res = upw.Log_Likelihood(root_state, ntaxa);
   return res;
   // return upw.exportUpward2R(i-1);
@@ -663,16 +771,16 @@ library(ape)
 library(TreeSim)
 library(Matrix)
 set.seed(17920902)
-ntaxa = 600
+ntaxa = 500
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
                         age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
 p <- 4
 variance <- matrix(0.8, p, p) + diag(0.2, p, p)
-root.state <- list(random = FALSE,
-                   value.root = rep(0, p),
-                   exp.root = NA,
-                   var.root = NA)
+root.state <- list(random = TRUE,
+                   value.root = NA,
+                   exp.root = rep(1, p),
+                   var.root = diag(1, p) + 0.1)
 shifts = list(edges = c(12),
               values=matrix(2*c(1, 0.5), nrow = p),
               relativeTimes = 0)
@@ -693,13 +801,13 @@ X1 <- simulate(tree,
                shifts = shifts)
 
 traits <- extract.simulate(X1, where = "tips", what = "state")
-nMiss <- floor(ntaxa * p * 0.2)
-miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
-chars <- (miss - 1) %% p + 1
-tips <- (miss - 1) %/% p + 1
-for (i in 1:nMiss){
-  traits[chars[i], tips[i]] <- NA
-}
+# nMiss <- floor(ntaxa * p * 0.2)
+# miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+# chars <- (miss - 1) %% p + 1
+# tips <- (miss - 1) %/% p + 1
+# for (i in 1:nMiss){
+#   traits[chars[i], tips[i]] <- NA
+# }
 # traits[2, 3] <- traits[1, 10] <- traits[, 6] <- NA
 
 ## Log lik old way
@@ -720,6 +828,13 @@ ll_old <- compute_log_likelihood.simple(phylo = tree,
                                         Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
                                         masque_data = masque_data,
                                         miss = miss)
+conditional_law_X_old <- compute_E.simple(phylo = tree,
+                                          Y_data_vec = as.vector(traits[!miss]),
+                                          sim = moments$sim,
+                                          Sigma = moments$Sigma,
+                                          Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                          miss = miss,
+                                          masque_data = masque_data)
 
 
 # conditional_law_X <- upward_downward(traits, tree$edge)
@@ -733,10 +848,10 @@ edge_length <- tree$edge.length
 # upward_test(traits, tree$edge, 30)
 
 ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
-                         FALSE, root.state$value.root, matrix(NA, 1, 1))
+                         root.state)
 all.equal(ll_new, as.vector(ll_old))
-# upward_downward(traits, tree$edge, Delta, variance, edge_length, ntaxa + 1)
-# upward_downward(traits, tree$edge, Delta, variance, edge_length, 3)
-# upward_downward(traits, tree$edge, Delta, variance, edge_length, 6)
+
+conditional_law_X_new <- upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state)
+all.equal(conditional_law_X_old, conditional_law_X_new)
 
 */

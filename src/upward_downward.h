@@ -2,41 +2,6 @@
 #define updown_h
 
 //---------------------------------------------------------------------------//
-// Class Moments ------------------------------------------------------------//
-//---------------------------------------------------------------------------//
-/*
- * The moments we are looking for. 
- * See doc of E_step function for further details.
- */
-class Moments
-{
-private:
-  
-  //int nEdges; // number of edges in the tree
-  //int p_dim; // dimension of the trait vector
-  //arma::umat miss; // a bool matrix size p_dim x ntaxa with TRUE if the data is missing.
-  arma::umat edge; // matrix of edges in post-order
-  arma::mat exps; // matix of expectations at all the nodes
-  arma::cube vars; // 3D array of variances at all the nodes
-  arma::cube covars; // 3D array of covariances at all nodes/parents. NA at the root.
-  
-public:
-  // Constructors
-  Moments(int = 0, int = 0);
-  Moments(arma::umat const & ed, int p_d);
-  Moments(arma::mat const & data, arma::umat const & ed);
-  
-  // Export to R
-  Rcpp::List exportMoments2R() const;
-  
-  // Access to fields
-  arma::mat Exps() const;
-  arma::cube Vars() const;
-  arma::cube Covars() const;
-};
-
-
-//---------------------------------------------------------------------------//
 // Class Root_State ---------------------------------------------------------//
 //---------------------------------------------------------------------------//
 /*
@@ -55,7 +20,9 @@ public:
   // Constructors
   Root_State(arma::vec state); // Default non random
   Root_State(arma::vec expe, arma::mat vari); // Default random
-  Root_State(bool rootRand, arma::vec rootExp, arma::mat rootVar);
+  Root_State(bool rootRand, arma::vec rootVal,
+             arma::vec rootExp, arma::mat rootVar);
+  Root_State(Rcpp::List root_state);
   
   
   // Access to fields
@@ -63,7 +30,9 @@ public:
   arma::vec Exp() const;
   arma::mat Var() const;
   
-};//---------------------------------------------------------------------------//
+};
+
+//---------------------------------------------------------------------------//
 // Class Model --------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 /*
@@ -215,6 +184,51 @@ public:
   
   // Export to R (test only)
   Rcpp::List exportUpward2R(int i) const;
+};
+
+//---------------------------------------------------------------------------//
+// Class Moments ------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+/*
+* The moments we are looking for. 
+* See doc of E_step function for further details.
+*/
+class Moments
+{
+private:
+  
+  //int nEdges; // number of edges in the tree
+  //int p_dim; // dimension of the trait vector
+  //arma::umat miss; // a bool matrix size p_dim x ntaxa with TRUE if the data is missing.
+  // arma::umat edge; // matrix of edges in post-order
+  arma::mat exps; // matix of expectations at all the nodes
+  arma::cube vars; // 3D array of variances at all the nodes
+  arma::cube covars; // 3D array of covariances at all nodes/parents. NA at the root.
+  
+public:
+  // Constructors
+  Moments(int = 0, int = 0);
+  Moments(Upward const & up, Root_State const & root_state, int ntaxa);
+  Moments(arma::umat const & ed, int p_d);
+  Moments(arma::mat const & data, arma::umat const & ed);
+  
+  // Export to R
+  Rcpp::List exportMoments2R() const;
+  
+  // Access to fields
+  arma::mat Exps() const;
+  arma::cube Vars() const;
+  arma::cube Covars() const;
+  
+  // Downward
+  void actualize_downward(Upward_Node const & up_child, 
+                          Model_Node const & mod_child,
+                          int child, int father);
+  void actualize_downward_miss(Upward_Node const & up_child, 
+                               Model_Node const & mod_child,
+                               int child, int father);
+  void downward(Upward const & up, Model const & mod,
+                arma::umat const & ed);
 };
 
 
