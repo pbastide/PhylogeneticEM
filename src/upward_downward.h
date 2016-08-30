@@ -151,7 +151,7 @@ class Upward_Node
 {
 private:
   
-  double cst; // constant
+  double cst; // constant. This is the log.
   arma::vec condexp; // vector of expectations
   arma::mat condvar; // variance matrix
   arma::uvec missing_data; // Position of the missing data (bool vector)

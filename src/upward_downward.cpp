@@ -314,7 +314,7 @@ Upward::Upward(arma::mat const & data, int nE){
     up[i].allocate_condvar(var);
     // Fill constants with right coef
     int nMiss = arma::sum(miss_data);
-    up[i].allocate_cst(std::sqrt(pow(2 * arma::datum::pi, nMiss)));
+    up[i].allocate_cst(nMiss * std::log(2 * arma::datum::pi) / 2);
   }
   // Rest with NAs
   for (int  i = ntaxa; i < size; i++){
@@ -345,7 +345,7 @@ double Log_Likelihood_Gauss(arma::vec mean, arma::mat var, arma::vec point){
 }
 
 double Upward::Log_Likelihood(Root_State root_state, int ntaxa) const {
-  double res = std::log(up[ntaxa + 1 - 1].Cst());
+  double res = up[ntaxa + 1 - 1].Cst();
   // Rcpp::Rcout << "log(cst) " << res << std::endl;
   arma::vec mean = up[ntaxa + 1 - 1].Condexp();
   arma::mat var;
@@ -453,7 +453,7 @@ Upward_Node & actualize_upward_simple(Upward_Node const &  up_child,
   // Rcpp::Rcout << "isisng up " << up_child.Missing_Data() << std::endl;
   arma::vec Q_inv_diff = prod_na(Q_inv, (up_child.Condexp() - mod_edge.R()), missing_data);
     // Q_inv * (up_child.Condexp() - mod_edge.R());
-  double constant = 1 / std::sqrt(det_na(mod_edge.Q(), missing_data)) * up_child.Cst();
+  double constant = - std::log(det_na(mod_edge.Q(), missing_data)) / 2 + up_child.Cst();
   
   (*res).allocate_condvar(tQ_checkS_Q_inv);
   (*res).allocate_condexp(Q_inv_diff);
@@ -495,8 +495,8 @@ Upward_Node & merge_upward(Upward const & up_child){
   arma::vec S_m_sum;
   S_m_sum.zeros(p_d);
   double m_S_m_sum = 0;
-  double det_prod = 1;
-  double cst_prod = 1;
+  double log_det_sum = 0;
+  double cst_sum = 0;
   arma::uvec merge_missing(p_d);
   merge_missing.ones();
   
@@ -506,17 +506,17 @@ Upward_Node & merge_upward(Upward const & up_child){
     S_sum += S_inv;
     S_m_sum += S_inv_m;
     m_S_m_sum += arma::as_scalar(up_child.Up(i).Condexp().t() * S_inv_m);
-    det_prod *= 1 / std::sqrt(det_na(up_child.Up(i).Condvar(), up_child.Up(i).Missing_Data()));
-    cst_prod *= up_child.Up(i).Cst();
+    log_det_sum += - std::log(det_na(up_child.Up(i).Condvar(), up_child.Up(i).Missing_Data())) / 2;
+    cst_sum += up_child.Up(i).Cst();
     merge_missing = merge_missing % up_child.Up(i).Missing_Data(); // intersection of missing
   }
   
   arma::mat S_bar = inv_na(S_sum, merge_missing, arma::datum::inf);
   arma::vec m_bar = prod_na(S_bar, S_m_sum, merge_missing);
-  double constant = std::sqrt(std::pow(2 * arma::datum::pi, - (nChild - 1) * p_d));
-  constant *= std::sqrt(det_na(S_bar, merge_missing)) * det_prod;
-  constant *= std::exp(- arma::as_scalar(m_S_m_sum -  m_bar.t() * S_sum * m_bar) / 2);
-  constant *= cst_prod;
+  double constant = - (nChild - 1) * p_d * std::log(2 * arma::datum::pi) / 2;
+  constant += std::log(det_na(S_bar, merge_missing)) / 2 + log_det_sum;
+  constant += - arma::as_scalar(m_S_m_sum -  m_bar.t() * S_sum * m_bar) / 2;
+  constant += cst_sum;
   // // number of missing values
   // int nMiss = arma::sum(merge_missing);
   // constant *= std::sqrt(pow(2 * arma::datum::pi, -nMiss));
@@ -663,7 +663,7 @@ library(ape)
 library(TreeSim)
 library(Matrix)
 set.seed(17920902)
-ntaxa = 300
+ntaxa = 600
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
                         age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
