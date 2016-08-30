@@ -846,7 +846,8 @@ plot_equivalent_shifts.actual <- function(phylo,
                                           eq_shifts_values,
                                           numbering = FALSE,
                                           colors_tips = NULL,
-                                          nbr_col = 3, ...){
+                                          nbr_col = 3, 
+                                          gray_scale = FALSE, ...){
   ntaxa <- length(phylo$tip.label)
   nbrSol <- dim(eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% nbr_col) + 1
@@ -854,7 +855,11 @@ plot_equivalent_shifts.actual <- function(phylo,
   nbrShifts <- dim(eq_shifts_edges)[1]
   ## Colors
   if (is.null(colors_tips)){
-    colors <- c("black", rainbow(nbrShifts, start = 0, v = 0.5))
+    if (!gray_scale){
+      colors <- c("black", rainbow(nbrShifts, start = 0, v = 0.5))
+    } else {
+      colors <- gray.colors(nbrShifts + 1, start = 0, end = 0.8)
+    }
     cor_col_reg <- as.factor(colors)
     levels(cor_col_reg) <- 0:nbrShifts
   } else {
@@ -883,10 +888,15 @@ plot_equivalent_shifts.actual <- function(phylo,
       newColor = apply(newColor, 2, .makeTransparent, alpha=alpha)
       return(newColor)
     }
-    box_col <- as.vector(edges_regimes)
-    box_col <- makeLighter(box_col)
-    box_col_shifts <- box_col[params$shifts$edges]
-    beta_0_col <- box_col[which(!(box_col %in% box_col_shifts))[1]]
+    if (!gray_scale){
+      box_col <- as.vector(edges_regimes)
+      box_col <- makeLighter(box_col)
+      box_col_shifts <- box_col[params$shifts$edges]
+      beta_0_col <- box_col[which(!(box_col %in% box_col_shifts))[1]]
+    } else {
+      box_col_shifts <- rep("white", length(params$shifts$edges))
+      beta_0_col <- "white"
+    }
     ## Plot
     screen(scr[sol])
     plot.process.actual(0, 0, phylo, params,
