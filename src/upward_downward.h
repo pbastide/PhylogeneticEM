@@ -226,9 +226,9 @@ public:
                           int child, int father);
   void actualize_downward_miss(Upward_Node const & up_child, 
                                Model_Node const & mod_child,
-                               int child, int father);
+                               int child, int father, int ntaxa);
   void downward(Upward const & up, Model const & mod,
-                arma::umat const & ed);
+                arma::umat const & ed, int ntaxa);
 };
 
 

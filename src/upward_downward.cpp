@@ -288,7 +288,7 @@ double Upward::Log_Likelihood(Root_State root_state, int ntaxa) const {
   } else {
     var = up[ntaxa + 1 - 1].Condvar();
   }
-   Rcpp::Rcout << "var: " << var << std::endl;
+   // Rcpp::Rcout << "var: " << var << std::endl;
   res += Log_Likelihood_Gauss(mean, var, point);
   return res;
 }
@@ -368,17 +368,26 @@ arma::mat crossprod_na(arma::mat const & Q, arma::mat const & cS, arma::uvec con
   return res;
 }
 
-arma::vec prod_na(arma::mat const & S, arma::vec const & m, arma::uvec const & miss){
+arma::vec prod_na(arma::mat const & S, arma::vec const & m, arma::uvec const & miss, double ff){
   arma::uvec non_na_pos = find(miss == 0); // position of non missing
-  arma::vec res(size(m), arma::fill::zeros);
+  arma::vec res = ff * m;
   res(non_na_pos) = S(non_na_pos, non_na_pos) * m(non_na_pos);
   return res;
 }
 
+arma::vec prod_na_non(arma::mat const & S, arma::vec const & m, arma::uvec const & miss){
+  arma::uvec non_na_pos = find(miss == 0); // position of non missing
+  arma::uvec na_pos = find(miss == 1); // position of missing
+  arma::vec res(size(m), arma::fill::zeros);
+  res(non_na_pos) = S(non_na_pos, non_na_pos) * m(non_na_pos);
+  res(na_pos) = S(na_pos, na_pos) * m(na_pos);
+  return res;
+}
+
+// Two matrices of same dimension
 arma::mat prod_na_mat(arma::mat const & S, arma::mat const & M, arma::uvec const & miss, double ff){
   arma::uvec non_na_pos = find(miss == 0); // position of non missing
-  arma::mat res(S.n_rows, M.n_cols);
-  res.fill(ff);
+  arma::mat res = ff * M; 
   res(non_na_pos, non_na_pos) = S(non_na_pos, non_na_pos) * M(non_na_pos, non_na_pos);
   return res;
 }
@@ -393,7 +402,7 @@ Upward_Node & actualize_upward_simple(Upward_Node const &  up_child,
   arma::mat Q_inv = arma::inv_sympd(mod_edge.Q());
   arma::mat tQ_checkS_Q_inv = crossprod_na(mod_edge.Q(), check_S, missing_data);
   // Rcpp::Rcout << "isisng up " << up_child.Missing_Data() << std::endl;
-  arma::vec Q_inv_diff = prod_na(Q_inv, (up_child.Condexp() - mod_edge.R()), missing_data);
+  arma::vec Q_inv_diff = prod_na(Q_inv, (up_child.Condexp() - mod_edge.R()), missing_data, 0);
     // Q_inv * (up_child.Condexp() - mod_edge.R());
   double constant = - std::log(det_na(mod_edge.Q(), missing_data)) / 2 + up_child.Cst();
   
@@ -454,7 +463,7 @@ Upward_Node & merge_upward(Upward const & up_child){
   }
   
   arma::mat S_bar = inv_na(S_sum, merge_missing, arma::datum::inf);
-  arma::vec m_bar = prod_na(S_bar, S_m_sum, merge_missing);
+  arma::vec m_bar = prod_na(S_bar, S_m_sum, merge_missing, 0);
   double constant = - (nChild - 1) * p_d * std::log(2 * arma::datum::pi) / 2;
   constant += std::log(det_na(S_bar, merge_missing)) / 2 + log_det_sum;
   constant += - arma::as_scalar(m_S_m_sum -  m_bar.t() * S_sum * m_bar) / 2;
@@ -538,8 +547,16 @@ Root_State::Root_State(bool rootRand, arma::vec rootVal,
 }
 
 Root_State::Root_State(Rcpp::List root_state){
-  *this = Root_State(root_state["random"], root_state["value.root"],
-                     root_state["exp.root"], root_state["var.root"]);
+  int rand_root_int = root_state["random"];
+  bool rand_root = rand_root_int;
+  if (rand_root){
+    arma::vec rootExp = root_state["exp.root"];
+    arma::mat rootVar = root_state["var.root"];
+    *this = Root_State(rootExp, rootVar);
+  } else {
+    arma::vec rootVal = root_state["value.root"];
+    *this = Root_State(rootVal);
+  }
 }
 
 // Acces t fields -----------------------------------------------------------//
@@ -628,56 +645,161 @@ Moments::Moments(arma::mat const & data, arma::umat const & ed){
 void Moments::actualize_downward(Upward_Node const & up_child, 
                                  Model_Node const & mod_edge,
                                  int child, int father){
-  arma::uvec missing_data = up_child.Missing_Data();
-  arma::mat checkS_inv = inv_na(up_child.Condvar() + mod_edge.Sigma(), missing_data, 0);
-  arma::mat S_checkS_inv = prod_na_mat(up_child.Condvar(), checkS_inv, missing_data, arma::datum::inf);
+  arma::mat checkS_inv = inv_sympd(up_child.Condvar() + mod_edge.Sigma());
+  arma::mat S_checkS_inv = up_child.Condvar() * checkS_inv;
+  
   covars.slice(child) = S_checkS_inv * mod_edge.Q() * vars.slice(father);
+  covars.slice(child) = covars.slice(child).t();
+  
   exps.col(child) = S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R());
-  exps.col(child) += prod_na(mod_edge.Sigma(), prod_na(checkS_inv, up_child.Condexp(), missing_data), missing_data);
+  exps.col(child) += mod_edge.Sigma() * checkS_inv * up_child.Condexp();
+  
   vars.slice(child) = S_checkS_inv * mod_edge.Sigma();
-  vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child).t();
-  if (child == 3-1){
-    Rcpp::Rcout << "missing_data " << missing_data << std::endl; 
-    Rcpp::Rcout << "checkS_inv " << checkS_inv << std::endl; 
-    Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl; 
-    Rcpp::Rcout << "S_checkS_inv " << S_checkS_inv << std::endl;  
-    Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl;  
-    // Rcpp::Rcout << "exp 1 " << S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) << std::endl;
-    // Rcpp::Rcout << "exp 2 " << mod_edge.Sigma() * checkS_inv * up_child.Condexp() << std::endl;
-    Rcpp::Rcout << "exp" << exps.col(child) << std::endl;
-  }
+  vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child);
 }
 
-void Moments::actualize_downward_miss(Upward_Node const & up_child, 
+// void Moments::actualize_downward(Upward_Node const & up_child, 
+//                                  Model_Node const & mod_edge,
+//                                  int child, int father){
+//   arma::uvec missing_data = up_child.Missing_Data();
+//   arma::mat checkS_inv = inv_na(up_child.Condvar() + mod_edge.Sigma(), missing_data, 0);
+//   arma::mat S_checkS_inv = prod_na_mat(up_child.Condvar(), checkS_inv, missing_data, arma::datum::inf);
+//   covars.slice(child) = S_checkS_inv * mod_edge.Q() * vars.slice(father);
+//   exps.col(child) = S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R());
+//   exps.col(child) += prod_na(mod_edge.Sigma(), prod_na(checkS_inv, up_child.Condexp(), missing_data, 0), missing_data, 0);
+//   vars.slice(child) = S_checkS_inv * mod_edge.Sigma();
+//   vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child).t();
+// }
+
+arma::mat compute_Sigma_bar(arma::mat S, arma::mat Sigma_inv, arma::uvec miss, bool isTip){
+  arma::uvec non_na_pos = find(miss == 0); // position of non missing
+  arma::uvec na_pos = find(miss == 1); // position of missing
+  // Sigma_bar_inv
+  arma::mat res_inv = Sigma_inv;
+  // Inv
+  arma::mat res(size(res_inv), arma::fill::zeros);
+  if (isTip){
+    arma::uvec no_miss(size(miss), arma::fill::ones);
+    no_miss -= miss;
+    res = inv_na(res_inv, no_miss, 0); // Tips values have Inf precision
+  } else {
+    res_inv += inv_na(S, miss, 0);
+    res = inv_sympd(res_inv);
+  }
+  return res;
+  // // data
+  // arma::mat S_d = S(non_na_pos, non_na_pos);
+  // arma::mat Sigma_d = Sigma(non_na_pos, non_na_pos);
+  // // mixte
+  // // arma::mat S_d_na = S(non_na_pos, na_pos);
+  // arma::mat Sigma_d_na = Sigma(non_na_pos, na_pos);
+  // // nas
+  // // arma::mat S_na = S(na_pos, na_pos);
+  // arma::mat Sigma_na = Sigma(na_pos, na_pos);
+  // // Inversions Sigma
+  // arma::mat temp = Sigma_d_na.t() * arma::inv_sympd(Sigma_d) * Sigma_d_na;
+  // arma::mat Sigma_inv_na_inv = Sigma_na - Sigma_d_na.t() * temp;
+  // arma::mat Sigma_ing_d_na = - temp * Sigma_inv_na_inv;
+  // // Block computations
+  // // // Data
+  // // arma::mat check_S_inv_d = arma::inv_sympd(S_d + Sigma_d);
+  // // arma::mat S_d_check_S_inv_d = S_d * check_S_inv_d;
+  // // res(non_na_pos, non_na_pos) = S_d_check_S_inv_d * Sigma_d;
+  // // // Mixte
+  // // arma::mat cross = S_d_check_S_inv_d * Sigma_d_na;
+  // // res(non_na_pos, na_pos) = cross;
+  // // res(na_pos, non_na_pos) = cross.t();
+  // // NAs
+  // res(na_pos, na_pos) = Sigma_na - Sigma_d_na.t() * arma::inv_sympd(Sigma_d) * Sigma_d_na;
+  // // res(na_pos, na_pos) = S_d_na.t() * check_S_inv_d * Sigma_d_na;
+  // // Rcpp::Rcout << "S_d_na " << S_d_na << std::endl;
+  // // Rcpp::Rcout << "check_S_inv_d " << check_S_inv_d << std::endl;
+  // // Rcpp::Rcout << "Sigma_d_na " << Sigma_d_na << std::endl;
+  // return res;
+}
+
+void Moments::actualize_downward_miss(Upward_Node const & up_child,
                                       Model_Node const & mod_edge,
-                                      int child, int father){
+                                      int child, int father, int ntaxa){
   arma::uvec missing_data = up_child.Missing_Data();
   arma::uvec na_pos = find(missing_data == 1);
-  arma::mat Sigma_bar(size(mod_edge.Sigma()), arma::fill::zeros);
-  Sigma_bar(na_pos, na_pos) = mod_edge.Sigma()(na_pos, na_pos);
-  arma::mat S_checkS_inv = Sigma_bar * arma::inv_sympd(mod_edge.Sigma());
-  covars.slice(child) = S_checkS_inv * mod_edge.Q() * vars.slice(father);
-  exps.col(child) = S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R());
-  arma::vec values = up_child.Condexp();
-  values.rows(na_pos).zeros();
-  exps.col(child) += values;
+  
+  arma::mat Sigma_inv = arma::inv_sympd(mod_edge.Sigma());
+  arma::mat Sigma_bar = compute_Sigma_bar(up_child.Condvar(), Sigma_inv,
+                                          missing_data, (child < ntaxa));
+
+  arma::mat checkS_inv = inv_na(up_child.Condvar() + mod_edge.Sigma(),
+                                missing_data, 0);
+  arma::mat S_checkS_inv = Sigma_bar * Sigma_inv;
+
+  arma::mat cova = mod_edge.Q() * vars.slice(father);
+  cova = S_checkS_inv * cova;
+  covars.slice(child) = cova.t();
+
+  exps.col(child) = Sigma_bar * Sigma_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R());
+  exps.col(child) += mod_edge.Sigma() * checkS_inv * up_child.Condexp();
+
   vars.slice(child) = Sigma_bar;
-  vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child).t();
-  if (child == 3-1){
-    Rcpp::Rcout << "missing_data " << missing_data << std::endl; 
-    Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl; 
-    Rcpp::Rcout << "Sigma_bar " << Sigma_bar << std::endl;  
-    Rcpp::Rcout << "S_checkS_inv " << S_checkS_inv << std::endl;  
-    Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl;  
-    // Rcpp::Rcout << "exp 1 " << S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) << std::endl;
-    // Rcpp::Rcout << "exp 2 " << mod_edge.Sigma() * checkS_inv * up_child.Condexp() << std::endl;
-    Rcpp::Rcout << "exp" << exps.col(child) << std::endl;
-  }
+  vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child);
+  // Rcpp::Rcout << "child " << child << std::endl;
+  // Rcpp::Rcout << "missing_data " << missing_data << std::endl;
+  // Rcpp::Rcout << "checkS_inv " << checkS_inv << std::endl;
+  // Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl;
+  // Rcpp::Rcout << "S_checkS_inv " << S_checkS_inv << std::endl;
+  // Rcpp::Rcout << "Sigma_bar " << Sigma_bar << std::endl;
+  // Rcpp::Rcout << "Sigma_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) " << Sigma_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) << std::endl;
+  // Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl;
+  // Rcpp::Rcout << "exp 1 " << Sigma_bar * Sigma_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) << std::endl;
+  // Rcpp::Rcout << "exp 2 " <<  mod_edge.Sigma() *checkS_inv * up_child.Condexp() << std::endl;
+  // Rcpp::Rcout << "exp" << exps.col(child) << std::endl;
 }
+
+// void Moments::actualize_downward_miss(Upward_Node const & up_child, 
+//                                       Model_Node const & mod_edge,
+//                                       int child, int father){
+//   arma::uvec missing_data = up_child.Missing_Data();
+//   
+//   if (child == 10-1){
+//     Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl; 
+//   }
+//   
+//   arma::mat Sigma_inv = arma::inv_sympd(mod_edge.Sigma());
+//   
+//   arma::uvec na_pos = find(missing_data == 1);
+//   arma::mat Sigma_bar(size(mod_edge.Sigma()), arma::fill::zeros);
+//   Sigma_bar(na_pos, na_pos) = mod_edge.Sigma()(na_pos, na_pos);
+//   Rcpp::Rcout << "child " << child + 1 << std::endl; 
+//   arma::mat condvar_inv = inv_na(up_child.Condvar(), missing_data, 0);
+//   Rcpp::Rcout << "child " << child + 1 << std::endl;
+//   Sigma_bar += inv_na(condvar_inv + Sigma_inv, missing_data, 0);
+//   Rcpp::Rcout << "child " << child + 1 << std::endl; 
+//   
+//   arma::mat S_checkS_inv = Sigma_bar * Sigma_inv;
+//   covars.slice(child) = S_checkS_inv * mod_edge.Q() * vars.slice(father);
+//   
+//   exps.col(child) = S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R());
+//   arma::vec values = up_child.Condexp();
+//   values.rows(na_pos).zeros();
+//   exps.col(child) += values;
+//   
+//   vars.slice(child) = Sigma_bar;
+//   vars.slice(child) += S_checkS_inv * mod_edge.Q() * covars.slice(child).t();
+//   
+//   if (child == 3-1){
+//     Rcpp::Rcout << "missing_data " << missing_data << std::endl; 
+//     Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl; 
+//     Rcpp::Rcout << "Sigma_bar " << Sigma_bar << std::endl;  
+//     Rcpp::Rcout << "S_checkS_inv " << S_checkS_inv << std::endl;  
+//     Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl;  
+//     // Rcpp::Rcout << "exp 1 " << S_checkS_inv * (mod_edge.Q() * exps.col(father) + mod_edge.R()) << std::endl;
+//     // Rcpp::Rcout << "exp 2 " << mod_edge.Sigma() * checkS_inv * up_child.Condexp() << std::endl;
+//     Rcpp::Rcout << "exp" << exps.col(child) << std::endl;
+//   }
+// }
 
 
 void Moments::downward(Upward const & up, Model const & mod,
-                       arma::umat const & ed) {
+                       arma::umat const & ed, int ntaxa) {
   int nEdges = ed.n_rows;
   for (int i = nEdges - 1; i >= 0; i--){ // Loop on the edges (rows of ed)
     // Rcpp::Rcout << "i " << i << std::endl;
@@ -685,7 +807,7 @@ void Moments::downward(Upward const & up, Model const & mod,
     int child = ed(i, 1) - 1; // Child edge of the edge
     // Rcpp::Rcout << "child " << child << std::endl;
     if (arma::sum(up.Up(child).Missing_Data()) > 0){ // Some missing data
-      (*this).actualize_downward_miss(up.Up(child), mod.Mod(i), child, father);
+      (*this).actualize_downward_miss(up.Up(child), mod.Mod(i), child, father, ntaxa);
     } else {
       (*this).actualize_downward(up.Up(child), mod.Mod(i), child, father);
     }
@@ -732,7 +854,7 @@ Rcpp::List upward_downward(arma::mat const & data, arma::umat const & ed,
   // Downward Init
   Root_State root_state = Root_State(root_state_list);
   Moments mom(upw, root_state, ntaxa);
-  mom.downward(upw, mod, ed);
+  mom.downward(upw, mod, ed, ntaxa);
   
   
   // Return to R in list format
@@ -777,10 +899,11 @@ tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
 tree <- reorder(tree, order = "postorder")
 p <- 4
 variance <- matrix(0.8, p, p) + diag(0.2, p, p)
-root.state <- list(random = TRUE,
-                   value.root = NA,
-                   exp.root = rep(1, p),
-                   var.root = diag(1, p) + 0.1)
+independent <- FALSE
+root.state <- list(random = FALSE,
+                   value.root = rep(1, p),
+                   exp.root = NA,
+                   var.root = NA)
 shifts = list(edges = c(12),
               values=matrix(2*c(1, 0.5), nrow = p),
               relativeTimes = 0)
@@ -801,40 +924,48 @@ X1 <- simulate(tree,
                shifts = shifts)
 
 traits <- extract.simulate(X1, where = "tips", what = "state")
-# nMiss <- floor(ntaxa * p * 0.2)
-# miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
-# chars <- (miss - 1) %% p + 1
-# tips <- (miss - 1) %/% p + 1
-# for (i in 1:nMiss){
-#   traits[chars[i], tips[i]] <- NA
-# }
-# traits[2, 3] <- traits[1, 10] <- traits[, 6] <- NA
+nMiss <- floor(ntaxa * p * 0.2)
+miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+chars <- (miss - 1) %% p + 1
+tips <- (miss - 1) %/% p + 1
+for (i in 1:nMiss){
+  traits[chars[i], tips[i]] <- NA
+}
+# traits[2, 3] <- traits[2, 17] <- traits[2, 18] <- traits[, 6] <- NA
 
 ## Log lik old way
 miss <- as.vector(is.na(traits))
 masque_data <- rep(FALSE, (ntaxa + tree$Nnode) * p)
 masque_data[1:(p * ntaxa)] <- !miss
 
-moments <- compute_mean_variance.simple(phylo = tree,
-                                        times_shared = compute_times_ca(tree),
-                                        distances_phylo = compute_dist_phy(tree),
-                                        process = "BM",
-                                        params_old = paramsSimu,
-                                        masque_data = masque_data)
-ll_old <- compute_log_likelihood.simple(phylo = tree,
-                                        Y_data_vec = as.vector(traits[!miss]),
-                                        sim = moments$sim,
-                                        Sigma = moments$Sigma,
-                                        Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                        masque_data = masque_data,
-                                        miss = miss)
-conditional_law_X_old <- compute_E.simple(phylo = tree,
-                                          Y_data_vec = as.vector(traits[!miss]),
-                                          sim = moments$sim,
-                                          Sigma = moments$Sigma,
-                                          Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                          miss = miss,
-                                          masque_data = masque_data)
+times_shared <- compute_times_ca(tree)
+distances_phylo <- compute_dist_phy(tree)
+T_tree <- incidence.matrix(tree)
+U_tree <- incidence.matrix.full(tree)
+h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+root_edge_length <- 0
+if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
+F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
+
+tmp <- wrapper_E_step(phylo = tree,
+                      times_shared = times_shared,
+                      distances_phylo = distances_phylo,
+                      process = "BM",
+                      paramsSimu,
+                      masque_data,
+                      F_moments,
+                      independent,
+                      as.vector(traits[!miss]),
+                      miss,
+                      traits,
+                      U_tree,
+                      compute_mean_variance.simple,
+                      compute_log_likelihood.simple,
+                      compute_mahalanobis_distance.simple,
+                      compute_E.simple)
+
+ll_old <- tmp$log_likelihood_old
+conditional_law_X_old <- tmp$conditional_law_X
 
 
 # conditional_law_X <- upward_downward(traits, tree$edge)
@@ -853,5 +984,27 @@ all.equal(ll_new, as.vector(ll_old))
 
 conditional_law_X_new <- upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state)
 all.equal(conditional_law_X_old, conditional_law_X_new)
+cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
+cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
+all.equal(cov_old, cov_new)
 
+library(microbenchmark)
+microbenchmark(wrapper_E_step(phylo = tree,
+                                    times_shared = times_shared,
+                                    distances_phylo = distances_phylo,
+                                    process = "BM",
+                                    paramsSimu,
+                                    masque_data,
+                                    F_moments,
+                                    independent,
+                                    as.vector(traits[!miss]),
+                                    miss,
+                                    traits,
+                                    U_tree,
+                                    compute_mean_variance.simple,
+                                    compute_log_likelihood.simple,
+                                    compute_mahalanobis_distance.simple,
+                                    compute_E.simple),
+               upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state),
+               times = 10)
 */
