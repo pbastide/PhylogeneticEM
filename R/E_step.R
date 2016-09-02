@@ -52,11 +52,59 @@
 #' values beta(t_j)
 #' 
 ##
-compute_E.simple <- function (phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
-                              miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
-                              masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
-                                              rep(FALSE, dim(sim)[1] * phylo$Nnode)),
-                              ...) {
+
+compute_E.simple <- function(phylo,
+                             times_shared,
+                             distances_phylo,
+                             process,
+                             params_old,
+                             masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
+                                             rep(FALSE, dim(sim)[1] * phylo$Nnode)),
+                             F_moments,
+                             Y_data_vec_known,
+                             miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                             Y_data,
+                             U_tree, ...){
+  moments <- compute_mean_variance.simple(phylo = phylo,
+                                          times_shared = times_shared,
+                                          distances_phylo = distances_phylo,
+                                          process = process,
+                                          params_old = params_old,
+                                          masque_data = masque_data,
+                                          F_moments = F_moments,
+                                          U_tree = U_tree)
+  log_likelihood_old <- compute_log_likelihood.simple(phylo = phylo,
+                                                      Y_data_vec = Y_data_vec_known,
+                                                      sim = moments$sim,
+                                                      Sigma = moments$Sigma,
+                                                      Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                                      miss = miss, 
+                                                      masque_data = masque_data,
+                                                      C_YY = F_moments$C_YY,
+                                                      Y_data = Y_data,
+                                                      C_YY_chol_inv = F_moments$C_YY_chol_inv,
+                                                      R = params_old$variance)
+  conditional_law_X <- compute_cond_law.simple(phylo = phylo,
+                                               Y_data_vec = Y_data_vec_known,
+                                               sim = moments$sim,
+                                               Sigma = moments$Sigma,
+                                               Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
+                                               miss = miss,
+                                               masque_data = masque_data,
+                                               F_means = F_moments$F_means,
+                                               F_vars = F_moments$F_vars,
+                                               R = params_old$variance,
+                                               Y_data = Y_data)
+  return(list(log_likelihood_old = log_likelihood_old,
+              conditional_law_X = conditional_law_X))
+}
+
+compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
+                                     Sigma, Sigma_YY_chol_inv,
+                                     miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                                     masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
+                                                     rep(FALSE, dim(sim)[1] * phylo$Nnode)),
+                                     ...) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
@@ -831,6 +879,23 @@ compute_log_likelihood_with_entropy.simple <- function(CLL, H){
 #               maha_data_mean = maha_data_mean))
 # }
 
+###############################################################################
+## Upward_downward
+###############################################################################
+
+compute_E.upward_downward <- function(phylo,
+                                      Y_data,
+                                      process,
+                                      params_old, ...){
+  Delta <- shifts.list_to_matrix(phylo, params_old$shifts)
+  return(upward_downward(Y_data, phylo$edge, Delta,
+                         params_old$variance, phylo$edge.length,
+                         params_old$root.state))
+}
+
+###############################################################################
+## Wrapper (independent case)
+###############################################################################
 ##
 #' @title Wrapper for E step in EM
 #'
@@ -850,9 +915,6 @@ wrapper_E_step <- function(phylo,
                            miss,
                            Y_data,
                            U_tree,
-                           compute_mean_variance,
-                           compute_log_likelihood,
-                           compute_mahalanobis_distance,
                            compute_E){
   if (independent){
     # if independent, params_old is a list of p params
@@ -881,47 +943,16 @@ wrapper_E_step <- function(phylo,
     }
     return(res)
   }
-  moments <- compute_mean_variance(phylo = phylo,
-                                   times_shared = times_shared,
-                                   distances_phylo = distances_phylo,
-                                   process = process,
-                                   params_old = params_old,
-                                   masque_data = masque_data,
-                                   F_moments = F_moments,
-                                   U_tree = U_tree)
-  log_likelihood_old <- compute_log_likelihood(phylo = phylo,
-                                               Y_data_vec = Y_data_vec_known,
-                                               sim = moments$sim,
-                                               Sigma = moments$Sigma,
-                                               Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                               miss = miss, 
-                                               masque_data = masque_data,
-                                               C_YY = F_moments$C_YY,
-                                               Y_data = Y_data,
-                                               C_YY_chol_inv = F_moments$C_YY_chol_inv,
-                                               R = params_old$variance)
-  ## Compute Mahalanobis norm between data and mean at tips
-  maha_data_mean <- compute_mahalanobis_distance(phylo = phylo,
-                                                 Y_data_vec = Y_data_vec_known,
-                                                 sim = moments$sim,
-                                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                                 miss = miss,
-                                                 Y_data = Y_data,
-                                                 C_YY_chol_inv = F_moments$C_YY_chol_inv,
-                                                 R = params_old$variance)
-  conditional_law_X <- compute_E(phylo = phylo,
-                                 Y_data_vec = Y_data_vec_known,
-                                 sim = moments$sim,
-                                 Sigma = moments$Sigma,
-                                 Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
-                                 miss = miss,
-                                 masque_data = masque_data,
-                                 F_means = F_moments$F_means,
-                                 F_vars = F_moments$F_vars,
-                                 R = params_old$variance,
-                                 Y_data = Y_data)
-  return(list(log_likelihood_old = log_likelihood_old,
-              maha_data_mean = maha_data_mean,
-              conditional_law_X = conditional_law_X,
-              moments = moments))
+  return(compute_E(phylo = phylo,
+                   times_shared = times_shared,
+                   distances_phylo = distances_phylo,
+                   process = process,
+                   params_old = params_old,
+                   masque_data = masque_data,
+                   F_moments = F_moments,
+                   independent = FALSE,
+                   Y_data_vec_known = Y_data_vec_known,
+                   miss = miss,
+                   Y_data = Y_data,
+                   U_tree = U_tree))
 }

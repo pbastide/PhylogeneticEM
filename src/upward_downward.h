@@ -56,7 +56,7 @@ public:
   Model_Node();
   // For a BM:
   Model_Node(arma::vec const & delta, arma::mat const & Variance,
-             double const & edge_length, arma::uvec no_miss);
+             double const & edge_length);
   // For an OU:
   Model_Node(arma::vec const & beta, arma::mat const & Stationary_Var,
              double const & edge_length, arma::mat const & Alpha);
@@ -86,7 +86,7 @@ public:
   // For a BM:
   Model(arma::mat const & Delta, arma::mat const & Variance,
         arma::vec const & edge_length,
-        arma::mat data, arma::umat ed);
+        arma::umat ed);
   // For an OU:
   Model(arma::mat const & Beta, arma::mat const & Stationary_Var,
         arma::vec const & edge_length, arma::mat const & Alpha,

@@ -25,22 +25,23 @@ Model::Model(int siz){
 
 // Constructor for BM Model _Node -------------------------------------------//
 Model_Node::Model_Node(arma::vec const & delta, arma::mat const & Variance,
-                       double const & edge_length, arma::uvec no_miss){
+                       double const & edge_length){
   int p_d = Variance.n_rows;
   // R
-  r = delta( no_miss );
+  // r = delta( no_miss );
+  r = delta;
   // Q
   q.eye(p_d, p_d);
-  q = q.rows(no_miss);
+  // q = q.rows(no_miss);
   sigma = edge_length * Variance;
-  sigma = sigma(no_miss, no_miss);
+  // sigma = sigma(no_miss, no_miss);
 }
 
 // Constructor for BM Model -------------------------------------------------//
 Model::Model(arma::mat const & Delta, arma::mat const & Variance,
-             arma::vec const & edge_length, arma::mat data, arma::umat ed){
+             arma::vec const & edge_length, arma::umat ed){
   int p_d = Delta.n_rows;
-  int ntaxa = data.n_cols; // number of taxa
+  // int ntaxa = data.n_cols; // number of taxa
   int nEdges = edge_length.n_rows; // number of edges
   // Allocate Object
   size = nEdges;
@@ -49,11 +50,11 @@ Model::Model(arma::mat const & Delta, arma::mat const & Variance,
   for (int i = 0; i < size; i++){
     arma::vec delta = Delta.col(i);
     // int child = ed(i, 1) - 1;
-    arma::uvec no_miss = arma::linspace<arma::uvec>(0, p_d - 1, p_d);
+    // arma::uvec no_miss = arma::linspace<arma::uvec>(0, p_d - 1, p_d);
     // if (child < ntaxa){
     //   no_miss = arma::find_finite(data.col(child));
     // }
-    mod[i] = Model_Node(delta, Variance, edge_length(i), no_miss);
+    mod[i] = Model_Node(delta, Variance, edge_length(i));
   }
   // int p_d = Delta.n_rows;
   // int ntaxa = Delta.n_cols; // number of taxa
@@ -78,9 +79,9 @@ Model::~Model(){
 // [[Rcpp::export]]
 Rcpp::List create_model(arma::mat const & Delta, arma::mat const & Variance,
                         arma::vec const & edge_length,
-                        arma::mat data, arma::umat ed, int i) {
+                        arma::umat ed, int i) {
   // Construct object and initialize
-  Model mod(Delta, Variance, edge_length, data, ed);
+  Model mod(Delta, Variance, edge_length, ed);
   
   // Return to R in list format
   return mod.exportModel2R(i - 1);
@@ -848,18 +849,20 @@ Rcpp::List upward_downward(arma::mat const & data, arma::umat const & ed,
   //Moments mom(data, ed);
   Upward upw(data, nE);
   // BM
-  Model mod(Delta, Variance, edge_length, data, ed);
+  Model mod(Delta, Variance, edge_length, ed);
   // Upward Recursion
   upw.recursion(mod, ed, p_d, ntaxa);
-  // Downward Init
+  // Likelihood Computation
   Root_State root_state = Root_State(root_state_list);
+  double logLik = upw.Log_Likelihood(root_state, ntaxa);
+  // Downward Init
   Moments mom(upw, root_state, ntaxa);
   mom.downward(upw, mod, ed, ntaxa);
-  
+  Rcpp::List condLaw = mom.exportMoments2R();
   
   // Return to R in list format
-  // return upw.exportUpward2R(i-1);
-  return mom.exportMoments2R();
+  return Rcpp::List::create(Rcpp::Named("log_likelihood_old") = logLik,
+                            Rcpp::Named("conditional_law_X") = condLaw);
 }
 
 // [[Rcpp::export]]
@@ -875,7 +878,7 @@ double log_likelihood(arma::mat const & data, arma::umat const & ed,
   //Moments mom(data, ed);
   Upward upw(data, nE);
   // BM
-  Model mod(Delta, Variance, edge_length, data, ed);
+  Model mod(Delta, Variance, edge_length, ed);
   // Upward Recursion
   upw.recursion(mod, ed, p_d, ntaxa);
   
@@ -893,7 +896,7 @@ library(ape)
 library(TreeSim)
 library(Matrix)
 set.seed(17920902)
-ntaxa = 500
+ntaxa = 50
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
                         age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
@@ -924,7 +927,7 @@ X1 <- simulate(tree,
                shifts = shifts)
 
 traits <- extract.simulate(X1, where = "tips", what = "state")
-nMiss <- floor(ntaxa * p * 0.2)
+nMiss <- floor(ntaxa * p * 0.5)
 miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
 chars <- (miss - 1) %% p + 1
 tips <- (miss - 1) %/% p + 1
@@ -947,64 +950,88 @@ root_edge_length <- 0
 if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
 F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
 
-tmp <- wrapper_E_step(phylo = tree,
-                      times_shared = times_shared,
-                      distances_phylo = distances_phylo,
-                      process = "BM",
-                      paramsSimu,
-                      masque_data,
-                      F_moments,
-                      independent,
-                      as.vector(traits[!miss]),
-                      miss,
-                      traits,
-                      U_tree,
-                      compute_mean_variance.simple,
-                      compute_log_likelihood.simple,
-                      compute_mahalanobis_distance.simple,
-                      compute_E.simple)
+tmp_old <- wrapper_E_step(phylo = tree,
+                          times_shared = times_shared,
+                          distances_phylo = distances_phylo,
+                          process = "BM",
+                          params_old = paramsSimu,
+                          masque_data = masque_data,
+                          F_moments = F_moments,
+                          independent = independent,
+                          Y_data_vec_known = as.vector(traits[!miss]),
+                          miss = miss,
+                          Y_data = traits,
+                          U_tree = U_tree,
+                          compute_E = compute_E.simple)
 
-ll_old <- tmp$log_likelihood_old
-conditional_law_X_old <- tmp$conditional_law_X
+ll_old <- tmp_old$log_likelihood_old
+conditional_law_X_old <- tmp_old$conditional_law_X
 
+tmp_new <- wrapper_E_step(phylo = tree,
+                          times_shared = times_shared,
+                          distances_phylo = distances_phylo,
+                          process = "BM",
+                          params_old = paramsSimu,
+                          masque_data = masque_data,
+                          F_moments = F_moments,
+                          independent = independent,
+                          Y_data_vec_known = as.vector(traits[!miss]),
+                          miss = miss,
+                          Y_data = traits,
+                          U_tree = U_tree,
+                          compute_E = compute_E.upward_downward)
 
-# conditional_law_X <- upward_downward(traits, tree$edge)
+ll_new <- tmp_new$log_likelihood_old
+conditional_law_X_new <- tmp_new$conditional_law_X
 
-Delta <- shifts.list_to_matrix(tree, shifts)
-edge_length <- tree$edge.length
-# create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 1))
-# create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 3))
-# create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 6))
-
-# upward_test(traits, tree$edge, 30)
-
-ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
-                         root.state)
 all.equal(ll_new, as.vector(ll_old))
-
-conditional_law_X_new <- upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state)
-all.equal(conditional_law_X_old, conditional_law_X_new)
+all.equal(conditional_law_X_old$expectations, conditional_law_X_new$expectations)
+all.equal(conditional_law_X_old$variances, conditional_law_X_new$variances)
 cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
 cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
 all.equal(cov_old, cov_new)
 
+
+# # conditional_law_X <- upward_downward(traits, tree$edge)
+# 
+# Delta <- shifts.list_to_matrix(tree, shifts)
+# edge_length <- tree$edge.length
+# # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 1))
+# # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 3))
+# # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 6))
+# 
+# # upward_test(traits, tree$edge, 30)
+# 
+# ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
+#                          root.state)
+# all.equal(ll_new, as.vector(ll_old))
+# 
+# conditional_law_X_new <- upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state)
+# all.equal(conditional_law_X_old, conditional_law_X_new)
+# cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
+# cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
+# all.equal(cov_old, cov_new)
+
 library(microbenchmark)
 microbenchmark(wrapper_E_step(phylo = tree,
-                                    times_shared = times_shared,
-                                    distances_phylo = distances_phylo,
-                                    process = "BM",
-                                    paramsSimu,
-                                    masque_data,
-                                    F_moments,
-                                    independent,
-                                    as.vector(traits[!miss]),
-                                    miss,
-                                    traits,
-                                    U_tree,
-                                    compute_mean_variance.simple,
-                                    compute_log_likelihood.simple,
-                                    compute_mahalanobis_distance.simple,
-                                    compute_E.simple),
-               upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state),
+                              times_shared = times_shared,
+                              distances_phylo = distances_phylo,
+                              process = "BM",
+                              params_old = paramsSimu,
+                              masque_data = masque_data,
+                              F_moments = F_moments,
+                              independent = independent,
+                              Y_data_vec_known = as.vector(traits[!miss]),
+                              miss = miss,
+                              Y_data = traits,
+                              U_tree = U_tree,
+                              compute_E = compute_E.simple),
+               wrapper_E_step(phylo = tree,
+                              process = "BM",
+                              params_old = paramsSimu,
+                              masque_data = masque_data,
+                              independent = independent,
+                              Y_data = traits,
+                              compute_E = compute_E.upward_downward),
                times = 10)
 */
