@@ -891,147 +891,147 @@ double log_likelihood(arma::mat const & data, arma::umat const & ed,
   //return mom.exportMoments2R();
 }
 
-/*** R
-library(ape)
-library(TreeSim)
-library(Matrix)
-set.seed(17920902)
-ntaxa = 50
-tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
-                        age = 1, mrca = TRUE)[[1]]
-tree <- reorder(tree, order = "postorder")
-p <- 4
-variance <- matrix(0.8, p, p) + diag(0.2, p, p)
-independent <- FALSE
-root.state <- list(random = FALSE,
-                   value.root = rep(1, p),
-                   exp.root = NA,
-                   var.root = NA)
-shifts = list(edges = c(12),
-              values=matrix(2*c(1, 0.5), nrow = p),
-              relativeTimes = 0)
-paramsSimu <- list(variance = variance,
-                   shifts = shifts,
-                   root.state = root.state)
-attr(paramsSimu, "p_dim") <- p
-
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/simulate.R")
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/generic_functions.R")
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/shifts_manipulations.R")
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/E_step.R")
-X1 <- simulate(tree,
-               p = p,
-               root.state = root.state,
-               process = "BM",
-               variance = variance,
-               shifts = shifts)
-
-traits <- extract.simulate(X1, where = "tips", what = "state")
-nMiss <- floor(ntaxa * p * 0.5)
-miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
-chars <- (miss - 1) %% p + 1
-tips <- (miss - 1) %/% p + 1
-for (i in 1:nMiss){
-  traits[chars[i], tips[i]] <- NA
-}
-# traits[2, 3] <- traits[2, 17] <- traits[2, 18] <- traits[, 6] <- NA
-
-## Log lik old way
-miss <- as.vector(is.na(traits))
-masque_data <- rep(FALSE, (ntaxa + tree$Nnode) * p)
-masque_data[1:(p * ntaxa)] <- !miss
-
-times_shared <- compute_times_ca(tree)
-distances_phylo <- compute_dist_phy(tree)
-T_tree <- incidence.matrix(tree)
-U_tree <- incidence.matrix.full(tree)
-h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
-root_edge_length <- 0
-if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
-F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
-
-tmp_old <- wrapper_E_step(phylo = tree,
-                          times_shared = times_shared,
-                          distances_phylo = distances_phylo,
-                          process = "BM",
-                          params_old = paramsSimu,
-                          masque_data = masque_data,
-                          F_moments = F_moments,
-                          independent = independent,
-                          Y_data_vec_known = as.vector(traits[!miss]),
-                          miss = miss,
-                          Y_data = traits,
-                          U_tree = U_tree,
-                          compute_E = compute_E.simple)
-
-ll_old <- tmp_old$log_likelihood_old
-conditional_law_X_old <- tmp_old$conditional_law_X
-
-tmp_new <- wrapper_E_step(phylo = tree,
-                          times_shared = times_shared,
-                          distances_phylo = distances_phylo,
-                          process = "BM",
-                          params_old = paramsSimu,
-                          masque_data = masque_data,
-                          F_moments = F_moments,
-                          independent = independent,
-                          Y_data_vec_known = as.vector(traits[!miss]),
-                          miss = miss,
-                          Y_data = traits,
-                          U_tree = U_tree,
-                          compute_E = compute_E.upward_downward)
-
-ll_new <- tmp_new$log_likelihood_old
-conditional_law_X_new <- tmp_new$conditional_law_X
-
-all.equal(ll_new, as.vector(ll_old))
-all.equal(conditional_law_X_old$expectations, conditional_law_X_new$expectations)
-all.equal(conditional_law_X_old$variances, conditional_law_X_new$variances)
-cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
-cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
-all.equal(cov_old, cov_new)
-
-
-# # conditional_law_X <- upward_downward(traits, tree$edge)
-# 
-# Delta <- shifts.list_to_matrix(tree, shifts)
-# edge_length <- tree$edge.length
-# # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 1))
-# # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 3))
-# # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 6))
-# 
-# # upward_test(traits, tree$edge, 30)
-# 
-# ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
-#                          root.state)
-# all.equal(ll_new, as.vector(ll_old))
-# 
-# conditional_law_X_new <- upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state)
-# all.equal(conditional_law_X_old, conditional_law_X_new)
-# cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
-# cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
-# all.equal(cov_old, cov_new)
-
-library(microbenchmark)
-microbenchmark(wrapper_E_step(phylo = tree,
-                              times_shared = times_shared,
-                              distances_phylo = distances_phylo,
-                              process = "BM",
-                              params_old = paramsSimu,
-                              masque_data = masque_data,
-                              F_moments = F_moments,
-                              independent = independent,
-                              Y_data_vec_known = as.vector(traits[!miss]),
-                              miss = miss,
-                              Y_data = traits,
-                              U_tree = U_tree,
-                              compute_E = compute_E.simple),
-               wrapper_E_step(phylo = tree,
-                              process = "BM",
-                              params_old = paramsSimu,
-                              masque_data = masque_data,
-                              independent = independent,
-                              Y_data = traits,
-                              compute_E = compute_E.upward_downward),
-               times = 10)
-*/
+// /*** R
+// library(ape)
+// library(TreeSim)
+// library(Matrix)
+// set.seed(17920902)
+// ntaxa = 50
+// tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
+//                         age = 1, mrca = TRUE)[[1]]
+// tree <- reorder(tree, order = "postorder")
+// p <- 4
+// variance <- matrix(0.8, p, p) + diag(0.2, p, p)
+// independent <- FALSE
+// root.state <- list(random = FALSE,
+//                    value.root = rep(1, p),
+//                    exp.root = NA,
+//                    var.root = NA)
+// shifts = list(edges = c(12),
+//               values=matrix(2*c(1, 0.5), nrow = p),
+//               relativeTimes = 0)
+// paramsSimu <- list(variance = variance,
+//                    shifts = shifts,
+//                    root.state = root.state)
+// attr(paramsSimu, "p_dim") <- p
+// 
+// source("~/Dropbox/These/Code/Phylogenetic-EM/R/simulate.R")
+// source("~/Dropbox/These/Code/Phylogenetic-EM/R/generic_functions.R")
+// source("~/Dropbox/These/Code/Phylogenetic-EM/R/shifts_manipulations.R")
+// source("~/Dropbox/These/Code/Phylogenetic-EM/R/E_step.R")
+// X1 <- simulate(tree,
+//                p = p,
+//                root.state = root.state,
+//                process = "BM",
+//                variance = variance,
+//                shifts = shifts)
+// 
+// traits <- extract.simulate(X1, where = "tips", what = "state")
+// nMiss <- floor(ntaxa * p * 0.5)
+// miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+// chars <- (miss - 1) %% p + 1
+// tips <- (miss - 1) %/% p + 1
+// for (i in 1:nMiss){
+//   traits[chars[i], tips[i]] <- NA
+// }
+// # traits[2, 3] <- traits[2, 17] <- traits[2, 18] <- traits[, 6] <- NA
+// 
+// ## Log lik old way
+// miss <- as.vector(is.na(traits))
+// masque_data <- rep(FALSE, (ntaxa + tree$Nnode) * p)
+// masque_data[1:(p * ntaxa)] <- !miss
+// 
+// times_shared <- compute_times_ca(tree)
+// distances_phylo <- compute_dist_phy(tree)
+// T_tree <- incidence.matrix(tree)
+// U_tree <- incidence.matrix.full(tree)
+// h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+// root_edge_length <- 0
+// if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
+// F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
+// 
+// tmp_old <- wrapper_E_step(phylo = tree,
+//                           times_shared = times_shared,
+//                           distances_phylo = distances_phylo,
+//                           process = "BM",
+//                           params_old = paramsSimu,
+//                           masque_data = masque_data,
+//                           F_moments = F_moments,
+//                           independent = independent,
+//                           Y_data_vec_known = as.vector(traits[!miss]),
+//                           miss = miss,
+//                           Y_data = traits,
+//                           U_tree = U_tree,
+//                           compute_E = compute_E.simple)
+// 
+// ll_old <- tmp_old$log_likelihood_old
+// conditional_law_X_old <- tmp_old$conditional_law_X
+// 
+// tmp_new <- wrapper_E_step(phylo = tree,
+//                           times_shared = times_shared,
+//                           distances_phylo = distances_phylo,
+//                           process = "BM",
+//                           params_old = paramsSimu,
+//                           masque_data = masque_data,
+//                           F_moments = F_moments,
+//                           independent = independent,
+//                           Y_data_vec_known = as.vector(traits[!miss]),
+//                           miss = miss,
+//                           Y_data = traits,
+//                           U_tree = U_tree,
+//                           compute_E = compute_E.upward_downward)
+// 
+// ll_new <- tmp_new$log_likelihood_old
+// conditional_law_X_new <- tmp_new$conditional_law_X
+// 
+// all.equal(ll_new, as.vector(ll_old))
+// all.equal(conditional_law_X_old$expectations, conditional_law_X_new$expectations)
+// all.equal(conditional_law_X_old$variances, conditional_law_X_new$variances)
+// cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
+// cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
+// all.equal(cov_old, cov_new)
+// 
+// 
+// # # conditional_law_X <- upward_downward(traits, tree$edge)
+// # 
+// # Delta <- shifts.list_to_matrix(tree, shifts)
+// # edge_length <- tree$edge.length
+// # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 1))
+// # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 3))
+// # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 6))
+// # 
+// # # upward_test(traits, tree$edge, 30)
+// # 
+// # ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
+// #                          root.state)
+// # all.equal(ll_new, as.vector(ll_old))
+// # 
+// # conditional_law_X_new <- upward_downward(traits, tree$edge, Delta, variance, edge_length, root.state)
+// # all.equal(conditional_law_X_old, conditional_law_X_new)
+// # cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
+// # cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
+// # all.equal(cov_old, cov_new)
+// 
+// library(microbenchmark)
+// microbenchmark(wrapper_E_step(phylo = tree,
+//                               times_shared = times_shared,
+//                               distances_phylo = distances_phylo,
+//                               process = "BM",
+//                               params_old = paramsSimu,
+//                               masque_data = masque_data,
+//                               F_moments = F_moments,
+//                               independent = independent,
+//                               Y_data_vec_known = as.vector(traits[!miss]),
+//                               miss = miss,
+//                               Y_data = traits,
+//                               U_tree = U_tree,
+//                               compute_E = compute_E.simple),
+//                wrapper_E_step(phylo = tree,
+//                               process = "BM",
+//                               params_old = paramsSimu,
+//                               masque_data = masque_data,
+//                               independent = independent,
+//                               Y_data = traits,
+//                               compute_E = compute_E.upward_downward),
+//                times = 10)
+// */

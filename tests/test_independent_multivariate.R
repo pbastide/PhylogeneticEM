@@ -186,9 +186,6 @@ test_that("compute_mean_variance.simple", {
                           Y_data_vec_known = Y_data_vec_known,
                           miss = miss,
                           Y_data = Y_data,
-                          compute_mean_variance = compute_mean_variance.simple,
-                          compute_log_likelihood = compute_log_likelihood.simple,
-                          compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
                           compute_E = compute_E.simple)
   
   res_2 <- wrapper_E_step(phylo = tree,
@@ -202,13 +199,10 @@ test_that("compute_mean_variance.simple", {
                           Y_data_vec_known = Y_data_vec_known,
                           miss = miss,
                           Y_data = Y_data,
-                          compute_mean_variance = compute_mean_variance.simple,
-                          compute_log_likelihood = compute_log_likelihood.simple,
-                          compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
                           compute_E = compute_E.simple)
   
   expect_equal(as.vector(res_1$log_likelihood_old),
               sum(sapply(res_2, function(z) return(z$log_likelihood_old))))
-  expect_equal(as.vector(res_1$maha_data_mean),
-              sum(sapply(res_2, function(z) return(z$maha_data_mean))))
+  # expect_equal(as.vector(res_1$maha_data_mean),
+  #             sum(sapply(res_2, function(z) return(z$maha_data_mean))))
 })

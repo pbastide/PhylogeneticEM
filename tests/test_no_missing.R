@@ -63,11 +63,11 @@ test_that("Likelihood missing/no missing methods", {
                                                             sim = moments_old$sim,
                                                             Sigma_YY_chol_inv = moments_old$Sigma_YY_chol_inv)
   
-  conditional_law_X_old <- compute_E.simple(phylo = tree,
-                                            Y_data_vec = as.vector(Y_data),
-                                            sim = moments_old$sim,
-                                            Sigma = moments_old$Sigma,
-                                            Sigma_YY_chol_inv = moments_old$Sigma_YY_chol_inv)
+  conditional_law_X_old <- compute_cond_law.simple(phylo = tree,
+                                                   Y_data_vec = as.vector(Y_data),
+                                                   sim = moments_old$sim,
+                                                   Sigma = moments_old$Sigma,
+                                                   Sigma_YY_chol_inv = moments_old$Sigma_YY_chol_inv)
   
   ## New Method
   moments_new <- compute_mean_variance.simple.nomissing.BM(phylo = tree,
@@ -89,12 +89,12 @@ test_that("Likelihood missing/no missing methods", {
     C_YY_chol_inv = F_moments$C_YY_chol_inv,
     R = params$variance)
   
-  conditional_law_X_new <- compute_E.simple.nomissing.BM(phylo = tree,
-                                                         sim = moments_new$sim,
-                                                         F_means = F_moments$F_means,
-                                                         F_vars = F_moments$F_vars,
-                                                         R = params$variance,
-                                                         Y_data = Y_data)
+  conditional_law_X_new <- compute_cond_law.simple.nomissing.BM(phylo = tree,
+                                                                sim = moments_new$sim,
+                                                                F_means = F_moments$F_means,
+                                                                F_vars = F_moments$F_vars,
+                                                                R = params$variance,
+                                                                Y_data = Y_data)
   
   expect_that(as.vector(log_likelihood_new), equals(as.vector(log_likelihood_old)))
   expect_that(as.vector(maha_data_mean_new), equals(as.vector(maha_data_mean_old)))
