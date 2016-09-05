@@ -103,7 +103,7 @@ test_that("Upward Downward - no missing", {
   tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
                           age = 1, mrca = TRUE)[[1]]
   tree <- reorder(tree, order = "postorder")
-  p <- 6
+  p <- 10
   variance <- matrix(0.8, p, p) + diag(0.2, p, p)
   independent <- FALSE
   root.state <- list(random = FALSE,
@@ -118,6 +118,7 @@ test_that("Upward Downward - no missing", {
                              c(4, -10, 3, 12, 32, -5),
                              c(4, -10, 3, 12, 32, -5)),
                 relativeTimes = 0)
+  shifts$values <- apply(shifts$values, 1, function(z) rep(z, length.out = p))
   paramsSimu <- list(variance = variance,
                      shifts = shifts,
                      root.state = root.state)
@@ -187,4 +188,26 @@ test_that("Upward Downward - no missing", {
   expect_that(conditional_law_X_new$expectations, equals(conditional_law_X_old$expectations))
   expect_that(conditional_law_X_new$variances, equals(conditional_law_X_old$variances))
   expect_that(cov_old, equals(cov_new))
+  
+  # library(microbenchmark)
+  # microbenchmark(wrapper_E_step(phylo = tree,
+  #                               times_shared = times_shared,
+  #                               distances_phylo = distances_phylo,
+  #                               process = "BM",
+  #                               params_old = paramsSimu,
+  #                               masque_data = masque_data,
+  #                               F_moments = F_moments,
+  #                               independent = independent,
+  #                               Y_data_vec_known = as.vector(traits[!miss]),
+  #                               miss = miss,
+  #                               Y_data = traits,
+  #                               U_tree = U_tree,
+  #                               compute_E = compute_E.simple.nomissing.BM),
+  #                wrapper_E_step(phylo = tree,
+  #                               process = "BM",
+  #                               params_old = paramsSimu,
+  #                               independent = independent,
+  #                               Y_data = traits,
+  #                               compute_E = compute_E.upward_downward),
+  #                times = 100)
 })
