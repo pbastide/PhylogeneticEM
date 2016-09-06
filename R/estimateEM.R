@@ -67,7 +67,7 @@ estimateEM <- function(phylo,
                                   normalized_half_life = 10^(-2),
                                   log_likelihood = 10^(-3)),  
                        Nbr_It_Max = 500, 
-                       method.variance = c("simple"), 
+                       method.variance = c("simple", "upward_downward"), 
                        method.init = c("default", "lasso"),
                        method.init.alpha = c("default", "estimation"),
                        method.init.alpha.estimation = c("regression", 
@@ -230,16 +230,17 @@ estimateEM <- function(phylo,
   }
   compute_E  <- switch(method.variance, 
                        simple = compute_E.simple,
-                       simple.nomissing.BM = compute_E.simple.nomissing.BM)
-  compute_mean_variance  <- switch(method.variance, 
-                                   simple = compute_mean_variance.simple,
-                                   simple.nomissing.BM = compute_mean_variance.simple.nomissing.BM)
-  compute_log_likelihood  <- switch(method.variance, 
-                                    simple = compute_log_likelihood.simple,
-                                    simple.nomissing.BM = compute_log_likelihood.simple.nomissing.BM)
-  compute_mahalanobis_distance  <- switch(method.variance, 
-                                          simple = compute_mahalanobis_distance.simple,
-                                          simple.nomissing.BM = compute_mahalanobis_distance.simple.nomissing.BM)
+                       simple.nomissing.BM = compute_E.simple.nomissing.BM,
+                       upward_downward = compute_E.upward_downward)
+  # compute_mean_variance  <- switch(method.variance, 
+  #                                  simple = compute_mean_variance.simple,
+  #                                  simple.nomissing.BM = compute_mean_variance.simple.nomissing.BM)
+  # compute_log_likelihood  <- switch(method.variance, 
+  #                                   simple = compute_log_likelihood.simple,
+  #                                   simple.nomissing.BM = compute_log_likelihood.simple.nomissing.BM)
+  # compute_mahalanobis_distance  <- switch(method.variance, 
+  #                                         simple = compute_mahalanobis_distance.simple,
+  #                                         simple.nomissing.BM = compute_mahalanobis_distance.simple.nomissing.BM)
 
   ########## Initialization Method ############################################
   method.init  <- match.arg(method.init)
@@ -453,9 +454,9 @@ estimateEM <- function(phylo,
                            miss = miss,
                            Y_data = Y_data,
                            U_tree = U_tree,
-                           compute_mean_variance = compute_mean_variance,
-                           compute_log_likelihood = compute_log_likelihood,
-                           compute_mahalanobis_distance = compute_mahalanobis_distance,
+                           # compute_mean_variance = compute_mean_variance,
+                           # compute_log_likelihood = compute_log_likelihood,
+                           # compute_mahalanobis_distance = compute_mahalanobis_distance,
                            compute_E = compute_E)
     ## Format result if independent
     if (independent){
@@ -463,13 +464,13 @@ estimateEM <- function(phylo,
       # Store params for history
       params_history[[paste(Nbr_It - 1, sep="")]] <- merge_params_independent(params_old)
       attr(params_history[[paste(Nbr_It - 1, sep="")]], "log_likelihood") <- log_likelihood_old
-      attr(params_history[[paste(Nbr_It - 1, sep="")]], "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+      # attr(params_history[[paste(Nbr_It - 1, sep="")]], "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
       # Conditional law
       conditional_law_X <- lapply(temp, function(z) return(z$conditional_law_X))
     } else {
       log_likelihood_old <- as.vector(temp$log_likelihood_old)
       attr(params_old, "log_likelihood") <- log_likelihood_old
-      attr(params_old, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
+      # attr(params_old, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
       # Store params for history
       params_history[[paste(Nbr_It - 1, sep="")]] <- params_old
       # Conditional law
@@ -583,9 +584,9 @@ estimateEM <- function(phylo,
        && (method.variance == "simple.nomissing.BM")){
     ## Go back to simple method if switched to a different one.
     compute_E <- compute_E.simple
-    compute_mean_variance  <- compute_mean_variance.simple
-    compute_log_likelihood  <- compute_log_likelihood.simple
-    compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
+    # compute_mean_variance  <- compute_mean_variance.simple
+    # compute_log_likelihood  <- compute_log_likelihood.simple
+    # compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
   }
   
   if (independent){
@@ -604,10 +605,20 @@ estimateEM <- function(phylo,
                          miss = miss,
                          Y_data = Y_data,
                          U_tree = U_tree,
-                         compute_mean_variance = compute_mean_variance,
-                         compute_log_likelihood = compute_log_likelihood,
-                         compute_mahalanobis_distance = compute_mahalanobis_distance,
+                         # compute_mean_variance = compute_mean_variance,
+                         # compute_log_likelihood = compute_log_likelihood,
+                         # compute_mahalanobis_distance = compute_mahalanobis_distance,
                          compute_E = compute_E)
+  tmpsim <- simulate(phylo = phylo, 
+                     process = process,
+                     p = attr(params_scOU, "p_dim"),
+                     root.state = params_scOU$root.state, 
+                     shifts = params_scOU$shifts, 
+                     variance = params_scOU$variance, 
+                     optimal.value = params_scOU$optimal.value, 
+                     selection.strength = params_scOU$selection.strength,
+                     simulate_random = FALSE,
+                     U_tree = U_tree)
   ## Format results
   if (independent){ # Independent
     ## Likelihood and Mahalanobis of last parameters
@@ -629,7 +640,8 @@ estimateEM <- function(phylo,
     conditional_law_X$covariances <- aperm(conditional_law_X$covariances, c(2, 3, 1))
     rm(condlaw)
     ## Mean at tips with estimated parameters
-    m_Y_estim <- lapply(temp, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
+    m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
+    # m_Y_estim <- lapply(temp, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
     m_Y_estim <- do.call(rbind, m_Y_estim)
   } else { ## NOT independent
     ## Likelihood and Mahalanobis of last parameters
@@ -639,7 +651,8 @@ estimateEM <- function(phylo,
     ## "Ancestral States Reconstruction"
     conditional_law_X <- temp$conditional_law_X
     ## Mean at tips with estimated parameters
-    m_Y_estim <- extract.simulate(temp$moments$sim, where="tips", what="expectations")
+    # m_Y_estim <- temp$conditional_law_X$expectation[, 1:ntaxa]
+    m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
   }
   rm(temp)
   

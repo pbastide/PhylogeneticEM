@@ -211,3 +211,169 @@ test_that("Upward Downward - no missing", {
   #                               compute_E = compute_E.upward_downward),
   #                times = 100)
 })
+
+test_that("Upward Downward - estimateEM - BM", {
+  set.seed(17920902)
+  ntaxa = 100
+  tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
+                          age = 1, mrca = TRUE)[[1]]
+  tree <- reorder(tree, order = "postorder")
+  p <- 4
+  variance <- matrix(0.8, p, p) + diag(0.2, p, p)
+  independent <- FALSE
+  root.state <- list(random = TRUE,
+                     value.root = NA,
+                     exp.root = rep(1, p),
+                     var.root = variance / 2)
+  shifts = list(edges = c(12, 24, 30),
+                values=matrix(4*c(1, -0.5), nrow = p, ncol = 3),
+                relativeTimes = 0)
+  paramsSimu <- list(variance = variance,
+                     shifts = shifts,
+                     root.state = root.state)
+  attr(paramsSimu, "p_dim") <- p
+  
+  X1 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "BM",
+                 variance = variance,
+                 shifts = shifts)
+  
+  traits <- extract.simulate(X1, where = "tips", what = "state")
+  nMiss <- floor(ntaxa * p * 0.1)
+  miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+  chars <- (miss - 1) %% p + 1
+  tips <- (miss - 1) %/% p + 1
+  for (i in 1:nMiss){
+    traits[chars[i], tips[i]] <- NA
+  }
+  
+  expect_warning(res_old <- estimateEM(phylo = tree, 
+                                       Y_data= traits, 
+                                       process = "BM", 
+                                       method.variance = "simple", 
+                                       method.init = "lasso",
+                                       Nbr_It_Max = 5,
+                                       nbr_of_shifts = 3,
+                                       random.root = FALSE,
+                                       convergence_mode = "relative",
+                                       impute_init_Rphylopars = FALSE,
+                                       K_lag_init = 5),
+                 "The maximum number of iterations")
+  
+  expect_warning(res_new <- estimateEM(phylo = tree, 
+                                       Y_data= traits, 
+                                       process = "BM", 
+                                       method.variance = "upward_downward", 
+                                       method.init = "lasso",
+                                       Nbr_It_Max = 5,
+                                       nbr_of_shifts = 3,
+                                       random.root = FALSE,
+                                       convergence_mode = "relative",
+                                       impute_init_Rphylopars = FALSE,
+                                       K_lag_init = 5),
+                 "The maximum number of iterations")
+  
+  expect_that(res_new, equals(as.vector(res_old)))
+})
+
+# test_that("Upward Downward - estimateEM - OU re-scaled", {
+#   set.seed(17920902)
+#   ntaxa = 100
+#   tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
+#                           age = 1, mrca = TRUE)[[1]]
+#   tree <- reorder(tree, order = "postorder")
+#   p <- 4
+#   variance <- matrix(0.8, p, p) + diag(0.2, p, p)
+#   selection.strength <- 3
+#   independent <- FALSE
+#   root.state <- list(random = TRUE,
+#                      stationary.root = TRUE,
+#                      value.root = NA,
+#                      exp.root = rep(1, p),
+#                      var.root = compute_stationary_variance(variance, selection.strength))
+#   shifts = list(edges = c(12, 24, 30),
+#                 values=matrix(4*c(1, -0.5), nrow = p, ncol = 3),
+#                 relativeTimes = 0)
+#   paramsSimu <- list(variance = variance,
+#                      shifts = shifts,
+#                      root.state = root.state,
+#                      selection.strength = selection.strength,
+#                      optimal.value = root.state$exp.root)
+#   attr(paramsSimu, "p_dim") <- p
+#   
+#   X1 <- simulate(tree,
+#                  p = p,
+#                  root.state = root.state,
+#                  process = "scOU",
+#                  variance = variance,
+#                  shifts = shifts,
+#                  selection.strength = selection.strength,
+#                  optimal.value = root.state$exp.root)
+#   
+#   traits <- extract.simulate(X1, where = "tips", what = "state")
+#   nMiss <- floor(ntaxa * p * 0.1)
+#   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+#   chars <- (miss - 1) %% p + 1
+#   tips <- (miss - 1) %/% p + 1
+#   for (i in 1:nMiss){
+#     traits[chars[i], tips[i]] <- NA
+#   }
+#   
+#   expect_warning(res_old <- estimateEM(phylo = tree, 
+#                                        Y_data = traits, 
+#                                        process = "scOU", 
+#                                        Nbr_It_Max = 5, 
+#                                        method.variance = "simple", 
+#                                        method.init = "lasso",
+#                                        method.init.alpha = "estimation",
+#                                        method.init.alpha.estimation = c("regression", 
+#                                                                         "regression.MM", 
+#                                                                         "median"),
+#                                        nbr_of_shifts = 3,
+#                                        random.root = TRUE,
+#                                        stationary.root = TRUE,
+#                                        alpha_known = TRUE,
+#                                        known.selection.strength = selection.strength,
+#                                        methods.segmentation = c("max_costs_0", 
+#                                                                 "lasso", 
+#                                                                 "same_shifts", 
+#                                                                 "same_shifts_same_values",
+#                                                                 "best_single_move", 
+#                                                                 "lasso_one_move"),
+#                                        sBM_variance = FALSE,
+#                                        method.OUsun = "rescale",
+#                                        impute_init_Rphylopars = FALSE,
+#                                        K_lag_init = 5),
+#                  "The maximum number of iterations")
+#   
+#   expect_warning(res_new <- estimateEM(phylo = tree, 
+#                                        Y_data = traits, 
+#                                        process = "scOU", 
+#                                        Nbr_It_Max = 5, 
+#                                        method.variance = "upward_downward", 
+#                                        method.init = "lasso",
+#                                        method.init.alpha = "estimation",
+#                                        method.init.alpha.estimation = c("regression", 
+#                                                                         "regression.MM", 
+#                                                                         "median"),
+#                                        nbr_of_shifts = 3,
+#                                        random.root = TRUE,
+#                                        stationary.root = TRUE,
+#                                        alpha_known = TRUE,
+#                                        known.selection.strength = selection.strength,
+#                                        methods.segmentation = c("max_costs_0", 
+#                                                                 "lasso", 
+#                                                                 "same_shifts", 
+#                                                                 "same_shifts_same_values",
+#                                                                 "best_single_move", 
+#                                                                 "lasso_one_move"),
+#                                        sBM_variance = FALSE,
+#                                        method.OUsun = "rescale",
+#                                        impute_init_Rphylopars = FALSE,
+#                                        K_lag_init = 5),
+#                  "The maximum number of iterations")
+#   
+#   expect_that(res_new, equals(as.vector(res_old)))
+# })

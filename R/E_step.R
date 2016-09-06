@@ -938,6 +938,8 @@ compute_E.upward_downward <- function(phylo,
                                       process,
                                       params_old, ...){
   Delta <- shifts.list_to_matrix(phylo, params_old$shifts)
+  params_old$variance <- as.matrix(params_old$variance)
+  params_old$root.state$var.root <- as.matrix(params_old$root.state$var.root)
   return(upward_downward(Y_data, phylo$edge, Delta,
                          params_old$variance, phylo$edge.length,
                          params_old$root.state))
