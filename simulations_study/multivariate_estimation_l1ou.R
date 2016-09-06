@@ -67,7 +67,15 @@ estimations_l1ou <- function(X){
                                             trees[[paste0(X$ntaxa)]]),
                 values = res$shift.values,
                 relativesTimes = 0)
-  res$params_estims <- list(shifts = shifts)
+  res$params_estims <- list(shifts = shifts,
+                            variance = diag(res$sigma2),
+                            selection.strength = diag(res$alpha),
+                            optimal.value = res$intercept,
+                            root.state = list(random = TRUE,
+                                              stationary.root = TRUE,
+                                              value.root = NA,
+                                              exp.root = res$intercept,
+                                              var.root = diag(res$sigma2/(2*res$alpha))))
   # total time
   res$total_time <- time_l1ou
   # number of equivalent solutions
