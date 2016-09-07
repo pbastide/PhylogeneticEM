@@ -300,7 +300,10 @@ unsigned int Upward::Size() const {
 
 double Log_Likelihood_Gauss(arma::vec mean, arma::mat var, arma::vec point){
   int p_d = var.n_rows;
-  double res = p_d * std::log(2 * arma::datum::pi) + std::log(arma::det(var));
+  double sign;
+  double res;
+  arma::log_det(res, sign, var);
+  res += p_d * std::log(2 * arma::datum::pi);
   arma::vec diff = point - mean;
   res += as_scalar(diff.t() * arma::inv_sympd(var) * diff);
   // Rcpp::Rcout << "ll " << -res/2 << std::endl;
@@ -375,8 +378,6 @@ Upward_Node & actualize_upward_missing(Upward_Node const &  up_child,
 arma::mat inv_na(arma::mat const & S, arma::uvec const & miss, double ff){
   arma::uvec non_na_pos = find(miss == 0); // position of non missing
   arma::mat S_sub = S(non_na_pos, non_na_pos);
-  // Rcpp::Rcout << "miss " << miss << std::endl;
-  // Rcpp::Rcout << "S_sub " << S_sub << std::endl;
   S_sub = arma::inv_sympd(S_sub);
   arma::mat res(size(S));
   res.fill(ff);
@@ -389,6 +390,15 @@ double det_na(arma::mat const & S, arma::uvec const & miss){
   arma::mat S_sub = S(non_na_pos, non_na_pos);
   double res = arma::det(S_sub);
   return res;
+}
+
+double log_det_na(arma::mat const & S, arma::uvec const & miss){
+  arma::uvec non_na_pos = find(miss == 0); // position of non missing
+  arma::mat S_sub = S(non_na_pos, non_na_pos);
+  double val;
+  double sign;
+  arma::log_det(val, sign, S_sub);
+  return val;
 }
 
 arma::mat crossprod_na(arma::mat const & Q, arma::mat const & cS, arma::uvec const & miss){
@@ -439,8 +449,7 @@ Upward_Node & actualize_upward_simple(Upward_Node const &  up_child,
     // Q_inv * (up_child.Condexp() - mod_edge.R());
   // double constant = - std::log(det_na(mod_edge.Q(), missing_data)) + up_child.Cst();
   double constant = up_child.Cst();
-  // Rcpp::Rcout << "logdet Q " << std::log(det_na(mod_edge.Q(), missing_data)) << std::endl;
-  constant -= std::log(det_na(check_S, missing_data)) / 2;
+  constant -= log_det_na(check_S, missing_data) / 2;
   constant -= arma::as_scalar((up_child.Condexp() - mod_edge.R()).t() * checkSinv_diff)/2;
     
   (*res).allocate_condvar(tQ_checkS_Q);
@@ -504,7 +513,7 @@ Upward_Node & merge_upward(Upward const & up_child){
   arma::mat S_bar = inv_na(S_sum, merge_missing, arma::datum::inf);
   arma::vec m_bar = prod_na(S_bar, S_m_sum, merge_missing, 0);
   double constant = - (nChild - 1) * p_d * std::log(2 * arma::datum::pi) / 2;
-  constant += std::log(det_na(S_bar, merge_missing)) / 2; // + log_det_sum;
+  constant += log_det_na(S_bar, merge_missing) / 2; // + log_det_sum;
   // Rcpp::Rcout << "S_bar : " << S_bar << std::endl;
   // Rcpp::Rcout << "det S_bar : " << det_na(S_bar, merge_missing) << std::endl;
   // constant += - arma::as_scalar(m_S_m_sum -  m_bar.t() * S_sum * m_bar) / 2;
