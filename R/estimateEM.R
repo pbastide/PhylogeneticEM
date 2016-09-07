@@ -609,22 +609,12 @@ estimateEM <- function(phylo,
                          # compute_log_likelihood = compute_log_likelihood,
                          # compute_mahalanobis_distance = compute_mahalanobis_distance,
                          compute_E = compute_E)
-  tmpsim <- simulate(phylo = phylo, 
-                     process = process,
-                     p = attr(params_scOU, "p_dim"),
-                     root.state = params_scOU$root.state, 
-                     shifts = params_scOU$shifts, 
-                     variance = params_scOU$variance, 
-                     optimal.value = params_scOU$optimal.value, 
-                     selection.strength = params_scOU$selection.strength,
-                     simulate_random = FALSE,
-                     U_tree = U_tree)
   ## Format results
   if (independent){ # Independent
     ## Likelihood and Mahalanobis of last parameters
     params_scOU <- merge_params_independent(params_scOU)
     attr(params_scOU, "log_likelihood") <- sum(sapply(temp, function(z) return(z$log_likelihood_old)))
-    attr(params_scOU, "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
+    # attr(params_scOU, "mahalanobis_distance_data_mean") <- sum(sapply(temp, function(z) return(z$maha_data_mean)))
     params_history[[paste(Nbr_It, sep="")]] <- params_scOU
     ## "Ancestral States Reconstruction"
     condlaw <- lapply(temp, function(z) return(z$conditional_law_X))
@@ -640,21 +630,34 @@ estimateEM <- function(phylo,
     conditional_law_X$covariances <- aperm(conditional_law_X$covariances, c(2, 3, 1))
     rm(condlaw)
     ## Mean at tips with estimated parameters
-    m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
+    # m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
     # m_Y_estim <- lapply(temp, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
-    m_Y_estim <- do.call(rbind, m_Y_estim)
+    # m_Y_estim <- do.call(rbind, m_Y_estim)
   } else { ## NOT independent
     ## Likelihood and Mahalanobis of last parameters
     attr(params_scOU, "log_likelihood") <- as.vector(temp$log_likelihood_old)
-    attr(params_scOU, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
+    # attr(params_scOU, "mahalanobis_distance_data_mean") <- as.vector(temp$maha_data_mean)
     params_history[[paste(Nbr_It, sep="")]] <- params_scOU
     ## "Ancestral States Reconstruction"
     conditional_law_X <- temp$conditional_law_X
     ## Mean at tips with estimated parameters
     # m_Y_estim <- temp$conditional_law_X$expectation[, 1:ntaxa]
-    m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
+    # m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
   }
   rm(temp)
+  tmpsim <- simulate(phylo = phylo, 
+                     process = process,
+                     p = attr(params_scOU, "p_dim"),
+                     root.state = params_scOU$root.state, 
+                     shifts = params_scOU$shifts, 
+                     variance = params_scOU$variance, 
+                     optimal.value = params_scOU$optimal.value, 
+                     selection.strength = params_scOU$selection.strength,
+                     simulate_random = FALSE,
+                     U_tree = U_tree)
+  ## Mean at tips with estimated parameters
+  m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
+  rm(tmpsim)
   
   ########## Number of equivalent solutions ###################################
   clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges,
@@ -811,7 +814,7 @@ format_output <- function(results_estim_EM, phylo, time = NA){
     # "gamma_estim" = params$root.state$var.root,
     # "beta_0_estim" = params$root.state$exp.root,
     "log_likelihood" = attr(params, "log_likelihood")[1],
-    "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
+    # "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
     #"least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
     ## Convergence Monitoring Quantities
     "EM_steps" = attr(results_estim_EM, "Nbr_It"),
@@ -827,8 +830,8 @@ format_output <- function(results_estim_EM, phylo, time = NA){
     # "alpha_estim_init" = params_init$selection.strength,
     # "gamma_estim_init" = params_init$root.state$var.root,
     # "beta_0_estim_init" = params_init$root.state$exp.root,
-    "log_likelihood_init" = attr(params_init, "log_likelihood")[1],
-    "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean")
+    "log_likelihood_init" = attr(params_init, "log_likelihood")[1]
+    # "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean")
     #"least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
   )
 #   X$summary <- as.data.frame(c(X$summary, X$alpha_0))
@@ -914,7 +917,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     order = TRUE,
                     method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
                     C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
-                    method.variance = "simple",
+                    method.variance = c("simple", "upward_downward"),
                     method.init = "lasso",
                     method.init.alpha = "estimation",
                     method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
@@ -949,6 +952,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   ntaxa <- length(phylo$tip.label)
   ## Model Selection
   method.selection  <- match.arg(method.selection, several.ok = TRUE)
+  method.variance  <- match.arg(method.variance)
   if (p > 1 && "BGH" %in% method.selection){
     method.selection <- method.selection[-which(method.selection == "BGH")]
     warning("BGH is not implemented for multivariate data.")
@@ -1254,6 +1258,9 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       }
       X$params_estim <- lapply(X$params_estim, fun)
       ## Ancestral state reconstruction
+      compute_E  <- switch(method.variance, 
+                           simple = compute_E.simple,
+                           upward_downward = compute_E.upward_downward)
       fun <- function(params_scOU){
         temp <- wrapper_E_step(phylo = original_phy,
                                times_shared = times_shared_original,
@@ -1267,22 +1274,32 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                miss = miss,
                                Y_data = Y_data,
                                U_tree = U_tree,
-                               compute_mean_variance = compute_mean_variance.simple,
-                               compute_log_likelihood = compute_log_likelihood.simple,
-                               compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
-                               compute_E = compute_E.simple)
+                               # compute_mean_variance = compute_mean_variance.simple,
+                               # compute_log_likelihood = compute_log_likelihood.simple,
+                               # compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
+                               compute_E = compute_E)
         if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
                        attr(params_scOU, "log_likelihood"),
                        tol = .Machine$double.eps ^ 0.3))){
           stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
         }
+        tmpsim <- simulate(phylo = phylo, 
+                           process = process,
+                           p = attr(params_scOU, "p_dim"),
+                           root.state = params_scOU$root.state, 
+                           shifts = params_scOU$shifts, 
+                           variance = params_scOU$variance, 
+                           optimal.value = params_scOU$optimal.value, 
+                           selection.strength = params_scOU$selection.strength,
+                           simulate_random = FALSE,
+                           U_tree = U_tree)
         return(list(Zhat = temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
                     Yhat = temp$conditional_law_X$expectations[ , 1:ntaxa],
                     Zvar = temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
                     Yvar = temp$conditional_law_X$variances[ , , 1:ntaxa],
-                    m_Y_estim = extract.simulate(temp$moments$sim,
-                                                   where="tips",
-                                                   what="expectations")))
+                    m_Y_estim = extract.simulate(tmpsim,
+                                                 where="tips",
+                                                 what="expectations")))
       }
       temp_list <- lapply(X$params_estim, fun)
       ## "Ancestral States Reconstruction"

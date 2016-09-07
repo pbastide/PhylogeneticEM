@@ -23,6 +23,7 @@ source("R/shifts_manipulations.R")
 source("R/plot_functions.R")
 source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
+source("R/model_selection.R")
 sourceCpp("src/upward_downward.cpp")
 
 test_dir("tests")

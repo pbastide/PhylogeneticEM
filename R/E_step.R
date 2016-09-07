@@ -118,12 +118,12 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
   ## Mean
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   m_Z <- extract.simulate(sim, where="nodes", what="expectations")
-  conditional_law_X$optimal.values <- c(extract.simulate(sim,
-                                                         where="tips",
-                                                         what="optimal.values"),
-                                        extract.simulate(sim,
-                                                         where="nodes",
-                                                         what="optimal.values")) # NULL if BM
+  conditional_law_X$optimal.values <- cbind(extract.simulate(sim,
+                                                             where="tips",
+                                                             what="optimal.values"),
+                                            extract.simulate(sim,
+                                                             where="nodes",
+                                                             what="optimal.values")) # NULL if BM
   ## Variance Covariance
   Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ", masque_data)
   Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ", masque_data)
@@ -946,33 +946,36 @@ compute_E.upward_downward <- function(phylo,
                               params_old$variance, phylo$edge.length,
                               params_old$root.state))
   } else if (process == "OU"){
-    Beta <- tcrossprod(Delta, U_tree) + params_old$optimal.value
-    Beta <- Beta[, phylo$edge[, 2]] # re-order by edge
+    Beta1 <- tcrossprod(Delta, U_tree) + params_old$optimal.value
+    Beta <- Beta1[, phylo$edge[, 2], drop = F] # re-order by edge
     if (params_old$root.state$stationary.root){
       Stationary_Var <- as.matrix(params_old$root.state$var.root)
     } else {
       Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
     }
     params_old$selection.strength <- as.matrix(params_old$selection.strength)
-    return(upward_downward_OU(Y_data, phylo$edge,
+    res <- upward_downward_OU(Y_data, phylo$edge,
                               Beta, Stationary_Var,
                               phylo$edge.length, params_old$selection.strength,
-                              params_old$root.state))
+                              params_old$root.state)
+    res$conditional_law_X$optimal.values <- Beta1
+    return(res)
     
   } else if (process == "scOU"){
-    Beta <- tcrossprod(Delta, U_tree) + params_old$optimal.value
-    Beta <- Beta[, phylo$edge[, 2]] # re-order by edge
+    Beta1 <- tcrossprod(Delta, U_tree) + params_old$optimal.value
+    Beta <- Beta1[, phylo$edge[, 2]] # re-order by edge
     if (params_old$root.state$stationary.root){
       Stationary_Var <- as.matrix(params_old$root.state$var.root)
     } else {
       Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
     }
     Alpha <- params_old$selection.strength * diag(rep(1, ncol(Stationary_Var)))
-    return(upward_downward_OU(Y_data, phylo$edge,
+    res <- upward_downward_OU(Y_data, phylo$edge,
                               Beta, Stationary_Var,
                               phylo$edge.length, Alpha,
-                              params_old$root.state))
-    
+                              params_old$root.state)
+    res$conditional_law_X$optimal.values <- Beta1
+    return(res)
   }
 }
 
