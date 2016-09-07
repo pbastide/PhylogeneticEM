@@ -936,13 +936,44 @@ compute_log_likelihood_with_entropy.simple <- function(CLL, H){
 compute_E.upward_downward <- function(phylo,
                                       Y_data,
                                       process,
-                                      params_old, ...){
+                                      params_old,
+                                      U_tree, ...){
   Delta <- shifts.list_to_matrix(phylo, params_old$shifts)
-  params_old$variance <- as.matrix(params_old$variance)
   params_old$root.state$var.root <- as.matrix(params_old$root.state$var.root)
-  return(upward_downward(Y_data, phylo$edge, Delta,
-                         params_old$variance, phylo$edge.length,
-                         params_old$root.state))
+  if (process == "BM"){
+    params_old$variance <- as.matrix(params_old$variance)
+    return(upward_downward_BM(Y_data, phylo$edge, Delta,
+                              params_old$variance, phylo$edge.length,
+                              params_old$root.state))
+  } else if (process == "OU"){
+    Beta <- tcrossprod(Delta, U_tree) + params_old$optimal.value
+    Beta <- Beta[, phylo$edge[, 2]] # re-order by edge
+    if (params_old$root.state$stationary.root){
+      Stationary_Var <- as.matrix(params_old$root.state$var.root)
+    } else {
+      Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
+    }
+    params_old$selection.strength <- as.matrix(params_old$selection.strength)
+    return(upward_downward_OU(Y_data, phylo$edge,
+                              Beta, Stationary_Var,
+                              phylo$edge.length, params_old$selection.strength,
+                              params_old$root.state))
+    
+  } else if (process == "scOU"){
+    Beta <- tcrossprod(Delta, U_tree) + params_old$optimal.value
+    Beta <- Beta[, phylo$edge[, 2]] # re-order by edge
+    if (params_old$root.state$stationary.root){
+      Stationary_Var <- as.matrix(params_old$root.state$var.root)
+    } else {
+      Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
+    }
+    Alpha <- params_old$selection.strength * diag(rep(1, ncol(Stationary_Var)))
+    return(upward_downward_OU(Y_data, phylo$edge,
+                              Beta, Stationary_Var,
+                              phylo$edge.length, Alpha,
+                              params_old$root.state))
+    
+  }
 }
 
 ###############################################################################

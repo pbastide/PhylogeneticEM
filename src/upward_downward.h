@@ -85,12 +85,10 @@ public:
   Model(int siz);
   // For a BM:
   Model(arma::mat const & Delta, arma::mat const & Variance,
-        arma::vec const & edge_length,
-        arma::umat ed);
+        arma::vec const & edge_length);
   // For an OU:
   Model(arma::mat const & Beta, arma::mat const & Stationary_Var,
-        arma::vec const & edge_length, arma::mat const & Alpha,
-        arma::mat data, arma::umat ed);
+        arma::vec const & edge_length, arma::mat const & Alpha);
   
   // Destructor
   ~Model();
