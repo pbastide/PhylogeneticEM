@@ -278,6 +278,13 @@ Upward::Upward(arma::mat const & data, int nE){
     // Fill constants with right coef
     int nMiss = arma::sum(miss_data);
     up[i].allocate_cst(nMiss * std::log(2 * arma::datum::pi) / 2);
+    // if (i == 161){
+    //   Rcpp::Rcout << " tip " << i + 1 << std::endl;
+    //   Rcpp::Rcout << " miss_data " << miss_data << std::endl;
+    //   Rcpp::Rcout << " data_col " << data_col << std::endl;
+    //   Rcpp::Rcout << " var " << var << std::endl;
+    //   Rcpp::Rcout << " cst " << nMiss * std::log(2 * arma::datum::pi) / 2 << std::endl;
+    // }
   }
   // Rest with NAs
   for (int  i = ntaxa; i < size; i++){
@@ -438,8 +445,9 @@ Upward_Node & actualize_upward_simple(Upward_Node const &  up_child,
   Upward_Node *res = new Upward_Node(p_d);
   arma::uvec missing_data = up_child.Missing_Data();
   arma::mat check_S = up_child.Condvar() + mod_edge.Sigma();
+  // Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl;
+  // Rcpp::Rcout << "mod_edge.Sigma() " << mod_edge.Sigma() << std::endl;
   arma::mat check_S_inv = inv_na(check_S, missing_data, 0);
-  // Rcpp::Rcout << "check S " << check_S << std::endl;
   // arma::mat Q_inv = arma::inv_sympd(mod_edge.Q());
   arma::mat tQ_checkS = mod_edge.Q().t() * check_S_inv;
   arma::mat tQ_checkS_Q = tQ_checkS * mod_edge.Q();
@@ -473,7 +481,7 @@ Upward & actualize_upward_children(arma::uvec const & child_nodes,
     //                                                    mod.Mod(child_edges(i)),
     //                                                    p_d));
     // } else {
-      // Rcpp::Rcout << "no missing; child: " << child_nodes(i)+1 << " edge: " << child_edges(i)+1 << std::endl;
+      // Rcpp::Rcout << "child: " << child_nodes(i)+1 << " edge: " << child_edges(i)+1 << std::endl;
       (*res).allocate_node(i, actualize_upward_simple(upw.Up(child_nodes(i)),
                                                       mod.Mod(child_edges(i)),
                                                       p_d));
@@ -536,6 +544,7 @@ void Upward::recursion(Model const & mod, arma::umat const & ed,
   int nEdges = ed.n_rows;
   for (arma::uword i = 0; i < nEdges; i++){ // Loop on the edges (rows of ed)
     int father = ed(i, 0) - 1;
+    // Rcpp::Rcout << "father is " << father + 1 << std::endl;
     if (! arma::is_finite(up[father].Cst())){// This node has not already been visited.
       // Find children of the node
       arma::uvec child_nodes = findChildren(father, ed) - 1;
@@ -546,6 +555,7 @@ void Upward::recursion(Model const & mod, arma::umat const & ed,
       Upward up_child = actualize_upward_children(child_nodes, child_edges,
                                                   *this, mod,
                                                   p_d, ntaxa);
+      // Rcpp::Rcout << "J'ai actualisé les enfants !" << std::endl;
       // if (father == 189){
       //   Rcpp::Rcout << "children : " << child_nodes + 1 << std::endl;
       //   Rcpp::Rcout << "log(cst) 1 : " << up_child.Up(0).Cst() << std::endl;
@@ -916,14 +926,19 @@ Rcpp::List upward_downward_mod(arma::mat const & data, arma::umat const & ed,
   // Construct objects and initialize
   //Moments mom(data, ed);
   Upward upw(data, nE);
+  // Rcpp::Rcout << "J'ai construit l'Upward !" << std::endl;
   // Upward Recursion
   upw.recursion(mod, ed, p_d, ntaxa);
+  // Rcpp::Rcout << "J'ai fait l'Upward !" << std::endl;
   // Likelihood Computation
   Root_State root_state = Root_State(root_state_list);
   double logLik = upw.Log_Likelihood(root_state, ntaxa);
+  // Rcpp::Rcout << "J'ai calculé la vraisemblance !" << std::endl;
   // Downward Init
   Moments mom(upw, root_state, ntaxa);
+  // Rcpp::Rcout << "J'ai construits les moments !" << std::endl;
   mom.downward(upw, mod, ed, ntaxa);
+  // Rcpp::Rcout << "J'ai fait le downward !" << std::endl;
   Rcpp::List condLaw = mom.exportMoments2R();
   
   // Return to R in list format

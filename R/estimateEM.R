@@ -912,6 +912,7 @@ compute_K_max <- function(ntaxa, kappa = 0.9){
 }
 
 PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                    check_postorder = TRUE,
                     independent = FALSE,
                     K_max, use_previous = TRUE,
                     order = TRUE,
@@ -946,13 +947,18 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   library(robustbase) # For robust fitting of alpha
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
+  method.variance  <- match.arg(method.variance)
+  if (method.variance == "simple") check_postorder <- FALSE
+  if (check_postorder){
+    phylo_original_order <- phylo
+    phylo <- reorder(phylo, "postorder") 
+  }
   ## Check that the vector of data is in the correct order and dimensions ################
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Model Selection
   method.selection  <- match.arg(method.selection, several.ok = TRUE)
-  method.variance  <- match.arg(method.variance)
   if (p > 1 && "BGH" %in% method.selection){
     method.selection <- method.selection[-which(method.selection == "BGH")]
     warning("BGH is not implemented for multivariate data.")
@@ -1031,6 +1037,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              impute_init_Rphylopars = impute_init_Rphylopars, 
                              K_lag_init = K_lag_init,
                              ...)
+  }
+  if (check_postorder){
+    X <- return_to_original_order(X, phylo_original_order, phylo)
   }
   ## Model Selection
   model_selection <- function(one.method.selection){
@@ -2173,4 +2182,30 @@ choose_process_EM <- function(process, p, random.root, stationary.root,
               transform_scOU = transform_scOU,
               rescale_tree = rescale_tree,
               sBM_variance = sBM_variance))
+}
+
+return_to_original_order <- function(X, phy_o, phy_r){
+  reorder_shifts <- function(params){
+    if (length(params$shifts$edges) > 0){
+      params$shifts$edges <- correspondanceEdges(edges = params$shifts$edges,
+                                                 from = phy_r, to = phy_o)
+    }
+    return(params)
+  }
+  reorder_edges <- function(edge_qual){
+    if (!is.null(names(edge_qual))){
+      names(edge_qual) <- correspondanceEdges(edges = as.numeric(names(edge_qual)),
+                                              from = phy_r, to = phy_o)
+    }
+    return(edge_qual)
+  }
+  reorder_all_shifts <- function(AA){
+    AA$params_estim <- lapply(AA$params_estim, reorder_shifts)
+    AA$params_raw <- lapply(AA$params_raw, reorder_shifts)
+    AA$params_init_estim <- lapply(AA$params_init_estim, reorder_shifts)
+    AA$edge.quality <- lapply(AA$edge.quality, reorder_edges)
+    return(AA)
+  }
+  X[grep("alpha_", names(X))] <- lapply(X[grep("alpha_", names(X))], reorder_all_shifts)
+  return(X)
 }

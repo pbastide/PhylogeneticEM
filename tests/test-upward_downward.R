@@ -760,6 +760,112 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
   expect_that(res_new, equals(res_old))
 })
 
+test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
+  ntaxa = 100
+  tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
+                          age = 1, mrca = TRUE)[[1]]
+  # tree <- reorder(tree, order = "postorder")
+  p <- 4
+  variance <- diag(0.2, p, p) +  matrix(0.8, p, p)
+  selection.strength <- 3
+  independent <- FALSE
+  root.state <- list(random = TRUE,
+                     stationary.root = TRUE,
+                     value.root = NA,
+                     exp.root = rep(1, p),
+                     var.root = compute_stationary_variance(variance, selection.strength))
+  shifts = list(edges = c(25, 119, 164),
+                values = cbind(c(5, 5, -5, -5),
+                               c(-5, -5, 5, 5),
+                               c(3, 3, 3, 3)),
+                relativeTimes = 0)
+  paramsSimu <- list(variance = variance,
+                     shifts = shifts,
+                     root.state = root.state,
+                     selection.strength = selection.strength,
+                     optimal.value = rep(1, p))
+  attr(paramsSimu, "p_dim") <- p
+  
+  X1 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "scOU",
+                 variance = variance,
+                 shifts = shifts,
+                 selection.strength = selection.strength,
+                 optimal.value = paramsSimu$optimal.value)
+  
+  traits <- extract.simulate(X1, where = "tips", what = "state")
+  nMiss <- floor(ntaxa * p * 0.1)
+  miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+  chars <- (miss - 1) %% p + 1
+  tips <- (miss - 1) %/% p + 1
+  for (i in 1:nMiss){
+    traits[chars[i], tips[i]] <- NA
+  }
+  
+  expect_warning(res_old <- PhyloEM(phylo = tree,
+                                    Y_data = traits,
+                                    process = "scOU",
+                                    K_max = 10,
+                                    random.root = TRUE,
+                                    stationary.root = TRUE,
+                                    alpha = c(1.33, selection.strength),
+                                    save_step = FALSE,
+                                    Nbr_It_Max = 5,
+                                    method.variance = "simple",
+                                    method.init = "lasso",
+                                    use_previous = FALSE,
+                                    method.selection = "BirgeMassart1",
+                                    impute_init_Rphylopars = FALSE,
+                                    progress.bar = FALSE,
+                                    K_lag_init = 5),
+                 "The maximum number of iterations")
+  
+  expect_warning(res_new <- PhyloEM(phylo = tree,
+                                    Y_data = traits,
+                                    process = "scOU",
+                                    K_max = 10,
+                                    random.root = TRUE,
+                                    stationary.root = TRUE,
+                                    alpha = c(1.33, selection.strength),
+                                    save_step = FALSE,
+                                    Nbr_It_Max = 5,
+                                    method.variance = "upward_downward",
+                                    method.init = "lasso",
+                                    use_previous = FALSE,
+                                    method.selection = "BirgeMassart1",
+                                    impute_init_Rphylopars = FALSE,
+                                    progress.bar = FALSE,
+                                    K_lag_init = 5),
+                 "The maximum number of iterations")
+  
+  ## Time is different
+  res_new$alpha_1.33$results_summary$time <- 0
+  res_old$alpha_1.33$results_summary$time <- 0
+  res_new$alpha_3$results_summary$time <- 0
+  res_old$alpha_3$results_summary$time <- 0
+  res_new$alpha_max$results_summary$time <- 0
+  res_old$alpha_max$results_summary$time <- 0
+  res_new$alpha_max$DDSE_BM1$results_summary$time <- 0
+  res_old$alpha_max$DDSE_BM1$results_summary$time <- 0
+  res_new$alpha_max$Djump_BM1$results_summary$time <- 0
+  res_old$alpha_max$Djump_BM1$results_summary$time <- 0
+  ## Init is not in the same order
+  res_new$alpha_1.33$params_init_estim <- NULL
+  res_old$alpha_1.33$params_init_estim <- NULL
+  res_new$alpha_3$params_init_estim <- NULL
+  res_old$alpha_3$params_init_estim <- NULL
+  res_new$alpha_max$params_init_estim <- NULL
+  res_old$alpha_max$params_init_estim <- NULL
+  res_new$alpha_max$DDSE_BM1$params_init_estim <- NULL
+  res_old$alpha_max$DDSE_BM1$params_init_estim <- NULL
+  res_new$alpha_max$Djump_BM1$params_init_estim <- NULL
+  res_old$alpha_max$Djump_BM1$params_init_estim <- NULL
+  
+  expect_that(res_new, equals(res_old))
+})
+
 test_that("Upward Downward - PhyloEM - OU - independent", {
   ntaxa = 100
   tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
