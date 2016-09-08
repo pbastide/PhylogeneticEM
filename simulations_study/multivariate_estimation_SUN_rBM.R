@@ -14,7 +14,7 @@ library(RcppArmadillo)
 reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe", "Rcpp", "RcppArmadillo")
 
 ## Set number of parallel cores
-Ncores <- 3
+Ncores <- 5
 
 ## Define date-stamp for file names
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
@@ -197,7 +197,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_unfav <- system.time(
-  simestimations_unfav <- foreach(i = simlist[!favorables][1:3], .packages = reqpckg) %dopar%
+  simestimations_unfav <- foreach(i = simlist[!favorables], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }

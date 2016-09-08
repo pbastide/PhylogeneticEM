@@ -208,6 +208,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      underscore = FALSE,
                                      label.offset = 0,
                                      ancestral_as_shift = TRUE,
+                                     gray_scale = FALSE,
                                      ...){
   ntaxa <- length(phylo$tip.label)
   #   if (normalize){
@@ -233,13 +234,23 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                                   params$shifts$edges)
     
     color_characters <- as.factor(nodes_regimes[1:ntaxa])
-    levels(color_characters) <- c("black", 
-                                  rainbow(length(levels(color_characters)) - 1,
-                                          start = 0, v = 0.5))
+    if (!gray_scale){
+      levels(color_characters) <- c("black", 
+                                    rainbow(length(levels(color_characters)) - 1,
+                                            start = 0, v = 0.5))
+    } else {
+      levels(color_characters) <- gray.colors(length(levels(color_characters)),
+                                              start = 0, end = 0.8)
+    }
     
     color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
-    levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
-                                              start = 0, v = 0.5))
+    if (!gray_scale){
+      levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
+                                                start = 0, v = 0.5))
+    } else {
+      levels(color_edges) <- gray.colors(length(levels(color_edges)),
+                                         start = 0, end = 0.8)
+    }
   }
   ## Plot ancestral states ?
   if (plot_ancestral_states){
@@ -385,7 +396,11 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                       beg = TRUE)
     } else { # Color code for shifts values
       values <- c(root.val, params$shifts$values)
-      col_shifts <- color_palette(values)
+      if (!gray_scale){
+        col_shifts <- color_palette(values)
+      } else {
+        col_shifts <- gray(c(0.7, 0.3))[(values >= 0) + 1]
+      }
       if (!is.null(root.val) && ancestral_as_shift){
         nodelabels(text = "", 
                    node = ntaxa + 1,
