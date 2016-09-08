@@ -56,7 +56,7 @@ load(paste0("../Results/Likelihood_Plot/", data_type, "_estimation_K_in_", paste
 # distances_phylo <- compute_dist_phy(tree)
 # T_tree <- incidence.matrix(tree)
 # 
-# least_squares.stationnary_root <- function(tree, times_shared, distances_phylo, Y_data, alpha, shifts, beta_0){
+# least_squares.stationary_root <- function(tree, times_shared, distances_phylo, Y_data, alpha, shifts, beta_0){
 #   ## Computation of m_Y
 #   ac_tree <- incidence_matrix_actualization_factors(tree = tree, 
 #                                                     selection.strength = alpha,
@@ -72,7 +72,7 @@ load(paste0("../Results/Likelihood_Plot/", data_type, "_estimation_K_in_", paste
 # 
 # df$least_squares <- vector(length = length(Ks))
 # for (K in Ks){
-#   df$least_squares[K] <- least_squares.stationnary_root(tree, times_shared, distances_phylo, data, df$alpha_estim[K], dd[,"shifts_estim"][[K]], df$beta_0_estim[K])
+#   df$least_squares[K] <- least_squares.stationary_root(tree, times_shared, distances_phylo, data, df$alpha_estim[K], dd[,"shifts_estim"][[K]], df$beta_0_estim[K])
 # }
 
 #################################################################################

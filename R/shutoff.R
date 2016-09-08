@@ -40,71 +40,80 @@
 # REVISIONS:
 # 22/05/14 - Initial release
 ##
-shutoff.EM.BM <- function(params_old, params, tol, ...) {
+shutoff.EM.BM <- function(params_old, params, tol, has_converged, ...) {
   if (params_old$root.state$random) {
-    return(shutoff.EM.BM.randroot(params_old,params,tol))
+    return(shutoff.EM.BM.randroot(params_old,params, tol, has_converged))
   } else {
-    return(shutoff.EM.BM.fixedroot(params_old,params,tol))
+    return(shutoff.EM.BM.fixedroot(params_old,params, tol, has_converged))
   }
 }
 
-shutoff.EM.BM.randroot <- function(params_old, params, tol, ...){
-  if (abs(params_old$variance-params$variance)<tol$variance &&
-        abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
-        abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root) {
+has_converged_absolute <- function(old, new, tol){
+  return(all(abs(old - new) < tol))
+}
+
+has_converged_relative <- function(old, new, tol){
+  return(all(c(abs((old[old != 0] - new[old != 0]) / old[old != 0]) < tol,
+               abs(old[old == 0] - new[old == 0]) < tol)))
+}
+
+shutoff.EM.BM.randroot <- function(params_old, params, tol, has_converged, ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root)) {
     return(TRUE)
   } else {
     return(FALSE)
   }
 }
 
-shutoff.EM.BM.fixedroot <- function(params_old, params, tol, ...){
-  if (abs(params_old$variance-params$variance)<tol$variance &&
-        abs(params_old$root.state$value.root-params$root.state$value.root)<tol$value.root) {
+shutoff.EM.BM.fixedroot <- function(params_old, params, tol, has_converged, ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$value.root, params$root.state$value.root, tol$value.root)) {
     return(TRUE)
   } else {
     return(FALSE)
   }
 }
 
-shutoff.EM.OU <- function(stationnary.root, shifts_at_nodes, alpha_known, tol_half_life, ...){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+shutoff.EM.OU <- function(stationary.root, shifts_at_nodes, alpha_known, tol_half_life, ...){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(shutoff.EM.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes && tol_half_life) {
-    return(shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.half_life)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha)
+  } else if (stationary.root && shifts_at_nodes && tol_half_life) {
+    return(shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.alpha)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
-shutoff.EM.OU.specialCase <- function(params_old, params, tol, ...){
-  if (abs(params_old$variance-params$variance)<tol$variance &&
-        abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
-        abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root) {
+shutoff.EM.OU.specialCase <- function(params_old, params, tol, has_converged, ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root)) {
     return(TRUE)
   } else {
     return(FALSE)
   }
 }
 
-shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.alpha <- function(params_old, params, tol, ...){
-  if (abs(params_old$variance-params$variance)<tol$variance &&
-        abs(params_old$root.state$exp.root-params$root.state$exp.root)<tol$exp.root &&
-        abs(params_old$root.state$var.root-params$root.state$var.root)<tol$var.root &&
-        abs(params_old$selection.strength-params$selection.strength)<tol$selection.strength) {
+shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.alpha <- function(params_old, params, tol, has_converged,  ...){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root) &&
+      has_converged(params_old$selection.strength, params$selection.strength, tol$selection.strength)) {
     return(TRUE)
   } else {
     return(FALSE)
   }
 }
 
-shutoff.EM.OU.stationnary.root_AND_shifts_at_nodes.half_life <- function(params_old, params, tol, h_tree){
-  if (abs(params_old$variance - params$variance) < tol$variance &&
-        abs(params_old$root.state$exp.root - params$root.state$exp.root) < tol$exp.root &&
-        abs(params_old$root.state$var.root - params$root.state$var.root) < tol$var.root &&
-        abs(log(2) / (h_tree * params_old$selection.strength) - log(2) / (h_tree * params$selection.strength)) < tol$normalized_half_life) {
+shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_old, params, tol, has_converged, h_tree){
+  if (has_converged(params_old$variance, params$variance, tol$variance) &&
+      has_converged(params_old$root.state$exp.root, params$root.state$exp.root, tol$exp.root) &&
+      has_converged(params_old$root.state$var.root, params$root.state$var.root, tol$var.root) &&
+      all(abs(log(2) / (h_tree * diag(params_old$selection.strength)) - log(2) / (h_tree * diag(params$selection.strength))) < tol$normalized_half_life)) {
     return(TRUE)
   } else {
     return(FALSE)
@@ -158,13 +167,13 @@ is.finite.params.BM.fixedroot <- function(params) {
   }
 }
 
-is.finite.params.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+is.finite.params.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(is.finite.params.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(is.finite.params.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(is.finite.params.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -178,7 +187,7 @@ is.finite.params.OU.specialCase <- function(params) {
   }
 }
 
-is.finite.params.OU.stationnary.root_AND_shifts_at_nodes <- function(params) {
+is.finite.params.OU.stationary.root_AND_shifts_at_nodes <- function(params) {
   if (is.finite(params$variance) &&
         is.finite(params$root.state$exp.root) &&
         is.finite(params$root.state$var.root) &&
@@ -211,7 +220,7 @@ is.finite.params.OU.stationnary.root_AND_shifts_at_nodes <- function(params) {
 #'16/07/14 - Initial release
 ##
 is.in.ranges <- function(p, min, max){
-  if (p < min || p > max){
+  if (any(abs(p) < min) || any(abs(p) > max)){
     return(FALSE)
   } else {
     return(TRUE)
@@ -245,13 +254,13 @@ is.in.ranges.params.BM.fixedroot <- function(params, min, max) {
   }
 }
 
-is.in.ranges.params.OU <- function(stationnary.root, shifts_at_nodes, alpha_known){
-  if (stationnary.root && shifts_at_nodes && alpha_known) {
+is.in.ranges.params.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+  if (stationary.root && shifts_at_nodes && alpha_known) {
     return(is.in.ranges.params.OU.specialCase)
-  } else if (stationnary.root && shifts_at_nodes) {
-    return(is.in.ranges.params.OU.stationnary.root_AND_shifts_at_nodes)
+  } else if (stationary.root && shifts_at_nodes) {
+    return(is.in.ranges.params.OU.stationary.root_AND_shifts_at_nodes)
   } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationnary root and shifts at nodes !")
+    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
   }
 }
 
@@ -265,7 +274,7 @@ is.in.ranges.params.OU.specialCase <- function(params, min, max) {
   }
 }
 
-is.in.ranges.params.OU.stationnary.root_AND_shifts_at_nodes <- function(params, min, max) {
+is.in.ranges.params.OU.stationary.root_AND_shifts_at_nodes <- function(params, min, max) {
   if (is.in.ranges(params$variance, min$variance, max$variance) &&
         is.in.ranges(params$root.state$exp.root, min$exp.root, max$exp.root) &&
         is.in.ranges(params$root.state$var.root, min$var.root, max$var.root) &&

@@ -181,6 +181,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 }
 
 plot.data.process.actual <- function(Y.state, phylo, params,
+                                     process = "BM",
                                      #norm = max(abs(Y.state)),
                                      imposed.scale = Y.state,
                                      adj.root = 1, adj.nodes = 0,
@@ -188,21 +189,44 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      bg_beta_0 = "chocolate4", quant.root = 0.25,
                                      color_characters = "black",
                                      color_edges = "black",
+                                     edge.width = 1,
                                      automatic_colors = FALSE,
                                      regime_boxes = FALSE,
                                      alpha.border = 70,
                                      value_in_box = TRUE,
+                                     shifts_cex = 1,
                                      margin_plot = c(0,0,0,0),
                                      color_shifts_regimes = FALSE,
-                                     shifts_regimes = NULL, ...){
+                                     shifts_regimes = NULL,
+                                     plot_ancestral_states = FALSE,
+                                     ancestral_states = NULL,
+                                     imposed.scale.nodes = ancestral_states,
+                                     ancestral_cex = 2,
+                                     ancestral_pch = 19,
+                                     text_cex = 1,
+                                     show.tip.label = FALSE,
+                                     underscore = FALSE,
+                                     label.offset = 0,
+                                     ancestral_as_shift = TRUE,
+                                     ...){
   ntaxa <- length(phylo$tip.label)
-#   if (normalize){
-#     norm <- max(abs(Y.state))
-#   } else {
-#     norm <- 1
-#   }
+  #   if (normalize){
+  #     norm <- max(abs(Y.state))
+  #   } else {
+  #     norm <- 1
+  #   }
   Y.state <- Y.state # / norm
   unit <- 1 # / norm
+  ## Root state
+  if (process == "OU" || is.null(params$root.state)){
+    root.val <- params$optimal.value
+  } else {
+    if (params$root.state$random){
+      root.val <- params$root.state$exp.root
+    } else {
+      root.val <- params$root.state$value.root
+    }
+  }
   ## Automatic colors
   if (automatic_colors){
     nodes_regimes <- allocate_regimes_from_shifts(phylo,
@@ -215,40 +239,76 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     
     color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
     levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
-                                                start = 0, v = 0.5))
+                                              start = 0, v = 0.5))
+  }
+  ## Plot ancestral states ?
+  if (plot_ancestral_states){
+    library(phytools)
+    library(graphics)
+    if (is.null(ancestral_states)){
+      warning("Plot option clash: the ancestral states could not be plotted (please provide values).")
+    } else {
+      imp.scale.nodes  <- range(c(imposed.scale, imposed.scale.nodes), na.rm = TRUE)
+      map2color <- function(x, pal, limits = NULL) {
+        if (is.null(limits)) {
+          limits = range(x)
+        }
+        pal[findInterval(x,
+                         seq(limits[1], limits[2], length.out = 1000 + 1),
+                         all.inside = TRUE)]
+      }
+      pal <- rev(palette(rainbow(1001, start = 0, end = 0.7)))
+      pal <- rev(palette(rainbow(1001, start = 0, end = 0.7)))
+      col_ancestral <- map2color(ancestral_states, pal = pal, limits = imp.scale.nodes)
+      # If plotting ancestral, colors of the tips values to match colors of the palette
+      if (!is.null(Y.state)){
+        color_characters_regimes <- color_characters
+        color_characters <- map2color(Y.state, pal, limits = imp.scale.nodes)
+      }
+    }
   }
   ## Plot
-  par(mar = margin_plot, omi = margin_plot)
+  if (!is.null(margin_plot)) par(mar = margin_plot, omi = margin_plot)
   # Take care of the root
   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   # Plot tree
   if (is.null(Y.state)){
-    plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
-         edge.color = as.vector(color_edges), ...)
+    plot(phylo, show.tip.label = show.tip.label, root.edge = TRUE, 
+         edge.color = as.vector(color_edges),
+         edge.width = edge.width, ...)
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
   } else {
-    imp.scale  <- c(min(0, min(imposed.scale)),
-                    max(imposed.scale))
+    imp.scale  <- c(min(0, min(imposed.scale, na.rm = TRUE)),
+                    max(imposed.scale, na.rm = TRUE))
     h_p <- max(node.depth.edgelength(phylo))
-    x.lim.max <- h_p + h_p/5
+    if (show.tip.label){
+      size_labels <- h_p / 4 
+    } else {
+      size_labels <- 0
+    }
+    x.lim.max <- h_p + h_p / 5 + size_labels
     y.lim.min <- -ntaxa/10
     y.lim.max <- ntaxa + ntaxa/10
     plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
          x.lim = c(0, x.lim.max), 
          y.lim = c(y.lim.min, y.lim.max),
-         edge.color = as.vector(color_edges), ...)
+         edge.color = as.vector(color_edges),
+         edge.width = edge.width, ...)
+    if (show.tip.label){
+      size_labels <- max(strwidth(phylo$tip.label, cex = text_cex))
+    }
     # Plot data at tips
     # length available for character plotting
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
     pos_last_tip <- max(lastPP$xx)
-    available_x <- x.lim.max - pos_last_tip
+    available_x <- x.lim.max - pos_last_tip - size_labels - label.offset
     offset <- available_x/8
     ell <- available_x - offset # lenght for the plot of the character
     mult <- ell / (imp.scale[2] - imp.scale[1])
     Y.plot <- mult * Y.state
     unit <- mult * unit
-    minY <- min(Y.plot)
-    maxY <- max(Y.plot)
+    minY <- min(Y.plot, na.rm = TRUE)
+    maxY <- max(Y.plot, na.rm = TRUE)
     eccart_g <- -min(minY, 0) + offset
     # 0 bar
     segments(pos_last_tip + eccart_g, y.lim.min,
@@ -259,7 +319,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     # characters
     segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa],
              pos_last_tip + eccart_g + Y.plot, lastPP$yy[1:ntaxa],
-             col = as.vector(color_characters))
+             col = as.vector(color_characters),
+             lwd = edge.width)
     # unit length
     segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
              pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
@@ -267,14 +328,35 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     text(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
          "Unit", cex = lastPP$cex,
          pos = 2)
+    ## Tip Labels
+    if (show.tip.label){
+      if (is.expression(phylo$tip.label)) underscore <- TRUE
+      if (!underscore) phylo$tip.label <- gsub("_", " ", phylo$tip.label)
+      x.lim.max.data <- max(pos_last_tip + eccart_g + Y.plot) + label.offset
+      if (!exists("color_characters_regimes")) color_characters_regimes <- color_edges
+      text(x.lim.max.data, lastPP$yy[1:ntaxa], phylo$tip.label, 
+           cex = text_cex, pos = 4,
+           col = as.vector(color_characters_regimes))
+    }
   }
-  # Plot beta_0
+  ## Ancestral states
+  if (plot_ancestral_states){
+    nodelabels(pch = ancestral_pch, cex = ancestral_cex, col = col_ancestral)
+    leg <- 0.5 * node.depth.edgelength(phylo)[1]
+    add.color.bar(leg, pal, title = "Trait Value",
+                  lims = imp.scale.nodes,
+                  digits = 2, prompt = FALSE,
+                  lwd = 4, outline = TRUE,
+                  x = 0,
+                  y = 0.8 * par()$usr[3])
+  }
+  ## Plot beta_0
   if (value_in_box){ # Write value of shift in the box
-    if (!is.null(params$optimal.value)){
-      nodelabels(text = round(params$optimal.value, 1), 
+    if (!is.null(root.val) && ancestral_as_shift){
+      nodelabels(text = round(root.val, 1), 
                  node = ntaxa + 1,
                  bg = bg_beta_0,
-                 cex = 7/10*lastPP$cex,
+                 cex = shifts_cex,
                  adj = adj.root)
     }
     # Plot shifts
@@ -282,13 +364,14 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       edgelabels_home(text = round(params$shifts$values, 1), 
                       edge = params$shifts$edges, 
                       bg = bg_shifts,
-                      cex = 7/10*lastPP$cex,
+                      cex = shifts_cex,
                       beg = TRUE,
                       adj = adj.nodes)
     }
+  } else {
     if (color_shifts_regimes){ # Shift has one color for each regime
       nodes_regimes  <-  compute_betas(tree, 
-                                       params$optimal.value,
+                                       root.val,
                                        params$shifts)
       color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
       levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
@@ -297,47 +380,29 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       edgelabels_home(text = rep("", length(col_shifts)),
                       edge = params$shifts$edges, 
                       frame = "circle",
-                      cex = 0.5*lastPP$cex,
+                      cex = shifts_cex,
                       bg = col_shifts,
                       beg = TRUE)
-    }
-  } else { # Color code for shifts values
-    values <- c(params$optimal.value, params$shifts$values)
-#     map2color <- function(x, pal, limits = NULL) {
-#       if (is.null(limits)) limits = range(x)
-#       pal(100)[findInterval(x,
-#                             seq(limits[1], limits[2], length.out = 100 + 1),
-#                             all.inside = TRUE)]
-#     }
-#     col_shifts <- map2color(values, shifts.pal, limits = NULL)
-    indPos <- which(values > 0)
-    indNeg <- which(values < 0)
-    indNull <- which(values == 0)
-    nbrColPos <- sum(indPos)
-    nbrColNeg <- sum(indNeg)
-    nbrColNull <- sum(indNull)
-    palettePos <- colorRampPalette(c("orangered","red"))(nbrColPos)
-    paletteNeg <- colorRampPalette(c("blue","lightblue"))(nbrColNeg)
-    col_shifts <- rep(NA, length(values))
-    col_shifts[indPos] <- palettePos[cut(values[indPos], nbrColPos)]
-    col_shifts[indNeg] <- paletteNeg[cut(values[indNeg], nbrColNeg)]
-    col_shifts[indNull] <- "white"
-    if (!is.null(params$optimal.value)){
-      nodelabels(text = "", 
-                 node = ntaxa + 1,
-                 frame = "circle",
-                 cex = 0.5*lastPP$cex,
-                 bg = col_shifts[1])
-    }
-    col_shifts <- col_shifts[-1]
-    # Plot shifts
-    if ( !is.null(params$shifts$edges) ) {
-      edgelabels_home(text = rep("", length(col_shifts)),
-                 edge = params$shifts$edges, 
-                 frame = "circle",
-                 cex = 0.5*lastPP$cex,
-                 bg = col_shifts,
-                 beg = TRUE)
+    } else { # Color code for shifts values
+      values <- c(root.val, params$shifts$values)
+      col_shifts <- color_palette(values)
+      if (!is.null(root.val) && ancestral_as_shift){
+        nodelabels(text = "", 
+                   node = ntaxa + 1,
+                   frame = "circle",
+                   cex = shifts_cex,
+                   bg = col_shifts[1])
+      }
+      col_shifts <- col_shifts[-1]
+      # Plot shifts
+      if ( !is.null(params$shifts$edges) ) {
+        edgelabels_home(text = rep("", length(col_shifts)),
+                        edge = params$shifts$edges, 
+                        frame = "circle",
+                        cex = shifts_cex,
+                        bg = col_shifts,
+                        beg = TRUE)
+      }
     }
   }
   ## Boxes aroud regimes
@@ -500,7 +565,7 @@ write.table.history <- function(history, params_algo_EM, PATH, ...) {
   write.csv2(history, name, ...)
 }
 
-plot.history.OU.stationnary <- function(params_history, tree, params_ref, Y_data_ref, PATH, name, ref = "true"){
+plot.history.OU.stationary <- function(params_history, tree, params_ref, Y_data_ref, PATH, name, ref = "true"){
   if (missing(params_ref)){
     ref <- NULL
     history <- list_to_table.history(params_history)
@@ -516,11 +581,11 @@ plot.history.OU.stationnary <- function(params_history, tree, params_ref, Y_data
   ## Title of the page
   #title <- paste("Initialization : ", params_algo_EM$method.init, "\n", "Alpha Initialization : ", params_algo_EM$method.init.alpha, sep="")
   ## Plot
-  plot.history.OU.stationnary.actual(history, ref)
+  plot.history.OU.stationary.actual(history, ref)
   dev.off()
 }
 
-plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
+plot.history.OU.stationary.actual <- function (history, ref = "true", title = "Parameters estimations and log-likelihood of the model at each step of the EM algorithm.") {
   ## Discriminate
   if (!is.null(ref)){
     params_simu <- history[, ref]
@@ -567,3 +632,41 @@ plot.history.OU.stationnary.actual <- function (history, ref = "true", title = "
 
 vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
 dtoc <- function(x) gsub(".", ",", x, fixed=TRUE)
+
+color_palette <- function (values) {
+  indPos <- values > 0
+  indNeg <- values < 0
+  indNull <- values == 0
+  nbrColPos <- sum(indPos)
+  nbrColNeg <- sum(indNeg)
+  nbrColNull <- sum(indNull)
+  palettePos <- colorRampPalette(c("orangered", "red"))(nbrColPos)
+  paletteNeg <- colorRampPalette(c("blue", "lightblue"))(nbrColNeg)
+  col_shifts <- rep(NA, length(values))
+  if (nbrColPos <= 1){
+    col_shifts[indPos] <- palettePos
+  } else {
+    col_shifts[indPos] <- palettePos[cut(values[indPos], nbrColPos)]
+  }
+  if (nbrColNeg <= 1){
+    col_shifts[indNeg] <- paletteNeg
+  } else {
+    col_shifts[indNeg] <- paletteNeg[cut(values[indNeg], nbrColNeg)]
+  }
+  col_shifts[indNull] <- "white"
+  return(col_shifts)
+}
+
+# Function to plot color bar
+# (http://stackoverflow.com/questions/9314658/colorbar-from-custom-colorramppalette)
+color.bar <- function(lut, min, max=-min, nticks=11, ticks=seq(min, max, len=nticks), title='') {
+  scale = (length(lut)-1)/(max-min)
+  
+  dev.new(width=1.75, height=5)
+  plot(c(0,10), c(min,max), type='n', bty='n', xaxt='n', xlab='', yaxt='n', ylab='', main=title)
+  axis(2, ticks, las=1)
+  for (i in 1:(length(lut)-1)) {
+    y = (i-1)/scale + min
+    rect(0,y,10,y+1/scale, col=lut[i], border=NA)
+  }
+}

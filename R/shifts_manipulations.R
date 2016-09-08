@@ -50,14 +50,14 @@ incidence.matrix <- function(phylo){
   phy <- reorder(phylo, order = "postorder")
   cor <- correspondanceEdges(edges=1:nrow(phy$edge), from=phylo, to=phy)
   ## Init and recurence
-  T <- init.incidence.matrix(phy)
-  T <- recursionUp(phy, T, update.incidence.matrix)
+  Tr <- init.incidence.matrix(phy)
+  Tr <- recursionUp(phy, Tr, update.incidence.matrix)
   ## Take for each node its parenting branch
   daughters <- phy$edge[,2]
-  T <- T[daughters,]
+  Tr <- Tr[daughters,]
   ## Return to original tree
-  T <- T[cor, ]
-  return(t(T))
+  Tr <- Tr[cor, ]
+  return(t(Tr))
 }
 
 ##
@@ -228,6 +228,34 @@ shifts.list_to_vector <- function(phy, shifts){
 }
 
 ##
+#' @title Compute the matrix of shifts.
+#'
+#' @description
+#' \code{shifts.list_to_matrix} takes the list description of the shifts 
+#' to give the matricial representation of the shifts : the b th element of 
+#' the lth line has the value of the shift on character l occuring on that branch b
+#'
+#' @details
+#'
+#' @param phy Input tree.
+#' @param shifts : list description of the shifts : shifts$edges, shifts$values
+#' 
+#' @return Matrix p x nEdges of length nbranch.
+#' 
+#' @seealso \code{shifts.matrix_to_list}
+#' 
+#'17/06/14 - Initial release
+##
+shifts.list_to_matrix <- function(phy, shifts, p = nrow(shifts$values)){
+  if (p == 0) stop("In shifts.list_to_matrix the dimension p must be specified when shift is NULL.")
+  delta <- matrix(0, p, nrow(phy$edge))
+  if (!is.null(shifts$edges)){
+    delta[1:p, shifts$edges] <- as.matrix(shifts$values[1:p, ])
+  }
+  return(delta)
+}
+
+##
 #' @title Compute the list of shifts.
 #'
 #' @description
@@ -242,12 +270,41 @@ shifts.list_to_vector <- function(phy, shifts){
 #' 
 #' @seealso \code{shifts.list_to_vector}
 #' 
-#'17/06/14 - Initial release
+#'26/08/15 - Initial release
 ##
 shifts.vector_to_list <- function(delta){
   edsh <- which(delta != 0)
   if (length(edsh) > 0){
     shifts <- list(edges = edsh, values = delta[edsh], relativeTimes = rep(0, length(edsh)))
+  } else {
+    shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
+  }
+  return(shifts)
+}
+
+##
+#' @title Compute the list of shifts.
+#'
+#' @description
+#' \code{shifts.matrix_to_list} takes the vectorial description of the shifts 
+#' to create the list description of the shifts.
+#'
+#' @details
+#'
+#' @param delta : matrix description of the shift.
+#' 
+#' @return List describing shifts.
+#' 
+#' @seealso \code{shifts.list_to_vector}
+#' 
+#'26/08/15 - Initial release
+##
+shifts.matrix_to_list <- function(delta){
+  edsh <- which(colSums(abs(delta)) != 0)
+  if (length(edsh) > 0){
+    shifts <- list(edges = edsh,
+                   values = delta[, edsh, drop = FALSE],
+                   relativeTimes = rep(0, length(edsh)))
   } else {
     shifts <- list(edges = NULL, values = NULL, relativeTimes = NULL)
   }
@@ -276,6 +333,7 @@ incidence_matrix_actualization_factors <- function(tree,
                                                    selection.strength, 
                                                    relativeTimes_tree = 0,
                                                    times_shared = compute_times_ca(tree)){
+  if (selection.strength == 0) return(1)
   ntaxa <- length(tree$tip.label)
   nedges <- dim(tree$edge)[1]
   # Vector of exp(-alpha*t_i) at tips
@@ -292,6 +350,41 @@ incidence_matrix_actualization_factors <- function(tree,
   ac_mat <- tcrossprod(ac_tip, ac_edges)
   ac_mat <- 1 - ac_mat
   return(ac_mat)
+}
+
+##
+#' @title Compute Matrix W of actualization (Ultrametric case)
+#'
+#' @description
+#' \code{compute_actualization_matrix_ultrametric} computes a squares  p*nedges bloc diagonal
+#' matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
+#'
+#' @details
+#' Carreful: the root is not taken into account in this function.
+#'
+#' @param tree a phylogenetic tree.
+#' @param selection.strength the selection strength of the process.
+#' @param times_shared a matrix, result of function \code{compute_times_ca}.
+#' 
+#' @return Matrix of size p*nedges
+#' 
+##
+compute_actualization_matrix_ultrametric <- function(tree, 
+                                                     selection.strength, 
+                                                     times_shared = compute_times_ca(tree)){
+  if(!is.ultrametric(tree)) stop("The tree must be ultrametric.")
+  ntaxa <- length(tree$tip.label)
+  nedges <- dim(tree$edge)[1]
+  p <- ncol(selection.strength)
+  h <- max(diag(times_shared))
+  # Init of matrix
+  W <- matrix(0, p*nedges, p*nedges)
+  # Fill it
+  parents <- tree$edge[, 1]
+  for (e in 1:nedges){
+    W[((e-1) * p + 1):(e * p), ((e-1) * p + 1):(e * p)] <- as.matrix(diag(1, p, p) - expm(-selection.strength * (h - times_shared[parents[e], parents[e]])))
+  }
+  return(W)
 }
 
 ##########################################
@@ -653,4 +746,39 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
   s <- c(s1, s2)
   modes <- rbinom(K, 1, 0.5) + 1
   return(rnorm(K, mean = m[modes], sd = sqrt(s[modes])))
+}
+
+
+##
+#' @title Simmap format mapping from list of edges
+#'
+#' @description
+#' \code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a simmap
+#' formated tree, mapped with corresponding regimes.
+#' 
+#' @details
+#' Ancestral state is always 0, and other states are consecutive integers.
+#'
+#' @param tree : imput tree
+#' @param shifts_edges : shifts positions on the edges
+#' 
+#' @return tree a simmap object
+#'
+##
+shifts_to_simmap <- function(tree, shifts_edges){
+  if (is.null(shifts_edges)){
+    return(tree)
+  }
+  ## Reorder tree (older shifts first)
+  phy <- reorder(tree, order = "cladewise")
+  # Trace edges
+  shifts_ordered <- correspondanceEdges(edges = shifts_edges,
+                                              from = tree, to = phy)
+  ## Find the parent nodes of each shift
+  daughters <- phy$edge[shifts_ordered, 2]
+  for (i in 1:length(daughters)){
+    tree <- paintSubTree(tree, daughters[i], state = i,
+                         anc.state="0", stem = TRUE)
+  }
+  return(tree)
 }

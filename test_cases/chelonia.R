@@ -112,7 +112,7 @@ axisPhylo()
 # ## Save History and process
 # history <- list_to_table.history(results_estim_EM$params_history)
 # write.csv2(history, paste0(PATH, "boite_noire", name, ".csv"))
-# plot.history.OU.stationnary(params_history = results_estim_EM$params_history,
+# plot.history.OU.stationary(params_history = results_estim_EM$params_history,
 #                             tree = tree,
 #                             Y_data_ref = data,
 #                             PATH = PATH,
