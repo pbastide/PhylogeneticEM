@@ -9,7 +9,9 @@ library(robustbase) # For robust fitting of alpha
 library(gglasso)
 library(capushe)
 library(Matrix)
-reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe")
+library(Rcpp)
+library(RcppArmadillo)
+reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe", "Rcpp", "RcppArmadillo")
 
 ## Set number of parallel cores
 Ncores <- 3
@@ -19,7 +21,7 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-07-26" # 
+datestamp_data <- "2016-08-09" # 
 savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 saveresultfile <- "../Results/Simulations_Multivariate/multivariate_estimations_SUN_rBM"
 load(paste0(savedatafile, "_", datestamp_data, ".RData"))
@@ -36,9 +38,10 @@ source("R/plot_functions.R")
 source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
 source("R/model_selection.R")
+sourceCpp("src/upward_downward.cpp")
 
 ## These values should be erased by further allocations (generate_inference_files)
-n.range <- nrep
+n.range <- c(1)
 inference.index <- 0
 
 ## Select data (according to the value of nrep)
@@ -67,6 +70,7 @@ estimations_several_K <- function(X){
                                 factor_down_alpha = 3,
                                 quantile_low_distance = 0.0001,
                                 log_transform = TRUE)
+  time_SUN <- system.time(
   res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
                  Y_data = X$Y_data,
                  process = "scOU",
@@ -84,12 +88,14 @@ estimations_several_K <- function(X){
                                    exp.root = -10^(5), 
                                    var.root = 0,
                                    selection.strength = 0),
+                 method.variance = "upward_downward",
                  method.init = "lasso",
                  use_previous = FALSE,
                  method.selection = c("BirgeMassart1", "BirgeMassart2"),
                  impute_init_Rphylopars = FALSE,
                  K_lag_init = 5)
-  res <- add_total_time(res)
+  )
+  res <- add_total_time(res, time_SUN["elapsed"])
   ret <- list(sim = X,
               res = res)
   return(ret)
@@ -107,15 +113,17 @@ estimations_several_K <- function(X){
 #   return(lres)
 # }
 
-add_total_time <- function(res){
-  tot_time <- sum(sapply(res[grep("alpha_[[:digit:]]", names(res))],
-                         function(z) z$results_summary$time))
+add_total_time <- function(res, tot_time){
+  sum_times <- sum(sapply(res[grep("alpha_[[:digit:]]", names(res))],
+                          function(z) z$results_summary$time))
   res$alpha_max$results_summary$total_time <- tot_time
+  res$alpha_max$results_summary$sum_times <- sum_times
   sels <- names(res$alpha_max)[c(grep("DDSE", names(res$alpha_max)),
                                  grep("Djump", names(res$alpha_max)),
                                  grep("BGH", names(res$alpha_max)))]
   for (i in sels){
     res$alpha_max[[i]]$results_summary$total_time <- tot_time
+    res$alpha_max[[i]]$results_summary$sum_times <- sum_times
     # res$alpha_max[[i]]$results_summary <- as.data.frame(res$alpha_max[i]$results_summary)
   }
   return(res)
@@ -167,7 +175,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_fav <- system.time(
-  simestimations_fav <- foreach(i = simlist[favorables][1:3], .packages = reqpckg) %dopar%
+  simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }

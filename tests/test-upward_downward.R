@@ -796,13 +796,13 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
                  optimal.value = paramsSimu$optimal.value)
   
   traits <- extract.simulate(X1, where = "tips", what = "state")
-  nMiss <- floor(ntaxa * p * 0.1)
-  miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
-  chars <- (miss - 1) %% p + 1
-  tips <- (miss - 1) %/% p + 1
-  for (i in 1:nMiss){
-    traits[chars[i], tips[i]] <- NA
-  }
+  # nMiss <- floor(ntaxa * p * 0.1)
+  # miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
+  # chars <- (miss - 1) %% p + 1
+  # tips <- (miss - 1) %/% p + 1
+  # for (i in 1:nMiss){
+  #   traits[chars[i], tips[i]] <- NA
+  # }
   
   expect_warning(res_old <- PhyloEM(phylo = tree,
                                     Y_data = traits,
@@ -863,7 +863,7 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
   res_new$alpha_max$Djump_BM1$params_init_estim <- NULL
   res_old$alpha_max$Djump_BM1$params_init_estim <- NULL
   
-  expect_that(res_new, equals(res_old))
+  expect_equal(res_new, res_old, check.attributes = FALSE)
 })
 
 test_that("Upward Downward - PhyloEM - OU - independent", {
