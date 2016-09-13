@@ -66,7 +66,7 @@ K_true <- 16
 # set.seed(20141211)
 # ntaxa <- 64
 # lambda <- 0.1
-# tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
+# tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
 # plot(tree, show.tip.label = FALSE)
 # 
 # beta_0 <- 0
@@ -97,7 +97,7 @@ K_true <- 16
 # set.seed(20141211)
 # ntaxa <- 64
 # lambda <- 0.1
-# tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
+# tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
 # plot(tree, show.tip.label = FALSE); edgelabels();
 # 
 # beta_0 <- 0
@@ -135,7 +135,7 @@ K_true <- 16
 # set.seed(20141211)
 # ntaxa <- 256
 # lambda <- 0.1
-# tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
+# tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = lambda, mu = 0, age = 1, mrca = TRUE)[[1]]
 # plot(tree, show.tip.label = FALSE); edgelabels();
 # 
 # beta_0 <- 0

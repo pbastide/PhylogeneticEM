@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^functions\.R$
+^test_cases/$
+^scripts_shell/$
+^simulations_study/$

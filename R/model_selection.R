@@ -63,7 +63,7 @@ model_selection_capushe <- function(res, pen_shape, name){
                              complexity = res$results_summary$complexity,
                              contrast = -res$results_summary$log_likelihood)
   ## Capushe
-  cap_res <- capushe(data_capushe)
+  cap_res <- capushe::capushe(data_capushe)
   ## Assign results
   res[[paste0("capushe_output", name)]] <- cap_res
   res$results_summary[[paste0("pen_shape", name)]]  <- pen_shape

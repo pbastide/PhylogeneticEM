@@ -143,7 +143,7 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
   conditional_law_X$expectations <- matrix(expcond, nrow = p)
 #  conditional_variance_covariance <- Sigma_ZZ - temp %*% t(Sigma_YZ)
   ## Variances
-  conditional_variance_covariance <- Sigma_ZZ - tcrossprod(temp)
+  conditional_variance_covariance <- Sigma_ZZ - Matrix::tcrossprod(temp)
   attr(conditional_variance_covariance, "p_dim") <- p
   conditional_variance_covariance_nodes <- conditional_variance_covariance[!index_missing, !index_missing]
   attr(conditional_variance_covariance_nodes, "p_dim") <- p
@@ -323,15 +323,18 @@ compute_fixed_moments <- function(times_shared, ntaxa){
 extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
                                         masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct, "p_dim")),
                                                         rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) * attr(struct, "p_dim")))){
-  ntaxa <- attr(struct, "ntaxa")
-  p <- attr(struct, "p_dim")
+  # ntaxa <- attr(struct, "ntaxa")
+  # p <- attr(struct, "p_dim")
   if (what=="YY") {
-    return(struct[masque_data, masque_data])
+    res <- struct[masque_data, masque_data]
+    # res <- as(res, "dpoMatrix")
   } else if (what=="YZ") {
-    return(struct[!masque_data, masque_data])
+    res <- struct[!masque_data, masque_data]
   } else if (what=="ZZ") {
-    return(struct[!masque_data, !masque_data])
+    res <- struct[!masque_data, !masque_data]
+    # res <- as(res, "dpoMatrix")
   }
+  return(res)
 }
 
 ##
@@ -509,14 +512,15 @@ compute_variance_covariance.scOU <- function(times_shared, distances_phylo, para
   S <- compute_tree_correlations_matrix.scOU(times_shared, distances_phylo, params_old, ...)
   varr <- kronecker(S, sigma2 / (2 * alpha))
   if (params_old$root.state$random && !params_old$root.state$stationary.root) {
-    times_nodes <- list(diag(times_shared))
+    times_nodes <- list(Matrix::diag(times_shared))
     sum_times <- do.call('rbind',
-                         rep(times_nodes, length(diag(times_shared))))
+                         rep(times_nodes, length(Matrix::diag(times_shared))))
     sum_times <- sum_times + do.call('cbind',
-                                     rep(times_nodes, length(diag(times_shared))))
+                                     rep(times_nodes, length(Matrix::diag(times_shared))))
     gamma2 <- params_old$root.state$var.root
     varr <- kronecker(exp(- alpha * sum_times), gamma2) + varr
   }
+  # varr <- as(varr, "dpoMatrix")
   attr(varr, "p_dim") <- p
   attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
   return(varr)
@@ -677,7 +681,7 @@ compute_mean_variance.simple <- function(phylo,
                                        params_old = params_old)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data = masque_data)
   Sigma_YY_chol <- chol(Sigma_YY)
-  Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, diag(ncol(Sigma_YY_chol)))
+  Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, Matrix::diag(ncol(Sigma_YY_chol)))
   #Sigma_YY_inv <- chol2inv(Sigma_YY_chol)
   return(list(sim = sim, Sigma = Sigma, Sigma_YY_chol_inv = Sigma_YY_chol_inv))
 }
@@ -809,7 +813,7 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
                                                           rep(FALSE, dim(sim)[1] * phylo$Nnode)), ...){
   # ntaxa <- length(phylo$tip.label)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
-  logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
+  logdetSigma_YY <- Matrix::determinant(Sigma_YY, logarithm = TRUE)$modulus
   m_Y <- extract.simulate(sim, where="tips", what="expectations")
   LL <- length(Y_data_vec) * log(2*pi) + logdetSigma_YY
   m_Y_vec <- as.vector(m_Y)[!miss]
@@ -932,6 +936,10 @@ compute_log_likelihood_with_entropy.simple <- function(CLL, H){
 ###############################################################################
 ## Upward_downward
 ###############################################################################
+
+#' @useDynLib PhylogeneticEM
+#' @importFrom Rcpp evalCpp
+#' @import RcppArmadillo
 
 compute_E.upward_downward <- function(phylo,
                                       Y_data,

@@ -686,7 +686,7 @@ sample_shifts_edges <- function(tree, K,
 ##
 sample_edges_intervals <- function(tree, K){
   ntaxa <- length(tree$tip.label)
-  node_heights <- node.depth.edgelength(tree)
+  node_heights <- ape::node.depth.edgelength(tree)
   tree_height <- min(node_heights[1:ntaxa])
   pas <- tree_height / K * 0:K
   groups <- split(1:length(node_heights), findInterval(node_heights, pas))

@@ -102,7 +102,7 @@ init.EM.default.BM <- function(phylo = NULL,
                                   params_init$shifts,
                                   params_init$variance)
   params_init$root.state <- test.root.state(params_init$root.state, "BM")
-  params_init$variance <- as(params_init$variance, "symmetricMatrix")
+  params_init$variance <- as(params_init$variance, "dpoMatrix")
   return(params_init)
 }
 
@@ -150,17 +150,17 @@ init.EM.default.OU <- function(phylo = NULL,
     miss <- nbr_of_shifts - ncol(values.init)
     values.init <- cbind(values.init, matrix(0, ncol = miss, nrow = p))
   }
-  params_init=list(variance = variance.init,
-                   root.state = list(random = random.init,
-                                     stationary.root = stationary.root.init,
-                                     value.root = value.root.init,
-                                     exp.root = exp.root.init,
-                                     var.root = var.root.init),
-                   shifts = list(edges = edges.init,
-                                 values = values.init,
-                                 relativeTimes = relativeTimes.init),
-                   selection.strength = selection.strength.init,
-                   optimal.value = optimal.value.init)
+  params_init <- list(variance = variance.init,
+                      root.state = list(random = random.init,
+                                        stationary.root = stationary.root.init,
+                                        value.root = value.root.init,
+                                        exp.root = exp.root.init,
+                                        var.root = var.root.init),
+                      shifts = list(edges = edges.init,
+                                    values = values.init,
+                                    relativeTimes = relativeTimes.init),
+                      selection.strength = selection.strength.init,
+                      optimal.value = optimal.value.init)
   params_init <- check_dimensions(p,
                                   params_init$root.state,
                                   params_init$shifts,
@@ -171,7 +171,7 @@ init.EM.default.OU <- function(phylo = NULL,
                                             variance = variance.init,
                                             selection.strength = params_init$selection.strength,
                                             optimal.value = optimal.value.init)
-  params_init$variance <- as(params_init$variance, "symmetricMatrix")
+  params_init$variance <- as(params_init$variance, "dpoMatrix")
   return(params_init)
 }
 
@@ -210,7 +210,7 @@ lasso_regression_K_fixed.glmnet_multivariate <- function(Yp, Xp, K,
                                                          root = NULL,
                                                          penscale = rep(1, ncol(Xp)),
                                                          K_lag = 0) {
-  library(glmnet)
+  # library(glmnet)
   ## Lag
   K_original <- K
   K <- K + K_lag
@@ -219,13 +219,13 @@ lasso_regression_K_fixed.glmnet_multivariate <- function(Yp, Xp, K,
   ## Root is the intercept, should be excluded from varaiable selection
   # In that case, project Yp on the orthogonal of the root
   if (!is.null(root)){
-#     L <- Xp[ , root]
-#     norme_L <- drop(crossprod(L))
-#     Xp_noroot <- Xp[ , -root, drop = FALSE]
-#     Xp_orth <- Xp_noroot - (tcrossprod(L) %*% Xp_noroot) / norme_L
-#     Yp_orth <- Yp - crossprod(Yp, L) / (norme_L) * L
-#     intercept <- FALSE
-#     penscale <- penscale[-root]
+    #     L <- Xp[ , root]
+    #     norme_L <- drop(crossprod(L))
+    #     Xp_noroot <- Xp[ , -root, drop = FALSE]
+    #     Xp_orth <- Xp_noroot - (tcrossprod(L) %*% Xp_noroot) / norme_L
+    #     Yp_orth <- Yp - crossprod(Yp, L) / (norme_L) * L
+    #     intercept <- FALSE
+    #     penscale <- penscale[-root]
     Xp_orth <- Xp
     Yp_orth <- Yp
     intercept <- FALSE
@@ -409,7 +409,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
                                              group = 1:ncol(Xkro),
                                              p_dim,
                                              K_lag = 0) {
-  library(gglasso)
+  # library(gglasso)
   ## Lag
   K_original <- K
   K <- K + K_lag
@@ -427,29 +427,29 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
   }
   ## fit
   co <- capture.output(
-  fit <- gglasso(x = Xp_orth,
-                 y = Yp_orth,
-                 group = group,
-                 loss = "ls",
-                 nlambda = 500,
-                 intercept = intercept,
-                 dfmax = K + 10,
-                 pf = penscale)
+    fit <- gglasso::gglasso(x = Xp_orth,
+                            y = Yp_orth,
+                            group = group,
+                            loss = "ls",
+                            nlambda = 500,
+                            intercept = intercept,
+                            dfmax = K + 10,
+                            pf = penscale)
   )
   df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
   ## Find the lambda that gives the right number of ruptures
   # Check that lambda goes far enought
   if (K_original + 1 > max(df)) {
     co <- capture.output(
-    fit <- gglasso(x = Xp_orth,
-                   y = Yp_orth,
-                   group = group,
-                   loss = "ls",
-                   nlambda = 500,
-                   intercept = intercept,
-                   dfmax = K + 10,
-                   pf = penscale,
-                   lambda.factor = 0)
+      fit <- gglasso::gglasso(x = Xp_orth,
+                              y = Yp_orth,
+                              group = group,
+                              loss = "ls",
+                              nlambda = 500,
+                              intercept = intercept,
+                              dfmax = K + 10,
+                              pf = penscale,
+                              lambda.factor = 0)
     )
     df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
   }
@@ -479,7 +479,7 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
   #   lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
   #   fit_tmp <- fit
   #   co <- capture.output(
-  #   fit <- gglasso(x = Xp_orth,
+  #   fit <- gglasso::gglasso(x = Xp_orth,
   #                  y = Yp_orth,
   #                  group = group,
   #                  loss = "ls",
@@ -524,14 +524,14 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
       warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
       # Re-do a fit and try again.
       co <- capture.output(
-        fit <- gglasso(x = Xp_orth,
-                       y = Yp_orth,
-                       group = group,
-                       loss = "ls",
-                       nlambda = 500,
-                       intercept = intercept,
-                       dfmax = K + 10,
-                       pf = penscale)
+        fit <- gglasso::gglasso(x = Xp_orth,
+                                y = Yp_orth,
+                                group = group,
+                                loss = "ls",
+                                nlambda = 500,
+                                intercept = intercept,
+                                dfmax = K + 10,
+                                pf = penscale)
       )
       delta <- try(find_independent_regression_vectors.gglasso(Xkro, K,
                                                                fit, root,
@@ -756,8 +756,8 @@ find_independent_regression_vectors.glmnet_multivariate <- function(Xp, K, fit, 
     deltas <- fit$beta
     deltas <- array(deltas, dim = c(1, dim(deltas)))
   } else {
-    library(plyr)
-    deltas <- laply(fit$beta, function(z) as.matrix(z))
+    # library(plyr)
+    deltas <- plyr::laply(fit$beta, function(z) as.matrix(z))
   }
   nsets <- dim(deltas)[3]
   #   if (!is.null(root)){
@@ -1388,7 +1388,7 @@ init.alpha.default <- function(init.selection.strength, known.selection.strength
 #' (function \code{init.EM.lasso}).
 #'
 #' @details
-#' Function \code{nlrob} is used for the robust fit.
+#' Function \code{robustbase::nlrob} is used for the robust fit.
 #'
 #' @param phylo phylogenetic tree.
 #' @param Y_data data at the tips.
@@ -1472,7 +1472,10 @@ init.alpha.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo,
   #  fit <- nls(pos_cor_hat ~ gam*exp(-alpha*dists_pos), start=list(gam=mean(hat_gam), alpha=1))
   #  fit <- nls(square_diff ~ gam*(1-exp(-alpha*dists)), start=list(gam=mean(hat_gam), alpha=1))
   df <- data.frame(square_diff=square_diff, dists=dists)
-  fit.rob <- try(nlrob(square_diff ~ gam*(1-exp(-alpha*dists)), data=df, start=list(gam=mean(hat_gam, na.rm=TRUE), alpha=1)))
+  fit.rob <- try(robustbase::nlrob(square_diff ~ gam*(1-exp(-alpha*dists)),
+                                   data = df,
+                                   start = list(gam = mean(hat_gam, na.rm=TRUE),
+                                                alpha = 1)))
   if (inherits(fit.rob, "try-error")) {
     warning("Robust estimation of alpha failed")
     return(init.alpha.default(...))
@@ -1683,7 +1686,8 @@ init.variance.BM.estimation <- function(phylo,
     }
   }
   # centered_data <- centered_data[, colSums(is.na(centered_data)) < 1]
-  R_0 <- try(suppressWarnings(covMcd(t(centered_data), nsamp = "deterministic")))
+  R_0 <- try(suppressWarnings(robustbase::covMcd(t(centered_data),
+                                                 nsamp = "deterministic")))
   # Robust did not fail
   if (!inherits(R_0, "try-error")) {
     Cov0 <- R_0$cov
@@ -1719,7 +1723,7 @@ estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree)
   tol_t_half <- tol$normalized_half_life * h_tree
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
-  fit.rob <- nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
+  fit.rob <- robustbase::nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
                    data = df,
                    start = list(gam = gamma_0, t_half = log(2)),
                    tol = tol_t_half,
@@ -1744,7 +1748,7 @@ estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
                 t_half = 0.01 * h_tree)
   up_bound = c(gam = 5 * unname(gamma_0),
                t_half = 10 * h_tree)
-  fit.rob <- nlrob(square_diff ~ (2 * gam * (1 - exp(-log(2) / t_half * dists))),
+  fit.rob <- robustbase::nlrob(square_diff ~ (2 * gam * (1 - exp(-log(2) / t_half * dists))),
                    data = df,
                    tol = tol_t_half,
                    lower = low_bound,
@@ -1793,24 +1797,29 @@ estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
 ##
 
 impute.data.Rphylopars <- function(phylo, Y_data, process, random.init){
-  message("Using Rphylopars for initial data imputation.")
+  if (!requireNamespace("Rphylopars", quietly = TRUE)) {
+    stop("Rphylopars is needed when option 'impute_init_Rphylopars' is set to TRUE. Please install it.",
+         call. = FALSE)
+  } else {
+    message("Using Rphylopars for initial data imputation.")
+  }
   process_Rphylopars <- choose_process_Rphyopars(process, random.init)
-  library(Rphylopars)
+  # library(Rphylopars)
   trait_data <- as.data.frame(t(Y_data))
   trait_data <- cbind(phylo$tip.label, trait_data)
   colnames(trait_data)[1] <- "species"
 #   trait_data <- as.data.frame(t(Y_data))
 #   trait_data[ , "species"] <- phylo$tip.label
-  fit_phylopars <- phylopars(trait_data,
-                             phylo,
-                             model = process_Rphylopars,
-                             pheno_error = FALSE,
-                             phylo_correlated = TRUE,
-                             pheno_correlated = FALSE,
-                             REML = TRUE,
-                             # optim_limit = 50,
-                             # BM_first = TRUE,
-                             usezscores = TRUE)
+  fit_phylopars <- Rphylopars::phylopars(trait_data,
+                                         phylo,
+                                         model = process_Rphylopars,
+                                         pheno_error = FALSE,
+                                         phylo_correlated = TRUE,
+                                         pheno_correlated = FALSE,
+                                         REML = TRUE,
+                                         # optim_limit = 50,
+                                         # BM_first = TRUE,
+                                         usezscores = TRUE)
 #   data_phylopars <- try(phylopars.predict(fit_phylopars, nodes = NULL))
 #   if (inherits(data_phylopars, "try-error")) { # If fails, replace with mean of the trait
 #     warning("The RPhyloPars imputation failed. Taking the mean of each trait for missing data for initialization.")

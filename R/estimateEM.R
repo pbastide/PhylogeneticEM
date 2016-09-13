@@ -25,6 +25,12 @@
 ## : shutoff.R
 ###############################################################################
 
+#' @import ape
+#' @import MASS
+#' @import Matrix
+#' @importFrom foreach %dopar%
+#' @importFrom foreach %do%
+
 ##
 # estimateEM (phylo, Y_data, process=c("BM","OU"), tol=10^(-5),  method.variance=c("simple"), method.init=c("default"), nbr_of_shifts=0, ...)
 # PARAMETERS:
@@ -131,7 +137,7 @@ estimateEM <- function(phylo,
   
   ########## Check consistancy ################################################
   if (alpha_known && missing(known.selection.strength)) stop("The selection strength alpha is supposed to be known, but is not specified. Please add an argument known.selection.strength to the call of the function.")
-#  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
+  #  known.selection.strength <- check_dimensions.matrix(p, p, known.selection.strength, "known.selection.strength")
   if (independent && 
       alpha_known &&
       !missing(known.selection.strength) && 
@@ -203,13 +209,13 @@ estimateEM <- function(phylo,
   is.in.ranges.params  <- switch(process, 
                                  BM = is.in.ranges.params.BM,
                                  OU = is.in.ranges.params.OU(stationary.root, shifts_at_nodes, alpha_known))
-#   compute_MaxCompleteLogLik <- switch(process, 
-#                                       BM = compute_MaxCompleteLogLik.BM,
-#                                       OU = compute_MaxCompleteLogLik.OU(stationary.root, shifts_at_nodes))
-#   conditional_expectation_log_likelihood <- switch(process, 
-#                                                    BM = conditional_expectation_log_likelihood.BM,
-#                                                    OU = conditional_expectation_log_likelihood.OU(stationary.root, shifts_at_nodes))
-
+  #   compute_MaxCompleteLogLik <- switch(process, 
+  #                                       BM = compute_MaxCompleteLogLik.BM,
+  #                                       OU = compute_MaxCompleteLogLik.OU(stationary.root, shifts_at_nodes))
+  #   conditional_expectation_log_likelihood <- switch(process, 
+  #                                                    BM = conditional_expectation_log_likelihood.BM,
+  #                                                    OU = conditional_expectation_log_likelihood.OU(stationary.root, shifts_at_nodes))
+  
   ########## init alpha #######################################################
   method.init.alpha  <- match.arg(method.init.alpha)
   if (!stationary.root && (method.init.alpha == "estimation")){
@@ -241,14 +247,14 @@ estimateEM <- function(phylo,
   # compute_mahalanobis_distance  <- switch(method.variance, 
   #                                         simple = compute_mahalanobis_distance.simple,
   #                                         simple.nomissing.BM = compute_mahalanobis_distance.simple.nomissing.BM)
-
+  
   ########## Initialization Method ############################################
   method.init  <- match.arg(method.init)
   # Lasso initialization for OU only works for stationary root
-#   if (!stationary.root && (method.init == "lasso")){
-#     method.init <- "default"
-#     warning("The lasso initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
-#   }
+  #   if (!stationary.root && (method.init == "lasso")){
+  #     method.init <- "default"
+  #     warning("The lasso initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
+  #   }
   init.EM  <- switch(method.init, 
                      default = init.EM.default(process),
                      lasso = init.EM.lasso)
@@ -380,7 +386,7 @@ estimateEM <- function(phylo,
                                                  masque_data = masque_data,
                                                  ...)
   }
-
+  
   ########## Initialization of all parameters #################################
   params_init <- init.EM(phylo = phylo,
                          Y_data = Y_data,
@@ -424,10 +430,10 @@ estimateEM <- function(phylo,
   CV_log_lik <- FALSE
   while ( Nbr_It == 0 || # Initialisation
           K_lag_init > 0 || 
-            ( !(CV_log_lik && # CV of log-Likelihood ?
+          ( !(CV_log_lik && # CV of log-Likelihood ?
               shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
-                is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
-                Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
+            is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
+            Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
     Nbr_It <- Nbr_It + 1
     params_old <- params
@@ -482,7 +488,7 @@ estimateEM <- function(phylo,
                                            log_likelihood_old,
                                            tol$log_likelihood)
     }
-
+    
     if (process == "OU" && p == 1){
       conditional_law_X$expectations <- as.vector(conditional_law_X$expectations)
       conditional_law_X$variances <- as.vector(conditional_law_X$variances)
@@ -498,7 +504,7 @@ estimateEM <- function(phylo,
     #                                               alpha = params_old$selection.strength)
     #         log_likelihood_bis <- compute_log_likelihood_with_entropy.simple(CLL, H)
     #         attr(params_old, "log_likelihood_bis") <- log_likelihood_bis
-
+    
     
     ########## M step #########################################################
     if (independent){
@@ -572,16 +578,16 @@ estimateEM <- function(phylo,
     distances_phylo <- compute_dist_phy(phy_original)
     ## Compute equivalent parameters
     params_scOU <- go_back_to_original_process(phy_original = phy_original,
-                                              known.selection.strength = known.selection.strength,
-                                              sBM_variance = sBM_variance,
-                                              params = params)
+                                               known.selection.strength = known.selection.strength,
+                                               sBM_variance = sBM_variance,
+                                               params = params)
   } else {
     params_scOU <- params # If a BM, params_scOU = params
   }
   
   ########## Compute scores and ancestral states for final parameters ##########
   if ((original_process %in% c("OU", "scOU"))
-       && (method.variance == "simple.nomissing.BM")){
+      && (method.variance == "simple.nomissing.BM")){
     ## Go back to simple method if switched to a different one.
     compute_E <- compute_E.simple
     # compute_mean_variance  <- compute_mean_variance.simple
@@ -834,8 +840,8 @@ format_output <- function(results_estim_EM, phylo, time = NA){
     # "mahalanobis_distance_data_mean_init" = attr(params_init, "mahalanobis_distance_data_mean")
     #"least_squares_init" = attr(params_init, "mahalanobis_distance_data_mean") * params_init$root.state$var.root
   )
-#   X$summary <- as.data.frame(c(X$summary, X$alpha_0))
-#   X$summary <- as.data.frame(c(X$summary, X$gamma_0))
+  #   X$summary <- as.data.frame(c(X$summary, X$alpha_0))
+  #   X$summary <- as.data.frame(c(X$summary, X$gamma_0))
   ## shifts to be kept for init.
   kpsh <- order(-colSums(params_init$shifts$values))[0:length(params$shifts$edges)]
   results_estim_EM$params_history[['0']]$shifts$edges <- params_init$shifts$edges[kpsh]
@@ -940,11 +946,11 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     K_lag_init = 0,
                     ...){
   ## Required packages
-  library(doParallel)
-  library(foreach)
-  library(ape)
-  library(glmnet) # For Lasso initialization
-  library(robustbase) # For robust fitting of alpha
+  # library(doParallel)
+  # library(foreach)
+  # library(ape)
+  # library(glmnet) # For Lasso initialization
+  # library(robustbase) # For robust fitting of alpha
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
   method.variance  <- match.arg(method.variance)
@@ -965,7 +971,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   }
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2"){
     if (K_max < 10) warning("Slope and Jump heuristics need at least 10 observations. Consider choosing K_max >= 10.")
-    library(capushe) 
+    # library(capushe) 
   }
   if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevent warnings). Please fix before carying on.")
   
@@ -1324,7 +1330,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   if (parallel_alpha){
     cl <- makeCluster(Ncores)
     registerDoParallel(cl)
-    X <- foreach(alp = alpha, .packages = reqpckg, .export = exportFunctions) %dopar%
+    X <- foreach::foreach(alp = alpha, .packages = reqpckg, .export = exportFunctions) %dopar%
     {
       ## Progress Bar
       if(progress.bar){
@@ -1363,7 +1369,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     }
     stopCluster(cl)
   } else {
-    X <- foreach(alp = alpha, .packages = reqpckg) %do%
+    X <- foreach::foreach(alp = alpha, .packages = reqpckg) %do%
     {
       ## Progress Bar
       if(progress.bar){
@@ -1916,7 +1922,7 @@ PhyloEM_core <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #' @param Y_data vector of data at the tips
 #' @param K_max the maximal number of shifts allowed. By default, computed with 
 #' function \code{compute_K_max}.
-#' @param ... other arguments to pass to \coed{estimateEM}.
+#' @param ... other arguments to pass to \code{estimateEM}.
 #' 
 #' @return summary a data frame with K_max lines, and columns:
 #'    - alpha_estim the estimated selection strength
@@ -1968,8 +1974,8 @@ estimateEM_several_K.OUsr <- function(phylo,
   cl <- makeCluster(Ncores)
   registerDoParallel(cl)
   reqpckg <- c("ape", "quadrupen", "robustbase")
-  estimations <- foreach(i = 1:K_max, 
-                         .packages = reqpckg, .export=ls(envir=globalenv())) %dopar% {
+  estimations <- foreach::foreach(i = 1:K_max, 
+                                  .packages = reqpckg, .export=ls(envir=globalenv())) %dopar% {
     estimation_wrapper.OUsr(i, phylo = phylo, Y_data = Y_data,
                             times_shared = times_shared, 
                             distances_phylo = distances_phylo,
@@ -2007,7 +2013,7 @@ estimateEM_several_K.OUsr <- function(phylo,
 #' @param alpha_known a boolean
 #' @param alpha the value of alpha if known
 #' @param method.init.alpha the initialization method for alpha
-#' @param ... other arguments to pass to \coed{estimateEM}.
+#' @param ... other arguments to pass to \code{estimateEM}.
 #' 
 #' @return summary a data frame with columns:
 #'    - alpha_estim the estimated selection strength

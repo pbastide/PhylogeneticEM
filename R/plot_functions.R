@@ -254,8 +254,16 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   }
   ## Plot ancestral states ?
   if (plot_ancestral_states){
-    library(phytools)
-    library(graphics)
+    if (!requireNamespace("phytools", quietly = TRUE)) {
+      stop("phytools is needed for plotting ancestral states. Please install it.",
+           call. = FALSE)
+    }
+    if (!requireNamespace("graphics", quietly = TRUE)) {
+      stop("graphics is needed for plotting ancestral states. Please install it.",
+           call. = FALSE)
+    }
+    # library(phytools)
+    # library(graphics)
     if (is.null(ancestral_states)){
       warning("Plot option clash: the ancestral states could not be plotted (please provide values).")
     } else {
@@ -291,7 +299,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   } else {
     imp.scale  <- c(min(0, min(imposed.scale, na.rm = TRUE)),
                     max(imposed.scale, na.rm = TRUE))
-    h_p <- max(node.depth.edgelength(phylo))
+    h_p <- max(ape::node.depth.edgelength(phylo))
     if (show.tip.label){
       size_labels <- h_p / 4 
     } else {
@@ -353,7 +361,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   ## Ancestral states
   if (plot_ancestral_states){
     nodelabels(pch = ancestral_pch, cex = ancestral_cex, col = col_ancestral)
-    leg <- 0.5 * node.depth.edgelength(phylo)[1]
+    leg <- 0.5 * ape::node.depth.edgelength(phylo)[1]
     add.color.bar(leg, pal, title = "Trait Value",
                   lims = imp.scale.nodes,
                   digits = 2, prompt = FALSE,

@@ -96,8 +96,8 @@ correspondanceEdges <- function(edges, from, to){
 # 22/05/14 - Initial release
 ##
 compute_times_ca <- function(phy) {
-  times <- node.depth.edgelength(phy)
-  prac <- mrca(phy,full=TRUE)
+  times <- ape::node.depth.edgelength(phy)
+  prac <- ape::mrca(phy,full=TRUE)
   times_ca <- matrix(times[prac],dim(prac))
   # attr(times_ca, "ntaxa") <- length(phy$tip.label)
 #   times_ca <- phy$root.edge + times_ca # Add the root length
@@ -120,7 +120,7 @@ compute_times_ca <- function(phy) {
 # 22/05/14 - Initial release
 ##
 compute_dist_phy <- function(phy) {
-  dist_phy <- dist.nodes(phy)
+  dist_phy <- ape::dist.nodes(phy)
   attr(dist_phy, "ntaxa") <- length(phy$tip.label)
   return(as(dist_phy, "symmetricMatrix"))
 }
@@ -128,7 +128,7 @@ compute_dist_phy <- function(phy) {
 scale.tree <- function(phylo){
   if (!is.ultrametric(phylo)) stop("The tree is not ultrametric")
   ntaxa <- length(phylo$tip.label)
-  height <- min(node.depth.edgelength(phylo)[1:ntaxa]) - .Machine$double.eps^0.5# take the min so that any error is above 1
+  height <- min(ape::node.depth.edgelength(phylo)[1:ntaxa]) - .Machine$double.eps^0.5# take the min so that any error is above 1
   phylo$edge.length <- phylo$edge.length/height
   return(phylo)
 }
@@ -367,7 +367,7 @@ test.root.state.BM <- function(root.state, ...) {
   if (root.state$random && !is.na(root.state$value.root)) {
     warning("As root state is supposed random, its value is not defined and set to NA")
     root.state$value.root <- NA
-    root.state$var.root <- as(root.state$var.root, "symmetricMatrix")
+    root.state$var.root <- as(root.state$var.root, "dpoMatrix")
   }
   if (!root.state$random && (!is.na(root.state$exp.root) || !is.na(root.state$exp.root))) {
     warning("As root state is supposed fixed, its expectation and variance are not defined and set to NA")
@@ -381,7 +381,7 @@ test.root.state.OU <- function(root.state, process, variance, selection.strength
   if (root.state$random && !is.na(root.state$value.root)) {
     warning("As root state is supposed random, its value is not defined and set to NA")
     root.state$value.root <- NA
-    root.state$var.root <- as(root.state$var.root, "symmetricMatrix")
+    root.state$var.root <- as(root.state$var.root, "dpoMatrix")
   }
   if (!root.state$random && (!is.na(root.state$exp.root) || !is.na(root.state$exp.root))) {
     warning("As root state is supposed fixed, its expectation and variance are not defined and set to NA")
@@ -424,7 +424,7 @@ coherence_stationary_case <- function(root.state, optimal.value,
     
     root_var_expected <- compute_stationary_variance(variance, selection.strength)
     if(!isTRUE(all.equal(root.state$var.root, root_var_expected))){
-      root.state$var.root <- as(root_var_expected, "symmetricMatrix")
+      root.state$var.root <- as(root_var_expected, "dpoMatrix")
       warning("As the root is supposed to be in stationary state, root variance Gamma was set to: vec(Gamma) = (A kro_plus A)^{-1}vec(R).")
     }
     return(root.state)
@@ -434,9 +434,9 @@ coherence_stationary_case <- function(root.state, optimal.value,
 compute_stationary_variance <- function(variance, selection.strength){
   if (is.null(selection.strength)) return(NA)
   if (length(as.vector(selection.strength)) == 1){
-    vv <- variance / (2 * selection.strength)
+    vv <- as.matrix(variance) / (2 * selection.strength)
     vv <- Matrix(vv)
-    vv <- as(vv, "symmetricMatrix")
+    vv <- as(vv, "dpoMatrix")
     return(vv)
   } else {
     variance_vec <- as.vector(variance)
@@ -445,7 +445,8 @@ compute_stationary_variance <- function(variance, selection.strength){
     root_var_vec <- kro_sum_A_inv %*% variance_vec
     gamma <- matrix(root_var_vec, dim(variance))
     if (!isSymmetric(gamma)) stop("Error in computation of stationary variance: matrix computed was not symmetric.")
-    return(forceSymmetric(gamma))
+    gamma <- forceSymmetric(gamma)
+    return(as(gamma, "dpoMatrix"))
   }
 }
 
@@ -537,7 +538,7 @@ check_dimensions <- function(p,
   #if (!is.null(unlist(shifts)))
   shifts <- check_dimensions.shifts(p, shifts)
   variance <- check_dimensions.matrix(p, p, variance, "variance")
-  variance <- as(variance, "symmetricMatrix")
+  variance <- as(variance, "dpoMatrix")
   if (!is.null(selection.strength))
     if (is.vector(selection.strength) && length(selection.strength) == p){
       selection.strength <- diag(selection.strength, ncol = length(selection.strength))
@@ -579,7 +580,7 @@ check_dimensions.root.state <- function(p, root.state){
   if (root.state$random){
     root.state$exp.root <- check_dimensions.vector(p, root.state$exp.root, "Root Expectation")
     root.state$var.root <- check_dimensions.matrix(p, p, root.state$var.root, "root variance")
-    root.state$var.root <- as(root.state$var.root, "symmetricMatrix")
+    root.state$var.root <- as(root.state$var.root, "dpoMatrix")
   } else {
     root.state$value.root <- check_dimensions.vector(p, root.state$value.root, "Root Value")
   }

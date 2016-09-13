@@ -75,7 +75,7 @@ simulate <- function(phylo,
                      simulate_random = TRUE,
                      U_tree = NULL,
                      df = 1) {
-  library(MASS)
+  # library(MASS)
   ntaxa <- length(phylo$tip.label)
   ## Set branch stochastic process
   process <- match.arg(process)
@@ -110,7 +110,7 @@ simulate <- function(phylo,
                                      optimal.value = optimal.value)
       root.state <- parameters$root.state
       shifts <- parameters$shifts
-      variance <- as(parameters$variance, "symmetricMatrix")
+      variance <- as(parameters$variance, "dpoMatrix")
       # selection.strength <- parameters$selection.strength
       optimal.value <- parameters$optimal.value
     }
@@ -123,7 +123,7 @@ simulate <- function(phylo,
                                      optimal.value = optimal.value)
       root.state <- parameters$root.state
       shifts <- parameters$shifts
-      variance <- as(parameters$variance, "symmetricMatrix")
+      variance <- as(parameters$variance, "dpoMatrix")
       selection.strength <- parameters$selection.strength
       optimal.value <- parameters$optimal.value
     }
@@ -142,7 +142,6 @@ simulate <- function(phylo,
     return(paramSimu)
   }
   ## Reorder tree
->>>>>>> updown
   phy <- reorder(phylo, order = "cladewise")
   # Trace edges
   shifts_ordered <- shifts

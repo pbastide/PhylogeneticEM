@@ -29,8 +29,8 @@ sourceCpp("src/upward_downward.cpp")
 ## ntaxa fixed, number of traits change
 set.seed(17920902)
 ntaxa = 500
-tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
-                        age = 1, mrca = TRUE)[[1]]
+tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
+                                 age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
 times_shared <- compute_times_ca(tree)
 distances_phylo <- compute_dist_phy(tree)
@@ -136,8 +136,8 @@ micro_time_updown <- vector(length = length(ntaxa_list))
 for(i in 1:length(ntaxa_list)){
   
   ntaxa <- ntaxa_list[i]
-  tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
-                          age = 1, mrca = TRUE)[[1]]
+  tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
+                                   age = 1, mrca = TRUE)[[1]]
   tree <- reorder(tree, order = "postorder")
   times_shared <- compute_times_ca(tree)
   distances_phylo <- compute_dist_phy(tree)
@@ -214,8 +214,8 @@ paramsSimu <- list(variance = variance,
 attr(paramsSimu, "p_dim") <- p
 
 ntaxa <- 500
-tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
-                        age = 1, mrca = TRUE)[[1]]
+tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
+                                 age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
 times_shared <- compute_times_ca(tree)
 distances_phylo <- compute_dist_phy(tree)

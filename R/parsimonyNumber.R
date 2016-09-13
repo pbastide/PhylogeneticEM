@@ -938,7 +938,7 @@ plot_equivalent_shifts.actual <- function(phylo,
 
 transform_shifts_values <- function(shifts, from = 0, to, phylo){
   if (!is.ultrametric(phylo)) stop("The processes are not equivelent on a non-ultrametric tree.")
-  depths <- node.depth.edgelength(phylo)
+  depths <- ape::node.depth.edgelength(phylo)
   h_tree <- depths[1]
   parents <- phylo$edge[shifts$edges, 1]
   times_parents <- depths[parents]
