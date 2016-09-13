@@ -763,9 +763,15 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
 #' @param shifts_edges : shifts positions on the edges
 #' 
 #' @return tree a simmap object
+#' 
+#' @export
 #'
 ##
 shifts_to_simmap <- function(tree, shifts_edges){
+  if (!requireNamespace("phytools", quietly = TRUE)) {
+    stop("Package 'phytools' is needed for function 'shifts_to_simmap'. Please install it.",
+         call. = FALSE)
+  }
   if (is.null(shifts_edges)){
     return(tree)
   }
@@ -777,8 +783,8 @@ shifts_to_simmap <- function(tree, shifts_edges){
   ## Find the parent nodes of each shift
   daughters <- phy$edge[shifts_ordered, 2]
   for (i in 1:length(daughters)){
-    tree <- paintSubTree(tree, daughters[i], state = i,
-                         anc.state="0", stem = TRUE)
+    tree <- phytools::paintSubTree(tree, daughters[i], state = i,
+                                   anc.state="0", stem = TRUE)
   }
   return(tree)
 }

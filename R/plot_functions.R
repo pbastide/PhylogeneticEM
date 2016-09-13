@@ -362,12 +362,12 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   if (plot_ancestral_states){
     nodelabels(pch = ancestral_pch, cex = ancestral_cex, col = col_ancestral)
     leg <- 0.5 * ape::node.depth.edgelength(phylo)[1]
-    add.color.bar(leg, pal, title = "Trait Value",
-                  lims = imp.scale.nodes,
-                  digits = 2, prompt = FALSE,
-                  lwd = 4, outline = TRUE,
-                  x = 0,
-                  y = 0.8 * par()$usr[3])
+    phytools::add.color.bar(leg, pal, title = "Trait Value",
+                            lims = imp.scale.nodes,
+                            digits = 2, prompt = FALSE,
+                            lwd = 4, outline = TRUE,
+                            x = 0,
+                            y = 0.8 * par()$usr[3])
   }
   ## Plot beta_0
   if (value_in_box){ # Write value of shift in the box
@@ -389,7 +389,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     }
   } else {
     if (color_shifts_regimes){ # Shift has one color for each regime
-      nodes_regimes  <-  compute_betas(tree, 
+      nodes_regimes  <-  compute_betas(phylo, 
                                        root.val,
                                        params$shifts)
       color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])

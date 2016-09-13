@@ -26,14 +26,16 @@ test_that("OU and scOU, fixed root", {
                     root.state = root.state,
                     shifts = shifts,
                     selection.strength = diag(rep(alpha, p)))
-  varr_OU <- compute_variance_covariance.OU(times_shared, params_OU)
+  varr_OU <- compute_variance_covariance.OU(times_shared, distances_phylo,
+                                            params_OU)
   
   # sOU style
   params_scOU <- list(variance = variance,
                     root.state = root.state,
                     shifts = shifts,
                     selection.strength = alpha)
-  varr_scOU <- compute_variance_covariance.scOU(times_shared, distances_phylo, params_scOU)
+  varr_scOU <- compute_variance_covariance.scOU(times_shared, distances_phylo,
+                                                params_scOU)
   
   expect_that(as.vector(varr_OU), equals(as.vector(varr_scOU)))
 })
@@ -64,7 +66,8 @@ test_that("OU and scOU, random root", {
                     root.state = root.state,
                     shifts = shifts,
                     selection.strength = diag(rep(alpha, p)))
-  varr_OU <- compute_variance_covariance.OU(times_shared, params_OU)
+  varr_OU <- compute_variance_covariance.OU(times_shared, distances_phylo, 
+                                            params_OU)
   
   # sOU style
   params_scOU <- list(variance = variance,
@@ -102,7 +105,8 @@ test_that("OU and scOU, stationary root", {
                     root.state = root.state,
                     shifts = shifts,
                     selection.strength = diag(rep(alpha, p)))
-  varr_OU <- compute_variance_covariance.OU(times_shared, params_OU)
+  varr_OU <- compute_variance_covariance.OU(times_shared, distances_phylo,
+                                            params_OU)
   
   # sOU style
   params_scOU <- list(variance = variance,

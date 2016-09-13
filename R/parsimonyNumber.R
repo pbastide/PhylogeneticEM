@@ -95,7 +95,7 @@ init.parsimonyCost <- function(phy,clusters){
 #' @return A line vector corresponding to the parent node.
 ##
 update.parsimonyCost <- function(daughtersParams, ...){
-  require(plyr)
+  # require(plyr)
   nclus <- dim(daughtersParams)[2]
   parCosts <- rep(0, nclus)
   ## Minimum cost parent -> daughter -> subtree(daughter), over all possible states of daughter
@@ -104,7 +104,7 @@ update.parsimonyCost <- function(daughtersParams, ...){
     return(apply(y, 2, min))
 #    return(unname(aaply(y, 2, min, .drop = FALSE)))
   }
-  daughtersCost <- aaply(daughtersParams, 1, cost.subtree, .drop = FALSE)
+  daughtersCost <- plyr::aaply(daughtersParams, 1, cost.subtree, .drop = FALSE)
 #  daughtersCost <- t(unname(daughtersCost))
   ## Sum costs over all daughters
   parCosts <- colSums(daughtersCost)
@@ -415,26 +415,26 @@ check_parsimony_ism <- function(tree, edges, ...){
   return((nclus - 1) == nshifts)
 }
 
-check_parsimony <- function(tree, clusters){
-  npars <- extract.parsimonyCost(parsimonyCost(tree, clusters))
-  nshifts <- length(shifts$edges)
-  if (nshifts < npars){
-    stop("There are less shifts than the parsimonious minimum ! There is a problem.")
-  }
-  return(nshifts == npars)
-}
+# check_parsimony <- function(tree, clusters){
+#   npars <- extract.parsimonyCost(parsimonyCost(tree, clusters))
+#   nshifts <- length(shifts$edges)
+#   if (nshifts < npars){
+#     stop("There are less shifts than the parsimonious minimum ! There is a problem.")
+#   }
+#   return(nshifts == npars)
+# }
 
-check_infinite_site_model <- function(tree, shifts, ...){
-  clusters <- clusters_from_shifts_primary_opt(tree, shifts, ...)
-  if (!check_parsimony(tree, clusters)){
-    warning("This allocation is not parsimonious. Could not check for the infinite site model assumption.")
-    return(NA)
-  } else {
-    nclus <- length(unique(clusters))
-    nshifts <- length(shifts$edges)
-    return(nclus == nshifts + 1)
-  }
-}
+# check_infinite_site_model <- function(tree, shifts, ...){
+#   clusters <- clusters_from_shifts_primary_opt(tree, shifts, ...)
+#   if (!check_parsimony(tree, clusters)){
+#     warning("This allocation is not parsimonious. Could not check for the infinite site model assumption.")
+#     return(NA)
+#   } else {
+#     nclus <- length(unique(clusters))
+#     nshifts <- length(shifts$edges)
+#     return(nclus == nshifts + 1)
+#   }
+# }
 
 ###############################################################################
 ## Enumerate all the equivalent parsimonious solutions
@@ -552,7 +552,7 @@ update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost,
     # List of potential daughter states (i.e that realize the minimum cost for the tree
     # parent -> daughter -> subtree(daughter) ) when parent is in state k
     state.filter <- compute_state_filter(cost, pos(k))
-    state.filter <- alply(state.filter, 1, function(z) z)
+    state.filter <- plyr::alply(state.filter, 1, function(z) z)
     # Select the possible regimes for each child
     matlist <- mapply(function(dpar, sfil) do.call(rbind, dpar[sfil]), daughtersParams, state.filter, SIMPLIFY = FALSE)
     # From the list of possible regimes, compute the possible regimes staring with 
@@ -588,7 +588,7 @@ matrix_of_possibles <- function(matrices){
   nbrs <- rbind(nbrs, cumsum(nbrs))
   # All possible combinations, taking one row from each matrix representing
   # a daughter.
-  comb <- alply(nbrs, 2, function(z) return(z[2]:(z[2] - z[1] + 1)))
+  comb <- plyr::alply(nbrs, 2, function(z) return(z[2]:(z[2] - z[1] + 1)))
   comb <- expand.grid(comb)
   # For each combination, merge all vectors in one.
   XY <- apply(comb, 1, merge_complementary_vectors, XY)

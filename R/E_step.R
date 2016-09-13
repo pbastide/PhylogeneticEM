@@ -58,11 +58,11 @@ compute_E.simple <- function(phylo,
                              distances_phylo,
                              process,
                              params_old,
-                             masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
-                                             rep(FALSE, dim(sim)[1] * phylo$Nnode)),
+                             masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
+                                             rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)),
                              F_moments,
                              Y_data_vec_known,
-                             miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                             miss = rep(FALSE, attr(params_old, "p_dim") * length(phylo$tip.label)),
                              Y_data,
                              U_tree, ...){
   moments <- compute_mean_variance.simple(phylo = phylo,
@@ -572,11 +572,15 @@ compute_tree_correlations_matrix.scOU <- function(times_shared, distances_phylo,
 #' @return matrix of variance covariance for the OU
 #' 
 ##
-compute_variance_covariance.OU <- function(times_shared, params_old, ...) {
+compute_variance_covariance.OU <- function(times_shared,
+                                           distances_phylo,
+                                           params_old, ...) {
   p <- dim(params_old$variance)[1]
   ntaxa <- dim(times_shared)[1]
   if (is.null(p)){
-    return(compute_variance_covariance.scOU(times_shared, distances_phylo, params_old, ...))
+    return(compute_variance_covariance.scOU(times_shared,
+                                            distances_phylo,
+                                            params_old, ...))
   }
   alpha_mat <- params_old$selection.strength
   sigma2 <- params_old$variance

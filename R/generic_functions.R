@@ -613,7 +613,8 @@ check_dimensions.shifts <- function(p, shifts){
 #'     
 #' @return A grid of alpha
 #' 
-#' 25/08/15 - Multivariate
+#' @export
+#' 
 ##
 find_grid_alpha <- function(phy, alpha = NULL,
                             nbr_alpha = 10,

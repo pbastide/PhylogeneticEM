@@ -37,7 +37,6 @@
 #' resulting in all kinds of silly problems when developers haven't been careful. 
 #' Defaults to true, and will clean up after itself.  
 #' @return a phylogenetic tree in the opposite format
-#' @export
 convert.pmc <- function(ot, regimes=NULL, safe=TRUE){
   if(!is.null(regimes))
     safe<-FALSE # cannot write to nexus if regimes are required
