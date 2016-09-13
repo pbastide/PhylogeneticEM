@@ -1,6 +1,12 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^functions\.R$
+^encapsulate_functions\.R$
+^main\.R$
+^times_tests\.R$
+^R/convert\.R$
 ^test_cases/$
 ^scripts_shell/$
 ^simulations_study/$
+^tests/error_parsimony_algo_MWE\.R$
+^tests/Test-All\.R$
