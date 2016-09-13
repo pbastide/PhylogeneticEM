@@ -3,18 +3,20 @@
 ####################
 library(doParallel)
 library(foreach)
-library(ape)
-library(glmnet) # For Lasso initialization
-library(robustbase) # For robust fitting of alpha
-library(gglasso)
-library(capushe)
-library(Matrix)
-library(Rcpp)
-library(RcppArmadillo)
-reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe", "Rcpp", "RcppArmadillo")
+library(PhylogeneticEM)
+# library(ape)
+# library(glmnet) # For Lasso initialization
+# library(robustbase) # For robust fitting of alpha
+# library(gglasso)
+# library(capushe)
+# library(Matrix)
+# library(Rcpp)
+# library(RcppArmadillo)
+# reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe", "PhylogeneticEM")
+reqpckg <- c("PhylogeneticEM")
 
 ## Set number of parallel cores
-Ncores <- 5
+Ncores <- 3
 
 ## Define date-stamp for file names
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
@@ -24,21 +26,21 @@ datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 datestamp_data <- "2016-08-09" # 
 savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 saveresultfile <- "../Results/Simulations_Multivariate/multivariate_estimations_SUN_rBM"
-load(paste0(savedatafile, "_", datestamp_data, ".RData"))
+load(paste0(savedatafile, "_", datestamp_data, "_light.RData"))
 
-source("R/simulate.R")
-source("R/estimateEM.R")
-source("R/init_EM.R")
-source("R/E_step.R")
-source("R/M_step.R")
-source("R/shutoff.R")
-source("R/generic_functions.R")
-source("R/shifts_manipulations.R")
-source("R/plot_functions.R")
-source("R/parsimonyNumber.R")
-source("R/partitionsNumber.R")
-source("R/model_selection.R")
-sourceCpp("src/upward_downward.cpp")
+# source("R/simulate.R")
+# source("R/estimateEM.R")
+# source("R/init_EM.R")
+# source("R/E_step.R")
+# source("R/M_step.R")
+# source("R/shutoff.R")
+# source("R/generic_functions.R")
+# source("R/shifts_manipulations.R")
+# source("R/plot_functions.R")
+# source("R/parsimonyNumber.R")
+# source("R/partitionsNumber.R")
+# source("R/model_selection.R")
+# sourceCpp("src/upward_downward.cpp")
 
 ## These values should be erased by further allocations (generate_inference_files)
 n.range <- c(1)
@@ -70,6 +72,7 @@ estimations_several_K <- function(X){
                                 factor_down_alpha = 3,
                                 quantile_low_distance = 0.0001,
                                 log_transform = TRUE)
+  alpha_grid <- alpha_grid[1:3]
   time_SUN <- system.time(
   res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
                  Y_data = X$Y_data,
@@ -79,7 +82,7 @@ estimations_several_K <- function(X){
                  stationary.root = TRUE,
                  alpha = alpha_grid[-1],
                  save_step = FALSE,
-                 Nbr_It_Max = 2000,
+                 Nbr_It_Max = 5,
                  tol = list(variance = 10^(-2), 
                             value.root = 10^(-2),
                             log_likelihood = 10^(-2)),
@@ -175,7 +178,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_fav <- system.time(
-  simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
+  simestimations_fav <- foreach(i = simlist[favorables][1:3], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }

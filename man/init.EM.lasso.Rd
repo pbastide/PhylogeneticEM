@@ -38,8 +38,9 @@ params_init the list of initial parameters to be used, in the right
 \description{
 \code{init.EM.lasso} does the following regression :
 ||Y_data-T.delta||_(Sigma_YY^(-1)) + lambda |delta|_1
-using the function \code{glmnet} of package \code{glmnet}, throught function
-\code{lasso_regression_K_fixed}. T is the incidence matrix of the tree, and 
+using the function \code{glmnet::glmnet} of package \code{glmnet},
+throught function \code{lasso_regression_K_fixed}. 
+T is the incidence matrix of the tree, and 
 delta the vectorial representation of the shifts (see functions 
 \code{incidence.matrix} and \code{shifts.list_to_vector} for further details).
 }

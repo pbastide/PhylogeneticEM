@@ -5,9 +5,10 @@
 \title{E step}
 \usage{
 compute_E.simple(phylo, times_shared, distances_phylo, process, params_old,
-  masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)), rep(FALSE,
-  dim(sim)[1] * phylo$Nnode)), F_moments, Y_data_vec_known, miss = rep(FALSE,
-  dim(sim)[1] * length(phylo$tip.label)), Y_data, U_tree, ...)
+  masque_data = c(rep(TRUE, attr(params_old, "p_dim") *
+  length(phylo$tip.label)), rep(FALSE, attr(params_old, "p_dim") *
+  phylo$Nnode)), F_moments, Y_data_vec_known, miss = rep(FALSE,
+  attr(params_old, "p_dim") * length(phylo$tip.label)), Y_data, U_tree, ...)
 }
 \arguments{
 \item{phylo}{Input tree.}

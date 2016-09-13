@@ -4,7 +4,7 @@
 \alias{compute_variance_covariance.OU}
 \title{Complete variance covariance matrix for OU}
 \usage{
-compute_variance_covariance.OU(times_shared, params_old, ...)
+compute_variance_covariance.OU(times_shared, distances_phylo, params_old, ...)
 }
 \value{
 matrix of variance covariance for the OU

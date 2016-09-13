@@ -730,4 +730,11 @@ rm(moments_list)
 
 names(simlist) <- apply(simparams, 1, paste0, collapse = "_")
 
+save(simlist, simparams, nrep, process, p_base, beta_0, alpha_base, gamma_base,
+     sigma_base, K_base, ntaxa_base, factor_shift_base, r_base, s_base,  NA_base,
+     alpha_grid, K_grid, factor_shift_grid, r_grid, s_grid, NA_grid, ntaxa_grid,
+     nrep, trees, times_shared, distances_phylo, T_tree, h_tree, lambda,
+     shifts_grid, K_try,
+     file = paste0(savedatafile, "_", datestamp_data, "_light.RData"))
+
 save.image(paste0(savedatafile, "_", datestamp_data, ".RData"))

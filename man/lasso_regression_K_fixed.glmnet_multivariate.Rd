@@ -23,7 +23,7 @@ shifts.gauss the list of shifts found on the branches
 }
 \description{
 \code{lasso_regression_K_fixed} does the following regression :
-||Yp-Xp.delta|| + lambda |delta|_1 using the function \code{glmnet} of 
+||Yp-Xp.delta|| + lambda |delta|_1 using the function \code{glmnet::glmnet} of 
 package \code{glmnet}, where delta is a vector representing the shifts 
 occuring on the branches. It does a gauss lasso regression using function 
 \code{lm} on top of it. This function is used in functions 

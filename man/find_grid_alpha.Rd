@@ -23,8 +23,6 @@ find_grid_alpha(phy, alpha = NULL, nbr_alpha = 10, factor_up_alpha = 2,
 }
 \value{
 A grid of alpha
-
-25/08/15 - Multivariate
 }
 \details{
 Grid so that 
