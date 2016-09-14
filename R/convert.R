@@ -25,18 +25,18 @@
 # Date/Publication: 2013-03-04 07:19:19
 
 
-#' toggles between ouch and ape format trees 
-#' @param ot a phylogenetic tree in ouch or ape format
-#' @param regimes if given in ape format, are appended to
-#' phylo format as phy$regimes.  If the ouchtree is a fitted
-#' hansen object, regimes will automatically be imported from it
-#' unless other regime choice is given here.  
-#' @param safe mode for going from ape to ouch.  After converting, this
-#' writes to a temporary nexus file and reads the tree back in, because
-#' phylo format does not have a unique specification for a unique tree,
-#' resulting in all kinds of silly problems when developers haven't been careful. 
-#' Defaults to true, and will clean up after itself.  
-#' @return a phylogenetic tree in the opposite format
+# toggles between ouch and ape format trees
+# @param ot a phylogenetic tree in ouch or ape format
+# @param regimes if given in ape format, are appended to
+# phylo format as phy$regimes.  If the ouchtree is a fitted
+# hansen object, regimes will automatically be imported from it
+# unless other regime choice is given here.
+# @param safe mode for going from ape to ouch.  After converting, this
+# writes to a temporary nexus file and reads the tree back in, because
+# phylo format does not have a unique specification for a unique tree,
+# resulting in all kinds of silly problems when developers haven't been careful.
+# Defaults to true, and will clean up after itself.
+# @return a phylogenetic tree in the opposite format
 convert.pmc <- function(ot, regimes=NULL, safe=TRUE){
   if(!is.null(regimes))
     safe<-FALSE # cannot write to nexus if regimes are required
