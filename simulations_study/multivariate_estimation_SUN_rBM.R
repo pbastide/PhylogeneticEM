@@ -16,7 +16,7 @@ library(PhylogeneticEM)
 reqpckg <- c("PhylogeneticEM")
 
 ## Set number of parallel cores
-Ncores <- 3
+Ncores <- 5
 
 ## Define date-stamp for file names
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
@@ -43,7 +43,7 @@ load(paste0(savedatafile, "_", datestamp_data, "_light.RData"))
 # sourceCpp("src/upward_downward.cpp")
 
 ## These values should be erased by further allocations (generate_inference_files)
-n.range <- c(1)
+n.range <- nrep
 inference.index <- 0
 
 ## Select data (according to the value of nrep)
@@ -178,7 +178,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_fav <- system.time(
-  simestimations_fav <- foreach(i = simlist[favorables][1:3], .packages = reqpckg) %dopar%
+  simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }
@@ -200,7 +200,7 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_unfav <- system.time(
-  simestimations_unfav <- foreach(i = simlist[!favorables], .packages = reqpckg) %dopar%
+  simestimations_unfav <- foreach(i = simlist[!favorables][1:3], .packages = reqpckg) %dopar%
   {
     estimations_several_K(i)
   }
