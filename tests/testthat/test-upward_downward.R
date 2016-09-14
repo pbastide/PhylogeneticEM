@@ -259,7 +259,7 @@ test_that("Upward Downward - estimateEM - BM", {
                                        random.root = FALSE,
                                        convergence_mode = "relative",
                                        impute_init_Rphylopars = FALSE,
-                                       K_lag_init = 5),
+                                       K_lag_init = 2),
                  "The maximum number of iterations")
   
   expect_warning(res_new <- estimateEM(phylo = tree, 
@@ -272,13 +272,14 @@ test_that("Upward Downward - estimateEM - BM", {
                                        random.root = FALSE,
                                        convergence_mode = "relative",
                                        impute_init_Rphylopars = FALSE,
-                                       K_lag_init = 5),
+                                       K_lag_init = 2),
                  "The maximum number of iterations")
   
   expect_that(res_new, equals(as.vector(res_old)))
 })
 
 test_that("Upward Downward - PhyloEM - BM", {
+  skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
@@ -575,6 +576,7 @@ test_that("Upward Downward - scOU - random root", {
 })
 
 test_that("Upward Downward - PhyloEM - scOU - fixed root", {
+  skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -669,6 +671,7 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
 })
 
 test_that("Upward Downward - PhyloEM - scOU - random root", {
+  skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -763,6 +766,7 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
 })
 
 test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
+  skip_on_cran()
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
@@ -869,6 +873,7 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
 })
 
 test_that("Upward Downward - PhyloEM - OU - independent", {
+  skip_on_cran()
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
