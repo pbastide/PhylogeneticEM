@@ -140,7 +140,7 @@ scale.tree <- function(phylo){
 #' @title Generic recursion down the tree.
 #'
 #' @description
-#' \code{recursionDown} uses the function \code{\link{updateDown}} to compute
+#' \code{recursionDown} uses the function \code{updateDown} to compute
 #' daughters rows of matrix param.
 #' @details
 #' This functin is to be used in other more complex function that need to

@@ -1280,19 +1280,19 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     ## Trnasform back parameters to OU if needed
     if (transform_scOU){
       ## Compute equivalent parameters
-      fun <- function(params){
+      fun1 <- function(params){
         params_scOU <- go_back_to_original_process(phy_original = original_phy,
                                                    known.selection.strength = alp,
                                                    sBM_variance = sBM_variance,
                                                    params = params)
       }
-      X$params_estim <- lapply(X$params_estim, fun)
-      rm(fun)
+      X$params_estim <- lapply(X$params_estim, fun1)
+      rm(fun1)
       ## Ancestral state reconstruction
       compute_E  <- switch(method.variance, 
                            simple = compute_E.simple,
                            upward_downward = compute_E.upward_downward)
-      fun <- function(params_scOU){
+      fun2 <- function(params_scOU){
         temp <- wrapper_E_step(phylo = original_phy,
                                times_shared = times_shared_original,
                                distances_phylo = distances_phylo_original,
@@ -1332,8 +1332,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                                  where="tips",
                                                  what="expectations")))
       }
-      temp_list <- lapply(X$params_estim, fun)
-      rm(fun)
+      temp_list <- lapply(X$params_estim, fun2)
+      rm(fun2)
       ## "Ancestral States Reconstruction"
       X$Zhat <- lapply(temp_list, function(z) z$Zhat)
       X$Yhat <- lapply(temp_list, function(z) z$Yhat)

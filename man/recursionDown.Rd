@@ -21,7 +21,7 @@ Matrix of parameters updated.
 21/05/14 - Initial release
 }
 \description{
-\code{recursionDown} uses the function \code{\link{updateDown}} to compute
+\code{recursionDown} uses the function \code{updateDown} to compute
 daughters rows of matrix param.
 }
 \details{
