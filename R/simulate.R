@@ -254,8 +254,8 @@ init.simulate.StateAndExp <- function(phy, p, root.state, simulate_random){
                                                      root.state$value.root))
   } else { # The value of the root is random N(exp.root, var.root)
     if (simulate_random){
-      sim_rand <- mvrnorm(1, mu = root.state$exp.root,
-                          Sigma = root.state$var.root)
+      sim_rand <- MASS::mvrnorm(1, mu = root.state$exp.root,
+                                Sigma = root.state$var.root)
     } else {
       sim_rand <- root.state$exp.root
     }
@@ -340,7 +340,7 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance,
   shiftsIndex <- which(shifts$edges == edgeNbr) # If no shifts = NULL, and sum = 0
   shiftsValues <- rowSums(shifts$values[, shiftsIndex, drop = F])
   if (simulate_random){
-    sim_value = mvrnorm(1, mu = shiftsValues, Sigma = length*variance)
+    sim_value = MASS::mvrnorm(1, mu = shiftsValues, Sigma = length*variance)
   } else {
     sim_value = shiftsValues
   }
@@ -389,9 +389,9 @@ update.simulate.OU <- function(edgeNbr, ancestral,
   Exp <- ee %*% ancestral[ , , 2] + plus_exp
   Exp <- as.matrix(Exp)
   if (simulate_random){
-    Sim <- mvrnorm(1,
-                   mu = ee %*% ancestral[ , , 1] + plus_exp,
-                   Sigma = stationary_variance - ee %*% stationary_variance %*% t(ee))
+    Sim <- MASS::mvrnorm(1,
+                         mu = ee %*% ancestral[ , , 1] + plus_exp,
+                         Sigma = stationary_variance - ee %*% stationary_variance %*% t(ee))
   } else {
     Sim <- Exp
   }
@@ -426,9 +426,9 @@ update.simulate.scOU <- function(edgeNbr, ancestral,
   Exp <- ee * ancestral[ , , 2] + plus_exp
   Exp <- as.matrix(Exp)
   if (simulate_random){
-    Sim <- mvrnorm(1,
-                   mu = ee * ancestral[ , , 1] + plus_exp,
-                   Sigma = (1 - ee^2) * stationary_variance)
+    Sim <- MASS::mvrnorm(1,
+                         mu = ee * ancestral[ , , 1] + plus_exp,
+                         Sigma = (1 - ee^2) * stationary_variance)
   } else {
     Sim <- Exp
   }

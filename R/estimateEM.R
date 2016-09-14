@@ -26,7 +26,6 @@
 ###############################################################################
 
 #' @import ape
-#' @import MASS
 #' @import Matrix
 #' @importFrom foreach %dopar%
 #' @importFrom foreach %do%
