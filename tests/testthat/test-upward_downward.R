@@ -213,6 +213,7 @@ test_that("Upward Downward - BM - no missing", {
 })
 
 test_that("Upward Downward - estimateEM - BM", {
+  skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 

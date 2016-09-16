@@ -3,7 +3,6 @@
 export(PhyloEM)
 export(find_grid_alpha)
 export(shifts_to_simmap)
-import(MASS)
 import(Matrix)
 import(RcppArmadillo)
 import(ape)

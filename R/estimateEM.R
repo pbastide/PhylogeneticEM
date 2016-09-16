@@ -918,34 +918,158 @@ compute_K_max <- function(ntaxa, kappa = 0.9){
 }
 
 ##
-#' @title Phylogenetic EM
+#' @title Model Estimation with Detection of Shifts
 #'
 #' @description
+#' \code{PhyloEM} is the main function of the package. It uses maximum likelihood
+#' methods to fit a BM or an OU process for several traits evolving along a
+#' phylogenetic tree, with automatic shift detection on the branches of the tree.
+#' This function can handle missing data.
+#'
+#' @details
+#' Several models can be used:
+#' \itemize{
+#' \item BM with fixed root, univariate or multivariate.
+#' \item OU with fixed or stationary root, univariate or multivariate.
+#' }
+#' For the OU in the multivariate setting, two assumptions can be made:
+#' \itemize{
+#' \item Independent traits. This amounts to digonal rate and selection matrices.
+#' \item "Scalar OU" (scOU): the rate matrix can be full, but the selection 
+#' strength matrix is assumed to be scalar, i.e. all the traits are supposed to
+#' go to their optimum values with the same speed.
+#' }
 #' 
 #'
-#' @param phylo a phylogenetic tree
+#' @param phylo A phylogenetic tree of class \code{phylo} 
+#' (from package \code{\link{ape}}).
+#' @param Y_data Matrix of data at the tips, size p x ntaxa. Each line is a
+#' trait, and each column is a tip. The column names are checked against the
+#' tip names of the tree.
+#' @param process The model used for the fit. One of "BM" (for a full BM model, 
+#' univariate or multivariate); "OU" (for an OU with independent traits, 
+#' univariate or multivariate); or "scOU" (for a "scalar OU" model, see details).
+#' @param check_postorder Re-order the tree in post-order. If the Upward-Downward
+#' algorithm is used, the tree need to be in post-order. Default to TRUE if the
+#' upward-downward is used, otherwise automatically set to FALSE.
+#' @param independent Are the trait assumed to be independent from one another?
+#' Default to FALSE. OU in a multivariate setting only works if TRUE.
+#' @param K_max The maximum number of shifts to be considered. Default to 
+#' \eqn{max(|\sqrt ntaxa|, 10)}.
+#' @param use_previous Should the initialization for K+1 shifts use the 
+#' estimation for $K$ shifts already obtained? Default to FALSE.
+#' @param order Should the estimations be done for K increasing (TRUE) or K
+#' decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
+#' initialization fails. Default to TRUE.
+#' @param method.selection Method selection to be used. Several ones can be
+#' used at the same time. One of "BGH" for the Baraud Giraud Huet LINselect 
+#' method (onely for the univariate case); "BirgeMassart1" or "BirgeMassart2" for
+#' the Birgé Massart method, with one of the two described penalties.
+#' @param C.BM1 Multiplying constant to be used for the BigeMassart1 method.
+#' Need to be positive. Default to 0.1.
+#' @param C.BM2 Multiplying constant to be used for the BigeMassart2 method.
+#' Default to 2.5.
+#' @param C.BGH Multiplying constant to be used for the BGH method. Need to be
+#' greater than 1. Default to 1.1.
+#' @param method.variance Algorithm to be used for the moments computations at the
+#' E step. One of "simple" for the naive method; of "upward_downward" for the 
+#' Upward Downward method (usually faster). Default to "upward_downward".
+#' @param method.init The initialization method. One of "lasso" for the LASSO
+#' base initialization method; or "default" for user-specified initialization
+#' values. Default to "lasso".
+#' @param method.init.alpha For OU model, initialisation method for the selection
+#' strength alpha. One of "estimation" for a cherry-based initialization, using
+#' \code{\link[robustbase]{nlrob}}; or "default" for user-specified 
+#' initialization values. Default to "estimation".
+#' @param method.init.alpha.estimation If method.init.alpha="estimation",
+#' choice of the estimation(s) methods to be used. Choices among "regression",
+#' (method="M" is passed to \code{\link[robustbase]{nlrob}}); "regression.MM"
+#' (method="MM" is passed to \code{\link[robustbase]{nlrob}}) or "median"
+#' (\code{\link[robustbase]{nlrob}} is not used, a simple median is taken).
+#' Default to all of them.
+#' @param methods.segmentation For OU, method(s) used at the M step to find new
+#' candidate shifts positions. Choices among "lasso" for a LASSO-based algorithm;
+#' and "best_single_move" for a one-move at a time based heuristic. Default to 
+#' both of them. Using only "lasso" might speed up the function a lot.
+#' @param alpha_grid Wether to use a grid for alpha values. Default to TRUE. This
+#' is the only available method for scOU. This method is not available for OU with
+#' multivariate traits. OU with univariate traits can take both TRUE or FALSE. If
+#' TRUE, a grid based on the branch length of the tree is automatically computed,
+#' using function \code{\link{find_grid_alpha}}.
+#' @param random.root Wether the root is assumed to be random (TRUE) of fixed
+#' (FALSE). Default to TRUE
+#' @param stationary.root Wether the root is assumed to be in the stationnary 
+#' state. Default to TRUE.
+#' @param alpha If the estimation is done with a fixed alpha (either known, or
+#' on a grid), the possible value for alpha. Default to NULL.
+#' @param check.tips.names Wether to check the tips names of the tree against
+#' the column names of the data. Default to TRUE.
+#' @param progress.bar Wether to display a progress bar of the computations.
+#' Default to TRUE.
+#' @param estimates The result of a previous run of this same function. This
+#' function can be re-run for other model election method. Default to NULL.
+#' @param save_step If alpha_grid=TRUE, wether to save the intermediate results
+#' for each value of alpha. Useful for long computations. Default to FALSE.
+#' @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
+#' Default to FALSE.
+#' @param method.OUsun DEPRECATED. Method to be used in univariate OU.
+#' @param parallel_alpha EXPERIMENTAL If alpha_grid=TRUE, wether to run the 
+#' estimations with different values of alpha on separate cores. Default to 
+#' FALSE.
+#' @param Ncores If parallel_alpha=TRUE, number of cores to be used.
+#' @param exportFunctions DEPRECATED. TO BE REMOVED.
+#' @param impute_init_Rphylopars Wether to use 
+#' \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
+#' Default to FALSE.
+#' @param K_lag_init Number of extra shifts to be considered at the initialization
+#' step. Increases the accuracy, but can make computations quite slow of taken
+#' too high. Default to 5.
+#' @param ... Further arguments to be passed to \code{\link{estimateEM}}.
 #' 
-#' @return 
+#' 
+#' @return An object of class Phylogenetic EM (TO DO).
 #' 
 #' @export
 #'
 ##
+# @return summary a data frame with K_max lines, and columns:
+#    - alpha_estim the estimated selection strength
+#    - gamma_estim the estimated root variance
+#    - beta_0_estim the estimated value of root optumum
+#    - EM_steps number of iterations needed before convergence
+#    - DV_estim has the EM diverged ?
+#    - CV_estim has the EM converged ?
+#    - log_likelihood log likelihood of the data using the estimated parameters
+#    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+# and the estimated means at the tips
+#    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+# mahalanobis_distance_data_mean * gamma_estim.
+#    - mean_number_new_shifts the mean number of shifts that changed over the 
+# iterations of the EM
+#    - number_equivalent_solutions the number of equivalent solutions to 
+# the solution found.
+#    - K_try the number of shifts allowed.
+#    - complexity the complexity for K_try
+#    - time the CPU time needed.
+# @return params a list of infered parameters for each EM.
+
 
 PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     check_postorder = TRUE,
                     independent = FALSE,
-                    K_max, use_previous = TRUE,
+                    K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
+                    use_previous = FALSE,
                     order = TRUE,
                     method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
                     C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
-                    method.variance = c("simple", "upward_downward"),
+                    method.variance = c("upward_downward", "simple"),
                     method.init = "lasso",
                     method.init.alpha = "estimation",
                     method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
                     methods.segmentation = c("lasso", "best_single_move"),
                     alpha_grid = TRUE,
-                    random.root = FALSE,
-                    stationary.root = FALSE,
+                    random.root = TRUE,
+                    stationary.root = TRUE,
                     alpha = NULL,
                     check.tips.names = FALSE,
                     progress.bar = TRUE,

@@ -5,49 +5,50 @@
 \title{Simulate a Stochastic Process on a tree}
 \usage{
 simulate(phylo, process = c("BM", "OU", "scOU", "StudentOU"), p = 1,
-  root.state = list(random = FALSE, stationary.root = FALSE, value.root,
-  exp.root, var.root), shifts = list(edges = NULL, values = NULL,
+  root.state = list(random = FALSE, stationary.root = FALSE, value.root = NA,
+  exp.root = NA, var.root = NA), shifts = list(edges = NULL, values = NULL,
   relativeTimes = NULL), eps = 10^(-6), selection.strength = NULL,
   variance = NULL, optimal.value = NULL, checks = TRUE,
   simulate_random = TRUE, U_tree = NULL, df = 1)
 }
 \arguments{
-\item{root.state}{(list): state of the root, with:
-random : random state (TRUE) or deterministic state (FALSE)
-value.root : if deterministic, value of the character at the root
-exp.root : if random, expectation of the character at the root
-var.root : if random, variance of the character at the root (pxp matrix)}
+\item{phylo}{Input tree}
 
-\item{shifts}{(list) position and values of the shifts :
-edges : vector of the K id of edges where the shifts are
-values : matrix p x K of values of the shifts on the edges (one column = one shift)
-relativeTimes : vector of dimension K of relative time of the shift from the
-parentnode of edges}
+\item{process}{The model used for the simulation. One of "BM" (for a full BM
+model, univariate or multivariate); "OU" (for a full OU model, univariate or
+multivariate); or "scOU" (for a "scalar OU" model).}
 
-\item{phylo:}{Input tree.}
+\item{p}{Dimention of the simulated trait}
 
-\item{process:}{choose BM or OU process}
+\item{root.state}{List describing the state of the root, with:
+\describe{
+ \item{random}{random state (TRUE) or deterministic state (FALSE)}
+ \item{value.root}{if deterministic, value of the character at the root}
+ \item{exp.root}{if random, expectation of the character at the root}
+ \item{var.root}{if random, variance of the character at the root (pxp matrix)}
+ }}
 
-\item{p:}{dimention of the trait simulated}
+\item{shifts}{List with position and values of the shifts :
+\describe{
+ \item{edges}{vector of the K id of edges where the shifts are}
+ \item{values}{matrix p x K of values of the shifts on the edges
+  (one column = one shift)}
+ \item{relativeTimes}{vector of dimension K of relative time of the shift from the parentnode of edges}
+ }}
 
-\item{eps:}{tolerance for the value of the norm 1 of the selection strength matrix for OU}
+\item{eps}{Tolerance for the value of the norm 1 of the selection strength matrix for OU}
 
-\item{variance:}{variance-covariance matrix size p x p}
+\item{variance}{Variance-covariance matrix size p x p}
 
-\item{selection.strenght:}{matrix of selection strength size p x p (OU)}
+\item{optimal.value}{Vector of p optimal values at the root (OU)}
 
-\item{optimal.value:}{vector of p optimal values at the root (OU)}
+\item{selection.strenght}{Matrix of selection strength size p x p (OU)}
 }
 \value{
-paramSimu: array p x nNodes x 2 (BM) or p x nNodes x 3 (OU). For each trait t, 
-1 <= t <= p, paramSimu[t, , ] has tree columns, containing respectively the simulated state,
+paramSimu An array with dimentions p x nNodes x 2 (BM)
+ or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
+ tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.
-
-16/05/14 - Initial release
-20/05/14 - Gestion of edges (function correspondanceEdges)
-21/05/14 - extraction of the recursion
-16/06/14 - check.selection.strength
-24/08/15 - Multivariate
 }
 \description{
 \code{simulate} simulate a stochastic process on a tree.
