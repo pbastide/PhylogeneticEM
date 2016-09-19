@@ -286,7 +286,10 @@ estimateEM <- function(phylo,
   if (is.null(T_tree)) T_tree <- incidence.matrix(phylo)
   if (is.null(U_tree)) U_tree <- incidence.matrix.full(phylo)
   if (is.null(h_tree)) h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
-  if (is.null(F_moments) && !Flag_Missing && process == "BM"){
+  if ((is.null(F_moments)) 
+      && (!Flag_Missing) 
+      && (process == "BM")
+      && (method.variance != "upward_downward")){
     # Add root edge to the branch lengths (root assumed fixed by default)
     root_edge_length <- 0
     if (!is.null(phylo$root.edge)) root_edge_length <- phylo$root.edge
@@ -1333,7 +1336,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     }
     ## Fixed Quantities if no missing data
     Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
-    if (!Flag_Missing){
+    if ((!Flag_Missing) && (method.variance != "upward_downward")){
       # Add root edge to the branch lengths (root assumed fixed by default)
       root_edge_length <- 0
       if (!is.null(phylo$root.edge)) root_edge_length <- phylo$root.edge
