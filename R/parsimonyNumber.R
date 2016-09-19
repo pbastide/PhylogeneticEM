@@ -356,8 +356,13 @@ clusters_from_shifts_ism <- function (tree, edges, part.list = enumerate_tips_un
   ntaxa <- length(tree$tip.label)
   part <- rep(0, ntaxa)
   if (length(edges) > 0 ){
-    edges <- sort(edges)
-    for (i in 1:length(edges)) {
+    ## Re-order tree
+    tree_post <- reorder(tree, order = "postorder")
+    edges_post <- correspondanceEdges(edges = edges, 
+                                      from = tree, to = tree_post)
+    ## Visit higher edges before edges closer to the tips
+    ed_order <- order(edges_post, decreasing = TRUE)
+    for (i in ed_order) {
       part[part.list[[edges[i]]]] <- i
     }
   }
