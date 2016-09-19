@@ -23,7 +23,7 @@ datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 datestamp_day <- format(Sys.time(), "%Y-%m-%d")
 
 ## Load simulated data
-datestamp_data <- "2016-08-09" # 
+datestamp_data <- "2016-09-14" # 
 savedatafile = "../Results/Simulations_Multivariate/multivariate_simlist"
 saveresultfile <- "../Results/Simulations_Multivariate/multivariate_estimations_SUN_rBM"
 load(paste0(savedatafile, "_", datestamp_data, "_light.RData"))
@@ -72,7 +72,6 @@ estimations_several_K <- function(X){
                                 factor_down_alpha = 3,
                                 quantile_low_distance = 0.0001,
                                 log_transform = TRUE)
-  alpha_grid <- alpha_grid[1:3]
   time_SUN <- system.time(
   res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
                  Y_data = X$Y_data,
@@ -82,7 +81,7 @@ estimations_several_K <- function(X){
                  stationary.root = TRUE,
                  alpha = alpha_grid[-1],
                  save_step = FALSE,
-                 Nbr_It_Max = 5,
+                 Nbr_It_Max = 2000,
                  tol = list(variance = 10^(-2), 
                             value.root = 10^(-2),
                             log_likelihood = 10^(-2)),

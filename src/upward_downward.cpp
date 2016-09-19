@@ -952,6 +952,7 @@ Rcpp::List upward_downward_BM(arma::mat const & data, arma::umat const & ed,
                               arma::vec const & edge_length,
                               Rcpp::List root_state_list) {
   // BM
+  // Rcpp::Rcout << "edge_length " << edge_length << std::endl;
   Model mod(Delta, Variance, edge_length);
   Rcpp::List res = upward_downward_mod(data, ed, mod, root_state_list);
   return res;

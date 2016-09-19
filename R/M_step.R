@@ -66,6 +66,8 @@ compute_M.BM <- function(phylo,
   ## Segmentation
   diff_exp <- compute_diff_exp.BM(phylo = phylo, 
                                   conditional_law_X = conditional_law_X)
+  ## Deal with numerical imprecision
+  diff_exp[abs(diff_exp) < .Machine$double.eps ^ 0.5] <- 0
   ## Transform diff_exp and lengths if root fixed
   trans <- compute_transformed_diff_exp_0.BM(phylo, random.root,
                                              diff_exp, mu_old)
