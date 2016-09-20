@@ -185,6 +185,7 @@ test_that("Mean of the OU", {
 })
 
 test_that("Multivariate Scalar (scOU)", {
+  testthat::skip_on_cran()
   set.seed(586)
   ntaxa <- 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, 

@@ -1,8 +1,6 @@
 context("Number of Parsimonious Solutions")
 
 test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
-  require(ape)
-  require(plyr)
   ## First exemple (tricky one)
   tree <- read.tree(text="(((T,T),C),C);")
   clusters <- c(3.21, 26, 5.3, 5.3)

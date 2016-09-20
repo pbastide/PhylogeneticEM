@@ -141,7 +141,7 @@ test_that("split/merge independent parameters ", {
 })
 
 test_that("compute_mean_variance.simple", {
-  skip_on_cran()
+  testthat::skip_on_cran()
   # Dimension p - OU- stationary root
   set.seed(586)
   ntaxa <- 20
