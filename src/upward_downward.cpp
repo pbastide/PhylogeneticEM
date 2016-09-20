@@ -439,10 +439,10 @@ arma::mat prod_na_mat(arma::mat const & S, arma::mat const & M, arma::uvec const
   return res;
 }
 
-Upward_Node & actualize_upward_simple(Upward_Node const &  up_child,
+Upward_Node actualize_upward_simple(Upward_Node const &  up_child,
                                       Model_Node const & mod_edge,
                                       int p_d){
-  Upward_Node *res = new Upward_Node(p_d);
+  Upward_Node res = Upward_Node(p_d);
   arma::uvec missing_data = up_child.Missing_Data();
   arma::mat check_S = up_child.Condvar() + mod_edge.Sigma();
   // Rcpp::Rcout << "up_child.Condvar() " << up_child.Condvar() << std::endl;
@@ -460,20 +460,20 @@ Upward_Node & actualize_upward_simple(Upward_Node const &  up_child,
   constant -= log_det_na(check_S, missing_data) / 2;
   constant -= arma::as_scalar((up_child.Condexp() - mod_edge.R()).t() * checkSinv_diff)/2;
     
-  (*res).allocate_condvar(tQ_checkS_Q);
-  (*res).allocate_condexp(tQ_checkSinv_diff);
-  (*res).allocate_cst(constant);
-  (*res).allocate_missing_data(up_child.Missing_Data());
+  (res).allocate_condvar(tQ_checkS_Q);
+  (res).allocate_condexp(tQ_checkSinv_diff);
+  (res).allocate_cst(constant);
+  (res).allocate_missing_data(up_child.Missing_Data());
   
-  return *res;
+  return res;
 }
 
-Upward & actualize_upward_children(arma::uvec const & child_nodes,
+Upward actualize_upward_children(arma::uvec const & child_nodes,
                                    arma::uvec const & child_edges,
                                    Upward & upw, Model const & mod,
                                    int p_d, int ntaxa){
   int nChild = child_nodes.n_rows;
-  Upward *res = new Upward(nChild, p_d);
+  Upward res = Upward(nChild, p_d);
   for (int i = 0; i < nChild; i++){
     // if (upw.Up(child_nodes(i)).Condvar().n_rows < p_d){
     //   // Rcpp::Rcout << "missing; child: " << child_nodes(i)+1 << " edge: " << child_edges(i)+1 << std::endl;
@@ -482,18 +482,19 @@ Upward & actualize_upward_children(arma::uvec const & child_nodes,
     //                                                    p_d));
     // } else {
       // Rcpp::Rcout << "child: " << child_nodes(i)+1 << " edge: " << child_edges(i)+1 << std::endl;
-      (*res).allocate_node(i, actualize_upward_simple(upw.Up(child_nodes(i)),
-                                                      mod.Mod(child_edges(i)),
-                                                      p_d));
+      Upward_Node tmp = actualize_upward_simple(upw.Up(child_nodes(i)),
+                                                mod.Mod(child_edges(i)),
+                                                p_d);
+      (res).allocate_node(i, tmp);
     // }
   }
-  return *res;
+  return res;
 }
 
-Upward_Node & merge_upward(Upward const & up_child){
+Upward_Node merge_upward(Upward const & up_child){
   int nChild = up_child.Size();
   int p_d = up_child.Up(0).Condexp().n_rows;
-  Upward_Node *res = new Upward_Node(p_d);
+  Upward_Node res = Upward_Node(p_d);
   
   arma::mat S_sum;
   S_sum.zeros(p_d, p_d);
@@ -531,12 +532,12 @@ Upward_Node & merge_upward(Upward const & up_child){
   // int nMiss = arma::sum(merge_missing);
   // constant *= std::sqrt(pow(2 * arma::datum::pi, -nMiss));
   
-  (*res).allocate_condvar(S_bar);
-  (*res).allocate_condexp(m_bar);
-  (*res).allocate_cst(constant);
-  (*res).allocate_missing_data(merge_missing);
+  (res).allocate_condvar(S_bar);
+  (res).allocate_condexp(m_bar);
+  (res).allocate_cst(constant);
+  (res).allocate_missing_data(merge_missing);
   
-  return *res;
+  return res;
 }
 
 void Upward::recursion(Model const & mod, arma::umat const & ed,
@@ -574,7 +575,8 @@ void Upward::recursion(Model const & mod, arma::umat const & ed,
       //   
       // }
       // Compute the quantity for the node
-      up[father] = merge_upward(up_child);
+      Upward_Node tmp = merge_upward(up_child);
+      up[father] = tmp;
       // if (father == 189){
       //   Rcpp::Rcout << "log(cst) father : " << up[father].Cst() << std::endl;
       // }
@@ -1005,13 +1007,13 @@ double log_likelihood(arma::mat const & data, arma::umat const & ed,
   // return upw.exportUpward2R(i-1);
   //return mom.exportMoments2R();
 }
-
+// 
 // /*** R
 // library(ape)
 // library(TreeSim)
 // library(Matrix)
 // set.seed(17920902)
-// ntaxa = 50
+// ntaxa = 500
 // tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
 //                         age = 1, mrca = TRUE)[[1]]
 // tree <- reorder(tree, order = "postorder")
@@ -1056,35 +1058,35 @@ double log_likelihood(arma::mat const & data, arma::umat const & ed,
 // masque_data <- rep(FALSE, (ntaxa + tree$Nnode) * p)
 // masque_data[1:(p * ntaxa)] <- !miss
 // 
-// times_shared <- compute_times_ca(tree)
-// distances_phylo <- compute_dist_phy(tree)
-// T_tree <- incidence.matrix(tree)
-// U_tree <- incidence.matrix.full(tree)
-// h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
-// root_edge_length <- 0
-// if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
-// F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
+// # times_shared <- compute_times_ca(tree)
+// # distances_phylo <- compute_dist_phy(tree)
+// # T_tree <- incidence.matrix(tree)
+// # U_tree <- incidence.matrix.full(tree)
+// # h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+// # root_edge_length <- 0
+// # if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
+// # F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
 // 
-// tmp_old <- wrapper_E_step(phylo = tree,
-//                           times_shared = times_shared,
-//                           distances_phylo = distances_phylo,
-//                           process = "BM",
-//                           params_old = paramsSimu,
-//                           masque_data = masque_data,
-//                           F_moments = F_moments,
-//                           independent = independent,
-//                           Y_data_vec_known = as.vector(traits[!miss]),
-//                           miss = miss,
-//                           Y_data = traits,
-//                           U_tree = U_tree,
-//                           compute_E = compute_E.simple)
+// # tmp_old <- wrapper_E_step(phylo = tree,
+// #                           times_shared = times_shared,
+// #                           distances_phylo = distances_phylo,
+// #                           process = "BM",
+// #                           params_old = paramsSimu,
+// #                           masque_data = masque_data,
+// #                           F_moments = F_moments,
+// #                           independent = independent,
+// #                           Y_data_vec_known = as.vector(traits[!miss]),
+// #                           miss = miss,
+// #                           Y_data = traits,
+// #                           U_tree = U_tree,
+// #                           compute_E = compute_E.simple)
 // 
-// ll_old <- tmp_old$log_likelihood_old
-// conditional_law_X_old <- tmp_old$conditional_law_X
+// # ll_old <- tmp_old$log_likelihood_old
+// # conditional_law_X_old <- tmp_old$conditional_law_X
 // 
 // tmp_new <- wrapper_E_step(phylo = tree,
-//                           times_shared = times_shared,
-//                           distances_phylo = distances_phylo,
+//                           times_shared = NULL,
+//                           distances_phylo = NULL,
 //                           process = "BM",
 //                           params_old = paramsSimu,
 //                           masque_data = masque_data,
@@ -1098,30 +1100,30 @@ double log_likelihood(arma::mat const & data, arma::umat const & ed,
 // 
 // ll_new <- tmp_new$log_likelihood_old
 // conditional_law_X_new <- tmp_new$conditional_law_X
+// # 
+// # all.equal(ll_new, as.vector(ll_old))
+// # all.equal(conditional_law_X_old$expectations, conditional_law_X_new$expectations)
+// # all.equal(conditional_law_X_old$variances, conditional_law_X_new$variances)
+// # cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
+// # cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
+// # all.equal(cov_old, cov_new)
 // 
-// all.equal(ll_new, as.vector(ll_old))
-// all.equal(conditional_law_X_old$expectations, conditional_law_X_new$expectations)
-// all.equal(conditional_law_X_old$variances, conditional_law_X_new$variances)
-// cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
-// cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
-// all.equal(cov_old, cov_new)
 // 
-// 
-// # # conditional_law_X <- upward_downward(traits, tree$edge)
-// #
-// Delta <- shifts.list_to_matrix(tree, shifts)
-// edge_length <- tree$edge.length
-// # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 1))
-// # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 3))
-// # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 6))
-// #
-// # # upward_test(traits, tree$edge, 30)
-// #
-// ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
-//                          root.state)
-// all.equal(ll_new, as.vector(ll_old))
-// #
-// conditional_law_X_new <- upward_downward_BM(traits, tree$edge, Delta, variance, edge_length, root.state)
+// # # # conditional_law_X <- upward_downward(traits, tree$edge)
+// # #
+// # Delta <- shifts.list_to_matrix(tree, shifts)
+// # edge_length <- tree$edge.length
+// # # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 1))
+// # # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 3))
+// # # # create_model(Delta, variance, edge_length, traits, tree$edge, which(tree$edge[, 2] == 6))
+// # #
+// # # # upward_test(traits, tree$edge, 30)
+// # #
+// # ll_new <- log_likelihood(traits, tree$edge, Delta, variance, edge_length,
+// #                          root.state)
+// # all.equal(ll_new, as.vector(ll_old))
+// # #
+// # conditional_law_X_new <- upward_downward_BM(traits, tree$edge, Delta, variance, edge_length, root.state)
 // # all.equal(conditional_law_X_old, conditional_law_X_new)
 // # cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
 // # cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
