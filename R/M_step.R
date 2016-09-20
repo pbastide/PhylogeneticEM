@@ -470,6 +470,8 @@ compute_M.OU.stationary.root_AND_shifts_at_nodes <- function(phylo,
 #' 
 #' @return matrix p x nEdges containing, for each edge e finishing at node i,
 #' the quantity E[Z_i|Y]-E[Z_pa(i)|Y].
+#' 
+#' @keywords internal
 #'
 ##
 compute_diff_exp.BM <- function(phylo, conditional_law_X) {
@@ -501,6 +503,8 @@ compute_diff_exp.OU <- function(phylo, conditional_law_X, selection.strength) {
 #' 
 #' @return array p x p x nEdges containing, for each edge e finishing at node i,
 #' the quantity Var[Z_i-Z_pa(i)|Y].
+#' 
+#' @keywords internal
 #'
 ##
 compute_var_diff.BM <- function(phylo, conditional_law_X) {
@@ -543,6 +547,8 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
 #' @param var_diff result of function \code{compute_var_diff.BM}
 #' 
 #' @return matrix p x p
+#' 
+#' @keywords internal
 #'
 ##
 compute_sum_var_diff <- function(phylo, var_diff){
@@ -579,6 +585,8 @@ compute_sum_var_diff <- function(phylo, var_diff){
 #' @param edges_max Edges where the shifts occur result of function \code{segmentation.BM}
 #' 
 #' @return a p x p matrix : the computed variance
+#' 
+#' @keywords internal
 ##
 compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max, random.root, mu){
   ntaxa <- length(phylo$tip.label)
@@ -645,9 +653,11 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #'  the user
 #' 
 #' @return double : estimation of alpha
+#' 
+#' @keywords internal
 #'
-#'09/07/14 - Initial release
-#'02/10/14 - Take newly estimated shifts into consideration
+#09/07/14 - Initial release
+#02/10/14 - Take newly estimated shifts into consideration
 ##
 estimate.alpha <- function(phylo,
                            conditional_law_X,
@@ -707,8 +717,10 @@ conditional_expectation_log_likelihood.OU <- function(stationary.root, shifts_at
 #' @param alpha selection strength of the OU.
 #' 
 #' @return double : value of the function
+#' 
+#' @keywords internal
 #'
-#'09/07/14 - Initial release
+#09/07/14 - Initial release
 ##
 conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law_X, sigma2, mu, alpha){
   ntaxa <- length(phylo$tip.label)
@@ -757,9 +769,11 @@ conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law
 #' @param alpha selection strength of the OU.
 #' 
 #' @return double : value of the function
+#' 
+#' @keywords internal
 #'
-#'09/07/14 - Initial release
-#'02/10/14 - take new shifts in consideration
+#09/07/14 - Initial release
+#02/10/14 - take new shifts in consideration
 ##
 conditional_expectation_log_likelihood.OU.stationary_root_shifts_at_nodes <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha){
   ntaxa <- length(phylo$tip.label)
@@ -841,7 +855,8 @@ conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_
 #' costs0 is maximal.
 #'                           shifts:list containing the computed tau and delta
 #'
-#'02/06/14 - Initial release
+#' @keywords internal
+#02/06/14 - Initial release
 ##
 segmentation.BM <- function(nbr_of_shifts, costs0, diff_exp){
   if (nbr_of_shifts > 0) {
@@ -882,8 +897,9 @@ segmentation.BM <- function(nbr_of_shifts, costs0, diff_exp){
 #'                           shifts : list containing the computed tau and delta
 #'                           costs : vector of costs
 #'
-#'10/06/14 - Initial release
-#'06/10/14 - Change name to include other algorithms
+#' @keywords internal
+#10/06/14 - Initial release
+#06/10/14 - Change name to include other algorithms
 ##
 segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, conditional_law_X, selection.strength, ...){
   ntaxa <- length(phylo$tip.label)
@@ -941,8 +957,9 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 #' @return List containing : beta_0 : the optimal value at the root
 #'                           shifts : list containing the computed tau and delta
 #'                           costs : vector of costs
-#'                           
-#'06/10/14 - Initial release
+#'
+#' @keywords internal                           
+#06/10/14 - Initial release
 ##
 segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, penscale = rep(1, (nrow(phylo$edge) + 1)), ...){
   ntaxa <- length(phylo$tip.label)
@@ -1088,7 +1105,9 @@ segmentation.OU.specialCase.lasso_one_move <- function(phylo, shifts_old, nbr_of
 #'                           shifts : list containing the computed tau and delta
 #'                           costs : vector of costs
 #'
-#'06/10/14 - Initial release
+#' @keywords internal
+#' 
+#06/10/14 - Initial release
 ##
 segmentation.OU.specialCase.same_shifts_same_values <- function(phylo, conditional_law_X, selection.strength, beta_0_old, shifts_old, ...){
   ntaxa <- length(phylo$tip.label)
@@ -1125,8 +1144,8 @@ segmentation.OU.specialCase.same_shifts_same_values <- function(phylo, condition
 #' @return List containing : beta_0 : the optimal value at the root
 #'                           shifts : list containing the computed tau and delta
 #'                           costs : vector of costs
-#'
-#'06/10/14 - Initial release
+#' @keywords internal
+#06/10/14 - Initial release
 ##
 segmentation.OU.specialCase.same_shifts <- function(phylo, shifts_old, D, Xp, ...){
   edges <- shifts_old$edges
@@ -1191,7 +1210,9 @@ segmentation.OU.specialCase.best_single_move.old <- function(phylo, conditional_
 #'                           shifts : list containing the computed tau and delta
 #'                           costs : vector of costs
 #'
-#'15/10/14 - Initial release
+#' @keywords internal
+#' 
+#15/10/14 - Initial release
 ##
 optimize_costs_given_shift_position.OU.specialCase <- function(phylo, conditional_law_X, selection.strength, shifts_edges, ...){
   ntaxa <- length(phylo$tip.label)

@@ -11,8 +11,6 @@
 }
 \value{
 boolean
-
-10/06/14 - Initial release
 }
 \description{
 \code{is.finite.params} checks whether calculated parameters in the EM are
@@ -21,4 +19,5 @@ finite or not.
 \details{
 This function is used to test the convergence of the algorithm.
 }
+\keyword{internal}
 

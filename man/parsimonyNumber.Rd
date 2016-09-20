@@ -12,12 +12,15 @@ parsimonyNumber(phylo, clusters = rep(1, length(phylo$tip.label)))
 \item{clusters}{the vector of the clusters of the tips.}
 }
 \value{
-nbrReconstructions a (ntaxa + nNodes) x (nclus) matrix of loccaly parsimonious
- solutions starting from a cluster k at a given node.
-
-costReconstructions a (ntaxa + nNodes) x (nclus) matrix of the total number of
-shifts needed to get the clustering, if starting from a node in state k (result of function
-\code{parsimonyCost}.
+named list, with:
+\describe{
+ \item{nbrReconstructions}{a (ntaxa + nNodes) x (nclus)
+ matrix of loccaly parsimonious solutions starting from a cluster k at a
+ given node}
+ \item{costReconstructions}{a (ntaxa + nNodes) x (nclus) matrix of the total
+ number of shifts needed to get the clustering, if starting from a node in 
+ state k (result of function \code{\link{parsimonyCost}}.}
+}
 }
 \description{
 \code{parsimonyNumber} aims at finding the number of equivalent allocations of
@@ -31,7 +34,7 @@ This functin does a recursion up the tree, using functions
 and \code{update.parsimonyNumber} for the actualisation of the parameters.
 The function \code{extract_parsimonyNumber} furnishes the result seeked for any
 subtree.
-The matrix of costs of the states (number of shifts) is also required, it is computed
-by function \code{parsimonyCost}.
+The matrix of costs of the states (number of shifts) is also required, it is
+computed by function \code{parsimonyCost}.
 }
 

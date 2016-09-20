@@ -42,8 +42,10 @@
 #' @param phylo Input tree.
 #' 
 #' @return Matrix of incidence.
+#' 
+#' @export
 #'
-#'17/06/14 - Initial release
+#17/06/14 - Initial release
 ##
 incidence.matrix <- function(phylo){
   ## Reorder and keep track
@@ -78,7 +80,9 @@ incidence.matrix <- function(phylo){
 #' 
 #' @return Matrix with nNodes rows and ntaxa column.
 #'
-#'17/06/14 - Initial release
+#' @keywords internal
+#' 
+#17/06/14 - Initial release
 ##
 init.incidence.matrix <- function(phy){
   ntaxa <- length(phy$tip.label)
@@ -105,8 +109,10 @@ init.incidence.matrix <- function(phy){
 #' 
 #' @return Vector of length ntaxa, indicating to which lineages the branch
 #' above the current node belongs to.
+#' 
+#' @keywords internal
 #'
-#'17/06/14 - Initial release
+#17/06/14 - Initial release
 ##
 update.incidence.matrix <- function(daughtersParams, ...){
   inc <- colSums(daughtersParams)
@@ -129,8 +135,10 @@ update.incidence.matrix <- function(daughtersParams, ...){
 #' @param phylo Input tree.
 #' 
 #' @return Matrix of incidence, size ntaxa + nNodes
+#' 
+#' @export
 #'
-#'06/10/14 - Initial release
+#06/10/14 - Initial release
 ##
 incidence.matrix.full <- function(phylo){
   ## Reorder and keep track
@@ -164,8 +172,10 @@ incidence.matrix.full <- function(phylo){
 #' @param phy Input tree.
 #' 
 #' @return Matrix of size ntaxa + nNodes.
-#'
-#'06/10/14 - Initial release
+#' 
+#' @keywords internal
+#' 
+#06/10/14 - Initial release
 ##
 init.incidence.matrix.full <- function(phy){
   ntaxa <- length(phy$tip.label)
@@ -193,8 +203,10 @@ init.incidence.matrix.full <- function(phy){
 #' 
 #' @return Vector of length ntaxa + nNodes, indicating to which lineages the 
 #' branch above the current node belongs to.
+#' 
+#' @keywords internal
 #'
-#'06/10/14 - Initial release
+#06/10/14 - Initial release
 ##
 update.incidence.matrix.full <- function(daughtersParams, parent, ...){
   inc <- colSums(daughtersParams)
@@ -210,16 +222,16 @@ update.incidence.matrix.full <- function(daughtersParams, parent, ...){
 #' to give the vectorial representation of the shifts : the b th element of 
 #' the vector has the value of the shift occuring on that branch b.
 #'
-#' @details
-#'
 #' @param phy Input tree.
 #' @param shifts : list description of the shifts : shifts$edges, shifts$values
 #' 
 #' @return Vector of length nbranch.
 #' 
-#' @seealso \code{shifts.vector_to_list}
+#' @seealso \code{\link{shifts.vector_to_list}}
 #' 
-#'17/06/14 - Initial release
+#' @keywords internal
+#' 
+#17/06/14 - Initial release
 ##
 shifts.list_to_vector <- function(phy, shifts){
   delta <- rep(0, nrow(phy$edge))
@@ -235,16 +247,16 @@ shifts.list_to_vector <- function(phy, shifts){
 #' to give the matricial representation of the shifts : the b th element of 
 #' the lth line has the value of the shift on character l occuring on that branch b
 #'
-#' @details
 #'
 #' @param phy Input tree.
 #' @param shifts : list description of the shifts : shifts$edges, shifts$values
 #' 
 #' @return Matrix p x nEdges of length nbranch.
 #' 
-#' @seealso \code{shifts.matrix_to_list}
+#' @seealso \code{\link{shifts.matrix_to_list}}
 #' 
-#'17/06/14 - Initial release
+#' @export
+#' 
 ##
 shifts.list_to_matrix <- function(phy, shifts, p = nrow(shifts$values)){
   if (p == 0) stop("In shifts.list_to_matrix the dimension p must be specified when shift is NULL.")
@@ -262,7 +274,6 @@ shifts.list_to_matrix <- function(phy, shifts, p = nrow(shifts$values)){
 #' \code{shifts.vector_to_list} takes the vectorial description of the shifts 
 #' to create the list description of the shifts.
 #'
-#' @details
 #'
 #' @param delta : vector description of the shift.
 #' 
@@ -270,7 +281,9 @@ shifts.list_to_matrix <- function(phy, shifts, p = nrow(shifts$values)){
 #' 
 #' @seealso \code{shifts.list_to_vector}
 #' 
-#'26/08/15 - Initial release
+#' @keywords internal
+#' 
+#26/08/15 - Initial release
 ##
 shifts.vector_to_list <- function(delta){
   edsh <- which(delta != 0)
@@ -289,15 +302,15 @@ shifts.vector_to_list <- function(delta){
 #' \code{shifts.matrix_to_list} takes the vectorial description of the shifts 
 #' to create the list description of the shifts.
 #'
-#' @details
 #'
-#' @param delta : matrix description of the shift.
+#' @param delta matrix description of the shift.
 #' 
 #' @return List describing shifts.
 #' 
-#' @seealso \code{shifts.list_to_vector}
+#' @seealso \code{\link{shifts.list_to_matrix}}
 #' 
-#'26/08/15 - Initial release
+#' @export
+#' 
 ##
 shifts.matrix_to_list <- function(delta){
   edsh <- which(colSums(abs(delta)) != 0)
@@ -319,14 +332,14 @@ shifts.matrix_to_list <- function(delta){
 #' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
 #' This matrix is to be multiplied to the incidence matrix with an outer product.
 #'
-#' @details
-#'
 #' @param tree a phylogenetic tree.
 #' @param selection.strength the selection strength of the process.
 #' @param relativeTimes_tree a nedge vector of relative times associated with the branches.
 #' @param times_shared a matrix, result of function \code{compute_times_ca}.
 #' 
 #' @return Matrix of size ntaxa x nedges
+#' 
+#' @keywords internal
 #' 
 ##
 incidence_matrix_actualization_factors <- function(tree, 
@@ -368,6 +381,8 @@ incidence_matrix_actualization_factors <- function(tree,
 #' 
 #' @return Matrix of size p*nedges
 #' 
+#' @keywords internal
+#' 
 ##
 compute_actualization_matrix_ultrametric <- function(tree, 
                                                      selection.strength, 
@@ -407,8 +422,10 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #' 
 #' @return Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
 #'  at the root.
+#'  
+#'  @keywords internal
 #'
-#'06/10/14 - Initial release
+#06/10/14 - Initial release
 ##
 init.compute_betas <- function(phy, optimal.value, ...){
   ntaxa <- length(phy$tip.label)
@@ -433,8 +450,10 @@ init.compute_betas <- function(phy, optimal.value, ...){
 #' @param shifts position and values of the shifts 
 #' 
 #' @return Updated matrix of size (nNodes + ntaxa)x1.
+#' 
+#' @keywords internal
 #'
-#'06/10/14 - Initial release
+#06/10/14 - Initial release
 ##
 update.compute_betas <- function(edgeNbr, ancestral, shifts, ...){
   shiftsIndex <- which(shifts$edges == edgeNbr) #If no shifts = NULL, and sum = 0
@@ -461,8 +480,10 @@ update.compute_betas <- function(edgeNbr, ancestral, shifts, ...){
 #' 
 #' @return Vector of size (ntaxa + nNodes) of the ptimal values at the tips
 #' of the tree.
+#' 
+#' @export
 #'
-#'06/10/14 - Initial release
+#06/10/14 - Initial release
 ##
 compute_betas <- function(phylo, optimal.value, shifts){
   phy <- reorder(phylo, order = "cladewise")
@@ -490,7 +511,8 @@ compute_betas <- function(phylo, optimal.value, shifts){
 #' 
 #' @return Matrix of size (nNodes + ntaxa)x1 of NAs, with the 0 at the root.
 #'
-#'10/10/14 - Initial release
+#' @keywords internal
+#10/10/14 - Initial release
 ##
 init.allocate_regimes_from_shifts <- function(phy, ...){
   ntaxa <- length(phy$tip.label)
@@ -516,8 +538,10 @@ init.allocate_regimes_from_shifts <- function(phy, ...){
 #' @param shifts_edges positions on edges
 #' 
 #' @return regime of the daughter node.
+#' 
+#' @keywords internal
 #'
-#'10/10/14 - Initial release
+#10/10/14 - Initial release
 ##
 update.allocate_regimes_from_shifts <- function(edgeNbr, ancestral, shifts_edges, ...){
   shiftsIndex <- which(shifts_edges == edgeNbr) # If no shifts = integer(0)
@@ -547,7 +571,9 @@ update.allocate_regimes_from_shifts <- function(edgeNbr, ancestral, shifts_edges
 #' 
 #' @return Vector of size (ntaxa + nNodes) of the regimes of each node and tip.
 #'
-#'10/10/14 - Initial release
+#' @export
+#' 
+#10/10/14 - Initial release
 ##
 allocate_regimes_from_shifts <- function(phylo, shifts_edges){
   phy <- reorder(phylo, order = "cladewise")
@@ -574,8 +600,10 @@ allocate_regimes_from_shifts <- function(phylo, shifts_edges){
 #' and tip.
 #' 
 #' @return vector of edges numbers where the shifts are
+#' 
+#' @export
 #'
-#'10/10/14 - Initial release
+#10/10/14 - Initial release
 ##
 allocate_shifts_from_regimes <- function(phylo, regimes){
   fun <- function(edge){
@@ -604,8 +632,10 @@ allocate_shifts_from_regimes <- function(phylo, regimes){
 #' node and tip.
 #' 
 #' @return list of shifts
+#' 
+#' @export
 #'
-#'13/10/14 - Initial release
+#13/10/14 - Initial release
 ##
 compute_shifts_from_betas <- function(phylo, betas){
   fun <- function(edge){
@@ -643,6 +673,8 @@ compute_shifts_from_betas <- function(phylo, betas){
 #' @param K : number of edges to be sampled.
 #' 
 #' @return vector of edges
+#' 
+#' @keywords internal
 #'
 ##
 sample_shifts_edges <- function(tree, K, 
@@ -682,6 +714,8 @@ sample_shifts_edges <- function(tree, K,
 #' @param K : number of edges to be sampled.
 #' 
 #' @return vector of edges
+#' 
+#' @keywords internal
 #'
 ##
 sample_edges_intervals <- function(tree, K){
@@ -759,8 +793,8 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
 #' @details
 #' Ancestral state is always 0, and other states are consecutive integers.
 #'
-#' @param tree : imput tree
-#' @param shifts_edges : shifts positions on the edges
+#' @param tree imput tree in "\code{phylo}" format
+#' @param shifts_edges shifts positions on the edges
 #' 
 #' @return tree a simmap object
 #' 

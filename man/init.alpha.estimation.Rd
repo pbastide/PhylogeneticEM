@@ -22,8 +22,8 @@ init.alpha.estimation(phylo, Y_data, nbr_of_shifts, distances_phylo,
 \value{
 params_init the list of initial parameters to be used, in the right
  format.
-
-10/07/14 - Initial release
+ 
+ @keywords internal
 }
 \description{
 \code{init.alpha.estimation} fits (Y_i-Y_j)^2 ~ gamma^2(1-exp(-alpha*d_ij))

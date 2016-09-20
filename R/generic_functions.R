@@ -57,16 +57,17 @@ replaceInList <- function (x, FUN, ...) {
 #' @title Correspondence between edges numbers
 #'
 #' @description
-#' \code{correspondenceEdges} takes edges numbers on an input tree, and gives back their
-#' corresponding numbers on the output tree.
+#' \code{correspondenceEdges} takes edges numbers on an input tree, and gives back
+#' their corresponding numbers on the output tree.
 #'
 #' @param edges vector of index of edges in the tree "from"
-#' @param from initial input tree
-#' @param to aimed output tree
+#' @param from initial input tree (format "\code{phylo}")
+#' @param to aimed output tree (format "\code{phylo}")
 #'
 #' @return vector of index of edges in the tree "to"
 #'
-#'26/05/14
+#' @export
+#26/05/14
 ##
 correspondenceEdges <- function(edges, from, to){
   mm <- match(from$edge[, 2], to$edge[, 2])
@@ -153,8 +154,9 @@ scale.tree <- function(phylo){
 #' @param ... Arguments to be used by the function updateDown
 #'
 #' @return Matrix of parameters updated.
+#' 
+#' @keywords internal
 #'
-#'21/05/14 - Initial release
 ##
 recursionDown <- function(phy, params, updateDown, ...) {
   if (attr(phy,"order") != "cladewise") stop("The tree must be in cladewise order")
@@ -317,9 +319,11 @@ rtree.comb <- function(n){
 #'
 #' @return character : "BM" or "OU"
 #'
-#'16/06/14 - Initial release
+#' @keywords internal
+#16/06/14 - Initial release
 ##
-check.selection.strength <- function(process, selection.strength = NA, eps = 10^(-6), ...){
+check.selection.strength <- function(process, selection.strength = NA,
+                                     eps = 10^(-6), ...){
   if (process == "BM") {
     return("BM")
   } else if (sum(abs(selection.strength)) < eps) {
@@ -339,17 +343,19 @@ check.selection.strength <- function(process, selection.strength = NA, eps = 10^
 #' define root.state.
 #'
 #' @details
-#' To test coherence, the following priorities are applied : random > stationary.root > values.root = exp.root = var.root
+#' To test coherence, the following priorities are applied:
+#'  random > stationary.root > values.root = exp.root = var.root
 #'
 #' @param root.state A list giving the root state
-#' @param process "BM" or "OU"
+#' @param process "BM", "OU" or "scOU"
 #' @param ... parameters of the process (if OU)
 #'
 #' @return Coherent list root.state.
 #'
-#' 28/05/14 - Initial release
+#' @keywords internal
+# 28/05/14 - Initial release
 ##
-test.root.state <- function(root.state, process=c("BM","OU", "scOU"), ...) {
+test.root.state <- function(root.state, process=c("BM", "OU", "scOU"), ...) {
   process <- match.arg(process)
   process <- check.selection.strength(process, ...)
   if (process == "BM") {
@@ -488,8 +494,9 @@ kronecker_sum <- function(M, N){
 #' @param params list of parameters with the correct structure
 #'
 #' @return boolean
-#'
-#'02/10/14 - Initial release
+#' 
+#' @keywords internal
+#02/10/14 - Initial release
 ##
 log_likelihood.OU <- function(Y, phylo, params, ...) {
   moments <- compute_mean_variance.simple(phylo = phylo,
@@ -509,10 +516,11 @@ log_likelihood.OU <- function(Y, phylo, params, ...) {
 #' @title Check dimensions of the parameters
 #'
 #' @description
-#' \code{check_dimensions} checks dimensions of the parameters. If wrong, throw an error.
+#' \code{check_dimensions} checks dimensions of the parameters. 
+#' If wrong, throw an error.
 #'
-#' @param p: dimention of the trait simulated
-#' @param root.state (list): state of the root, with:
+#' @param p dimention of the trait simulated
+#' @param root.state (list) state of the root, with:
 #'     random : random state (TRUE) or deterministic state (FALSE)
 #'     value.root : if deterministic, value of the character at the root
 #'     exp.root : if random, expectation of the character at the root
@@ -522,13 +530,15 @@ log_likelihood.OU <- function(Y, phylo, params, ...) {
 #'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
 #'     parentnode of edges
-#' @param variance: variance-covariance matrix size p x p 
-#' @param selection.strenght: matrix of selection strength size p x p (OU)
-#' @param optimal.value: vector of p optimal values at the root (OU)
+#' @param variance variance-covariance matrix size p x p 
+#' @param selection.strenght matrix of selection strength size p x p (OU)
+#' @param optimal.value vector of p optimal values at the root (OU)
 #'     
 #' @return Nothing
 #' 
-#' 25/08/15 - Multivariate
+#' @keywords internal
+#' 
+# 25/08/15 - Multivariate
 ##
 
 check_dimensions <- function(p,
@@ -599,19 +609,19 @@ check_dimensions.shifts <- function(p, shifts){
 ##
 #' @title Find a reasonable grid for alpha
 #' 
-#' @details Grid so that 
+#' @description Grid so that 
 #' ln(2)*quantile(d_ij)/factor_up_alpha < t_{1/2} < factor_down_alpha * ln(2) * h_tree
-#' Ensure that for alpha_min, it is almost a BM, and for alpha_max,
+#' Ensures that for alpha_min, it is almost a BM, and for alpha_max,
 #' almost all the tips are decorrelated.
 #'
-#' @param phy: phylogenetic tree
-#' @param alpha: a vector of values
-#' @param nbr_alpha: the number of elements in the grid
-#' @param factor_up_alpha: factor for up scalability
-#' @param factor_down_alpha: factor for down scalability
-#' @param quantile_low_distance: quantile for min distance
+#' @param phy phylogenetic tree of class "\code{phylo}"
+#' @param alpha fixed vector of alpha values if already known. Default to NULL.
+#' @param nbr_alpha the number of elements in the grid
+#' @param factor_up_alpha factor for up scalability
+#' @param factor_down_alpha factor for down scalability
+#' @param quantile_low_distance quantile for min distance
 #'     
-#' @return A grid of alpha
+#' @return A grid of alpha values
 #' 
 #' @export
 #' 
@@ -629,20 +639,25 @@ find_grid_alpha <- function(phy, alpha = NULL,
   alpha_max <- factor_up_alpha / (2 * d_min)
   if (log_transform){
     return(c(0, exp(seq(log(alpha_min), log(alpha_max), length.out = nbr_alpha))))
-  }else {
+  } else {
     return(c(0, seq(alpha_min, alpha_max, length.out = nbr_alpha)))
   }
 }
 
 ##
 #' @title Transform branch length for a re-scaled BM
-#'
-#' @param phylo: phylogenetic tree
-#' @param alpha: a vector of values
-#'     
-#' @return same phylogenetic tree, with transformed branch lengths
 #' 
-#' 25/08/15 - Multivariate
+#' @description Re-scale the branch length of the tree so that a BM running
+#' on the new tree produces the same observations at the tips than an OU with
+#' parameter alpha.
+#'
+#' @param phylo A phylogenetic tree of class 'phylo', with branch lengths.
+#' @param alpha Value of the selection strength.
+#'     
+#' @return phylo The same phylogenetic tree, with transformed branch lengths.
+#' 
+#' @export
+# 25/08/15 - Multivariate
 ##
 transform_branch_length <- function(phylo, alp){
   if (alp == 0){
@@ -664,12 +679,16 @@ transform_branch_length <- function(phylo, alp){
 
 ##
 #' @title Scale variance and selection strenght from a linear transform
+#' 
+#' @description Used for process equivalencies on re-scaled trees.
 #'
-#' @param params: parameters
-#' @param f: factor of the linear transform. If t' = f * t, the function takes parameters
-#' from phylo' back to phylo.
+#' @param params Parameters list
+#' @param f Factor of the linear transform. If t' = f * t, the function takes
+#' parameters from phylo' back to phylo.
 #'     
 #' @return re-scaled parameters
+#' 
+#' @keywords internal
 #' 
 ##
 scale_params <- function(params, f){
@@ -685,9 +704,11 @@ scale_params <- function(params, f){
 #' process with p independent traits into p params objects.
 #' The reverse operation is done by \code{merge_params_independent}
 #'
-#' @param params: parameters
+#' @param params parameters
 #'     
 #' @return A list of p parameters
+#' 
+#' @keywords internal
 #' 
 ##
 split_params_independent <- function(params){
@@ -731,6 +752,8 @@ split_params_independent <- function(params){
 #' @param params_split: a list of parameters
 #'     
 #' @return A parameter object
+#' 
+#' @keywords internal
 #' 
 ##
 merge_params_independent <- function(params_split){

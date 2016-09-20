@@ -16,8 +16,6 @@ check.selection.strength(process, selection.strength = NA, eps = 10^(-6),
 }
 \value{
 character : "BM" or "OU"
-
-16/06/14 - Initial release
 }
 \description{
 \code{check.selection.strength} checks, if the process is an OU, if the
@@ -29,4 +27,5 @@ This function return a process in a form of a character. If the entry
 process is "BM", then nothing is done. If it is "OU", then the verification
 of the selection strength is done.
 }
+\keyword{internal}
 

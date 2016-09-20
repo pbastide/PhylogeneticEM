@@ -15,8 +15,6 @@ log_likelihood.OU(Y, phylo, params, ...)
 }
 \value{
 boolean
-
-02/10/14 - Initial release
 }
 \description{
 \code{likelihood.OU} computes the likelihhod of the data given a model. This
@@ -25,4 +23,5 @@ is a non-efficient debugging function.
 \details{
 This function uses functions \code{compute_mean_variance.simple}, \code{compute_times_ca}, \code{compute_dist_phy}, \code{compute_log_likelihood.simple}
 }
+\keyword{internal}
 

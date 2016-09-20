@@ -18,4 +18,5 @@ row vector of the same size as entry matrix.
 \details{
 This function is used in function \code{merge_complementary_vectors}
 }
+\keyword{internal}
 

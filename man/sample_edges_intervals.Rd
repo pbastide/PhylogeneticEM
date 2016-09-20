@@ -22,4 +22,5 @@ regularly espaced on the height of the tree.
 In case where the tree is not ultrametric, its "height" is defined as the minimum
 tip height.
 }
+\keyword{internal}
 

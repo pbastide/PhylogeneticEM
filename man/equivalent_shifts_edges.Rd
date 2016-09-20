@@ -14,6 +14,8 @@ equivalent_shifts_edges(phylo, shifts_edges, ...)
 \value{
 a matrix with as many columns as equivalent allocation, each column
  representing a possible parsimonious allocation of shifts on the tree.
+ 
+ @export
 }
 \description{
 \code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to find all

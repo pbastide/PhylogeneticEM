@@ -22,4 +22,5 @@ This function computes the cost of putting the parent in a state k, as the
 minimum number of shifts needed to get the given clustering of the trees bellow
 parental node.
 }
+\keyword{internal}
 

@@ -12,12 +12,12 @@ parsimonyCost(phylo, clusters = rep(1, length(phylo$tip.label)))
 \item{clusters}{the vector of the clusters of the tips.}
 }
 \value{
-A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed 
+A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed
 to get the clustering, if starting from a node in state k.
 }
 \description{
-\code{parsimonyCost} is an implementation of the Sankoff algorithm, when the cost of
-transition between two state is always one.
+\code{parsimonyCost} is an implementation of the Sankoff algorithm,
+ when the cost of transition between two state is always one.
 }
 \details{
 This functin does a recursion up the tree, using functions 

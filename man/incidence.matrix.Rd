@@ -11,8 +11,6 @@ incidence.matrix(phylo)
 }
 \value{
 Matrix of incidence.
-
-17/06/14 - Initial release
 }
 \description{
 \code{incidence.matrix} computes the incidence matrix T of a tree : for a 

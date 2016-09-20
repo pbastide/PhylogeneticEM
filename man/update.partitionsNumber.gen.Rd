@@ -16,8 +16,6 @@ partitions with k groups compatible with the sub tree starting at the
 current node ; and for k=(npart+1):2*npart, it contains the number of
 "marqued" partitions with (k-npart) groups compatible with the sub tree
 starting at the current node.
-
-05/06/14 - Initial release
 }
 \description{
 \code{update.partitionsNumber.gen} apply the actualisation formula to get
@@ -27,4 +25,5 @@ Nk and Ak of a node given its daughters.
 Uses functions \code{sum.partitions} and \code{sum.simplex} to compute
 the needed sums.
 }
+\keyword{internal}
 

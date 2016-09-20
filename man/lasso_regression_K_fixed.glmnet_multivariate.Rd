@@ -18,8 +18,6 @@ lasso_regression_K_fixed.glmnet_multivariate(Yp, Xp, K, root = NULL,
 E0.gauss the intercept (value at the root)
 
 shifts.gauss the list of shifts found on the branches
-
-06/10/14 - Initial release
 }
 \description{
 \code{lasso_regression_K_fixed} does the following regression :
@@ -34,4 +32,5 @@ lambda is choosen so that delta has the right number of non zero components.
 If not possible, either temporaly raise the number of shifts and then select
 only the shifts with the highest modulus, or if not possible, throw an error.
 }
+\keyword{internal}
 

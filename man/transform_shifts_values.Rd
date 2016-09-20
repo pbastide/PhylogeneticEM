@@ -22,4 +22,5 @@ given an OU with alpha = from, and gives back the equivelent shifts values that 
 same structure with an OU with alpha = to. If from or to is 0, then the process is supposed
 to be a BM.
 }
+\keyword{internal}
 

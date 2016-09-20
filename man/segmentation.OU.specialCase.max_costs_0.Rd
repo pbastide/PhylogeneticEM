@@ -21,9 +21,6 @@ of function \code{compute_M.OU.specialCase}}
 List containing : beta_0 : the optimal value at the root
                           shifts : list containing the computed tau and delta
                           costs : vector of costs
-
-10/06/14 - Initial release
-06/10/14 - Change name to include other algorithms
 }
 \description{
 \code{segmentation.OU.specialCase.max_costs_0} performs the first segmentation 
@@ -33,4 +30,5 @@ algorithm described.
 This function takes the largest values of costs0, and make them null,
  thanks to delta and tau.
 }
+\keyword{internal}
 

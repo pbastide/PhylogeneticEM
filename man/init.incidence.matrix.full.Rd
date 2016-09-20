@@ -11,8 +11,6 @@ init.incidence.matrix.full(phy)
 }
 \value{
 Matrix of size ntaxa + nNodes.
-
-06/10/14 - Initial release
 }
 \description{
 \code{init.incidence.matrix.full} initialize the matrix updated in
@@ -25,4 +23,5 @@ represent its parental branch. A row corresponding to a tip i is initialized
 to a vector of zeros, with only entry i equal to one. (Branch ending at 
 tip i is only in the i^th lineage)
 }
+\keyword{internal}
 

@@ -29,4 +29,8 @@ See Birge Massart (2001).
 Must be applied to least-square crierion.
 This penalty should be calibrated using the slope heuristic.
 }
+\seealso{
+\code{\link{penalty_BirgeMassart_shape1}},
+\code{\link{penalty_BaraudGiraudHuet_likelihood}}
+}
 

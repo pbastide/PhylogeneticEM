@@ -14,8 +14,6 @@ partition in 1<=k<=K groups for one of the p children of a given node}
 }
 \value{
 double : the result of the product.
-
-05/06/14 - Initial release
 }
 \description{
 \code{prod.index} return the procuct of choosen elements of a matrix.
@@ -26,4 +24,5 @@ elements given by \code{xsimplex}.
 Performs the product : X[1,Id[1]]*X[2,Id[2]]*...*X[p,Id[p]] if all the
 elements of Id are positive. Otherwise, just return 0.
 }
+\keyword{internal}
 

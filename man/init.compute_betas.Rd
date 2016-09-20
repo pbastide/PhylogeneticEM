@@ -14,8 +14,8 @@ init.compute_betas(phy, optimal.value, ...)
 \value{
 Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
  at the root.
-
-06/10/14 - Initial release
+ 
+ @keywords internal
 }
 \description{
 \code{init.compute_betas} initialize the vector of optimal values at nodes and

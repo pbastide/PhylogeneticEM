@@ -32,4 +32,8 @@ Must be applied to log-likelihood crierion.
 Function pen is computed using function \code{penalty} from package
 \code{LINselect}.
 }
+\seealso{
+\code{\link{penalty_BirgeMassart_shape1}},
+\code{\link{penalty_BirgeMassart_shape2}}
+}
 

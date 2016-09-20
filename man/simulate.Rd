@@ -49,6 +49,8 @@ paramSimu An array with dimentions p x nNodes x 2 (BM)
  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.
+ 
+ @export
 }
 \description{
 \code{simulate} simulate a stochastic process on a tree.

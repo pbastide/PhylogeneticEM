@@ -9,25 +9,25 @@ find_grid_alpha(phy, alpha = NULL, nbr_alpha = 10, factor_up_alpha = 2,
   log_transform = TRUE, ...)
 }
 \arguments{
-\item{phy:}{phylogenetic tree}
+\item{phy}{phylogenetic tree of class "\code{phylo}"}
 
-\item{alpha:}{a vector of values}
+\item{alpha}{fixed vector of alpha values if already known. Default to NULL.}
 
-\item{nbr_alpha:}{the number of elements in the grid}
+\item{nbr_alpha}{the number of elements in the grid}
 
-\item{factor_up_alpha:}{factor for up scalability}
+\item{factor_up_alpha}{factor for up scalability}
 
-\item{factor_down_alpha:}{factor for down scalability}
+\item{factor_down_alpha}{factor for down scalability}
 
-\item{quantile_low_distance:}{quantile for min distance}
+\item{quantile_low_distance}{quantile for min distance}
 }
 \value{
-A grid of alpha
+A grid of alpha values
 }
-\details{
+\description{
 Grid so that 
 ln(2)*quantile(d_ij)/factor_up_alpha < t_{1/2} < factor_down_alpha * ln(2) * h_tree
-Ensure that for alpha_min, it is almost a BM, and for alpha_max,
+Ensures that for alpha_min, it is almost a BM, and for alpha_max,
 almost all the tips are decorrelated.
 }
 

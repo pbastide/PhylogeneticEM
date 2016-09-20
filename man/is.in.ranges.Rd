@@ -15,8 +15,6 @@ is.in.ranges(p, min, max)
 }
 \value{
 boolean
-
-16/07/14 - Initial release
 }
 \description{
 \code{is.in.ranges.params} checks whether calculated parameters in the EM are
@@ -25,4 +23,5 @@ in the defined ranges.
 \details{
 This function is used to test the convergence of the algorithm.
 }
+\keyword{internal}
 

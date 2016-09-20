@@ -20,4 +20,5 @@ This is the same function as \code{qr.solve}, but it throws an error if an exact
 be found (instead of returning a least square fitted value, which is the default behavior
 of \code{qr.solve}).
 }
+\keyword{internal}
 

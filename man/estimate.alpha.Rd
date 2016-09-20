@@ -25,9 +25,6 @@ the user}
 }
 \value{
 double : estimation of alpha
-
-09/07/14 - Initial release
-02/10/14 - Take newly estimated shifts into consideration
 }
 \description{
 \code{optimize} to maximize function
@@ -40,4 +37,5 @@ This function uses functions \code{compute_var_diff.OU}
 and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
 root is stationary, and shifts at nodes.
 }
+\keyword{internal}
 

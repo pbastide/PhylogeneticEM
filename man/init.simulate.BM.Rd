@@ -7,17 +7,21 @@
 init.simulate.BM(phy, p, root.state, simulate_random, ...)
 }
 \arguments{
-\item{root.state}{(list): state of the root, with:
+\item{phy}{Input tree.}
+
+\item{root.state}{(list) State of the root, with:
 random : random state (TRUE) or deterministic state (FALSE)
 value.root : if deterministic, value of the character at the root
 exp.root : if random, expectation of the character at the root
 var.root : if random, variance of the character at the root (pxp matrix)}
-
-\item{phy:}{Input tree.}
 }
 \value{
-paramSimu: array p x nNodes x 2 (BM), filled with NAs.
-Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated states and root
-expectarions for all the traits.
+paramSimu Array p x nNodes x 2 (BM), filled with NAs.
+Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated
+states and root expectarions for all the traits.
 }
+\description{
+Function used in \code{\link{simultate}} for BM initialisation.
+}
+\keyword{internal}
 

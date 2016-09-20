@@ -7,13 +7,16 @@
 transform_branch_length(phylo, alp)
 }
 \arguments{
-\item{phylo:}{phylogenetic tree}
+\item{phylo}{A phylogenetic tree of class 'phylo', with branch lengths.}
 
-\item{alpha:}{a vector of values}
+\item{alpha}{Value of the selection strength.}
 }
 \value{
-same phylogenetic tree, with transformed branch lengths
-
-25/08/15 - Multivariate
+phylo The same phylogenetic tree, with transformed branch lengths.
+}
+\description{
+Re-scale the branch length of the tree so that a BM running
+on the new tree produces the same observations at the tips than an OU with
+parameter alpha.
 }
 

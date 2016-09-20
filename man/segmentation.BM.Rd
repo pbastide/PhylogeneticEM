@@ -17,8 +17,6 @@ segmentation.BM(nbr_of_shifts, costs0, diff_exp)
 List containing : edges_max : array of nbr_of_shifts edges where
 costs0 is maximal.
                           shifts:list containing the computed tau and delta
-
-02/06/14 - Initial release
 }
 \description{
 \code{segmentation.BM} performs the segmentation algorithm described.
@@ -27,4 +25,5 @@ costs0 is maximal.
 This function takes the largest values of costs0, and make them null,
  thanks to delta and tau.
 }
+\keyword{internal}
 

@@ -23,8 +23,6 @@ of function \code{compute_M.OU.specialCase}}
 List containing : beta_0 : the optimal value at the root
                           shifts : list containing the computed tau and delta
                           costs : vector of costs
-
-06/10/14 - Initial release
 }
 \description{
 \code{segmentation.OU.specialCase.same_shifts_same_values} keeps the same
@@ -35,4 +33,5 @@ at least better than the previous step.
 This function takes the old shifts parameters, and compute costs with the new
  moments.
 }
+\keyword{internal}
 

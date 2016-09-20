@@ -9,14 +9,12 @@ test.root.state(root.state, process = c("BM", "OU", "scOU"), ...)
 \arguments{
 \item{root.state}{A list giving the root state}
 
-\item{process}{"BM" or "OU"}
+\item{process}{"BM", "OU" or "scOU"}
 
 \item{...}{parameters of the process (if OU)}
 }
 \value{
 Coherent list root.state.
-
-28/05/14 - Initial release
 }
 \description{
 \code{test.root.state} test wether the parameters of root.state given
@@ -24,6 +22,8 @@ by the user are coherent. If not, it returns a new corrected list to
 define root.state.
 }
 \details{
-To test coherence, the following priorities are applied : random > stationary.root > values.root = exp.root = var.root
+To test coherence, the following priorities are applied:
+ random > stationary.root > values.root = exp.root = var.root
 }
+\keyword{internal}
 

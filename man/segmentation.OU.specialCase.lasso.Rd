@@ -21,8 +21,6 @@ of function \code{compute_M.OU.specialCase}}
 List containing : beta_0 : the optimal value at the root
                           shifts : list containing the computed tau and delta
                           costs : vector of costs
-                          
-06/10/14 - Initial release
 }
 \description{
 \code{segmentation.OU.specialCase.lasso} performs the segmentation using a 
@@ -34,4 +32,5 @@ This function re-write the sum of costs to be minimized as a least squares
  functions \code{incidence.matrix.full} to express the problem as a 
  linear model.
 }
+\keyword{internal}
 

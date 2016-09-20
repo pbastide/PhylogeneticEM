@@ -21,5 +21,10 @@ var.root : if random, variance of the character at the root (pxp matrix)}
 paramSimu: array p x nNodes x 3, filled with NAs.
 Slice paramSimu[, ntaxa + 1, ] (array p x 3) is initialized with simulated states, root
 expectations, and optimal values for all the traits.
+ 
+ @keywords internal
+}
+\description{
+Function used in \code{\link{simultate}} for OU initialisation.
 }
 

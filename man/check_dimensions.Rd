@@ -8,7 +8,9 @@ check_dimensions(p, root.state, shifts, variance, selection.strength = NULL,
   optimal.value = NULL)
 }
 \arguments{
-\item{root.state}{(list): state of the root, with:
+\item{p}{dimention of the trait simulated}
+
+\item{root.state}{(list) state of the root, with:
 random : random state (TRUE) or deterministic state (FALSE)
 value.root : if deterministic, value of the character at the root
 exp.root : if random, expectation of the character at the root
@@ -20,20 +22,18 @@ values : matrix p x K of values of the shifts on the edges (one column = one shi
 relativeTimes : vector of dimension K of relative time of the shift from the
 parentnode of edges}
 
-\item{p:}{dimention of the trait simulated}
+\item{variance}{variance-covariance matrix size p x p}
 
-\item{variance:}{variance-covariance matrix size p x p}
+\item{optimal.value}{vector of p optimal values at the root (OU)}
 
-\item{selection.strenght:}{matrix of selection strength size p x p (OU)}
-
-\item{optimal.value:}{vector of p optimal values at the root (OU)}
+\item{selection.strenght}{matrix of selection strength size p x p (OU)}
 }
 \value{
 Nothing
-
-25/08/15 - Multivariate
 }
 \description{
-\code{check_dimensions} checks dimensions of the parameters. If wrong, throw an error.
+\code{check_dimensions} checks dimensions of the parameters. 
+If wrong, throw an error.
 }
+\keyword{internal}
 

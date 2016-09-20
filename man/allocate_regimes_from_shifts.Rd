@@ -13,8 +13,6 @@ allocate_regimes_from_shifts(phylo, shifts_edges)
 }
 \value{
 Vector of size (ntaxa + nNodes) of the regimes of each node and tip.
-
-10/10/14 - Initial release
 }
 \description{
 \code{allocate_regimes_from_shifts} allocate a number (from 0 to the number 

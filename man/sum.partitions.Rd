@@ -22,8 +22,6 @@ partition in 1<=k<=K groups for one of the p children of a given node}
 }
 \value{
 double : the result of the sum.
-
-05/06/14 - Initial release
 }
 \description{
 \code{sum.partitions} returns the sum on all I subset of [1,p], with |I|>m.
@@ -32,4 +30,5 @@ double : the result of the sum.
 This function applies \code{sum.partitions.cardFixed} to all integer between
 m and p, and sum the results.
 }
+\keyword{internal}
 

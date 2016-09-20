@@ -16,8 +16,6 @@ partition in 1<=k<=K groups for one of the p children of a given node}
 }
 \value{
 double : the result of the sum.
-
-05/06/14 - Initial release
 }
 \description{
 \code{sum.simplex} returns the sum on k_1+...+k_p=K, k_i>0 of the products
@@ -28,4 +26,5 @@ This function uses \code{xsimplex} to perform the product of NN[i,k_i] for
 all combination of k_i such that k_1+...+k_p=K, k_i>0, using function
 \code{prod.index}. Then sum all the products.
 }
+\keyword{internal}
 

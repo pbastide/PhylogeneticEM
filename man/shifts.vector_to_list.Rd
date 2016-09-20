@@ -16,12 +16,8 @@ Vector of length nbranch.
 \code{shifts.vector_to_list} takes the vectorial description of the shifts 
 to create the list description of the shifts.
 }
-\details{
-
-}
 \seealso{
 \code{shifts.list_to_vector}
-
-26/08/15 - Initial release
 }
+\keyword{internal}
 

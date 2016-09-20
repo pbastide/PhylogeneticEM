@@ -135,7 +135,9 @@ update.partitionsNumber.bin <- function(daughtersParams, ...){
 #' "marqued" partitions with (k-npart) groups compatible with the sub tree
 #' starting at the current node.
 #'
-#'05/06/14 - Initial release
+#' @keywords internal
+#' 
+#05/06/14 - Initial release
 ##
 update.partitionsNumber.gen <- function(daughtersParams, ...){
   npart <- dim(daughtersParams)[2]%/%2
@@ -199,8 +201,10 @@ extract.partitionsNumber <- function(nbrCompatiblePartitions, node=attr(nbrCompa
 #' @param Id a vector of length p, result of the function \code{xsimplex}.
 #'
 #' @return double : the result of the product.
+#' 
+#' @keywords internal
 #'
-#'05/06/14 - Initial release
+#05/06/14 - Initial release
 ##
 prod.index <- function(X,Id){
   if (0 %in% Id) return(0) # Indice hors limites
@@ -225,8 +229,10 @@ prod.index <- function(X,Id){
 #' @param p an integer. The number of daughters of a node.
 #'
 #' @return double : the result of the sum.
+#' 
+#' @keywords internal
 #'
-#'05/06/14 - Initial release
+#05/06/14 - Initial release
 ##
 sum.simplex <- function (NN, K, p) {
   return(sum(xsimplex(p, K, fun=prod.index, simplify=TRUE, X=NN)))
@@ -253,8 +259,10 @@ sum.simplex <- function (NN, K, p) {
 #' @param p an integer. The number of daughters of a node.
 #'
 #' @return double : the result of the sum.
+#' 
+#' @keywords internal
 #'
-#'05/06/14 - Initial release
+#05/06/14 - Initial release
 ##
 sum.prod.comb <- function(I, A, N, K, p){
   KK <- K+length(I)-1
@@ -285,8 +293,10 @@ sum.prod.comb <- function(I, A, N, K, p){
 #' @param cardI an integer. The cardinal of the subset wanted.
 #'
 #' @return double : the result of the sum.
+#' 
+#' @keywords internal
 #'
-#'05/06/14 - Initial release
+#05/06/14 - Initial release
 ##
 sum.partitions.cardFixed <- function(A, N, K, p, cardI){
   return(sum(combn(p, cardI, fun=sum.prod.comb, simplify=TRUE, A=A, N=N, K=K, p=p)))
@@ -312,8 +322,10 @@ sum.partitions.cardFixed <- function(A, N, K, p, cardI){
 #' @param m an integer. The minimum cadinal of a subset allowed.
 #'
 #' @return double : the result of the sum.
+#' 
+#' @keywords internal
 #'
-#'05/06/14 - Initial release
+#05/06/14 - Initial release
 ##
 sum.partitions <- function(A, N, K, p, m) {
   return(sum(sapply(m:p, function(x) sum.partitions.cardFixed(A,N,K,p,x))))

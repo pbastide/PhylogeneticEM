@@ -15,8 +15,6 @@ update.allocate_regimes_from_shifts(edgeNbr, ancestral, shifts_edges, ...)
 }
 \value{
 regime of the daughter node.
-
-10/10/14 - Initial release
 }
 \description{
 \code{update.allocate_regimes_from_shifts} computes the regime of a daughter 
@@ -27,4 +25,5 @@ This function is used in function \code{allocate_regimes_from_shifts} and is
 designed to furnish function \code{recursionDown} with the right structure of
  data.
 }
+\keyword{internal}
 

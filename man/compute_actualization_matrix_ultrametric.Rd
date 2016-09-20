@@ -24,4 +24,5 @@ matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
 \details{
 Carreful: the root is not taken into account in this function.
 }
+\keyword{internal}
 

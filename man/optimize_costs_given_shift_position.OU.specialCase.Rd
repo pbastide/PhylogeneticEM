@@ -21,8 +21,6 @@ of function \code{compute_M.OU.specialCase}}
 List containing : beta_0 : the optimal value at the root
                           shifts : list containing the computed tau and delta
                           costs : vector of costs
-
-15/10/14 - Initial release
 }
 \description{
 \code{optimize_costs_given_shift_position.OU.specialCase} minimize the sum of
@@ -35,4 +33,5 @@ using function \code{compute_diff_exp.OU}, in the values of the optimal values
 betas (using a close formula). It then goes back to a shift expression of the
 problem using function \code{compute_shifts_from_betas}.
 }
+\keyword{internal}
 

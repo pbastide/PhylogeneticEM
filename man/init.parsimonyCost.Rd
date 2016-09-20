@@ -23,4 +23,5 @@ NAs everywhere, except for the tips.
 At a tip i in state k, the line-vector is initialized as follow : 
 (1 - Ind(k=p)_{1<=p<=nclus})*Inf (where Inf * 0 = 0)
 }
+\keyword{internal}
 

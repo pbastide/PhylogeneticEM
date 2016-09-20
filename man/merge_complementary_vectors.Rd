@@ -23,4 +23,5 @@ for each entry), and merge them into one.
 The vectors are selected from the entry matrix by comb. At each entry, the vectors
 are added using function \code{add_complementary}.
 }
+\keyword{internal}
 

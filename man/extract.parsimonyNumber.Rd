@@ -9,9 +9,12 @@ extract.parsimonyNumber(Reconstructions,
 }
 \arguments{
 \item{Reconstructions}{two (ntaxa + nNodes)x(nclus) matrices, result of function
-\code{pasimonyNumber}, with :
-   -- nbrReconstructions the matrix of number of local parsimonious solutions.
-   -- costReconstructions the matrix of costs (i.e number of shifts).}
+\code{\link{pasimonyNumber}}, with :
+\describe{
+ \item{nbrReconstructions}{the matrix of number of local parsimonious 
+ solutions.}
+ \item{costReconstructions}{the matrix of costs (i.e number of shifts).}
+}}
 
 \item{node}{the root node of the subtree. By default, the root of the tree.}
 }
@@ -20,12 +23,12 @@ An integer giving the number of equivalent parsimonious solutions.
 }
 \description{
 \code{extract.parsimonyNumber} takes the two matrices computed by 
-\code{parsimonyNumber}, and compute the atual number of parsimonious solution for
-any subtree starting from a given node.
+\code{\link{parsimonyNumber}}, and compute the actual number of parsimonious
+solution for any subtree starting from a given node.
 }
 \details{
-The parsimonious solutions are the one with the minimum number of shifts (that are
-given by matrice costReconstructions). This function sums the number of 
+The parsimonious solutions are the one with the minimum number of shifts (that
+are given by matrice costReconstructions). This function sums the number of 
 solutions (given in matrice nbrReconstructions) that have the minimum number of 
 shifts.
 }

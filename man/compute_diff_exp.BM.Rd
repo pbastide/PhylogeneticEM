@@ -19,4 +19,5 @@ the quantity E[Z_i|Y]-E[Z_pa(i)|Y].
 \code{compute_diff_exp} compute the differences of conditional expectations between all the
 nodes and their parents.
 }
+\keyword{internal}
 

@@ -26,4 +26,5 @@ to impute missing data.
 This function assume that there are no shifts on the tree. It is only a first approximation
 for initialization purposes.
 }
+\keyword{internal}
 

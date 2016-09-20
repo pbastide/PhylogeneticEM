@@ -24,4 +24,5 @@ the tips are initialized with a list of nclus matrices. For tip i of group k, al
 matrices are set to NULL, exept for the kth, set to a vector of size
 nNodes + ntaxa, with entry i set to k, and all the others to NA.
 }
+\keyword{internal}
 

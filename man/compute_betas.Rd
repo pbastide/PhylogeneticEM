@@ -16,8 +16,6 @@ compute_betas(phylo, optimal.value, shifts)
 \value{
 Vector of size (ntaxa + nNodes) of the ptimal values at the tips
 of the tree.
-
-06/10/14 - Initial release
 }
 \description{
 \code{compute_betas} computes the optimal values at the nodes and tips of the

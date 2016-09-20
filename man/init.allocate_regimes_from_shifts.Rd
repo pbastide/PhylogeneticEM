@@ -11,8 +11,6 @@ init.allocate_regimes_from_shifts(phy, ...)
 }
 \value{
 Matrix of size (nNodes + ntaxa)x1 of NAs, with the 0 at the root.
-
-10/10/14 - Initial release
 }
 \description{
 \code{init.allocate_regimes_from_shifts} initialize the vector of regimes 
@@ -23,4 +21,5 @@ This function is used in function \code{allocate_regimes_from_shifts} and is
 designed to furnish function \code{update.allocate_regimes_from_shifts} with 
 the right structure of data.
 }
+\keyword{internal}
 

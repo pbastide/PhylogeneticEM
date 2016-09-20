@@ -38,6 +38,11 @@
 #' (as suggested in Cleymen Lebarbier 2015)
 #' 
 #' @return value of the penalty
+#' 
+#' @seealso \code{\link{penalty_BaraudGiraudHuet_likelihood}},
+#' \code{\link{penalty_BirgeMassart_shape2}}
+#' 
+#' @export
 #'
 ##
 penalty_BirgeMassart_shape1 <- function(K, p, model_complexity, B = 0.1){
@@ -108,7 +113,12 @@ assign_selected_model_capushe <- function(res, cap_res){
 #' (as suggested in Lebarbier 2005)
 #' 
 #' @return value of the penalty.
-#'
+#' 
+#' @seealso \code{\link{penalty_BirgeMassart_shape1}},
+#' \code{\link{penalty_BaraudGiraudHuet_likelihood}}
+#' 
+#' @export
+#' 
 ##
 
 penalty_BirgeMassart_shape2 <- function(K, p, model_complexity, C = 2.5){
@@ -150,6 +160,11 @@ model_selection_BM2 <- function(res, C.BM2, ...){
 #' (as suggested in Baraud Giraud Huet (2009))
 #' 
 #' @return value of the penalty.
+#' 
+#' @seealso \code{\link{penalty_BirgeMassart_shape1}},
+#' \code{\link{penalty_BirgeMassart_shape2}}
+#' 
+#' @export
 #'
 ##
 

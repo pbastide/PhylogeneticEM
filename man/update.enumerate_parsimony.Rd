@@ -30,4 +30,5 @@ node in that regime. It uses functions \code{select.matrices} to select the
 possible states of the children, and \code{matrix_of_possibles} to find the 
 possible states.
 }
+\keyword{internal}
 

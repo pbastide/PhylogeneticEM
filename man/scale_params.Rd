@@ -7,12 +7,16 @@
 scale_params(params, f)
 }
 \arguments{
-\item{params:}{parameters}
+\item{params}{Parameters list}
 
-\item{f:}{factor of the linear transform. If t' = f * t, the function takes parameters
-from phylo' back to phylo.}
+\item{f}{Factor of the linear transform. If t' = f * t, the function takes
+parameters from phylo' back to phylo.}
 }
 \value{
 re-scaled parameters
 }
+\description{
+Used for process equivalencies on re-scaled trees.
+}
+\keyword{internal}
 

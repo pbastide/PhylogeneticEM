@@ -7,9 +7,9 @@
 shifts_to_simmap(tree, shifts_edges)
 }
 \arguments{
-\item{tree}{: imput tree}
+\item{tree}{imput tree in "\code{phylo}" format}
 
-\item{shifts_edges}{: shifts positions on the edges}
+\item{shifts_edges}{shifts positions on the edges}
 }
 \value{
 tree a simmap object

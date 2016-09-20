@@ -14,8 +14,6 @@ node and tip.}
 }
 \value{
 list of shifts
-
-13/10/14 - Initial release
 }
 \description{
 \code{compute_shifts_from_betas} computes the list of shifts corresponding

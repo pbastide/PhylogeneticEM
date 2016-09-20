@@ -17,8 +17,6 @@ recursionDown(phy, params, updateDown, ...)
 }
 \value{
 Matrix of parameters updated.
-
-21/05/14 - Initial release
 }
 \description{
 \code{recursionDown} uses the function \code{updateDown} to compute
@@ -29,4 +27,5 @@ This functin is to be used in other more complex function that need to
 update a quantity from the root to the tips of a tree. Note that the
 input tree must be in claddewise order.
 }
+\keyword{internal}
 

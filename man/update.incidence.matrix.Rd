@@ -13,8 +13,6 @@ daughters of the current node.}
 \value{
 Vector of length ntaxa, indicating to which lineages the branch
 above the current node belongs to.
-
-17/06/14 - Initial release
 }
 \description{
 \code{update.incidence.matrix} updates the matrix initialized in 
@@ -24,4 +22,5 @@ in \code{incidence.matrix}.
 \details{
 A node belongs to all the lineages of its daughters.
 }
+\keyword{internal}
 

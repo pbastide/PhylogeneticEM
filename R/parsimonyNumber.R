@@ -22,8 +22,8 @@
 #' @title Minimal number of shifts needed to get a clustering.
 #'
 #' @description
-#' \code{parsimonyCost} is an implementation of the Sankoff algorithm, when the cost of
-#' transition between two state is always one.
+#' \code{parsimonyCost} is an implementation of the Sankoff algorithm,
+#'  when the cost of transition between two state is always one.
 #'
 #' @details
 #' This functin does a recursion up the tree, using functions 
@@ -34,8 +34,10 @@
 #' @param phylo phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
 #' 
-#' @return A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed 
+#' @return A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed
 #' to get the clustering, if starting from a node in state k.
+#' 
+#' @export
 ##
 parsimonyCost <- function(phylo, 
                           clusters = rep(1, length(phylo$tip.label))){
@@ -65,6 +67,8 @@ parsimonyCost <- function(phylo,
 #' 
 #' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
 #' described.
+#' 
+#' @keywords internal
 ##
 init.parsimonyCost <- function(phy,clusters){
   ntaxa <- length(phy$tip.label)
@@ -93,6 +97,8 @@ init.parsimonyCost <- function(phy,clusters){
 #' for the daughters node.
 #' 
 #' @return A line vector corresponding to the parent node.
+#' 
+#' @keywords internal
 ##
 update.parsimonyCost <- function(daughtersParams, ...){
   # require(plyr)
@@ -136,17 +142,24 @@ extract.parsimonyCost <- function(costReconstructions,
 #' and \code{update.parsimonyNumber} for the actualisation of the parameters.
 #' The function \code{extract_parsimonyNumber} furnishes the result seeked for any
 #' subtree.
-#' The matrix of costs of the states (number of shifts) is also required, it is computed
-#' by function \code{parsimonyCost}.
+#' The matrix of costs of the states (number of shifts) is also required, it is
+#' computed by function \code{parsimonyCost}.
 #'
 #' @param phylo phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
 #' 
-#' @return nbrReconstructions a (ntaxa + nNodes) x (nclus) matrix of loccaly parsimonious
-#'  solutions starting from a cluster k at a given node.
-#' @return costReconstructions a (ntaxa + nNodes) x (nclus) matrix of the total number of
-#' shifts needed to get the clustering, if starting from a node in state k (result of function
-#' \code{parsimonyCost}.
+#' @return named list, with:
+#' \describe{
+#'  \item{nbrReconstructions}{a (ntaxa + nNodes) x (nclus)
+#'  matrix of loccaly parsimonious solutions starting from a cluster k at a
+#'  given node}
+#'  \item{costReconstructions}{a (ntaxa + nNodes) x (nclus) matrix of the total
+#'  number of shifts needed to get the clustering, if starting from a node in 
+#'  state k (result of function \code{\link{parsimonyCost}}.}
+#' }
+#' 
+#' @export
+#' 
 ##
 parsimonyNumber <- function(phylo, 
                             clusters = rep(1, length(phylo$tip.label))){
@@ -182,6 +195,9 @@ parsimonyNumber <- function(phylo,
 #' 
 #' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
 #' described.
+#' 
+#' @keywords internal
+#' 
 ##
 init.parsimonyNumber <- function(phy, clusters){
   ntaxa <- length(phy$tip.label)
@@ -211,6 +227,9 @@ init.parsimonyNumber <- function(phy, clusters){
 #' @param cost the (ntaxa + nNode) x nclus matrix of costs (computed by \code{parsimonyCost}).
 #' 
 #' @return A line vector corresponding to the parent node.
+#' 
+#' @keywords internal
+#' 
 ##
 update.parsimonyNumber <- function(daughters, daughtersParams, cost, ...){
     nclus <- dim(daughtersParams)[2]
@@ -254,6 +273,9 @@ update.parsimonyNumber <- function(daughters, daughtersParams, cost, ...){
 #' 
 #' @return A (ndaughters) x (nclus) binary matrix indicating the admissible states for
 #' the daughters node when parent node is in state k.
+#' 
+#' @keywords internal
+#' 
 ##
 compute_state_filter <- function (cost, k) {
   nclus <- dim(cost)[2]
@@ -270,22 +292,27 @@ compute_state_filter <- function (cost, k) {
 #'
 #' @description
 #' \code{extract.parsimonyNumber} takes the two matrices computed by 
-#' \code{parsimonyNumber}, and compute the atual number of parsimonious solution for
-#' any subtree starting from a given node.
+#' \code{\link{parsimonyNumber}}, and compute the actual number of parsimonious
+#' solution for any subtree starting from a given node.
 #' 
 #' @details
-#' The parsimonious solutions are the one with the minimum number of shifts (that are
-#' given by matrice costReconstructions). This function sums the number of 
+#' The parsimonious solutions are the one with the minimum number of shifts (that
+#' are given by matrice costReconstructions). This function sums the number of 
 #' solutions (given in matrice nbrReconstructions) that have the minimum number of 
 #' shifts.
 #'
 #' @param Reconstructions two (ntaxa + nNodes)x(nclus) matrices, result of function
-#' \code{pasimonyNumber}, with :
-#'    -- nbrReconstructions the matrix of number of local parsimonious solutions.
-#'    -- costReconstructions the matrix of costs (i.e number of shifts).
+#' \code{\link{pasimonyNumber}}, with :
+#' \describe{
+#'  \item{nbrReconstructions}{the matrix of number of local parsimonious 
+#'  solutions.}
+#'  \item{costReconstructions}{the matrix of costs (i.e number of shifts).}
+#' }
 #' @param node the root node of the subtree. By default, the root of the tree.
 #' 
 #' @return An integer giving the number of equivalent parsimonious solutions.
+#' 
+#' @export
 ##
 extract.parsimonyNumber <- function(Reconstructions, 
                                     node = attr(Reconstructions$nbrReconstructions, "ntaxa") + 1){
@@ -311,6 +338,8 @@ extract.parsimonyNumber <- function(Reconstructions,
 #' @param tree phylogenetic tree
 #' 
 #' @return list of size n+m-1, entry i is the vector of tips bellow edge i.
+#' 
+#' @keywords internal
 #'
 ##
 enumerate_tips_under_edges <- function (tree) {
@@ -350,6 +379,8 @@ enumerate_tips_under_edges <- function (tree) {
 #' @param part.list a list giving the descendant tips of each edge
 #' 
 #' @return list of size n+m-1, entry i is the vector of tips bellow edge i.
+#' 
+#' @export
 #'
 ##
 clusters_from_shifts_ism <- function (tree, edges, part.list = enumerate_tips_under_edges(tree)) {
@@ -411,6 +442,8 @@ clusters_from_shifts_expectations <- function (tree,
 #' @param ... possibly, a list giving the descendant tips of each edge
 #' 
 #' @return boolean : TRUE if the allocation is parsimonious.
+#' 
+#' @export
 #'
 ##
 check_parsimony_ism <- function(tree, edges, ...){
@@ -471,6 +504,8 @@ check_parsimony_ism <- function(tree, edges, ...){
 #'  solutions for the subtree starting at node i. It is a list with nclus entries,
 #'  each entry being a matrix. A line of the kth matrix for the ith node is one
 #'  possible allocation of the shifts, starting with regime k for node i.
+#'  
+#'  @export
 ##
 enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
@@ -506,6 +541,8 @@ enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label)
 #' @param clusters a vector representing the group of each tip.
 #'
 #' @return A list of size nNode + ntaxa, as described above.
+#' 
+#' @keywords internal
 ##
 
 init.enumerate_parsimony <- function(phy, clusters, pos){
@@ -542,6 +579,8 @@ init.enumerate_parsimony <- function(phy, clusters, pos){
 #'
 #' @return A list of size nclus, each entry being a matrix representing the possible 
 #' allocations starting with node parent in state k.
+#' 
+#' @keywords internal
 ##
 update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost, clus, pos, ...){
   # Number of nodes and clusters
@@ -583,6 +622,8 @@ update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost,
 #' @param matrices a list of matrices with ndaughters entries.
 #'
 #' @return Matrix of all possible regimes fot the subtree bellow node parent.
+#' 
+#' @keywords internal
 ##
 matrix_of_possibles <- function(matrices){
   # Bind all the matrices together
@@ -616,6 +657,9 @@ matrix_of_possibles <- function(matrices){
 #' @param mat matrice containing the vectors as rows.
 #'
 #' @return row vector of the same size as entry matrix.
+#' 
+#' @keywords internal
+#' 
 ##
 merge_complementary_vectors <- function(comb, mat){
   z <- mat[comb,]
@@ -634,6 +678,8 @@ merge_complementary_vectors <- function(comb, mat){
 #' @param z a vector containing at most only one non-NA value.
 #'
 #' @return row vector of the same size as entry matrix.
+#' 
+#' @keywords internal
 ##
 add_complementary <- function(z){
   z <- na.omit(z)
@@ -653,6 +699,8 @@ add_complementary <- function(z){
 #'
 #' @return A matrix with ntaxa + nNode columns, and as many rows as the number of
 #' possible parsimonious reconstructions.
+#' 
+#' @export
 ##
 # extract.enumerate_parsimony <- function(allocations,
 #                                         node = attr(allocations, "ntaxa") + 1){
@@ -697,6 +745,8 @@ equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
 #'
 #' @return a matrix with as many columns as equivalent allocation, each column
 #'  representing a possible parsimonious allocation of shifts on the tree.
+#'  
+#'  @export
 ##
 equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
   if(!check_parsimony_ism(phylo, shifts_edges, ...)) stop("The edges entered are not parsimonious.")
@@ -731,9 +781,11 @@ equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
 #' \code{incidence.matrix}, actualized with coeficients computed by function 
 #' \code{incidence_matrix_actualization_factors}.
 #'
-#' @return shifts_values a matrix of shifts values corresponding to the shifts
-#' positions in eq_shifts_edges.
-#' @return betas_0 a vector of corresponding root optimal values.
+#' @return Named list, with "shifts_values" a matrix of shifts values
+#' corresponding to the shifts positions in eq_shifts_edges; and "betas_0" a
+#' vector of corresponding root optimal values.
+#' 
+#' @export
 ##
 equivalent_shifts_values <- function(phylo, 
                                      shifts, beta_0, 
@@ -771,6 +823,8 @@ equivalent_shifts_values <- function(phylo,
 #'
 #' @return vector, with first entry the values at the root, and other entries the 
 #' values of the shifts.
+#' 
+#' @export
 ##
 find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
   mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[, shifts_edges]) # stationary case assumption used here
@@ -797,6 +851,7 @@ find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
 #' @param tol the tolerance for detecting linear dependencies in the columns of x.
 #' Only used if LAPACK is false and x is real.
 #'
+#' @keywords internal
 ##
 qr.solve_exact <- function (a, b, tol = 1e-07) {
   if (!is.qr(a)) 
@@ -835,6 +890,8 @@ qr.solve_exact <- function (a, b, tol = 1e-07) {
 #' @param eq_shifts_values, result of function \code{equivalent_shifts_values}.
 #' @param PATH a string linking to the path were the plot is to be stored.
 #' @param name a name to be given to the plot.
+#' 
+#' @export
 #' 
 ##
 plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
@@ -938,6 +995,8 @@ plot_equivalent_shifts.actual <- function(phylo,
 #' taken to be a BM.
 #' @param to alpha value of the destination process
 #' @param phylo the phlogenetic tree (un-scaled)
+#' 
+#' @keywords internal
 #' 
 ##
 

@@ -17,11 +17,9 @@ compute_gauss_lasso(Ypt, Xp, delta, root, projection = which(rowSums(delta) !=
 \item{Yp}{(transformed) data}
 }
 \value{
-E0.gauss the intercept (value at the root)
-
-shifts.gauss the list of shifts found on the branches
-
-residuals the residuals of the regression
+Named list, with "E0.gauss" the intercept (value at the root);
+"shifts.gauss" the list of shifts found on the branches; and "residuals" the
+residuals of the regression
 }
 \description{
 \code{compute_gauss_lasso} takes the variables selected by a lasso procedure, and
@@ -36,4 +34,5 @@ then the "intercept" column of the matrix Xp (that has possibly been trough a
 multiplication with a cholesky decomposition of the variance) is included, rather
 than the intercept.
 }
+\keyword{internal}
 

@@ -25,4 +25,5 @@ the vectors of its daughters.
 This function uses function \code{compute_state_filter} to find all the admissible
 states of the daughters, given a starting state for the parent.
 }
+\keyword{internal}
 

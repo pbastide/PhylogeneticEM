@@ -9,17 +9,15 @@ correspondenceEdges(edges, from, to)
 \arguments{
 \item{edges}{vector of index of edges in the tree "from"}
 
-\item{from}{initial input tree}
+\item{from}{initial input tree (format "\code{phylo}")}
 
-\item{to}{aimed output tree}
+\item{to}{aimed output tree (format "\code{phylo}")}
 }
 \value{
 vector of index of edges in the tree "to"
-
-26/05/14
 }
 \description{
-\code{correspondenceEdges} takes edges numbers on an input tree, and gives back their
-corresponding numbers on the output tree.
+\code{correspondenceEdges} takes edges numbers on an input tree, and gives back
+their corresponding numbers on the output tree.
 }
 

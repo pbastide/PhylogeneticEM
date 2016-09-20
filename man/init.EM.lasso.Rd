@@ -31,9 +31,6 @@ init.EM.lasso(phylo, Y_data, Y_data_imp = Y_data,
 \value{
 params_init the list of initial parameters to be used, in the right
  format.
-
-18/06/14 - Initial release
-06/10/14 - Externalization of function lasso
 }
 \description{
 \code{init.EM.lasso} does the following regression :
@@ -48,4 +45,5 @@ delta the vectorial representation of the shifts (see functions
 A cholesky decomposition of function Sigma_YY^(-1) is used.
 lambda is choosen so that delta has the right number of non zero components.
 }
+\keyword{internal}
 

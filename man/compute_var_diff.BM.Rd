@@ -19,4 +19,5 @@ the quantity Var[Z_i-Z_pa(i)|Y].
 \code{compute_var_diff} computes variances of differences between all the
 nodes and their parents.
 }
+\keyword{internal}
 

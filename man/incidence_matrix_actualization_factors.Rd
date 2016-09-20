@@ -24,7 +24,5 @@ Matrix of size ntaxa x nedges
 (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
 This matrix is to be multiplied to the incidence matrix with an outer product.
 }
-\details{
-
-}
+\keyword{internal}
 

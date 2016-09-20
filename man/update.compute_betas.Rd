@@ -15,8 +15,6 @@ update.compute_betas(edgeNbr, ancestral, shifts, ...)
 }
 \value{
 Updated matrix of size (nNodes + ntaxa)x1.
-
-06/10/14 - Initial release
 }
 \description{
 \code{update.compute_betas} computes the optimal value at a daughter node, 
@@ -26,4 +24,5 @@ knowing the optimal value at the parent node and the vector of shifts.
 This function is used in function \code{compute_betas} and is designed to 
 furnish function \code{recursionDown} with the right structure of data.
 }
+\keyword{internal}
 

@@ -19,12 +19,7 @@ Matrix p x nEdges of length nbranch.
 to give the matricial representation of the shifts : the b th element of 
 the lth line has the value of the shift on character l occuring on that branch b
 }
-\details{
-
-}
 \seealso{
-\code{shifts.matrix_to_list}
-
-17/06/14 - Initial release
+\code{\link{shifts.matrix_to_list}}
 }
 

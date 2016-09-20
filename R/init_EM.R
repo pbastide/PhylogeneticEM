@@ -202,8 +202,10 @@ init.EM.default.OU <- function(phylo = NULL,
 #' 
 #' @return E0.gauss the intercept (value at the root)
 #' @return shifts.gauss the list of shifts found on the branches
+#' 
+#' @keywords internal
 #'
-#'06/10/14 - Initial release
+#06/10/14 - Initial release
 ##
 
 lasso_regression_K_fixed.glmnet_multivariate <- function(Yp, Xp, K,
@@ -583,67 +585,67 @@ lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
 }
 
 
-lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
-  ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
-  excl <- NULL
-  if (intercept.penalty) excl <- c(1)
-  ## fit
-  fit <- glmnet::glmnet(x = 0 + Xp, y = Yp, alpha = 1, exclude = excl)
-  ## Find the lambda that gives the right number of ruptures
-  # Check that lambda goes far enought
-  if (K > max(fit$df)) {
-    fit <- glmnet::glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda.min.ratio = 0, exclude = excl)
-  }
-  if (K > max(fit$df)) {
-    stop("Lasso regression failed. There are too many variables.")
-  }
-  ## If the right lambda does not exists, find it.
-  count <- 0
-  while (sum(fit$df == K) == 0 && count < 500) {
-    count <- count + 1
-    K_inf <- K-1
-    while ((sum(K_inf == fit$df) == 0) && (K_inf >= 0)) {
-      K_inf <- K_inf - 1
-    }
-    lambda_inf <- fit$lambda[tail(which(K_inf == fit$df), n=1)]
-    K_sup <- K + 1
-    while ((sum(K_sup == fit$df) == 0) && (K_sup <= max(fit$df))) {
-      K_sup <- K_sup + 1
-    }
-    lambda_sup <- fit$lambda[head(which(K_sup == fit$df), n=1)]
-    lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
-    fit <- glmnet::glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda = lambda, exclude = excl)
-  }
-  ## If the right lambda does not exists, raise the number of shifts
-  K_2 <- K
-  while (sum(fit$df == K_2) == 0 && K_2 < 500) {
-    warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
-    K_2 <- K_2 + 1
-  }
-  ## If could not find the right lambda, do a default initialization
-  if (sum(fit$df == K_2) == 0) {
-    stop("Lasso Initialisation fail : could not find a satisfying number of shifts.")
-  } else {
-    delta <- coef(fit, s = fit$lambda[min(which(fit$df == K_2))])
-    E0 <- delta[1]; # Intercept
-    delta <- delta[-1];
-    ## Gauss lasso
-    projection <- which(delta != 0)
-    Xproj <- 0 + Xp[, projection]
-    fit.gauss <- lm(Yp ~ Xproj)
-    delta.gauss <- rep(0, dim(Xp)[2])
-    E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
-    delta.gauss[projection] <- coef(fit.gauss)[-1]
-    # If lm fails to find some coeeficients, put them to 0
-    delta.gauss[is.na(delta.gauss)] <- 0.1
-    ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
-    edges <- order(-abs(delta.gauss))[1:K]
-    delta.gauss.final <- rep(0, length(delta.gauss))
-    delta.gauss.final[edges] <- delta.gauss[edges]
-    shifts.gauss <- shifts.vector_to_list(delta.gauss.final);
-    return(list(E0.gauss = E0.gauss, shifts.gauss = shifts.gauss))
-  }
-}
+# lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
+#   ## Penalty on the first coordinate = intercept : force first cooerdinate to be null
+#   excl <- NULL
+#   if (intercept.penalty) excl <- c(1)
+#   ## fit
+#   fit <- glmnet::glmnet(x = 0 + Xp, y = Yp, alpha = 1, exclude = excl)
+#   ## Find the lambda that gives the right number of ruptures
+#   # Check that lambda goes far enought
+#   if (K > max(fit$df)) {
+#     fit <- glmnet::glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda.min.ratio = 0, exclude = excl)
+#   }
+#   if (K > max(fit$df)) {
+#     stop("Lasso regression failed. There are too many variables.")
+#   }
+#   ## If the right lambda does not exists, find it.
+#   count <- 0
+#   while (sum(fit$df == K) == 0 && count < 500) {
+#     count <- count + 1
+#     K_inf <- K-1
+#     while ((sum(K_inf == fit$df) == 0) && (K_inf >= 0)) {
+#       K_inf <- K_inf - 1
+#     }
+#     lambda_inf <- fit$lambda[tail(which(K_inf == fit$df), n=1)]
+#     K_sup <- K + 1
+#     while ((sum(K_sup == fit$df) == 0) && (K_sup <= max(fit$df))) {
+#       K_sup <- K_sup + 1
+#     }
+#     lambda_sup <- fit$lambda[head(which(K_sup == fit$df), n=1)]
+#     lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+#     fit <- glmnet::glmnet(x = 0 + Xp, y = Yp, alpha = 1, lambda = lambda, exclude = excl)
+#   }
+#   ## If the right lambda does not exists, raise the number of shifts
+#   K_2 <- K
+#   while (sum(fit$df == K_2) == 0 && K_2 < 500) {
+#     warning("During lasso regression, could not find the right lambda for the number of shifts K. Temporarly raised it to do the lasso regression, and furnishing the K largest coefficients.")
+#     K_2 <- K_2 + 1
+#   }
+#   ## If could not find the right lambda, do a default initialization
+#   if (sum(fit$df == K_2) == 0) {
+#     stop("Lasso Initialisation fail : could not find a satisfying number of shifts.")
+#   } else {
+#     delta <- coef(fit, s = fit$lambda[min(which(fit$df == K_2))])
+#     E0 <- delta[1]; # Intercept
+#     delta <- delta[-1];
+#     ## Gauss lasso
+#     projection <- which(delta != 0)
+#     Xproj <- 0 + Xp[, projection]
+#     fit.gauss <- lm(Yp ~ Xproj)
+#     delta.gauss <- rep(0, dim(Xp)[2])
+#     E0.gauss <- coef(fit.gauss)[1]; names(E0.gauss) <- NULL
+#     delta.gauss[projection] <- coef(fit.gauss)[-1]
+#     # If lm fails to find some coeeficients, put them to 0
+#     delta.gauss[is.na(delta.gauss)] <- 0.1
+#     ## If we had to raise the number of shifts, go back to the initial number, taking the K largest shifts
+#     edges <- order(-abs(delta.gauss))[1:K]
+#     delta.gauss.final <- rep(0, length(delta.gauss))
+#     delta.gauss.final[edges] <- delta.gauss[edges]
+#     shifts.gauss <- shifts.vector_to_list(delta.gauss.final);
+#     return(list(E0.gauss = E0.gauss, shifts.gauss = shifts.gauss))
+#   }
+# }
 
 # lasso_regression_K_fixed.quadrupen <- function (Yp, Xp, K, root = NULL, penscale = rep(1, ncol(Xp))) {
 #   ## Root is the intercept, should be excluded from varaiable selection
@@ -744,6 +746,8 @@ lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALS
 #' if no root column.
 #' 
 #' @return delta a vector of regression with K non-zero coefficients.
+#' 
+#' @keywords internal
 #'
 ##
 find_independent_regression_vectors.glmnet_multivariate <- function(Xp, K, fit, root){
@@ -887,40 +891,40 @@ find_independent_regression_vectors.gglasso <- function(Xkro, K, fit, root, p, g
 #   }
 # }
 
-find_independent_regression_vectors.quadrupen <- function(Xp, K, fit, root){
-  deltas <- fit@coefficients
-  nsets <- dim(deltas)[1]
-  if (!is.null(root)){
-    deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
-  }
-  projections <- t(apply(deltas, 1, function(z) return(z != 0)))
-  check_independance <- function(projection, Xp){
-    Xproj <- Xp[ , projection, drop = FALSE]
-    return(dim(Xproj)[2] == qr(Xproj)$rank)
-  }
-  for (i in 1:nsets){
-    # If not independent : go back to the previous state.
-    if (!check_independance(projections[i, ], Xp)){
-      # Variables that were activated or inactivated
-      changes <- xor(projections[i - 1, ], projections[i, ])
-      # Activated variables : inactivate them for the futur
-      new_vars <- changes && projections[i, ]
-      projections[i:nsets, new_vars] <- 0
-      # Inactivated variables : re-activate them for the futur
-      del_vars <- changes && projections[i - 1, ]
-      projections[i:nsets, del_vars] <- 1
-    }
-  }
-  ## Find the right number of selected variables
-  n_select <- rowSums(projections)
-  right_ones <- n_select == K
-  if (!any(right_ones)){
-    stop("Could not find K independant vectors in the regression path provided.")
-  } else {
-    right_one <- which(right_ones)
-    return(projections[right_one, ])
-  }
-}
+# find_independent_regression_vectors.quadrupen <- function(Xp, K, fit, root){
+#   deltas <- fit@coefficients
+#   nsets <- dim(deltas)[1]
+#   if (!is.null(root)){
+#     deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
+#   }
+#   projections <- t(apply(deltas, 1, function(z) return(z != 0)))
+#   check_independance <- function(projection, Xp){
+#     Xproj <- Xp[ , projection, drop = FALSE]
+#     return(dim(Xproj)[2] == qr(Xproj)$rank)
+#   }
+#   for (i in 1:nsets){
+#     # If not independent : go back to the previous state.
+#     if (!check_independance(projections[i, ], Xp)){
+#       # Variables that were activated or inactivated
+#       changes <- xor(projections[i - 1, ], projections[i, ])
+#       # Activated variables : inactivate them for the futur
+#       new_vars <- changes && projections[i, ]
+#       projections[i:nsets, new_vars] <- 0
+#       # Inactivated variables : re-activate them for the futur
+#       del_vars <- changes && projections[i - 1, ]
+#       projections[i:nsets, del_vars] <- 1
+#     }
+#   }
+#   ## Find the right number of selected variables
+#   n_select <- rowSums(projections)
+#   right_ones <- n_select == K
+#   if (!any(right_ones)){
+#     stop("Could not find K independant vectors in the regression path provided.")
+#   } else {
+#     right_one <- which(right_ones)
+#     return(projections[right_one, ])
+#   }
+# }
 
 ##
 #' @title Do a lm on top of a lasso regression.
@@ -943,9 +947,11 @@ find_independent_regression_vectors.quadrupen <- function(Xp, K, fit, root){
 #' @param delta regression coefficients obtained with a lasso regression
 #' @param root the position of the root (intercept) in delta
 #' 
-#' @return E0.gauss the intercept (value at the root)
-#' @return shifts.gauss the list of shifts found on the branches
-#' @return residuals the residuals of the regression
+#' @return Named list, with "E0.gauss" the intercept (value at the root);
+#' "shifts.gauss" the list of shifts found on the branches; and "residuals" the
+#' residuals of the regression
+#' 
+#' @keywords internal
 #'
 ##
 compute_gauss_lasso <- function (Ypt, Xp, delta, root,
@@ -1035,9 +1041,11 @@ compute_gauss_lasso.gglasso <- function (Yvec, Xkro, delta, root, group, p,
 #' 
 #' @return params_init the list of initial parameters to be used, in the right
 #'  format.
+#'  
+#' @keywords internal
 #'
-#'18/06/14 - Initial release
-#'06/10/14 - Externalization of function lasso
+#18/06/14 - Initial release
+#06/10/14 - Externalization of function lasso
 ##
 init.EM.lasso <- function(phylo,
                           Y_data,
@@ -1400,8 +1408,10 @@ init.alpha.default <- function(init.selection.strength, known.selection.strength
 #' 
 #' @return params_init the list of initial parameters to be used, in the right
 #'  format.
+#'  
+#'  @keywords internal
 #'
-#'10/07/14 - Initial release
+#10/07/14 - Initial release
 ##
 
 init.alpha.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, ...){
@@ -1796,6 +1806,8 @@ estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
 #' @param random.init wether root is random or fixed.
 #' 
 #' @return Y_data_imp the imputed data using Rphylopars
+#' 
+#' @keywords internal
 ##
 
 impute.data.Rphylopars <- function(phylo, Y_data, process, random.init){

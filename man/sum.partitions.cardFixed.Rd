@@ -22,8 +22,6 @@ partition in 1<=k<=K groups for one of the p children of a given node}
 }
 \value{
 double : the result of the sum.
-
-05/06/14 - Initial release
 }
 \description{
 \code{sum.partitions.cardFixed} returns the sum on I subset of [1,p], |I|
@@ -33,4 +31,5 @@ fixed, of the sums computed by \code{sum.prod.comb}.
 This function uses \code{combn} to enumarate all the subsets I of [1,p] of
 a given cardinal, and then performs the wanted sum on these subsets.
 }
+\keyword{internal}
 

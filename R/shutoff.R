@@ -136,8 +136,10 @@ shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_o
 #' @param params list of parameters with the correct structure
 #'
 #' @return boolean
+#' 
+#' @keywords internal
 #'
-#'10/06/14 - Initial release
+#10/06/14 - Initial release
 ##
 
 is.finite.params.BM <- function(params) {
@@ -216,8 +218,10 @@ is.finite.params.OU.stationary.root_AND_shifts_at_nodes <- function(params) {
 #' @param max list of maximum values for the parameters
 #'
 #' @return boolean
+#' 
+#' @keywords internal
 #'
-#'16/07/14 - Initial release
+#16/07/14 - Initial release
 ##
 is.in.ranges <- function(p, min, max){
   if (any(abs(p) < min) || any(abs(p) > max)){

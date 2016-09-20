@@ -22,9 +22,6 @@ first and second moments.}
 }
 \value{
 double : value of the function
-
-09/07/14 - Initial release
-02/10/14 - take new shifts in consideration
 }
 \description{
 \code{conditional_expectation_log_likelihood.OU} computes the expectation
@@ -37,4 +34,5 @@ This function uses functions \code{compute_var_diff.OU}
 and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
 root is stationary, and shifts at nodes.
 }
+\keyword{internal}
 

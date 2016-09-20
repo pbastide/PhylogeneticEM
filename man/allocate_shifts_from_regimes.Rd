@@ -14,8 +14,6 @@ and tip.}
 }
 \value{
 vector of edges numbers where the shifts are
-
-10/10/14 - Initial release
 }
 \description{
 \code{allocate_shifts_from_regimes} returns the position of the shifts induced

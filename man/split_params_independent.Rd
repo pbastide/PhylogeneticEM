@@ -7,7 +7,7 @@
 split_params_independent(params)
 }
 \arguments{
-\item{params:}{parameters}
+\item{params}{parameters}
 }
 \value{
 A list of p parameters
@@ -17,4 +17,5 @@ A list of p parameters
 process with p independent traits into p params objects.
 The reverse operation is done by \code{merge_params_independent}
 }
+\keyword{internal}
 

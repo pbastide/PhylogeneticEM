@@ -21,10 +21,9 @@ equivalent_shifts_values(phylo, shifts, beta_0,
 \code{incidence_matrix_actualization_factors}.}
 }
 \value{
-shifts_values a matrix of shifts values corresponding to the shifts
-positions in eq_shifts_edges.
-
-betas_0 a vector of corresponding root optimal values.
+Named list, with "shifts_values" a matrix of shifts values
+corresponding to the shifts positions in eq_shifts_edges; and "betas_0" a
+vector of corresponding root optimal values.
 }
 \description{
 \code{equivalent_shifts_values} computes the values of the shifts given all the 

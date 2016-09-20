@@ -20,6 +20,8 @@ allocations a list of size nNode + ntaxa. Each entry i of the list represents th
  solutions for the subtree starting at node i. It is a list with nclus entries,
  each entry being a matrix. A line of the kth matrix for the ith node is one
  possible allocation of the shifts, starting with regime k for node i.
+ 
+ @export
 }
 \description{
 \code{enumerate_parsimony} enumerate all the equivalent allocation of the 

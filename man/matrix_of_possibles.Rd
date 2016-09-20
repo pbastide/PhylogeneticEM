@@ -21,4 +21,5 @@ the node (a group for the parent being fixed).
 This function select all possible combinations of rows from all the daughters, and
 merge then into one using function \code{merge_complementary_vectors}.
 }
+\keyword{internal}
 

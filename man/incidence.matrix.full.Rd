@@ -11,8 +11,6 @@ incidence.matrix.full(phylo)
 }
 \value{
 Matrix of incidence, size ntaxa + nNodes
-
-06/10/14 - Initial release
 }
 \description{
 \code{incidence.matrix.full} computes the incidence matrix T of a tree : for a 

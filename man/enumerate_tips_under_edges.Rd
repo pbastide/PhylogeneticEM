@@ -19,4 +19,5 @@ of the tips that have this edge as an ancestor.
 \details{
 This function uses function \code{prop.part} from package \code{ape}.
 }
+\keyword{internal}
 

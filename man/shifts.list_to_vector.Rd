@@ -19,12 +19,8 @@ Vector of length nbranch.
 to give the vectorial representation of the shifts : the b th element of 
 the vector has the value of the shift occuring on that branch b.
 }
-\details{
-
-}
 \seealso{
-\code{shifts.vector_to_list}
-
-17/06/14 - Initial release
+\code{\link{shifts.vector_to_list}}
 }
+\keyword{internal}
 
