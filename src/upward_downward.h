@@ -41,44 +41,14 @@ public:
  * E[X_j | X_pa(j)] = Q_j * X_pa(j) + r_j
  * Var[X_j | X_pa(j)] = Sigma_j
  * 
- * One instance at one edge
- */
-class Model_Node
-{
-private:
-  
-  arma::vec r; // matix of vectors offsets
-  arma::mat q; // 3D array of transmission matrices
-  arma::mat sigma; // 3D array of variances matrics
-  
-public:
-  // Constructors
-  Model_Node();
-  // For a BM:
-  Model_Node(arma::vec const & delta, arma::mat const & Variance,
-             double const & edge_length);
-  // For an OU:
-  Model_Node(arma::vec const & beta, arma::mat const & Stationary_Var,
-             double const & edge_length, arma::mat const & Alpha);
-  
-  // Access to fields
-  arma::vec R() const;
-  arma::mat Q() const;
-  arma::mat Sigma() const;
-  
-  // Export to R (test only)
-  //Rcpp::List exportModel2R() const;
-};
-
-/*
  * The nEdges entries (in edges order).
  */
 class Model
 {
 private:
-  
-  Model_Node * mod; // Array if Upward_node elements
-  unsigned int size; // Size
+  arma::mat rs; // matix of expectations at all the nodes
+  arma::cube qs; // 3D array of variances at all the nodes
+  arma::cube sigmas; // 3D array of covariances at all nodes/parents. NA at the root.
   
 public:
   // Constructors
@@ -90,21 +60,13 @@ public:
   Model(arma::mat const & Beta, arma::mat const & Stationary_Var,
         arma::vec const & edge_length, arma::mat const & Alpha);
   
-  // Destructor
-  ~Model();
-  
-  // Deal with missing data
-  //Model removeMissing(arma::mat const & miss);
-  
   // Access to fields
-  Model_Node Mod(int i) const;
-  unsigned int Size() const;
-  
-  // Allocate Fields
-  void allocate_edge(int i, Model_Node mod_node);
+  arma::mat Rs() const;
+  arma::cube Qs() const;
+  arma::cube Sigmas() const;
   
   // Export to R (test only)
-  Rcpp::List exportModel2R(int i) const;
+  // Rcpp::List exportModel2R() const;
 };
 
 //---------------------------------------------------------------------------//
@@ -157,31 +119,36 @@ class Upward
 {
 private:
   
-  Upward_Node * up; // Array if Upward_node elements
-  unsigned int size; // Size
+  arma::vec csts; // constant. This is the log.
+  arma::mat condexps; // vector of expectations
+  arma::cube condvars; // variance matrix
+  arma::umat missing_datas; // Position of the missing data (bool vector)
   
 public:
   // Constructors
   Upward(int siz, int p_d);
   Upward(arma::mat const & data, int nE);
   
-  // Destructor
-  ~Upward();
-  
   // Access to fields
-  Upward_Node Up(int i) const;
-  unsigned int Size() const;
+  arma::vec Csts() const;
+  arma::mat Condexps() const;
+  arma::cube Condvars() const;
+  arma::umat Missing_Datas() const;
+  int Size() const;
   double Log_Likelihood(Root_State root, int ntaxa) const;
   
   // Allocate Fields
-  void allocate_node(int i, Upward_Node up_node);
+  void allocate_condvars(int i, arma::mat M);
+  void allocate_condexps(int i, arma::vec E);
+  void allocate_csts(int i, double c);
+  void allocate_missing_datas(int i, arma::uvec M);
   
   // Recursion
   void recursion(Model const & mod, arma::umat const & ed,
                  int p_d, int ntaxa);
   
   // Export to R (test only)
-  Rcpp::List exportUpward2R(int i) const;
+  // Rcpp::List exportUpward2R() const;
 };
 
 //---------------------------------------------------------------------------//
@@ -219,12 +186,12 @@ public:
   arma::cube Covars() const;
   
   // Downward
-  void actualize_downward(Upward_Node const & up_child, 
-                          Model_Node const & mod_child,
-                          int child, int father);
-  void actualize_downward_miss(Upward_Node const & up_child, 
-                               Model_Node const & mod_child,
-                               int child, int father, int ntaxa);
+  void actualize_downward(Upward const & up, 
+                          Model const & mod,
+                          int edge, int child, int father);
+  void actualize_downward_miss(Upward const & up, 
+                               Model const & mod,
+                               int edge, int child, int father, int ntaxa);
   void downward(Upward const & up, Model const & mod,
                 arma::umat const & ed, int ntaxa);
 };

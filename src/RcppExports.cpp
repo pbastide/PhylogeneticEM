@@ -6,34 +6,6 @@
 
 using namespace Rcpp;
 
-// create_model
-Rcpp::List create_model(arma::mat const& Delta, arma::mat const& Variance, arma::vec const& edge_length, arma::umat ed, int i);
-RcppExport SEXP PhylogeneticEM_create_model(SEXP DeltaSEXP, SEXP VarianceSEXP, SEXP edge_lengthSEXP, SEXP edSEXP, SEXP iSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat const& >::type Delta(DeltaSEXP);
-    Rcpp::traits::input_parameter< arma::mat const& >::type Variance(VarianceSEXP);
-    Rcpp::traits::input_parameter< arma::vec const& >::type edge_length(edge_lengthSEXP);
-    Rcpp::traits::input_parameter< arma::umat >::type ed(edSEXP);
-    Rcpp::traits::input_parameter< int >::type i(iSEXP);
-    __result = Rcpp::wrap(create_model(Delta, Variance, edge_length, ed, i));
-    return __result;
-END_RCPP
-}
-// upward_test
-Rcpp::List upward_test(arma::mat const& data, arma::umat const& ed, int i);
-RcppExport SEXP PhylogeneticEM_upward_test(SEXP dataSEXP, SEXP edSEXP, SEXP iSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat const& >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< arma::umat const& >::type ed(edSEXP);
-    Rcpp::traits::input_parameter< int >::type i(iSEXP);
-    __result = Rcpp::wrap(upward_test(data, ed, i));
-    return __result;
-END_RCPP
-}
 // upward_downward_BM
 Rcpp::List upward_downward_BM(arma::mat const& data, arma::umat const& ed, arma::mat const& Delta, arma::mat const& Variance, arma::vec const& edge_length, Rcpp::List root_state_list);
 RcppExport SEXP PhylogeneticEM_upward_downward_BM(SEXP dataSEXP, SEXP edSEXP, SEXP DeltaSEXP, SEXP VarianceSEXP, SEXP edge_lengthSEXP, SEXP root_state_listSEXP) {
