@@ -44,4 +44,5 @@ This function takes parameters sim, Sigma and Sigma_YY_inv from
 \code{extract.variance_covariance}, \code{extract.covariance_parents}, and
  \code{extract.simulate} to extract the needed quantities from these objects.
 }
+\keyword{internal}
 

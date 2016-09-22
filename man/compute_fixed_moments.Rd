@@ -19,4 +19,5 @@ F_vars the matrix to use for the actualization of variances.
 \code{compute_fixed_moments} compute the fixed matrices used in E step when
 there is no missing data.
 }
+\keyword{internal}
 

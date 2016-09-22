@@ -23,4 +23,5 @@ the selection model, when using the procedure defined by Baraud et al (2009)
 \details{
 See Baraud et al (2009)
 }
+\keyword{internal}
 

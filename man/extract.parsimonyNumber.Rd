@@ -9,7 +9,7 @@ extract.parsimonyNumber(Reconstructions,
 }
 \arguments{
 \item{Reconstructions}{two (ntaxa + nNodes)x(nclus) matrices, result of function
-\code{\link{pasimonyNumber}}, with :
+\code{\link{parsimonyNumber}}, with :
 \describe{
  \item{nbrReconstructions}{the matrix of number of local parsimonious 
  solutions.}

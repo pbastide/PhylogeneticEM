@@ -61,4 +61,5 @@ The EMs are parralelized thanks to packages \code{foreach} and
 WARNING : this code only work of OU with stationary root, on an ultrametric
 tree.
 }
+\keyword{internal}
 

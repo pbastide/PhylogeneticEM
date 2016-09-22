@@ -47,15 +47,23 @@
 #'  }
 #' @param eps Tolerance for the value of the norm 1 of the selection strength matrix for OU
 #' @param variance Variance-covariance matrix size p x p 
-#' @param selection.strenght Matrix of selection strength size p x p (OU)
+#' @param selection.strength Matrix of selection strength size p x p (OU)
 #' @param optimal.value Vector of p optimal values at the root (OU)
+#' @param checks whether to check the entry parameters for consistency. Default 
+#' to TRUE.
+#' @param simulate_random set to FALSE if only the expected values are needed
+#' (and not the random sample). Default to TRUE.
+#' @param df if the process is "StudentOU", the number of degree of freedom of
+#' the choosen student law. default to 1.
+#' @param U_tree optional, full incidence matrix of the tree, result of function
+#' \code{incidence.matrix.full}.
 #'     
 #' @return paramSimu An array with dimentions p x nNodes x 2 (BM)
 #'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.
 #'  
-#'  @export
+#' @export
 #' 
 # 16/05/14 - Initial release
 # 20/05/14 - Gestion of edges (function correspondanceEdges)
@@ -225,7 +233,7 @@ simulate <- function(phylo,
 #'     
 #' @return array: array p x nNodes x 2 (BM), with slice corresponding to node filled with value
 #'  
-#'  @keywords internal
+#' @keywords internal
 #'  
 ##
 
@@ -242,7 +250,7 @@ subset_node.simulate <- function(node, array){
 ##
 #' @title Initialize state and expectation matrices
 #'
-#' @description Function used in \code{\link{simultate}} for BM/OU initialisations.
+#' @description Function used in \code{\link{simulate}} for BM/OU initialisations.
 #'
 #' @param phy: Input tree.
 #' @param p: dimension of the trait simulated
@@ -285,7 +293,7 @@ init.simulate.StateAndExp <- function(phy, p, root.state, simulate_random){
 ##
 #' @title Initialize BM
 #' 
-#' @description Function used in \code{\link{simultate}} for BM initialisation.
+#' @description Function used in \code{\link{simulate}} for BM initialisation.
 #'
 #' @param phy Input tree.
 #' @param root.state (list) State of the root, with:
@@ -309,7 +317,7 @@ init.simulate.BM <- function(phy, p, root.state, simulate_random, ...){
 ##
 #' @title Initialize state and expectation matrices
 #' 
-#' @description Function used in \code{\link{simultate}} for OU initialisation.
+#' @description Function used in \code{\link{simulate}} for OU initialisation.
 #'
 #' @param phy: Input tree.
 #' @param p: dimension of the trait simulated
@@ -323,7 +331,7 @@ init.simulate.BM <- function(phy, p, root.state, simulate_random, ...){
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 3) is initialized with simulated states, root
 #' expectations, and optimal values for all the traits.
 #'  
-#'  @keywords internal
+#' @keywords internal
 #'  
 ##
 
@@ -540,7 +548,7 @@ extract.simulate <- function(paramSimu,
 #'  paramSimu[t, , ] has two columns, both containing the expected values for
 #'  all the nodes.
 #'  
-#'  @keywords internal
+#' @keywords internal
 #'  
 ##
 compute_expectations.BM <- function(phylo, root.state, shifts, U_tree = NULL){

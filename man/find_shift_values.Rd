@@ -9,13 +9,13 @@ find_shift_values(shifts_edges, T_tree_ac, m_Y)
 \arguments{
 \item{shifts_edges}{a vector of positions of shifts on the tree.}
 
-\item{m_Y}{the vector of values of the means at the tips.}
-
-\item{Tr}{matrix of incidence of the tree, result of function 
+\item{T_tree_ac}{matrix of incidence of the tree, result of function 
 \code{incidence.matrix}.}
+
+\item{m_Y}{the vector of values of the means at the tips.}
 }
 \value{
-vector, with first entry the values at the root, and other entries the 
+vector, with first entry the values at the root, and other entries the
 values of the shifts.
 }
 \description{
@@ -27,4 +27,5 @@ shifts postions and the mean values are compatible.
 \details{
 This function uses \code{qr.solve} for rectangular linear system solving.
 }
+\keyword{internal}
 

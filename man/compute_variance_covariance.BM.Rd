@@ -17,4 +17,5 @@ matrix of vec(X).
  \code{compute_times_ca}
  @param params_old (list) : old parameters to be used in the E step
 }
+\keyword{internal}
 

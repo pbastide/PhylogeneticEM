@@ -22,8 +22,6 @@ compute_log_likelihood.simple(phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
 }
 \value{
 log likelihood of the data
-
-29/09/14 - Initial release
 }
 \description{
 \code{compute_log_likelihood.simple} computes the log-likelihood of the data 
@@ -35,4 +33,5 @@ This function takes parameters sim, Sigma and Sigma_YY_inv from
 \code{extract.variance_covariance}, \code{extract.covariance_parents}, and
  \code{extract.simulate} to extract the needed quantities from these objects.
 }
+\keyword{internal}
 

@@ -22,8 +22,6 @@ init.alpha.estimation(phylo, Y_data, nbr_of_shifts, distances_phylo,
 \value{
 params_init the list of initial parameters to be used, in the right
  format.
- 
- @keywords internal
 }
 \description{
 \code{init.alpha.estimation} fits (Y_i-Y_j)^2 ~ gamma^2(1-exp(-alpha*d_ij))
@@ -34,4 +32,5 @@ separated by a shift. Shifts are initialized thanks to a lasso
 \details{
 Function \code{robustbase::nlrob} is used for the robust fit.
 }
+\keyword{internal}
 

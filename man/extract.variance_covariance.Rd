@@ -25,4 +25,5 @@ sub-matrix of variance covariance.
 \description{
 \code{extract.variance_covariance} return the adequate sub-matrix.
 }
+\keyword{internal}
 

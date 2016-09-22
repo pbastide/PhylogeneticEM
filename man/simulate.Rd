@@ -38,19 +38,29 @@ multivariate); or "scOU" (for a "scalar OU" model).}
 
 \item{eps}{Tolerance for the value of the norm 1 of the selection strength matrix for OU}
 
+\item{selection.strength}{Matrix of selection strength size p x p (OU)}
+
 \item{variance}{Variance-covariance matrix size p x p}
 
 \item{optimal.value}{Vector of p optimal values at the root (OU)}
 
-\item{selection.strenght}{Matrix of selection strength size p x p (OU)}
+\item{checks}{whether to check the entry parameters for consistency. Default 
+to TRUE.}
+
+\item{simulate_random}{set to FALSE if only the expected values are needed
+(and not the random sample). Default to TRUE.}
+
+\item{U_tree}{optional, full incidence matrix of the tree, result of function
+\code{incidence.matrix.full}.}
+
+\item{df}{if the process is "StudentOU", the number of degree of freedom of
+the choosen student law. default to 1.}
 }
 \value{
 paramSimu An array with dimentions p x nNodes x 2 (BM)
  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.
- 
- @export
 }
 \description{
 \code{simulate} simulate a stochastic process on a tree.

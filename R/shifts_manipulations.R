@@ -249,7 +249,8 @@ shifts.list_to_vector <- function(phy, shifts){
 #'
 #'
 #' @param phy Input tree.
-#' @param shifts : list description of the shifts : shifts$edges, shifts$values
+#' @param shifts list description of the shifts : shifts$edges, shifts$values.
+#' @param p number of traits (optional, needed when shifts = NULL).
 #' 
 #' @return Matrix p x nEdges of length nbranch.
 #' 
@@ -423,7 +424,7 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #' @return Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
 #'  at the root.
 #'  
-#'  @keywords internal
+#' @keywords internal
 #'
 #06/10/14 - Initial release
 ##

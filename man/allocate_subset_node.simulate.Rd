@@ -15,11 +15,10 @@ allocate_subset_node.simulate(node, array, value)
 }
 \value{
 array: array p x nNodes x 2 (BM), with slice corresponding to node filled with value
- 
- @keywords internal
 }
 \description{
 \code{allocate_subset_node.simulate} slice the data correctly and allocate the right part.
 To be used in function UpdateDown.
 }
+\keyword{internal}
 

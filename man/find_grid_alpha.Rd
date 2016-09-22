@@ -20,6 +20,11 @@ find_grid_alpha(phy, alpha = NULL, nbr_alpha = 10, factor_up_alpha = 2,
 \item{factor_down_alpha}{factor for down scalability}
 
 \item{quantile_low_distance}{quantile for min distance}
+
+\item{log_transform}{whether to take a log scale for the spacing of alpha
+values. Default to TRUE.}
+
+\item{...}{not used.}
 }
 \value{
 A grid of alpha values

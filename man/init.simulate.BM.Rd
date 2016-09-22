@@ -21,7 +21,7 @@ Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated
 states and root expectarions for all the traits.
 }
 \description{
-Function used in \code{\link{simultate}} for BM initialisation.
+Function used in \code{\link{simulate}} for BM initialisation.
 }
 \keyword{internal}
 

@@ -9,7 +9,7 @@ transform_branch_length(phylo, alp)
 \arguments{
 \item{phylo}{A phylogenetic tree of class 'phylo', with branch lengths.}
 
-\item{alpha}{Value of the selection strength.}
+\item{alp}{Value of the selection strength.}
 }
 \value{
 phylo The same phylogenetic tree, with transformed branch lengths.

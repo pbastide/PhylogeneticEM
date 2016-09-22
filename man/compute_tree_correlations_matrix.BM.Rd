@@ -15,4 +15,5 @@ times_shared
  @param times_shared times of shared ancestry of all nodes and tips, result of function
  \code{compute_times_ca}
 }
+\keyword{internal}
 

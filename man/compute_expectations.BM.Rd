@@ -25,11 +25,10 @@ parentnode of edges}
 paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
  paramSimu[t, , ] has two columns, both containing the expected values for
  all the nodes.
- 
- @keywords internal
 }
 \description{
 \code{compute_expectations.BM} use the matrix formulation to compute the 
 expected values at all the nodes.
 }
+\keyword{internal}
 

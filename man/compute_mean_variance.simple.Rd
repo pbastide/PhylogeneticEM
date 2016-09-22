@@ -33,7 +33,6 @@ Sigma matrix of variance covariance, result of function
 
 Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)
-29/09/14 - Initial release
 }
 \description{
 \code{compute_mean_variance.simple} computes the quantities needed to compute
@@ -43,4 +42,5 @@ mean and variance matrix with parameters params_old.
 This function is used by functions \code{compute_E.simple} and 
 \code{compute_log_likelihood.simple}.
 }
+\keyword{internal}
 

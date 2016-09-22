@@ -2,114 +2,22 @@
 % Please edit documentation in R/estimateEM.R
 \name{check_data}
 \alias{check_data}
-\title{Run the EM for several values of K}
+\title{Test the format of data entry.}
 \usage{
 check_data(phylo, Y_data, check.tips.names)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree}
 
-\item{Y_data}{vector of data at the tips}
-
-\item{check.tips.names}{(bool) wether to check the tips names or not}
-
-\item{K_max}{the maximal number of shifts allowed. By default, computed with 
-function \code{compute_K_max}.}
-
-\item{...}{other arguments to pass to \code{estimateEM}.}
-
-\item{K_t}{the number of shifts allowed}
-
-\item{phylo}{a phylogenetic tree}
-
-\item{Y_data}{vector of data at the tips}
-
-\item{alpha_known}{a boolean}
-
-\item{alpha}{the value of alpha if known}
-
-\item{method.init.alpha}{the initialization method for alpha}
-
-\item{...}{other arguments to pass to \code{estimateEM}.}
-
-\item{phylo}{a phylogenetic tree}
-
 \item{Y_data}{matrix of data at the tips (pxntaxa)}
+
+\item{check.tips.names}{(bool) whether to check the tips names or not}
 }
 \value{
-summary a data frame with K_max lines, and columns:
-   - alpha_estim the estimated selection strength
-   - gamma_estim the estimated root variance
-   - beta_0_estim the estimated value of root optumum
-   - EM_steps number of iterations needed before convergence
-   - DV_estim has the EM diverged ?
-   - CV_estim has the EM converged ?
-   - log_likelihood log likelihood of the data using the estimated parameters
-   - mahalanobis_distance_data_mean the mahalanobis distance between the data
-and the estimated means at the tips
-   - least_squares the mahalanobis distance, renormalized by gamma^2: 
-mahalanobis_distance_data_mean * gamma_estim.
-   - mean_number_new_shifts the mean number of shifts that changed over the 
-iterations of the EM
-   - number_equivalent_solutions the number of equivalent solutions to 
-the solution found.
-   - K_try the number of shifts allowed.
-   - complexity the complexity for K_try
-   - time the CPU time needed.
-
-params a list of infered parameters for each EM.
-
-summary a data frame with columns:
-   - alpha_estim the estimated selection strength
-   - gamma_estim the estimated root variance
-   - beta_0_estim the estimated value of root optumum
-   - EM_steps number of iterations needed before convergence
-   - DV_estim has the EM diverged ?
-   - CV_estim has the EM converged ?
-   - log_likelihood log likelihood of the data using the estimated parameters
-   - mahalanobis_distance_data_mean the mahalanobis distance between the data
-and the estimated means at the tips
-   - least_squares the mahalanobis distance, renormalized by gamma^2: 
-mahalanobis_distance_data_mean * gamma_estim.
-   - mean_number_new_shifts the mean number of shifts that changed over the 
-iterations of the EM
-   - number_equivalent_solutions the number of equivalent solutions to 
-the solution found.
-   - K_try the number of shifts allowed.
-   - complexity the complexity for K_try
-   - time the CPU time needed.
-
-params a list of infered parameters
-
-params_init a list of initial parameters
-
-Zhat the reconstructed node states
-
-edge.quality the quality of each selected edge
-
-raw_results complete result of \code{estimateEM}
-
 Y_data a re-ordered matrix of data (if necessary)
 }
 \description{
-\code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
-for all values of K between 0 and K_max.
-
-\code{estimation_wrapper.OUsr} call estimateEM with a set of parameters well
-suited for the OU with stationary root.
-It is used in \code{estimateEM_several_K.OUsr}.
-
-\code{check_data} tests if the data matrix has the right format, and if it is correctly
-ordered to match the tips names.
-}
-\details{
-The EM is fisrt launched for K=0, with alpha and gamma estimated. The
-estimated values of alpha, gamma and beta_0 found by this fisrt EM are then
-used as initialisation parameters for all the other runs of the EM for other
-K.
-The EMs are parralelized thanks to packages \code{foreach} and 
-\code{doParallel}.
-WARNING : this code only work of OU with stationary root, on an ultrametric
-tree.
+\code{check_data} tests if the data matrix has the right format, and if it is
+correctly ordered to match the tips names.
 }
 

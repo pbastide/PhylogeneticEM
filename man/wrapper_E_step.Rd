@@ -12,4 +12,5 @@ wrapper_E_step(phylo, times_shared, distances_phylo, process, params_old,
 \code{wrapper_E_step} is used in the EM algorithm. It calls itself
 recursivelly in case of independent parameters.
 }
+\keyword{internal}
 

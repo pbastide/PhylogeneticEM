@@ -25,4 +25,5 @@ params_scOU the equivalent parameters of the OU on the original tree.
 on a rescaled tree, and gives back the equivalent parameters of the OU on 
 the original process.
 }
+\keyword{internal}
 

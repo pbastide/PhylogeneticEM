@@ -302,7 +302,7 @@ compute_state_filter <- function (cost, k) {
 #' shifts.
 #'
 #' @param Reconstructions two (ntaxa + nNodes)x(nclus) matrices, result of function
-#' \code{\link{pasimonyNumber}}, with :
+#' \code{\link{parsimonyNumber}}, with :
 #' \describe{
 #'  \item{nbrReconstructions}{the matrix of number of local parsimonious 
 #'  solutions.}
@@ -691,11 +691,14 @@ add_complementary <- function(z){
 #' @title Extract the result of \code{enumerate_parsimony} at a node.
 #'
 #' @description
-#' \code{extract.enumerate_parsimony} returns a matrix contianing all the possible
-#' regime allocations for the nodes of a given subtree.
+#' \code{extract.enumerate_parsimony} returns a matrix contianing all the
+#' possible regime allocations for the nodes of a given subtree.
 #' 
-#' @param allocations a list of list of matrices, result of function 
-#' \code{enumerate_parsimony}
+#' @param Reconstructions a list of list of matrices, result of function 
+#' \code{\link{enumerate_parsimony}}
+#' 
+#' @param node the node where to retrive the parsimony number. Default to the
+#' root of the tree.
 #'
 #' @return A matrix with ntaxa + nNode columns, and as many rows as the number of
 #' possible parsimonious reconstructions.
@@ -708,7 +711,8 @@ add_complementary <- function(z){
 # }
 
 extract.enumerate_parsimony <- function(Reconstructions, 
-                                    node = attr(Reconstructions$allocations, "ntaxa") + 1){
+                                        node = attr(Reconstructions$allocations,
+                                                    "ntaxa") + 1){
   cost <- Reconstructions$costReconstructions[node, ]
   allocations <- Reconstructions$allocations[[node]]
   return(do.call(rbind, allocations[which(cost == min(cost))]))
@@ -730,23 +734,25 @@ equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
 #' @title Find all the equivalent shift edges allocations.
 #'
 #' @description
-#' \code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to find all
-#' the shifts positions that are equivalent to a given one.
+#' \code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to
+#' find all the shifts positions that are equivalent to a given one.
 #' 
 #' @details
 #' This function is uses functions \code{enumerate_parsimony} for the actual
-#' computation of equivalent regimes, \code{clusters_from_shifts} for the clustering
-#' of the tips induced by the original set of shifts given, and 
-#' \code{allocate_shifts_from_regimes} to convert back a parametrization in term of
-#' regimes to a parametrization in term of shifts.
+#' computation of equivalent regimes, \code{clusters_from_shifts} for the
+#' clustering of the tips induced by the original set of shifts given, and 
+#' \code{allocate_shifts_from_regimes} to convert back a parametrization in term
+#' of regimes to a parametrization in term of shifts.
 #' 
 #' @param phylo a phylogenetic tree.
 #' @param shifts_edges a vector of shifts positions on the edges of the tree.
+#' @param ... further arguments to be passed to 
+#' \code{\link{clusters_from_shifts_ism}}.
 #'
 #' @return a matrix with as many columns as equivalent allocation, each column
 #'  representing a possible parsimonious allocation of shifts on the tree.
 #'  
-#'  @export
+#' @export
 ##
 equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
   if(!check_parsimony_ism(phylo, shifts_edges, ...)) stop("The edges entered are not parsimonious.")
@@ -817,14 +823,14 @@ equivalent_shifts_values <- function(phylo,
 #' This function uses \code{qr.solve} for rectangular linear system solving.
 #' 
 #' @param shifts_edges a vector of positions of shifts on the tree.
-#' @param Tr matrix of incidence of the tree, result of function 
+#' @param T_tree_ac matrix of incidence of the tree, result of function 
 #' \code{incidence.matrix}.
 #' @param m_Y the vector of values of the means at the tips.
 #'
-#' @return vector, with first entry the values at the root, and other entries the 
+#' @return vector, with first entry the values at the root, and other entries the
 #' values of the shifts.
 #' 
-#' @export
+#' @keywords internal
 ##
 find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
   mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[, shifts_edges]) # stationary case assumption used here

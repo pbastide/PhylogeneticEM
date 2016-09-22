@@ -19,4 +19,5 @@ sub-matrix of variance for the node.
 \code{get_variance_node} returns the conditional variance of a node, or the conditional
 corariance of a node and its parent.
 }
+\keyword{internal}
 

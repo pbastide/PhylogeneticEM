@@ -620,6 +620,9 @@ check_dimensions.shifts <- function(p, shifts){
 #' @param factor_up_alpha factor for up scalability
 #' @param factor_down_alpha factor for down scalability
 #' @param quantile_low_distance quantile for min distance
+#' @param log_transform whether to take a log scale for the spacing of alpha
+#' values. Default to TRUE.
+#' @param ... not used.
 #'     
 #' @return A grid of alpha values
 #' 
@@ -652,7 +655,7 @@ find_grid_alpha <- function(phy, alpha = NULL,
 #' parameter alpha.
 #'
 #' @param phylo A phylogenetic tree of class 'phylo', with branch lengths.
-#' @param alpha Value of the selection strength.
+#' @param alp Value of the selection strength.
 #'     
 #' @return phylo The same phylogenetic tree, with transformed branch lengths.
 #' 

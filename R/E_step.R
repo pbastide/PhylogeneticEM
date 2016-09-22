@@ -51,6 +51,7 @@
 #'                   "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
 #' values beta(t_j)
 #' 
+#' @keywords internal
 ##
 
 compute_E.simple <- function(phylo,
@@ -284,6 +285,8 @@ compute_cond_law.simple.nomissing.BM <- function (phylo, Y_data, sim,
 #' @return F_means the matrix to use for actualization of means.
 #' @return F_vars the matrix to use for the actualization of variances.
 #' 
+#' @keywords internal
+#' 
 ##
 compute_fixed_moments <- function(times_shared, ntaxa){
   masque_data <- c(rep(TRUE, ntaxa), rep(FALSE, dim(times_shared)[1] - ntaxa))
@@ -318,6 +321,8 @@ compute_fixed_moments <- function(times_shared, ntaxa){
 #' @param miss; missing values of Y_data
 #' 
 #' @return sub-matrix of variance covariance.
+#' 
+#' @keywords internal
 #' 
 ##
 extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
@@ -427,6 +432,8 @@ extract.variance_nodes <- function(phylo, struct){
 #' 
 #' @return sub-matrix of variance for the node.
 #' 
+#' @keywords internal
+#' 
 ##
 
 get_variance_node <- function(node, vars){
@@ -449,6 +456,8 @@ get_variance_node <- function(node, vars){
 #'  @param params_old (list) : old parameters to be used in the E step
 #' 
 #' @return matrix of variance covariance for the BM
+#' 
+#' @keywords internal
 #' 
 ##
 compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
@@ -480,6 +489,8 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
 #'  \code{compute_times_ca}
 #' 
 #' @return times_shared 
+#' 
+#' @keywords internal
 ##
 compute_tree_correlations_matrix.BM <- function(times_shared, params_old, ...) {
   res <- times_shared
@@ -502,6 +513,8 @@ compute_tree_correlations_matrix.BM <- function(times_shared, params_old, ...) {
 #'  @param params_old (list) : old parameters to be used in the E step
 #' 
 #' @return matrix of variance covariance for the scOU
+#' 
+#' @keywords internal
 #' 
 ##
 compute_variance_covariance.scOU <- function(times_shared, distances_phylo, params_old, ...) {
@@ -542,6 +555,8 @@ compute_variance_covariance.scOU <- function(times_shared, distances_phylo, para
 #' 
 #' @return matrix of variance covariance for the scOU
 #' 
+#' @keywords internal
+#' 
 ##
 compute_tree_correlations_matrix.scOU <- function(times_shared, distances_phylo, params_old, ...) {
   p <- nrow(params_old$shifts$values)
@@ -570,6 +585,8 @@ compute_tree_correlations_matrix.scOU <- function(times_shared, distances_phylo,
 #'  @param params_old (list) : old parameters to be used in the E step
 #' 
 #' @return matrix of variance covariance for the OU
+#' 
+#' @keywords internal
 #' 
 ##
 compute_variance_covariance.OU <- function(times_shared,
@@ -648,7 +665,9 @@ compute_variance_covariance.OU <- function(times_shared,
 #' #@return Sigma_YY_inv inverse of vairance matrix of the data
 #' @return Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
 #'  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)
-#' 29/09/14 - Initial release
+#'  
+#' @keywords internal
+# 29/09/14 - Initial release
 ##
 compute_mean_variance.simple <- function(phylo,
                                          times_shared,
@@ -732,7 +751,9 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
 #' @param sim (list) : result of function \code{simulate}.
 #' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
 #' 
-#' @return vector of residuals
+#' @keywords internal
+#' 
+# @return vector of residuals
 ##
 compute_residuals.simple <- function(phylo, Y_data_vec, sim,
                                      Sigma_YY_chol_inv, miss){
@@ -762,6 +783,8 @@ compute_residuals.simple <- function(phylo, Y_data_vec, sim,
 #' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
 #' 
 #' @return squared Mahalanobis distance between data and mean at the tips.
+#' 
+#' @keywords internal
 ##
 compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
                                                 Sigma_YY_chol_inv,
@@ -808,7 +831,9 @@ compute_mahalanobis_distance.simple.nomissing.BM <- function(phylo, Y_data, sim,
 #' 
 #' @return log likelihood of the data
 #' 
-#' 29/09/14 - Initial release
+#' @keywords internal
+#' 
+# 29/09/14 - Initial release
 ##
 compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
                                           Sigma, Sigma_YY_chol_inv,
@@ -1000,6 +1025,8 @@ compute_E.upward_downward <- function(phylo,
 #' @description
 #' \code{wrapper_E_step} is used in the EM algorithm. It calls itself
 #' recursivelly in case of independent parameters.
+#' 
+#' @keywords internal
 ##
 wrapper_E_step <- function(phylo,
                            times_shared,

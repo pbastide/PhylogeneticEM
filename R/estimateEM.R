@@ -716,6 +716,8 @@ estimateEM <- function(phylo,
 #' 
 #' 
 #' @return params_scOU the equivalent parameters of the OU on the original tree.
+#' 
+#' @keywords internal
 #'
 ##
 go_back_to_original_process <- function (phy_original,
@@ -792,6 +794,8 @@ go_back_to_original_process <- function (phy_original,
 #' @return m_Y_estim reconstructed tip states
 #' @return edge.quality for each edge, relative number of iterations in which they
 #'  were present.
+#'  
+#' @keywords internal
 #'
 ##
 format_output <- function(results_estim_EM, phylo, time = NA){
@@ -913,6 +917,8 @@ format_output_several_K_single <- function(res_sev_K){
 #' @param kappa a real strictly bellow 1.
 #' 
 #' @return K_max the maximal number of shifts allowed.
+#' 
+#' @keywords internal
 #' 
 ##
 compute_K_max <- function(ntaxa, kappa = 0.9){
@@ -2049,50 +2055,50 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 # }
 
 ##
-#' @title Run the EM for several values of K
-#'
-#' @description
-#' \code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
-#' for all values of K between 0 and K_max.
-#'
-#' @details
-#' The EM is fisrt launched for K=0, with alpha and gamma estimated. The
-#' estimated values of alpha, gamma and beta_0 found by this fisrt EM are then
-#' used as initialisation parameters for all the other runs of the EM for other
-#' K.
-#' The EMs are parralelized thanks to packages \code{foreach} and 
-#' \code{doParallel}.
-#' WARNING : this code only work of OU with stationary root, on an ultrametric
-#' tree.
-#' 
-#'
-#' @param phylo a phylogenetic tree
-#' @param Y_data vector of data at the tips
-#' @param K_max the maximal number of shifts allowed. By default, computed with 
-#' function \code{compute_K_max}.
-#' @param ... other arguments to pass to \code{estimateEM}.
-#' 
-#' @return summary a data frame with K_max lines, and columns:
-#'    - alpha_estim the estimated selection strength
-#'    - gamma_estim the estimated root variance
-#'    - beta_0_estim the estimated value of root optumum
-#'    - EM_steps number of iterations needed before convergence
-#'    - DV_estim has the EM diverged ?
-#'    - CV_estim has the EM converged ?
-#'    - log_likelihood log likelihood of the data using the estimated parameters
-#'    - mahalanobis_distance_data_mean the mahalanobis distance between the data
-#' and the estimated means at the tips
-#'    - least_squares the mahalanobis distance, renormalized by gamma^2: 
-#' mahalanobis_distance_data_mean * gamma_estim.
-#'    - mean_number_new_shifts the mean number of shifts that changed over the 
-#' iterations of the EM
-#'    - number_equivalent_solutions the number of equivalent solutions to 
-#' the solution found.
-#'    - K_try the number of shifts allowed.
-#'    - complexity the complexity for K_try
-#'    - time the CPU time needed.
-#' @return params a list of infered parameters for each EM.
-#'
+# @title Run the EM for several values of K
+#
+# @description
+# \code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
+# for all values of K between 0 and K_max.
+#
+# @details
+# The EM is fisrt launched for K=0, with alpha and gamma estimated. The
+# estimated values of alpha, gamma and beta_0 found by this fisrt EM are then
+# used as initialisation parameters for all the other runs of the EM for other
+# K.
+# The EMs are parralelized thanks to packages \code{foreach} and 
+# \code{doParallel}.
+# WARNING : this code only work of OU with stationary root, on an ultrametric
+# tree.
+# 
+#
+# @param phylo a phylogenetic tree
+# @param Y_data vector of data at the tips
+# @param K_max the maximal number of shifts allowed. By default, computed with 
+# function \code{compute_K_max}.
+# @param ... other arguments to pass to \code{estimateEM}.
+# 
+# @return summary a data frame with K_max lines, and columns:
+#    - alpha_estim the estimated selection strength
+#    - gamma_estim the estimated root variance
+#    - beta_0_estim the estimated value of root optumum
+#    - EM_steps number of iterations needed before convergence
+#    - DV_estim has the EM diverged ?
+#    - CV_estim has the EM converged ?
+#    - log_likelihood log likelihood of the data using the estimated parameters
+#    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+# and the estimated means at the tips
+#    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+# mahalanobis_distance_data_mean * gamma_estim.
+#    - mean_number_new_shifts the mean number of shifts that changed over the 
+# iterations of the EM
+#    - number_equivalent_solutions the number of equivalent solutions to 
+# the solution found.
+#    - K_try the number of shifts allowed.
+#    - complexity the complexity for K_try
+#    - time the CPU time needed.
+# @return params a list of infered parameters for each EM.
+#
 ##
 
 # estimateEM_several_K.OUsr <- function(phylo, 
@@ -2148,46 +2154,46 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 # }
 
 ##
-#' @title A wrapper for estimateEM for OU with stationary root.
-#'
-#' @description
-#' \code{estimation_wrapper.OUsr} call estimateEM with a set of parameters well
-#' suited for the OU with stationary root.
-#' It is used in \code{estimateEM_several_K.OUsr}.
-#'
-#' @param K_t the number of shifts allowed
-#' @param phylo a phylogenetic tree
-#' @param Y_data vector of data at the tips
-#' @param alpha_known a boolean
-#' @param alpha the value of alpha if known
-#' @param method.init.alpha the initialization method for alpha
-#' @param ... other arguments to pass to \code{estimateEM}.
-#' 
-#' @return summary a data frame with columns:
-#'    - alpha_estim the estimated selection strength
-#'    - gamma_estim the estimated root variance
-#'    - beta_0_estim the estimated value of root optumum
-#'    - EM_steps number of iterations needed before convergence
-#'    - DV_estim has the EM diverged ?
-#'    - CV_estim has the EM converged ?
-#'    - log_likelihood log likelihood of the data using the estimated parameters
-#'    - mahalanobis_distance_data_mean the mahalanobis distance between the data
-#' and the estimated means at the tips
-#'    - least_squares the mahalanobis distance, renormalized by gamma^2: 
-#' mahalanobis_distance_data_mean * gamma_estim.
-#'    - mean_number_new_shifts the mean number of shifts that changed over the 
-#' iterations of the EM
-#'    - number_equivalent_solutions the number of equivalent solutions to 
-#' the solution found.
-#'    - K_try the number of shifts allowed.
-#'    - complexity the complexity for K_try
-#'    - time the CPU time needed.
-#' @return params a list of infered parameters
-#' @return params_init a list of initial parameters
-#' @return Zhat the reconstructed node states
-#' @return edge.quality the quality of each selected edge
-#' @return raw_results complete result of \code{estimateEM}
-#'
+# @title A wrapper for estimateEM for OU with stationary root.
+#
+# @description
+# \code{estimation_wrapper.OUsr} call estimateEM with a set of parameters well
+# suited for the OU with stationary root.
+# It is used in \code{estimateEM_several_K.OUsr}.
+#
+# @param K_t the number of shifts allowed
+# @param phylo a phylogenetic tree
+# @param Y_data vector of data at the tips
+# @param alpha_known a boolean
+# @param alpha the value of alpha if known
+# @param method.init.alpha the initialization method for alpha
+# @param ... other arguments to pass to \code{estimateEM}.
+# 
+# @return summary a data frame with columns:
+#    - alpha_estim the estimated selection strength
+#    - gamma_estim the estimated root variance
+#    - beta_0_estim the estimated value of root optumum
+#    - EM_steps number of iterations needed before convergence
+#    - DV_estim has the EM diverged ?
+#    - CV_estim has the EM converged ?
+#    - log_likelihood log likelihood of the data using the estimated parameters
+#    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+# and the estimated means at the tips
+#    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+# mahalanobis_distance_data_mean * gamma_estim.
+#    - mean_number_new_shifts the mean number of shifts that changed over the 
+# iterations of the EM
+#    - number_equivalent_solutions the number of equivalent solutions to 
+# the solution found.
+#    - K_try the number of shifts allowed.
+#    - complexity the complexity for K_try
+#    - time the CPU time needed.
+# @return params a list of infered parameters
+# @return params_init a list of initial parameters
+# @return Zhat the reconstructed node states
+# @return edge.quality the quality of each selected edge
+# @return raw_results complete result of \code{estimateEM}
+#
 ##
 
 # estimation_wrapper.OUsr <- function(K_t, phylo, Y_data,
@@ -2238,12 +2244,12 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 #' @title Test the format of data entry.
 #'
 #' @description
-#' \code{check_data} tests if the data matrix has the right format, and if it is correctly
-#' ordered to match the tips names.
+#' \code{check_data} tests if the data matrix has the right format, and if it is
+#' correctly ordered to match the tips names.
 #'
 #' @param phylo a phylogenetic tree
 #' @param Y_data matrix of data at the tips (pxntaxa)
-#' @param check.tips.names (bool) wether to check the tips names or not
+#' @param check.tips.names (bool) whether to check the tips names or not
 #' 
 #' @return Y_data a re-ordered matrix of data (if necessary)
 #'

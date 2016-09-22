@@ -9,7 +9,9 @@ shifts.list_to_matrix(phy, shifts, p = nrow(shifts$values))
 \arguments{
 \item{phy}{Input tree.}
 
-\item{shifts}{: list description of the shifts : shifts$edges, shifts$values}
+\item{shifts}{list description of the shifts : shifts$edges, shifts$values.}
+
+\item{p}{number of traits (optional, needed when shifts = NULL).}
 }
 \value{
 Matrix p x nEdges of length nbranch.

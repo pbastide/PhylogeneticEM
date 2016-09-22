@@ -10,22 +10,23 @@ equivalent_shifts_edges(phylo, shifts_edges, ...)
 \item{phylo}{a phylogenetic tree.}
 
 \item{shifts_edges}{a vector of shifts positions on the edges of the tree.}
+
+\item{...}{further arguments to be passed to 
+\code{\link{clusters_from_shifts_ism}}.}
 }
 \value{
 a matrix with as many columns as equivalent allocation, each column
  representing a possible parsimonious allocation of shifts on the tree.
- 
- @export
 }
 \description{
-\code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to find all
-the shifts positions that are equivalent to a given one.
+\code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to
+find all the shifts positions that are equivalent to a given one.
 }
 \details{
 This function is uses functions \code{enumerate_parsimony} for the actual
-computation of equivalent regimes, \code{clusters_from_shifts} for the clustering
-of the tips induced by the original set of shifts given, and 
-\code{allocate_shifts_from_regimes} to convert back a parametrization in term of
-regimes to a parametrization in term of shifts.
+computation of equivalent regimes, \code{clusters_from_shifts} for the
+clustering of the tips induced by the original set of shifts given, and 
+\code{allocate_shifts_from_regimes} to convert back a parametrization in term
+of regimes to a parametrization in term of shifts.
 }
 

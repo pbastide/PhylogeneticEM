@@ -19,4 +19,5 @@ matrix of vec(X).
 \code{compute_dist_phy}
  @param params_old (list) : old parameters to be used in the E step
 }
+\keyword{internal}
 

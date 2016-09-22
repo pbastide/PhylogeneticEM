@@ -14,8 +14,6 @@ init.compute_betas(phy, optimal.value, ...)
 \value{
 Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
  at the root.
- 
- @keywords internal
 }
 \description{
 \code{init.compute_betas} initialize the vector of optimal values at nodes and
@@ -25,4 +23,5 @@ tips, with the value at the root.
 This function is used in function \code{compute_betas} and is designed to 
 furnish function \code{update.compute_betas} with the right structure of data.
 }
+\keyword{internal}
 

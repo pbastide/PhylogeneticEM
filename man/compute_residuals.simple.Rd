@@ -15,9 +15,6 @@ compute_residuals.simple(phylo, Y_data_vec, sim, Sigma_YY_chol_inv, miss)
 
 \item{Sigma_YY_inv}{: invert of the variance-covariance matrix of the data.}
 }
-\value{
-vector of residuals
-}
 \description{
 \code{compute_residuals.simple} computes the residuals after the fit of the
 data in the simple case where the inverse of the variance matrix is given.
@@ -27,4 +24,5 @@ This function takes parameters sim and Sigma_YY_inv from
 \code{compute_mean_variance.simple}. It uses function \code{extract.simulate}
 to extract the needed quantities from these objects.
 }
+\keyword{internal}
 

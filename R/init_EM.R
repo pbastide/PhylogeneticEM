@@ -1409,7 +1409,7 @@ init.alpha.default <- function(init.selection.strength, known.selection.strength
 #' @return params_init the list of initial parameters to be used, in the right
 #'  format.
 #'  
-#'  @keywords internal
+#' @keywords internal
 #'
 #10/07/14 - Initial release
 ##

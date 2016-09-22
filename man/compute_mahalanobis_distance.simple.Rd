@@ -29,4 +29,5 @@ This function takes parameters sim and Sigma_YY_inv from
 \code{compute_mean_variance.simple}. It uses function \code{extract.simulate}
 to extract the needed quantities from these objects.
 }
+\keyword{internal}
 
