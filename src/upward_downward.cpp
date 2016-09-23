@@ -61,14 +61,14 @@ Model::Model(arma::mat const & Beta, arma::mat const & Stationary_Var,
 // }
 
 // Access to fields Model ---------------------------------------------------//
-arma::mat Model::Rs() const {
-  return rs;
+arma::vec Model::Rs(int edge) const {
+  return rs.col(edge);
 }
-arma::cube Model::Qs() const {
-  return qs;
+arma::mat Model::Qs(int edge) const {
+  return qs.slice(edge);
 }
-arma::cube Model::Sigmas() const {
-  return sigmas;
+arma::mat Model::Sigmas(int edge) const {
+  return sigmas.slice(edge);
 }
 
 // // Export to R (test) -------------------------------------------------------//
@@ -91,7 +91,7 @@ Upward::Upward(int siz, int p_d){
   condvars.set_size(p_d, p_d, siz);
   condvars.fill(NA_REAL);
   missing_datas.set_size(p_d, siz);
-  missing_datas.zeros(); // all missing
+  missing_datas.zeros(); // none missing
 }
 
 // Constructor for initialization -------------------------------------------//
@@ -104,20 +104,20 @@ Upward::Upward(arma::mat const & data, int nE){
   int ntaxa = data.n_cols;
   for (int i = 0; i < ntaxa; i++){
     // Nas positions
-    arma::uvec na_position = arma::find_nonfinite(data.col(i));
+    arma::vec data_col(data.col(i));
+    arma::uvec na_position = arma::find_nonfinite(data_col);
     arma::uvec miss_data(p_d);
     miss_data.zeros();
     miss_data(na_position).ones(); // put one when missing
     missing_datas.col(i) = miss_data;
     // Fill exp with data
-    arma::vec data_col(data.col(i));
     data_col(na_position).zeros(); // replace na with zero
     condexps.col(i) = data_col;
     // Fill variances with zeros
-    arma::mat var;
-    var.zeros(p_d, p_d);
-    var.rows(na_position).fill(arma::datum::inf);
-    var.cols(na_position).fill(arma::datum::inf);
+    arma::uvec non_na_position = arma::find_finite(data_col);
+    arma::mat var(p_d, p_d);
+    var.fill(arma::datum::inf);
+    var(non_na_position, non_na_position).zeros();
     condvars.slice(i) = var;
     // Fill constants with right coef
     int nMiss = arma::sum(miss_data);
@@ -126,20 +126,20 @@ Upward::Upward(arma::mat const & data, int nE){
 }
 
 // Access to fields
-arma::vec Upward::Csts() const{
-  return csts;
+double Upward::Csts(int node) const{
+  return csts(node);
 }
 
-arma::mat Upward::Condexps() const{
-  return condexps;
+arma::vec Upward::Condexps(int node) const{
+  return condexps.col(node);
 }
 
-arma::cube Upward::Condvars() const{
-  return condvars;
+arma::mat Upward::Condvars(int node) const{
+  return condvars.slice(node);
 }
 
-arma::umat Upward::Missing_Datas() const{
-  return missing_datas;
+arma::uvec Upward::Missing_Datas(int node) const{
+  return missing_datas.col(node);
 }
 
 int Upward::Size() const{
@@ -173,13 +173,11 @@ double Log_Likelihood_Gauss(arma::vec mean, arma::mat var, arma::vec point){
   res += p_d * std::log(2 * arma::datum::pi);
   arma::vec diff = point - mean;
   res += as_scalar(diff.t() * arma::inv_sympd(var) * diff);
-  // Rcpp::Rcout << "ll " << -res/2 << std::endl;
   return -res/2;
 }
 
 double Upward::Log_Likelihood(Root_State root_state, int ntaxa) const {
   double res = csts(ntaxa + 1 - 1);
-  // Rcpp::Rcout << "log(cst) " << res << std::endl;
   arma::vec mean = condexps.col(ntaxa + 1 - 1);
   arma::mat var;
   arma::vec point = root_state.Exp();
@@ -188,7 +186,6 @@ double Upward::Log_Likelihood(Root_State root_state, int ntaxa) const {
   } else {
     var = condvars.slice(ntaxa + 1 - 1);
   }
-   // Rcpp::Rcout << "llgauss " << Log_Likelihood_Gauss(mean, var, point) << std::endl;
   res += Log_Likelihood_Gauss(mean, var, point);
   return res;
 }
@@ -266,15 +263,17 @@ void Upward::recursion(Model const & mod, arma::umat const & ed,
         
         // Compute Condvar, Condexp, constant and missing_data
         arma::uvec missing_data = missing_datas.col(node);
-        arma::mat check_S = condvars.slice(node) + mod.Sigmas().slice(edge);
+        arma::mat check_S = condvars.slice(node) + mod.Sigmas(edge);
         arma::mat check_S_inv = inv_na(check_S, missing_data, 0);
-        arma::mat tQ_checkS = mod.Qs().slice(edge).t() * check_S_inv;
-        arma::mat tQ_checkS_Q = tQ_checkS *  mod.Qs().slice(edge);
-        arma::vec checkSinv_diff = prod_na(check_S_inv, (condexps.col(node) - mod.Rs().col(edge)), missing_data, 0);
-        arma::vec tQ_checkSinv_diff = mod.Qs().slice(edge).t() * checkSinv_diff;
+        arma::mat Q_edge = mod.Qs(edge);
+        arma::mat tQ_checkS = Q_edge.t() * check_S_inv;
+        arma::mat tQ_checkS_Q = tQ_checkS *  Q_edge;
+        arma::vec diff_exp = condexps.col(node) - mod.Rs(edge);
+        arma::vec checkSinv_diff = prod_na(check_S_inv, diff_exp, missing_data, 0);
+        arma::vec tQ_checkSinv_diff = Q_edge.t() * checkSinv_diff;
         double constant = csts(node);
         constant -= log_det_na(check_S, missing_data) / 2;
-        constant -= arma::as_scalar((condexps.col(node) - mod.Rs().col(edge)).t() * checkSinv_diff)/2;
+        constant -= arma::as_scalar(diff_exp.t() * checkSinv_diff)/2;
       
         // Sums and products
         S_sum += tQ_checkS_Q;
@@ -389,11 +388,11 @@ Moments::Moments(Upward const & up, Root_State const & root_state, int ntaxa){
   // Root
   // (No covariance at the root)
   if (root_state.Random()){
-    arma::uvec missing_data = up.Missing_Datas().col(ntaxa);
+    arma::uvec missing_data = up.Missing_Datas(ntaxa);
     arma::mat gamma_inv = inv_sympd(root_state.Var());
-    arma::mat S_inv = inv_na(up.Condvars().slice(ntaxa), missing_data, 0);
+    arma::mat S_inv = inv_na(up.Condvars(ntaxa), missing_data, 0);
     vars.slice(ntaxa + 1 - 1) = inv_na(gamma_inv + S_inv, missing_data, arma::datum::inf);
-    exps.col(ntaxa + 1 - 1) = vars.slice(ntaxa) * (gamma_inv * root_state.Exp() + S_inv * up.Condexps().col(ntaxa));
+    exps.col(ntaxa + 1 - 1) = vars.slice(ntaxa) * (gamma_inv * root_state.Exp() + S_inv * up.Condexps(ntaxa));
   } else {
     vars.slice(ntaxa + 1 - 1).zeros();
     exps.col(ntaxa + 1 - 1) = root_state.Exp();
@@ -436,17 +435,22 @@ Moments::Moments(arma::mat const & data, arma::umat const & ed){
 void Moments::actualize_downward(Upward const & up, 
                                  Model const & mod,
                                  int edge, int child, int father){
-  arma::mat checkS_inv = inv_sympd(up.Condvars().slice(child) + mod.Sigmas().slice(edge));
-  arma::mat S_checkS_inv = up.Condvars().slice(child) * checkS_inv;
   
-  covars.slice(child) = S_checkS_inv * mod.Qs().slice(edge) * vars.slice(father);
+  arma::mat Sig_edge = mod.Sigmas(edge);
+  arma::mat condvar_child = up.Condvars(child);
+  
+  arma::mat checkS_inv = inv_sympd(condvar_child + Sig_edge);
+  arma::mat S_checkS_inv = condvar_child * checkS_inv;
+  
+  arma::mat Q_edge = mod.Qs(edge);
+  covars.slice(child) = S_checkS_inv * Q_edge * vars.slice(father);
   covars.slice(child) = covars.slice(child).t();
   
-  exps.col(child) = S_checkS_inv * (mod.Qs().slice(edge) * exps.col(father) + mod.Rs().col(edge));
-  exps.col(child) += mod.Sigmas().slice(edge) * checkS_inv * up.Condexps().col(child);
+  exps.col(child) = S_checkS_inv * (Q_edge * exps.col(father) + mod.Rs(edge));
+  exps.col(child) += Sig_edge * checkS_inv * up.Condexps(child);
   
-  vars.slice(child) = S_checkS_inv * mod.Sigmas().slice(edge);
-  vars.slice(child) += S_checkS_inv * mod.Qs().slice(edge) * covars.slice(child);
+  vars.slice(child) = S_checkS_inv * Sig_edge;
+  vars.slice(child) += S_checkS_inv * Q_edge * covars.slice(child);
 }
 
 arma::mat compute_Sigma_bar(arma::mat S, arma::mat Sigma_inv, arma::uvec miss, bool isTip){
@@ -470,26 +474,29 @@ arma::mat compute_Sigma_bar(arma::mat S, arma::mat Sigma_inv, arma::uvec miss, b
 void Moments::actualize_downward_miss(Upward const & up,
                                       Model const & mod,
                                       int edge, int child, int father, int ntaxa){
-  arma::uvec missing_data = up.Missing_Datas().col(child);
+  arma::uvec missing_data = up.Missing_Datas(child);
   arma::uvec na_pos = find(missing_data == 1);
   
-  arma::mat Sigma_inv = arma::inv_sympd(mod.Sigmas().slice(edge));
-  arma::mat Sigma_bar = compute_Sigma_bar(up.Condvars().slice(child), Sigma_inv,
+  arma::mat Sig_edge = mod.Sigmas(edge);
+  arma::mat Sigma_inv = arma::inv_sympd(Sig_edge);
+  arma::mat condvar_child = up.Condvars(child);
+  arma::mat Sigma_bar = compute_Sigma_bar(condvar_child, Sigma_inv,
                                           missing_data, (child < ntaxa));
 
-  arma::mat checkS_inv = inv_na(up.Condvars().slice(child) + mod.Sigmas().slice(edge),
+  arma::mat checkS_inv = inv_na(condvar_child + Sig_edge,
                                 missing_data, 0);
   arma::mat S_checkS_inv = Sigma_bar * Sigma_inv;
-
-  arma::mat cova = mod.Qs().slice(edge) * vars.slice(father);
+  
+  arma::mat Q_edge = mod.Qs(edge);
+  arma::mat cova = Q_edge * vars.slice(father);
   cova = S_checkS_inv * cova;
   covars.slice(child) = cova.t();
 
-  exps.col(child) = Sigma_bar * Sigma_inv * (mod.Qs().slice(edge) * exps.col(father) + mod.Rs().col(edge));
-  exps.col(child) += mod.Sigmas().slice(edge) * checkS_inv * up.Condexps().col(child);
+  exps.col(child) = Sigma_bar * Sigma_inv * (Q_edge * exps.col(father) + mod.Rs(edge));
+  exps.col(child) += Sig_edge * checkS_inv * up.Condexps(child);
 
   vars.slice(child) = Sigma_bar;
-  vars.slice(child) += S_checkS_inv * mod.Qs().slice(edge) * covars.slice(child);
+  vars.slice(child) += S_checkS_inv * Q_edge * covars.slice(child);
 }
 
 void Moments::downward(Upward const & up, Model const & mod,
@@ -498,7 +505,7 @@ void Moments::downward(Upward const & up, Model const & mod,
   for (int i = nEdges - 1; i >= 0; i--){ // Loop on the edges (rows of ed)
     int father = ed(i, 0) - 1; // Father node of the edge
     int child = ed(i, 1) - 1; // Child edge of the edge
-    if (arma::sum(up.Missing_Datas().col(child)) > 0){ // Some missing data
+    if (arma::sum(up.Missing_Datas(child)) > 0){ // Some missing data
       (*this).actualize_downward_miss(up, mod, i, child, father, ntaxa);
     } else {
       (*this).actualize_downward(up, mod, i, child, father);
@@ -507,15 +514,15 @@ void Moments::downward(Upward const & up, Model const & mod,
 }
 
 // Access to fields ---------------------------------------------------------//
-arma::mat Moments::Exps() const {
-  return exps;
-}
-arma::cube Moments::Vars() const {
-  return vars;
-}
-arma::cube Moments::Covars() const {
-  return covars;
-}
+// arma::mat Moments::Exps() const {
+//   return exps;
+// }
+// arma::cube Moments::Vars() const {
+//   return vars;
+// }
+// arma::cube Moments::Covars() const {
+//   return covars;
+// }
 
 Rcpp::List Moments::exportMoments2R() const {
   return Rcpp::List::create(Rcpp::Named("expectations") = exps,
@@ -605,7 +612,7 @@ library(ape)
 library(TreeSim)
 library(Matrix)
 set.seed(17920902)
-ntaxa = 100
+ntaxa = 500
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                         age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
@@ -650,55 +657,55 @@ miss <- as.vector(is.na(traits))
 masque_data <- rep(FALSE, (ntaxa + tree$Nnode) * p)
 masque_data[1:(p * ntaxa)] <- !miss
 
-# times_shared <- compute_times_ca(tree)
-# distances_phylo <- compute_dist_phy(tree)
-# T_tree <- incidence.matrix(tree)
-# U_tree <- incidence.matrix.full(tree)
-# h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
-# root_edge_length <- 0
-# if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
-# F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
-# 
-# tmp_old <- wrapper_E_step(phylo = tree,
-#                           times_shared = times_shared,
-#                           distances_phylo = distances_phylo,
-#                           process = "BM",
-#                           params_old = paramsSimu,
-#                           masque_data = masque_data,
-#                           F_moments = F_moments,
-#                           independent = independent,
-#                           Y_data_vec_known = as.vector(traits[!miss]),
-#                           miss = miss,
-#                           Y_data = traits,
-#                           U_tree = U_tree,
-#                           compute_E = compute_E.simple)
-# 
-# ll_old <- tmp_old$log_likelihood_old
-# conditional_law_X_old <- tmp_old$conditional_law_X
+times_shared <- compute_times_ca(tree)
+distances_phylo <- compute_dist_phy(tree)
+T_tree <- incidence.matrix(tree)
+U_tree <- incidence.matrix.full(tree)
+h_tree <- max(diag(as.matrix(times_shared))[1:ntaxa])
+root_edge_length <- 0
+if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
+F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
 
-# tmp_new <- wrapper_E_step(phylo = tree,
-#                           times_shared = NULL,
-#                           distances_phylo = NULL,
-#                           process = "BM",
-#                           params_old = paramsSimu,
-#                           masque_data = masque_data,
-#                           F_moments = F_moments,
-#                           independent = independent,
-#                           Y_data_vec_known = as.vector(traits[!miss]),
-#                           miss = miss,
-#                           Y_data = traits,
-#                           U_tree = U_tree,
-#                           compute_E = compute_E.upward_downward)
+tmp_old <- wrapper_E_step(phylo = tree,
+                          times_shared = times_shared,
+                          distances_phylo = distances_phylo,
+                          process = "BM",
+                          params_old = paramsSimu,
+                          masque_data = masque_data,
+                          F_moments = F_moments,
+                          independent = independent,
+                          Y_data_vec_known = as.vector(traits[!miss]),
+                          miss = miss,
+                          Y_data = traits,
+                          U_tree = U_tree,
+                          compute_E = compute_E.simple)
 
-# ll_new <- tmp_new$log_likelihood_old
-# conditional_law_X_new <- tmp_new$conditional_law_X
+ll_old <- tmp_old$log_likelihood_old
+conditional_law_X_old <- tmp_old$conditional_law_X
 
-# all.equal(ll_new, as.vector(ll_old))
-# all.equal(conditional_law_X_old$expectations, conditional_law_X_new$expectations)
-# all.equal(conditional_law_X_old$variances, conditional_law_X_new$variances)
-# cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
-# cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
-# all.equal(cov_old, cov_new)
+tmp_new <- wrapper_E_step(phylo = tree,
+                          times_shared = NULL,
+                          distances_phylo = NULL,
+                          process = "BM",
+                          params_old = paramsSimu,
+                          masque_data = masque_data,
+                          F_moments = F_moments,
+                          independent = independent,
+                          Y_data_vec_known = as.vector(traits[!miss]),
+                          miss = miss,
+                          Y_data = traits,
+                          U_tree = U_tree,
+                          compute_E = compute_E.upward_downward)
+
+ll_new <- tmp_new$log_likelihood_old
+conditional_law_X_new <- tmp_new$conditional_law_X
+
+all.equal(ll_new, as.vector(ll_old))
+all.equal(conditional_law_X_old$expectations, conditional_law_X_new$expectations)
+all.equal(conditional_law_X_old$variances, conditional_law_X_new$variances)
+cov_new <- apply(conditional_law_X_new$covariances, 3, function(z) z + t(z))
+cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
+all.equal(cov_old, cov_new)
 
 
 # Delta <- shifts.list_to_matrix(tree, shifts)
@@ -722,26 +729,27 @@ masque_data[1:(p * ntaxa)] <- !miss
 # cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
 # all.equal(cov_old, cov_new)
 # 
-# # library(microbenchmark)
-# # microbenchmark(wrapper_E_step(phylo = tree,
-# #                               times_shared = times_shared,
-# #                               distances_phylo = distances_phylo,
-# #                               process = "BM",
-# #                               params_old = paramsSimu,
-# #                               masque_data = masque_data,
-# #                               F_moments = F_moments,
-# #                               independent = independent,
-# #                               Y_data_vec_known = as.vector(traits[!miss]),
-# #                               miss = miss,
-# #                               Y_data = traits,
-# #                               U_tree = U_tree,
-# #                               compute_E = compute_E.simple),
-# #                wrapper_E_step(phylo = tree,
-# #                               process = "BM",
-# #                               params_old = paramsSimu,
-# #                               masque_data = masque_data,
-# #                               independent = independent,
-# #                               Y_data = traits,
-# #                               compute_E = compute_E.upward_downward),
-# #                times = 10)
+library(microbenchmark)
+microbenchmark(
+  # wrapper_E_step(phylo = tree,
+  #                             times_shared = times_shared,
+  #                             distances_phylo = distances_phylo,
+  #                             process = "BM",
+  #                             params_old = paramsSimu,
+  #                             masque_data = masque_data,
+  #                             F_moments = F_moments,
+  #                             independent = independent,
+  #                             Y_data_vec_known = as.vector(traits[!miss]),
+  #                             miss = miss,
+  #                             Y_data = traits,
+  #                             U_tree = U_tree,
+  #                             compute_E = compute_E.simple),
+               wrapper_E_step(phylo = tree,
+                              process = "BM",
+                              params_old = paramsSimu,
+                              masque_data = masque_data,
+                              independent = independent,
+                              Y_data = traits,
+                              compute_E = compute_E.upward_downward),
+               times = 10)
 */

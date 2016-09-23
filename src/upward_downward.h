@@ -61,9 +61,9 @@ public:
         arma::vec const & edge_length, arma::mat const & Alpha);
   
   // Access to fields
-  arma::mat Rs() const;
-  arma::cube Qs() const;
-  arma::cube Sigmas() const;
+  arma::vec Rs(int edge) const;
+  arma::mat Qs(int edge) const;
+  arma::mat Sigmas(int edge) const;
   
   // Export to R (test only)
   // Rcpp::List exportModel2R() const;
@@ -75,43 +75,6 @@ public:
 /*
  * The quantities needed at the upward phase.
  * This is one instance at one node.
- */
-class Upward_Node
-{
-private:
-  
-  double cst; // constant. This is the log.
-  arma::vec condexp; // vector of expectations
-  arma::mat condvar; // variance matrix
-  arma::uvec missing_data; // Position of the missing data (bool vector)
-  
-public:
-  // Constructors
-  Upward_Node();
-  Upward_Node(int p_d);
-  
-  // Access to fields
-  double Cst() const;
-  arma::vec Condexp() const;
-  arma::mat Condvar() const;
-  arma::uvec Missing_Data() const;
-  
-  // Allocate Fields
-  void allocate_cst(double c);
-  void cst_ones();
-  void allocate_condexp(arma::vec exp);
-  void allocate_condvar(arma::mat var);
-  void condvar_zeros();
-  void allocate_missing_data(arma::uvec miss_data);
-  
-  
-  // Export to R (test only)
-  //Rcpp::List exportUpward2R() const;
-};
-
-
-
-/*
  * These are all the instances, numbered by the nodes.
  */
 
@@ -130,10 +93,10 @@ public:
   Upward(arma::mat const & data, int nE);
   
   // Access to fields
-  arma::vec Csts() const;
-  arma::mat Condexps() const;
-  arma::cube Condvars() const;
-  arma::umat Missing_Datas() const;
+  double Csts(int node) const;
+  arma::vec Condexps(int node) const;
+  arma::mat Condvars(int node) const;
+  arma::uvec Missing_Datas(int node) const;
   int Size() const;
   double Log_Likelihood(Root_State root, int ntaxa) const;
   
@@ -181,9 +144,9 @@ public:
   Rcpp::List exportMoments2R() const;
   
   // Access to fields
-  arma::mat Exps() const;
-  arma::cube Vars() const;
-  arma::cube Covars() const;
+  // arma::mat Exps() const;
+  // arma::cube Vars() const;
+  // arma::cube Covars() const;
   
   // Downward
   void actualize_downward(Upward const & up, 
