@@ -2,29 +2,30 @@ rm(list=ls())
 
 library(doParallel)
 library(foreach)
-library(ape)
-library(glmnet) # For Lasso initialization
-library(robustbase) # For robust fitting of alpha
-library(gglasso)
-library(capushe)
-library(Matrix)
-reqpckg <- c("ape", "glmnet", "robustbase", "gglasso", "Matrix", "capushe")
+library(PhylogeneticEM)
+# library(ape)
+# library(glmnet) # For Lasso initialization
+# library(robustbase) # For robust fitting of alpha
+# library(gglasso)
+# library(capushe)
+# library(Matrix)
+reqpckg <- c("PhylogeneticEM")
 
 ## Load Ericaceae data
-load("../data/ericaceae_data_2016-07-27.RData")
+load("../data/ericaceae_data_2016-09-20.RData")
 
-source("R/simulate.R")
-source("R/estimateEM.R")
-source("R/init_EM.R")
-source("R/E_step.R")
-source("R/M_step.R")
-source("R/shutoff.R")
-source("R/generic_functions.R")
-source("R/shifts_manipulations.R")
-source("R/plot_functions.R")
-source("R/parsimonyNumber.R")
-source("R/partitionsNumber.R")
-source("R/model_selection.R")
+# source("R/simulate.R")
+# source("R/estimateEM.R")
+# source("R/init_EM.R")
+# source("R/E_step.R")
+# source("R/M_step.R")
+# source("R/shutoff.R")
+# source("R/generic_functions.R")
+# source("R/shifts_manipulations.R")
+# source("R/plot_functions.R")
+# source("R/parsimonyNumber.R")
+# source("R/partitionsNumber.R")
+# source("R/model_selection.R")
 
 datestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
 
@@ -55,6 +56,7 @@ traits_data_all <- vector("list", 6)
 trait_matrix_all <- vector("list", 6)
 subtree_traits <- vector("list", 6)
 percentage_missing <- vector(length = 6)
+
 for (i in 1:6){ # i is the minimal number of non-NA trait
   traits_data_all[[i]] <- traits_data[rowSums(is.na(traits_data)) < (dim(traits_data)[2] - i),]
   rownames(traits_data_all[[i]]) <- traits_data_all[[i]][,1]
@@ -80,7 +82,7 @@ replace_zeros <- function(x){
     counter <- counter + 1
   }
   if (counter < 100){
-    x[zeros_x] <- rnorm(sum(zeros_x), m, sd)
+    x[zeros_x] <- values
     return(list(x = x,
                 zeros_x = zeros_x,
                 m = m,
@@ -95,8 +97,8 @@ replace_zeros <- function(x){
 ###############################################################################
 
 ## Select data
-phylo <- subtree_traits[[6]]
-trait_matrix <- trait_matrix_all[[6]]
+phylo <- subtree_traits[[3]]
+trait_matrix <- trait_matrix_all[[3]]
 # 0 values
 set.seed(17910402)
 temp_cl <- replace_zeros(trait_matrix[1, ])
@@ -121,23 +123,21 @@ alpha_grid <- find_grid_alpha(phylo,
 # Root fixed
 # Lasso init
 # K_max = 35
+time_3_NA_EM <- system.time(
 res <- PhyloEM(phylo = phylo,
                Y_data = trait_matrix_transform,
                process = "scOU",
-               random.root = FALSE,
+               random.root = TRUE,
+               stationary.root = TRUE,
                K_max = 30,
                K_lag_init = 5,
-               alpha = alpha_grid[11],
-               tol = list(variance = 10^(-2), 
-                          value.root = 10^(-2),
-                          log_likelihood = 10^(-2)),
-               save_step = FALSE,
+               alpha = alpha_grid[-1],
                Nbr_It_Max = 2000,
                use_previous = FALSE,
+               method.variance = "upward_downward",
                method.init = "lasso",
                method.selection = c("BirgeMassart1", "BirgeMassart2"),
-               impute_init_Rphylopars = FALSE)
-               # parallel_alpha = TRUE, Ncores = 5,
-               # exportFunctions = exportFunctions)
+               parallel_alpha = TRUE, Ncores = 5)
+)
 
-save.image(file = paste0("../Results/Test_Cases/ericaceae_1_NA_", datestamp, ".RData"))
+save.image(file = paste0("../Results/Test_Cases/ericaceae_3_NA_", datestamp, ".RData"))
