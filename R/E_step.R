@@ -193,11 +193,11 @@ compute_E.simple.nomissing.BM <- function(phylo,
                                           distances_phylo,
                                           process,
                                           params_old,
-                                          masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
-                                                          rep(FALSE, dim(sim)[1] * phylo$Nnode)),
+                                          masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
+                                                          rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)),
                                           F_moments,
                                           Y_data_vec_known,
-                                          miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
+                                          miss = rep(FALSE, attr(params_old, "p_dim") * length(phylo$tip.label)),
                                           Y_data,
                                           U_tree, ...){
   moments <- compute_mean_variance.simple.nomissing.BM(phylo = phylo,
@@ -451,9 +451,9 @@ get_variance_node <- function(node, vars){
 #' \code{compute_variance_covariance.BM} computes the (n+m)*p squared variance covariance
 #' matrix of vec(X).
 #'
-#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#' @param times_shared times of shared ancestry of all nodes and tips, result of function
 #'  \code{compute_times_ca}
-#'  @param params_old (list) : old parameters to be used in the E step
+#' @param params_old (list) : old parameters to be used in the E step
 #' 
 #' @return matrix of variance covariance for the BM
 #' 
@@ -485,7 +485,7 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
 #' @description
 #' \code{compute_tree_correlations_matrix.BM} returns times_shared its provided argument.
 #'
-#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#' @param times_shared times of shared ancestry of all nodes and tips, result of function
 #'  \code{compute_times_ca}
 #' 
 #' @return times_shared 
@@ -506,11 +506,11 @@ compute_tree_correlations_matrix.BM <- function(times_shared, params_old, ...) {
 #' \code{compute_variance_covariance.scOU} computes the (n+m)*p squared variance covariance
 #' matrix of vec(X).
 #'
-#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#' @param times_shared times of shared ancestry of all nodes and tips, result of function
 #'  \code{compute_times_ca}
-#'  @param distances_phylo (matrix) : phylogenetics distance, result of function 
+#' @param distances_phylo (matrix) : phylogenetics distance, result of function 
 #' \code{compute_dist_phy}
-#'  @param params_old (list) : old parameters to be used in the E step
+#' @param params_old (list) : old parameters to be used in the E step
 #' 
 #' @return matrix of variance covariance for the scOU
 #' 
@@ -547,11 +547,11 @@ compute_variance_covariance.scOU <- function(times_shared, distances_phylo, para
 #' induced by the tree. It takes two cases in consideration: root fixed, or root in stationary
 #' state.
 #'
-#'  @param times_shared times of shared ancestry of all nodes and tips, result of function
+#' @param times_shared times of shared ancestry of all nodes and tips, result of function
 #'  \code{compute_times_ca}
-#'  @param distances_phylo (matrix) : phylogenetics distance, result of function 
+#' @param distances_phylo (matrix) : phylogenetics distance, result of function 
 #' \code{compute_dist_phy}
-#'  @param params_old (list) : old parameters to be used in the E step
+#' @param params_old (list) : old parameters to be used in the E step
 #' 
 #' @return matrix of variance covariance for the scOU
 #' 
@@ -580,9 +580,9 @@ compute_tree_correlations_matrix.scOU <- function(times_shared, distances_phylo,
 #' \code{compute_variance_covariance.OU} computes the (n+m)*p squared variance
 #' covariance matrix of vec(X).
 #'
-#'  @param times_shared times of shared ancestry of all nodes and tips, result 
+#' @param times_shared times of shared ancestry of all nodes and tips, result 
 #'  of function \code{compute_times_ca}
-#'  @param params_old (list) : old parameters to be used in the E step
+#' @param params_old (list) : old parameters to be used in the E step
 #' 
 #' @return matrix of variance covariance for the OU
 #' 

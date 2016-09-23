@@ -1307,6 +1307,9 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        U_tree,
                                        K_lag_init,
                                        ...){
+    if(progress.bar){
+      message(paste0("Alpha ", alp))
+    }
     temp <- choose_process_EM(process = process_original,
                               p = p,
                               random.root = random.root,
@@ -1527,9 +1530,9 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     X <- foreach::foreach(alp = alpha, .packages = reqpckg) %do%
     {
       ## Progress Bar
-      if(progress.bar){
-        message(paste0("Alpha ", alp))
-      }
+      # if(progress.bar){
+      #   message(paste0("Alpha ", alp))
+      # }
       estimate_alpha_several_K(alp,
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
@@ -1834,7 +1837,9 @@ merge_max_grid_alpha <- function(X, alpha){
   colnames(X$alpha_max$results_summary) <- colnames(summary_all)
   X$alpha_max$edge.quality <- vector(length = length(X$K_try), mode = "list")
   for (K_t in X$K_try){
-    max_sum <- subset(subset(summary_all, K_try == K_t), log_likelihood == max(log_likelihood))
+    max_sum <- summary_all[summary_all$K_try == K_t, ]
+    max_sum <- max_sum[max_sum$log_likelihood == max(max_sum$log_likelihood), ]
+# subset(subset(summary_all, K_try == K_t), log_likelihood == max(log_likelihood))
     res_max <- X[[paste0("alpha_", max_sum$alpha_name)]]
     params <- res_max$params_estim[[paste(K_t)]]
     X$alpha_max$results_summary[K_t + 1, ] <- as.vector(unname(as.matrix(max_sum)))
