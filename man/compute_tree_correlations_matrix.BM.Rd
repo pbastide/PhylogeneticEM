@@ -6,14 +6,15 @@
 \usage{
 compute_tree_correlations_matrix.BM(times_shared, params_old, ...)
 }
+\arguments{
+\item{times_shared}{times of shared ancestry of all nodes and tips, result of function
+\code{compute_times_ca}}
+}
 \value{
 times_shared
 }
 \description{
 \code{compute_tree_correlations_matrix.BM} returns times_shared its provided argument.
-
- @param times_shared times of shared ancestry of all nodes and tips, result of function
- \code{compute_times_ca}
 }
 \keyword{internal}
 

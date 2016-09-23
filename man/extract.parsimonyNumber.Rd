@@ -4,17 +4,12 @@
 \alias{extract.parsimonyNumber}
 \title{Extraction of the actual number of solutions.}
 \usage{
-extract.parsimonyNumber(Reconstructions,
-  node = attr(Reconstructions$nbrReconstructions, "ntaxa") + 1)
+\method{extract}{parsimonyNumber}(obj, node = attr(obj$nbrReconstructions,
+  "ntaxa") + 1)
 }
 \arguments{
-\item{Reconstructions}{two (ntaxa + nNodes)x(nclus) matrices, result of function
-\code{\link{parsimonyNumber}}, with :
-\describe{
- \item{nbrReconstructions}{the matrix of number of local parsimonious 
- solutions.}
- \item{costReconstructions}{the matrix of costs (i.e number of shifts).}
-}}
+\item{obj}{an object of class "\code{parsimonyNumber}", result of function
+\code{\link{parsimonyNumber}}.}
 
 \item{node}{the root node of the subtree. By default, the root of the tree.}
 }

@@ -6,18 +6,21 @@
 \usage{
 compute_variance_covariance.scOU(times_shared, distances_phylo, params_old, ...)
 }
+\arguments{
+\item{times_shared}{times of shared ancestry of all nodes and tips, result of function
+\code{compute_times_ca}}
+
+\item{distances_phylo}{(matrix) : phylogenetics distance, result of function 
+\code{compute_dist_phy}}
+
+\item{params_old}{(list) : old parameters to be used in the E step}
+}
 \value{
 matrix of variance covariance for the scOU
 }
 \description{
 \code{compute_variance_covariance.scOU} computes the (n+m)*p squared variance covariance
 matrix of vec(X).
-
- @param times_shared times of shared ancestry of all nodes and tips, result of function
- \code{compute_times_ca}
- @param distances_phylo (matrix) : phylogenetics distance, result of function 
-\code{compute_dist_phy}
- @param params_old (list) : old parameters to be used in the E step
 }
 \keyword{internal}
 

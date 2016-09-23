@@ -19,14 +19,15 @@ a matrix with as many columns as equivalent allocation, each column
  representing a possible parsimonious allocation of shifts on the tree.
 }
 \description{
-\code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to
-find all the shifts positions that are equivalent to a given one.
+\code{equivalent_shifts_edges} uses function \code{\link{enumerate_parsimony}}
+to find all the shifts positions that are equivalent to a given one.
 }
 \details{
-This function is uses functions \code{enumerate_parsimony} for the actual
-computation of equivalent regimes, \code{clusters_from_shifts} for the
-clustering of the tips induced by the original set of shifts given, and 
-\code{allocate_shifts_from_regimes} to convert back a parametrization in term
-of regimes to a parametrization in term of shifts.
+This function is uses functions \code{\link{enumerate_parsimony}} for the
+actual computation of equivalent regimes,
+\code{\link{clusters_from_shifts_ism}} for the clustering of the tips induced
+by the original set of shifts given, and
+\code{\link{allocate_shifts_from_regimes}} to convert back a parametrization
+in term of regimes to a parametrization in term of shifts.
 }
 

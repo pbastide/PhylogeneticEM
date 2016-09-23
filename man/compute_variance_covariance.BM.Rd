@@ -6,16 +6,18 @@
 \usage{
 compute_variance_covariance.BM(times_shared, params_old, ...)
 }
+\arguments{
+\item{times_shared}{times of shared ancestry of all nodes and tips, result of function
+\code{compute_times_ca}}
+
+\item{params_old}{(list) : old parameters to be used in the E step}
+}
 \value{
 matrix of variance covariance for the BM
 }
 \description{
 \code{compute_variance_covariance.BM} computes the (n+m)*p squared variance covariance
 matrix of vec(X).
-
- @param times_shared times of shared ancestry of all nodes and tips, result of function
- \code{compute_times_ca}
- @param params_old (list) : old parameters to be used in the E step
 }
 \keyword{internal}
 

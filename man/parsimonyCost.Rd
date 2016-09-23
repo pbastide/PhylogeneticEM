@@ -12,8 +12,9 @@ parsimonyCost(phylo, clusters = rep(1, length(phylo$tip.label)))
 \item{clusters}{the vector of the clusters of the tips.}
 }
 \value{
-A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed
-to get the clustering, if starting from a node in state k.
+An S3 class "\code{parsimonyCost}" containing a 
+(ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed to
+get the clustering, if starting from a node in state k.
 }
 \description{
 \code{parsimonyCost} is an implementation of the Sankoff algorithm,

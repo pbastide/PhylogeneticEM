@@ -7,6 +7,15 @@
 compute_tree_correlations_matrix.scOU(times_shared, distances_phylo, params_old,
   ...)
 }
+\arguments{
+\item{times_shared}{times of shared ancestry of all nodes and tips, result of function
+\code{compute_times_ca}}
+
+\item{distances_phylo}{(matrix) : phylogenetics distance, result of function 
+\code{compute_dist_phy}}
+
+\item{params_old}{(list) : old parameters to be used in the E step}
+}
 \value{
 matrix of variance covariance for the scOU
 }
@@ -14,12 +23,6 @@ matrix of variance covariance for the scOU
 \code{compute_tree_correlations_matrix.scOU} computes the (n+m)x(m+n) matrix of correlations
 induced by the tree. It takes two cases in consideration: root fixed, or root in stationary
 state.
-
- @param times_shared times of shared ancestry of all nodes and tips, result of function
- \code{compute_times_ca}
- @param distances_phylo (matrix) : phylogenetics distance, result of function 
-\code{compute_dist_phy}
- @param params_old (list) : old parameters to be used in the E step
 }
 \keyword{internal}
 

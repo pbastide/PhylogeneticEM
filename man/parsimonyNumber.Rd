@@ -12,14 +12,13 @@ parsimonyNumber(phylo, clusters = rep(1, length(phylo$tip.label)))
 \item{clusters}{the vector of the clusters of the tips.}
 }
 \value{
-named list, with:
+an object of S3 class "\code{parsimonyNumber}" with:
 \describe{
  \item{nbrReconstructions}{a (ntaxa + nNodes) x (nclus)
  matrix of loccaly parsimonious solutions starting from a cluster k at a
  given node}
- \item{costReconstructions}{a (ntaxa + nNodes) x (nclus) matrix of the total
- number of shifts needed to get the clustering, if starting from a node in 
- state k (result of function \code{\link{parsimonyCost}}.}
+ \item{costReconstructions}{an object of class "\code{parsimonyCost}",
+ result of function \code{\link{parsimonyCost}}.}
 }
 }
 \description{

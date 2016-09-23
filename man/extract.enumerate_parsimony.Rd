@@ -4,12 +4,12 @@
 \alias{extract.enumerate_parsimony}
 \title{Extract the result of \code{enumerate_parsimony} at a node.}
 \usage{
-extract.enumerate_parsimony(Reconstructions,
-  node = attr(Reconstructions$allocations, "ntaxa") + 1)
+\method{extract}{enumerate_parsimony}(obj, node = attr(obj$allocations,
+  "ntaxa") + 1)
 }
 \arguments{
-\item{Reconstructions}{a list of list of matrices, result of function 
-\code{\link{enumerate_parsimony}}}
+\item{obj}{an object of class "\code{enumerate_parsimony}",
+result of function \code{\link{enumerate_parsimony}}.}
 
 \item{node}{the node where to retrive the parsimony number. Default to the
 root of the tree.}
@@ -19,7 +19,7 @@ A matrix with ntaxa + nNode columns, and as many rows as the number of
 possible parsimonious reconstructions.
 }
 \description{
-\code{extract.enumerate_parsimony} returns a matrix contianing all the
+\code{extract.enumerate_parsimony} returns a matrix containing all the
 possible regime allocations for the nodes of a given subtree.
 }
 

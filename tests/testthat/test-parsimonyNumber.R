@@ -4,8 +4,8 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
   ## First exemple (tricky one)
   tree <- read.tree(text="(((T,T),C),C);")
   clusters <- c(3.21, 26, 5.3, 5.3)
-  Nbr <- extract.parsimonyNumber(parsimonyNumber(tree, clusters))
-  Allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
+  Nbr <- extract(parsimonyNumber(tree, clusters))
+  Allocs <- extract(enumerate_parsimony(tree,clusters))
   # Same number of solutions
   expect_that(Nbr, equals(dim(Allocs)[1]))
   # Right number of solutions
@@ -17,7 +17,7 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
   ## Second exemple
   tree <- read.tree(text="(((T,T),C),(A,A));")
   clusters=c(1,1,2,3,3)
-  Nbr <- extract.parsimonyNumber(parsimonyNumber(tree, clusters))
+  Nbr <- extract(parsimonyNumber(tree, clusters))
   Allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
   expect_that(Nbr, equals(dim(Allocs)[1]))
   expect_that(Nbr, equals(5))
@@ -25,7 +25,7 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
   ## Third exemple
   tree <- read.tree(text="(((T,T),C),(A,A));")
   clusters=c(1,1,1,1,1)
-  Nbr <- extract.parsimonyNumber(parsimonyNumber(tree, clusters))
+  Nbr <- extract(parsimonyNumber(tree, clusters))
   Allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
   expect_that(Nbr, equals(dim(Allocs)[1]))
   expect_that(Nbr, equals(1))
@@ -40,7 +40,7 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
 #   set.seed(141114)
 #   tree <- rtree(100)
 #   clusters <- sample(1, 100, replace = TRUE)
-#   Nbr <- extract.parsimonyNumber(parsimonyNumber(tree, clusters))
+#   Nbr <- extract(parsimonyNumber(tree, clusters))
 #   Allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 #   expect_that(Nbr, equals(dim(Allocs)[1]))
 #   expect_that(Nbr, equals(1))
@@ -49,7 +49,7 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
 #   set.seed(131114)
 #   tree <- rtree(50)
 #   clusters <- sample(3, 50, replace = TRUE)
-#   Nbr <- extract.parsimonyNumber(parsimonyNumber(tree, clusters))
+#   Nbr <- extract(parsimonyNumber(tree, clusters))
 #   Allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree,clusters))
 #   expect_that(Nbr, equals(dim(Allocs)[1]))
 # })

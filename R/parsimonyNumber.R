@@ -34,8 +34,9 @@
 #' @param phylo phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
 #' 
-#' @return A (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed
-#' to get the clustering, if starting from a node in state k.
+#' @return An S3 class "\code{parsimonyCost}" containing a 
+#' (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed to
+#' get the clustering, if starting from a node in state k.
 #' 
 #' @export
 ##
@@ -48,6 +49,7 @@ parsimonyCost <- function(phylo,
   ## Tree recursion
   costReconstructions <- recursionUp(phy, costReconstructions, update.parsimonyCost)
   attr(costReconstructions, "ntaxa") <- ntaxa
+  class(costReconstructions) <- "parsimonyCost"
   return(costReconstructions)
 }
 
@@ -117,7 +119,41 @@ update.parsimonyCost <- function(daughtersParams, ...){
   return(parCosts)
 }
 
-extract.parsimonyCost <- function(costReconstructions, 
+##
+#' @title Extraction function
+#'
+#' @description
+#' \code{extract} the needed quantities out of an S3 object.
+#' 
+#' @seealso \code{\link{extract.parsimonyNumber}},
+#' \code{\link{extract.parsimonyCost}}, \code{\link{extract.enumerate_parsimony}}
+#'
+#' @param obj an S3 object.
+#' @param node the node where to extract. Default to the root of the tree.
+#' 
+#' @return An integer giving the number of equivalent parsimonious solutions.
+#' 
+#' @export
+##
+extract <- function(obj, node) UseMethod("extract")
+
+##
+#' @title Extraction of the actual number of solutions.
+#'
+#' @description
+#' \code{extract.parsimonyCost} takes an object of class "\code{parsimonyCost}",
+#' result of function \code{\link{parsimonyCost}}, and computes the minimum cost
+#' at the given node.
+#'
+#' @param obj an object of class "\code{parsimonyCost}", result of function
+#' \code{\link{parsimonyCost}}.
+#' @param node the root node of the subtree. By default, the root of the tree.
+#' 
+#' @return An integer giving the minimum cost of the subtree.
+#' 
+#' @export
+##
+extract.parsimonyCost <- function(obj, 
                                   node = attr(costReconstructions$nbrReconstructions, "ntaxa") + 1){
   return(min(costReconstructions[node, ]))
 }
@@ -148,14 +184,13 @@ extract.parsimonyCost <- function(costReconstructions,
 #' @param phylo phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
 #' 
-#' @return named list, with:
+#' @return an object of S3 class "\code{parsimonyNumber}" with:
 #' \describe{
 #'  \item{nbrReconstructions}{a (ntaxa + nNodes) x (nclus)
 #'  matrix of loccaly parsimonious solutions starting from a cluster k at a
 #'  given node}
-#'  \item{costReconstructions}{a (ntaxa + nNodes) x (nclus) matrix of the total
-#'  number of shifts needed to get the clustering, if starting from a node in 
-#'  state k (result of function \code{\link{parsimonyCost}}.}
+#'  \item{costReconstructions}{an object of class "\code{parsimonyCost}",
+#'  result of function \code{\link{parsimonyCost}}.}
 #' }
 #' 
 #' @export
@@ -176,8 +211,10 @@ parsimonyNumber <- function(phylo,
                                     update.parsimonyNumber, costReconstructions)
   ## Return reconstructions, with their cost
   attr(nbrReconstructions, "ntaxa") <- ntaxa
-  return(list(nbrReconstructions = nbrReconstructions,
-              costReconstructions = costReconstructions))
+  res <- list(nbrReconstructions = nbrReconstructions,
+              costReconstructions = costReconstructions)
+  class(res) <- "parsimonyNumber"
+  return(res)
 }
 
 ##
@@ -193,8 +230,8 @@ parsimonyNumber <- function(phylo,
 #' @param phy phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
 #' 
-#' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
-#' described.
+#' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized
+#' as described.
 #' 
 #' @keywords internal
 #' 
@@ -271,8 +308,8 @@ update.parsimonyNumber <- function(daughters, daughtersParams, cost, ...){
 #' daughters nodes.
 #' @param k the parental state considered.
 #' 
-#' @return A (ndaughters) x (nclus) binary matrix indicating the admissible states for
-#' the daughters node when parent node is in state k.
+#' @return A (ndaughters) x (nclus) binary matrix indicating the admissible
+#' states for the daughters node when parent node is in state k.
 #' 
 #' @keywords internal
 #' 
@@ -301,23 +338,18 @@ compute_state_filter <- function (cost, k) {
 #' solutions (given in matrice nbrReconstructions) that have the minimum number of 
 #' shifts.
 #'
-#' @param Reconstructions two (ntaxa + nNodes)x(nclus) matrices, result of function
-#' \code{\link{parsimonyNumber}}, with :
-#' \describe{
-#'  \item{nbrReconstructions}{the matrix of number of local parsimonious 
-#'  solutions.}
-#'  \item{costReconstructions}{the matrix of costs (i.e number of shifts).}
-#' }
+#' @param obj an object of class "\code{parsimonyNumber}", result of function
+#' \code{\link{parsimonyNumber}}.
 #' @param node the root node of the subtree. By default, the root of the tree.
 #' 
 #' @return An integer giving the number of equivalent parsimonious solutions.
 #' 
 #' @export
 ##
-extract.parsimonyNumber <- function(Reconstructions, 
-                                    node = attr(Reconstructions$nbrReconstructions, "ntaxa") + 1){
-  cost <- Reconstructions$costReconstructions[node, ]
-  nbr <- Reconstructions$nbrReconstructions[node, ]
+extract.parsimonyNumber <- function(obj, 
+                                    node = attr(obj$nbrReconstructions, "ntaxa") + 1){
+  cost <- obj$costReconstructions[node, ]
+  nbr <- obj$nbrReconstructions[node, ]
   return(sum(nbr[which(cost == min(cost))]))
 }
 
@@ -498,16 +530,21 @@ check_parsimony_ism <- function(tree, edges, ...){
 #' @param phylo Input tree.
 #' @param clusters a vector representing the group of each tip.
 #' 
-#' @return nbrReconstructions a (ntaxa + nNodes) x (nclus) matrix of loccaly parsimonious
-#' solutions starting from a cluster k at a given node.
-#' @return allocations a list of size nNode + ntaxa. Each entry i of the list represents the
-#'  solutions for the subtree starting at node i. It is a list with nclus entries,
-#'  each entry being a matrix. A line of the kth matrix for the ith node is one
-#'  possible allocation of the shifts, starting with regime k for node i.
+#' @return an S3 object of class "\code{enumerate_parsimony}", with;
+#' \describe{
+#' \item{nbrReconstructions}{an object of class "\code{parsimonyCost}", result
+#' of function \code{\link{parsimonyCost}}.}
+#' \item{allocations}{a list of size nNode + ntaxa. Each entry i of the list
+#' represents the solutions for the subtree starting at node i. It is a list with
+#' nclus entries, each entry being a matrix. A line of the kth matrix for the
+#' ith node is one possible allocation of the shifts, starting with regime k
+#' for node i.}
+#' }
 #'  
-#'  @export
+#' @export
 ##
-enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label))){
+enumerate_parsimony <- function(phylo,
+                                clusters = rep(1, length(phylo$tip.label))){
   phy <- reorder(phylo,"postorder")
   ntaxa <- length(phy$tip.label)
   ## Re-order clusters if necessary
@@ -518,10 +555,14 @@ enumerate_parsimony <- function(phylo, clusters = rep(1, length(phylo$tip.label)
   ## Initialization
   allocations <- init.enumerate_parsimony(phy, clusters, pos)
   ## Tree recursion
-  allocations <- recursionUp_list(phy, allocations, update.enumerate_parsimony, costReconstructions, clus, pos)
+  allocations <- recursionUp_list(phy, allocations,
+                                  update.enumerate_parsimony,
+                                  costReconstructions, clus, pos)
   attr(allocations, "ntaxa") <- ntaxa
-  return(list(costReconstructions = costReconstructions,
-              allocations = allocations))
+  res <- list(costReconstructions = costReconstructions,
+              allocations = allocations)
+  class(res) <- "enumerate_parsimony"
+  return(res)
 }
 
 ##
@@ -691,12 +732,11 @@ add_complementary <- function(z){
 #' @title Extract the result of \code{enumerate_parsimony} at a node.
 #'
 #' @description
-#' \code{extract.enumerate_parsimony} returns a matrix contianing all the
+#' \code{extract.enumerate_parsimony} returns a matrix containing all the
 #' possible regime allocations for the nodes of a given subtree.
 #' 
-#' @param Reconstructions a list of list of matrices, result of function 
-#' \code{\link{enumerate_parsimony}}
-#' 
+#' @param obj an object of class "\code{enumerate_parsimony}",
+#' result of function \code{\link{enumerate_parsimony}}.
 #' @param node the node where to retrive the parsimony number. Default to the
 #' root of the tree.
 #'
@@ -705,16 +745,11 @@ add_complementary <- function(z){
 #' 
 #' @export
 ##
-# extract.enumerate_parsimony <- function(allocations,
-#                                         node = attr(allocations, "ntaxa") + 1){
-#   return(do.call(rbind, allocations[[node]]))
-# }
-
-extract.enumerate_parsimony <- function(Reconstructions, 
-                                        node = attr(Reconstructions$allocations,
+extract.enumerate_parsimony <- function(obj, 
+                                        node = attr(obj$allocations,
                                                     "ntaxa") + 1){
-  cost <- Reconstructions$costReconstructions[node, ]
-  allocations <- Reconstructions$allocations[[node]]
+  cost <- obj$costReconstructions[node, ]
+  allocations <- obj$allocations[[node]]
   return(do.call(rbind, allocations[which(cost == min(cost))]))
 }
 
@@ -734,15 +769,16 @@ equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
 #' @title Find all the equivalent shift edges allocations.
 #'
 #' @description
-#' \code{equivalent_shifts_edges} uses function \code{enumerate_parsimony} to
-#' find all the shifts positions that are equivalent to a given one.
+#' \code{equivalent_shifts_edges} uses function \code{\link{enumerate_parsimony}}
+#' to find all the shifts positions that are equivalent to a given one.
 #' 
 #' @details
-#' This function is uses functions \code{enumerate_parsimony} for the actual
-#' computation of equivalent regimes, \code{clusters_from_shifts} for the
-#' clustering of the tips induced by the original set of shifts given, and 
-#' \code{allocate_shifts_from_regimes} to convert back a parametrization in term
-#' of regimes to a parametrization in term of shifts.
+#' This function is uses functions \code{\link{enumerate_parsimony}} for the
+#' actual computation of equivalent regimes,
+#' \code{\link{clusters_from_shifts_ism}} for the clustering of the tips induced
+#' by the original set of shifts given, and
+#' \code{\link{allocate_shifts_from_regimes}} to convert back a parametrization
+#' in term of regimes to a parametrization in term of shifts.
 #' 
 #' @param phylo a phylogenetic tree.
 #' @param shifts_edges a vector of shifts positions on the edges of the tree.
@@ -767,25 +803,28 @@ equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
 #' @title Find values given edges. OU stationary case. Ultrametric tree.
 #'
 #' @description
-#' \code{equivalent_shifts_values} computes the values of the shifts given all the 
-#' possible allocations computed by function \code{equivalent_shifts_edges}.
+#' \code{equivalent_shifts_values} computes the values of the shifts given all
+#' thepossible allocations computed by function
+#' \code{\link{equivalent_shifts_edges}}.
 #' 
 #' @details
-#' This function uses the linear representation of the problem. It fist compute the 
-#' mean at the tips given by the orgininal shifts positions and values, and then uses
-#' function \code{qr.solve} (through function \code{find_actualized_shift_values}) to 
-#' find back the values of the shifts, givent their various positions, and the means
-#' at the tips. Function \code{compute_actualization_factors} is used to compute the
-#' actualization factor that multipies the shifts values at the tips. Carefull, only 
-#' work for ultrametric trees.
+#' This function uses the linear representation of the problem. It fist compute
+#' the mean at the tips given by the orgininal shifts positions and values, and
+#' then uses function \code{\link{qr.solve}}
+# (through function \code{find_actualized_shift_values})
+#' to find back the values of the shifts, givent their various positions,
+#' and the means at the tips. Function \code{compute_actualization_factors} is
+#' used to compute the actualization factor that multipies the shifts values at
+#' the tips. Carefull, only work for ULTRAMETRIC trees.
 #' 
 #' @param phylo a phylogenetic tree.
 #' @param shifts a list of positions and values of original shifts.
 #' @param beta_0 value of the original optimal value at the root.
-#' @param eq_shifts_edges matrix, result of function \code{equivalent_shifts_edges}.
+#' @param eq_shifts_edges matrix (optional) result of function
+#' \code{\link{equivalent_shifts_edges}}.
 #' @param T_tree_ac matrix of incidence of the tree, result of function 
-#' \code{incidence.matrix}, actualized with coeficients computed by function 
-#' \code{incidence_matrix_actualization_factors}.
+#' \code{\link{incidence.matrix}}, actualized with coeficients computed by
+#' function \code{\link{incidence_matrix_actualization_factors}}.
 #'
 #' @return Named list, with "shifts_values" a matrix of shifts values
 #' corresponding to the shifts positions in eq_shifts_edges; and "betas_0" a
@@ -795,8 +834,7 @@ equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
 ##
 equivalent_shifts_values <- function(phylo, 
                                      shifts, beta_0, 
-                                     eq_shifts_edges = equivalent_shifts_edges(phylo,
-                                                                               shifts$edges), 
+                                     eq_shifts_edges = equivalent_shifts_edges(phylo,shifts$edges),
                                      T_tree_ac) {
   ## corresponding values at tips
   delta <- shifts.list_to_vector(phylo, shifts)

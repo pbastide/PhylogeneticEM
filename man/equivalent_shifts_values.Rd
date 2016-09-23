@@ -14,11 +14,12 @@ equivalent_shifts_values(phylo, shifts, beta_0,
 
 \item{beta_0}{value of the original optimal value at the root.}
 
-\item{eq_shifts_edges}{matrix, result of function \code{equivalent_shifts_edges}.}
+\item{eq_shifts_edges}{matrix (optional) result of function
+\code{\link{equivalent_shifts_edges}}.}
 
 \item{T_tree_ac}{matrix of incidence of the tree, result of function 
-\code{incidence.matrix}, actualized with coeficients computed by function 
-\code{incidence_matrix_actualization_factors}.}
+\code{\link{incidence.matrix}}, actualized with coeficients computed by
+function \code{\link{incidence_matrix_actualization_factors}}.}
 }
 \value{
 Named list, with "shifts_values" a matrix of shifts values
@@ -26,16 +27,17 @@ corresponding to the shifts positions in eq_shifts_edges; and "betas_0" a
 vector of corresponding root optimal values.
 }
 \description{
-\code{equivalent_shifts_values} computes the values of the shifts given all the 
-possible allocations computed by function \code{equivalent_shifts_edges}.
+\code{equivalent_shifts_values} computes the values of the shifts given all
+thepossible allocations computed by function
+\code{\link{equivalent_shifts_edges}}.
 }
 \details{
-This function uses the linear representation of the problem. It fist compute the 
-mean at the tips given by the orgininal shifts positions and values, and then uses
-function \code{qr.solve} (through function \code{find_actualized_shift_values}) to 
-find back the values of the shifts, givent their various positions, and the means
-at the tips. Function \code{compute_actualization_factors} is used to compute the
-actualization factor that multipies the shifts values at the tips. Carefull, only 
-work for ultrametric trees.
+This function uses the linear representation of the problem. It fist compute
+the mean at the tips given by the orgininal shifts positions and values, and
+then uses function \code{\link{qr.solve}}
+to find back the values of the shifts, givent their various positions,
+and the means at the tips. Function \code{compute_actualization_factors} is
+used to compute the actualization factor that multipies the shifts values at
+the tips. Carefull, only work for ULTRAMETRIC trees.
 }
 

@@ -13,15 +13,16 @@ enumerate_parsimony(phylo, clusters = rep(1, length(phylo$tip.label)))
 \item{clusters}{a vector representing the group of each tip.}
 }
 \value{
-nbrReconstructions a (ntaxa + nNodes) x (nclus) matrix of loccaly parsimonious
-solutions starting from a cluster k at a given node.
-
-allocations a list of size nNode + ntaxa. Each entry i of the list represents the
- solutions for the subtree starting at node i. It is a list with nclus entries,
- each entry being a matrix. A line of the kth matrix for the ith node is one
- possible allocation of the shifts, starting with regime k for node i.
- 
- @export
+an S3 object of class "\code{enumerate_parsimony}", with;
+\describe{
+\item{nbrReconstructions}{an object of class "\code{parsimonyCost}", result
+of function \code{\link{parsimonyCost}}.}
+\item{allocations}{a list of size nNode + ntaxa. Each entry i of the list
+represents the solutions for the subtree starting at node i. It is a list with
+nclus entries, each entry being a matrix. A line of the kth matrix for the
+ith node is one possible allocation of the shifts, starting with regime k
+for node i.}
+}
 }
 \description{
 \code{enumerate_parsimony} enumerate all the equivalent allocation of the 

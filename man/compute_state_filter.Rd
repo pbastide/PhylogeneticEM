@@ -13,8 +13,8 @@ daughters nodes.}
 \item{k}{the parental state considered.}
 }
 \value{
-A (ndaughters) x (nclus) binary matrix indicating the admissible states for
-the daughters node when parent node is in state k.
+A (ndaughters) x (nclus) binary matrix indicating the admissible
+states for the daughters node when parent node is in state k.
 }
 \description{
 \code{compute_state_filter} compute the admissible daughters states, i.e. states that 

@@ -12,8 +12,8 @@ init.parsimonyNumber(phy, clusters)
 \item{clusters}{the vector of the clusters of the tips.}
 }
 \value{
-A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
-described.
+A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized
+as described.
 }
 \description{
 \code{init.parsimonyNumber} initialize a (ntaxa + nNodes)x(nclus) matrix with
