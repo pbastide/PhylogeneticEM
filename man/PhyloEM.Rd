@@ -17,8 +17,8 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   random.root = TRUE, stationary.root = TRUE, alpha = NULL,
   check.tips.names = FALSE, progress.bar = TRUE, estimates = NULL,
   save_step = FALSE, sBM_variance = FALSE, method.OUsun = "rescale",
-  parallel_alpha = FALSE, Ncores = 3, exportFunctions = ls(),
-  impute_init_Rphylopars = FALSE, K_lag_init = 0, ...)
+  parallel_alpha = FALSE, Ncores = 3, impute_init_Rphylopars = FALSE,
+  K_lag_init = 0, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -125,8 +125,6 @@ estimations with different values of alpha on separate cores. Default to
 FALSE.}
 
 \item{Ncores}{If parallel_alpha=TRUE, number of cores to be used.}
-
-\item{exportFunctions}{DEPRECATED. TO BE REMOVED.}
 
 \item{impute_init_Rphylopars}{Wether to use 
 \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 

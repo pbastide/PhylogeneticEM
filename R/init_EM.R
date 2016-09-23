@@ -1073,7 +1073,7 @@ init.EM.lasso <- function(phylo,
                           miss = FALSE,
                           sBM_variance = FALSE,
                           stationary.root.init = FALSE,
-                          impute_init_Rphylopars = TRUE,
+                          impute_init_Rphylopars = FALSE,
                           masque_data,
                           independent = FALSE,
                           ...) {

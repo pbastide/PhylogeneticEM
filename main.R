@@ -23,7 +23,7 @@ source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
 source("R/model_selection.R")
 
-exportFunctions <- ls()
+# exportFunctions <- ls()
 
 ###########################################################################
 ###########################################################################
@@ -1978,7 +1978,7 @@ res <- PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU", K_max = 10,
                                              log_likelihood = 10^(-2)),
                method.init = "lasso", use_previous = FALSE,
                parallel_alpha = TRUE, Ncores = 2,
-               exportFunctions = exportFunctions)
+               # exportFunctions = exportFunctions)
 save.image(file = "../Results/Miscellaneous_Evals/Test_Multivariate_scOU_p=1_n=300_big_shifts_lasso_init_var_init.RData")
 
 plot.data.process.actual(Y.state = Y_data,

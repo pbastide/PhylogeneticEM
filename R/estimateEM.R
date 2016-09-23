@@ -64,13 +64,13 @@ estimateEM <- function(phylo,
                        Y_data_imp = Y_data,
                        process = c("BM", "OU", "scOU", "rBM"), 
                        independent = FALSE,
-                       tol = list(variance = 10^(-3), 
-                                  value.root = 10^(-3), 
-                                  exp.root = 10^(-3), 
-                                  var.root = 10^(-3),
+                       tol = list(variance = 10^(-2), 
+                                  value.root = 10^(-2), 
+                                  exp.root = 10^(-2), 
+                                  var.root = 10^(-2),
                                   selection.strength = 10^(-2),
                                   normalized_half_life = 10^(-2),
-                                  log_likelihood = 10^(-3)),  
+                                  log_likelihood = 10^(-2)),  
                        Nbr_It_Max = 500, 
                        method.variance = c("simple", "upward_downward"), 
                        method.init = c("default", "lasso"),
@@ -121,7 +121,7 @@ estimateEM <- function(phylo,
                        check_convergence_likelihood = TRUE,
                        sBM_variance = FALSE,
                        method.OUsun = c("rescale", "raw"),
-                       impute_init_Rphylopars = TRUE,
+                       impute_init_Rphylopars = FALSE,
                        K_lag_init = 0,
                        ...){
   
@@ -1026,7 +1026,7 @@ compute_K_max <- function(ntaxa, kappa = 0.9){
 #' estimations with different values of alpha on separate cores. Default to 
 #' FALSE.
 #' @param Ncores If parallel_alpha=TRUE, number of cores to be used.
-#' @param exportFunctions DEPRECATED. TO BE REMOVED.
+# @param exportFunctions DEPRECATED. TO BE REMOVED.
 #' @param impute_init_Rphylopars Wether to use 
 #' \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
 #' Default to FALSE.
@@ -1088,7 +1088,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     method.OUsun = "rescale",
                     parallel_alpha = FALSE,
                     Ncores = 3,
-                    exportFunctions = ls(),
+                    # exportFunctions = ls(),
                     impute_init_Rphylopars = FALSE,
                     K_lag_init = 0,
                     ...){
@@ -1154,7 +1154,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             method.OUsun = method.OUsun, 
                             parallel_alpha = parallel_alpha, 
                             Ncores = Ncores, 
-                            exportFunctions = exportFunctions, 
+                            # exportFunctions = exportFunctions, 
                             impute_init_Rphylopars = impute_init_Rphylopars, 
                             K_lag_init = K_lag_init,
                             ...)
@@ -1239,8 +1239,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                method.OUsun = "rescale",
                                parallel_alpha = FALSE,
                                Ncores = 3,
-                               exportFunctions = ls(),
-                               impute_init_Rphylopars = TRUE,
+                               # exportFunctions = ls(),
+                               impute_init_Rphylopars = FALSE,
                                K_lag_init = 0,
                                ...){
   # reqpckg <- c("ape", "glmnet", "robustbase")
@@ -1444,8 +1444,9 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                compute_E = compute_E)
         if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
                        attr(params_scOU, "log_likelihood"),
-                       tol = .Machine$double.eps ^ 0.3))){
-          stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
+                       tol = .Machine$double.eps ^ 0.2))){
+          warning(paste0("For K = ", length(params_scOU$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
+          # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
         }
         tmpsim <- simulate(phylo = phylo, 
                            process = process,
@@ -1482,9 +1483,9 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       stop("Package 'doParallel' is needed for parallel computation (option 'parallel_alpha = TRUE'). Please install this package, or set the option to 'FALSE'.",
            call. = FALSE)
     }
-    cl <- parallel::makeCluster(Ncores)
+    cl <- parallel::makeCluster(Ncores, outfile = "")
     doParallel::registerDoParallel(cl)
-    X <- foreach::foreach(alp = alpha, .packages = reqpckg, .export = exportFunctions) %dopar%
+    X <- foreach::foreach(alp = alpha, .packages = reqpckg) %dopar%
     {
       ## Progress Bar
       # if(progress.bar){
@@ -1701,10 +1702,10 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 U_tree = NULL,
                                 h_tree = NULL,
                                 F_moments = NULL,
-                                save_step = TRUE,
+                                save_step = FALSE,
                                 sBM_variance = FALSE,
                                 method.OUsun = "rescale", 
-                                impute_init_Rphylopars = TRUE,
+                                impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
                                 ...){
   p <- nrow(Y_data)
