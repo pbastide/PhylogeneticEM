@@ -351,8 +351,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     if (show.tip.label){
       if (is.expression(phylo$tip.label)) underscore <- TRUE
       if (!underscore) phylo$tip.label <- gsub("_", " ", phylo$tip.label)
-      x.lim.max.data <- max(pos_last_tip + eccart_g + Y.plot) + label.offset
-      if (!exists("color_characters_regimes")) color_characters_regimes <- color_edges
+      x.lim.max.data <- max(pos_last_tip + eccart_g + Y.plot, na.rm = TRUE) + label.offset
+      if (!exists("color_characters_regimes")) color_characters_regimes <- color_characters
       text(x.lim.max.data, lastPP$yy[1:ntaxa], phylo$tip.label, 
            cex = text_cex, pos = 4,
            col = as.vector(color_characters_regimes))

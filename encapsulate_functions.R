@@ -13,7 +13,7 @@ source("R/plot_functions.R")
 source("R/parsimonyNumber.R")
 source("R/partitionsNumber.R")
 source("R/model_selection.R")
-sourceCpp("src/upward_downward.cpp")
+# sourceCpp("src/upward_downward.cpp")
 
 datestamp <- format(Sys.time(), "%Y-%m-%d")
 
