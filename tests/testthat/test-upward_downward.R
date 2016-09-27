@@ -256,7 +256,7 @@ test_that("Upward Downward - estimateEM - BM", {
                                        process = "BM", 
                                        method.variance = "simple", 
                                        method.init = "lasso",
-                                       Nbr_It_Max = 5,
+                                       Nbr_It_Max = 2,
                                        nbr_of_shifts = 3,
                                        random.root = FALSE,
                                        convergence_mode = "relative",
@@ -269,7 +269,7 @@ test_that("Upward Downward - estimateEM - BM", {
                                        process = "BM", 
                                        method.variance = "upward_downward", 
                                        method.init = "lasso",
-                                       Nbr_It_Max = 5,
+                                       Nbr_It_Max = 2,
                                        nbr_of_shifts = 3,
                                        random.root = FALSE,
                                        convergence_mode = "relative",
@@ -283,21 +283,21 @@ test_that("Upward Downward - estimateEM - BM", {
 test_that("Upward Downward - PhyloEM - BM", {
   testthat::skip_on_cran()
   set.seed(17920902)
-  ntaxa = 100
+  ntaxa = 50
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
                           age = 1, mrca = TRUE)[[1]]
   tree <- reorder(tree, order = "postorder")
-  p <- 4
+  p <- 2
   variance <- matrix(0.8, p, p) + diag(0.2, p, p)
   independent <- FALSE
   root.state <- list(random = FALSE,
                      value.root = rep(1, p),
                      exp.root = NA,
                      var.root = NA)
-  shifts = list(edges = c(25, 119, 164),
-                values = cbind(c(5, 5, -5, -5),
-                               c(-5, -5, 5, 5),
-                               c(3, 3, 3, 3)),
+  shifts = list(edges = c(25, 31, 59),
+                values = cbind(c(5, -5),
+                               c(-5, -5),
+                               c(3, 3)),
                 relativeTimes = 0)
   paramsSimu <- list(variance = variance,
                      shifts = shifts,
@@ -325,7 +325,7 @@ test_that("Upward Downward - PhyloEM - BM", {
                                     process = "BM",
                                     independent = FALSE,
                                     K_max = 10,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     use_previous = FALSE,
                                     order = TRUE,
                                     method.selection = "BirgeMassart1",
@@ -338,7 +338,7 @@ test_that("Upward Downward - PhyloEM - BM", {
                                     progress.bar = FALSE,
                                     sBM_variance = FALSE,
                                     impute_init_Rphylopars = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
   
   expect_warning(res_new <- PhyloEM(phylo = tree,
@@ -346,7 +346,7 @@ test_that("Upward Downward - PhyloEM - BM", {
                                     process = "BM",
                                     independent = FALSE,
                                     K_max = 10,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     use_previous = FALSE,
                                     order = TRUE,
                                     method.selection = "BirgeMassart1",
@@ -359,7 +359,7 @@ test_that("Upward Downward - PhyloEM - BM", {
                                     progress.bar = FALSE,
                                     sBM_variance = FALSE,
                                     impute_init_Rphylopars = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
   
   ## Time is different
@@ -372,7 +372,7 @@ test_that("Upward Downward - PhyloEM - BM", {
   res_new$alpha_max$Djump_BM1$results_summary$time <- 0
   res_old$alpha_max$Djump_BM1$results_summary$time <- 0
   
-  expect_that(res_new, equals(res_old))
+  expect_equal(res_new, res_old, tolerance = .Machine$double.eps ^ 0.3)
 })
 
 
@@ -582,11 +582,11 @@ test_that("Upward Downward - scOU - random root", {
 test_that("Upward Downward - PhyloEM - scOU - fixed root", {
   testthat::skip_on_cran()
   set.seed(17920902)
-  ntaxa = 100
+  ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
   tree <- reorder(tree, order = "postorder")
-  p <- 4
+  p <- 2
   variance <- diag(0.2, p, p) +  matrix(0.8, p, p)
   selection.strength <- 3
   independent <- FALSE
@@ -595,10 +595,10 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
                      value.root = NA,
                      exp.root = rep(1, p),
                      var.root = compute_stationary_variance(variance, selection.strength))
-  shifts = list(edges = c(25, 119, 164),
-                values = cbind(c(5, 5, -5, -5),
-                               c(-5, -5, 5, 5),
-                               c(3, 3, 3, 3)),
+  shifts = list(edges = c(25, 10, 31),
+                values = cbind(c(5, 5),
+                               c(-5, -5),
+                               c(3, 3)),
                 relativeTimes = 0)
   paramsSimu <- list(variance = variance,
                      shifts = shifts,
@@ -633,14 +633,14 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
                                     stationary.root = FALSE,
                                     alpha = selection.strength,
                                     save_step = FALSE,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     method.variance = "simple",
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
   
   expect_warning(res_new <- PhyloEM(phylo = tree,
@@ -651,14 +651,14 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
                                     stationary.root = FALSE,
                                     alpha = selection.strength,
                                     save_step = FALSE,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     method.variance = "upward_downward",
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
 
   ## Time is different
@@ -677,11 +677,11 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
 test_that("Upward Downward - PhyloEM - scOU - random root", {
   testthat::skip_on_cran()
   set.seed(17920902)
-  ntaxa = 100
+  ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
   tree <- reorder(tree, order = "postorder")
-  p <- 4
+  p <- 2
   variance <- diag(0.2, p, p) +  matrix(0.8, p, p)
   selection.strength <- 3
   independent <- FALSE
@@ -690,10 +690,10 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
                      value.root = NA,
                      exp.root = rep(1, p),
                      var.root = compute_stationary_variance(variance, selection.strength))
-  shifts = list(edges = c(25, 119, 164),
-                values = cbind(c(5, 5, -5, -5),
-                               c(-5, -5, 5, 5),
-                               c(3, 3, 3, 3)),
+  shifts = list(edges = c(25, 10, 31),
+                values = cbind(c(5, 5),
+                               c(-5, -5),
+                               c(3, 3)),
                 relativeTimes = 0)
   paramsSimu <- list(variance = variance,
                      shifts = shifts,
@@ -728,14 +728,14 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
                                     stationary.root = TRUE,
                                     alpha = selection.strength,
                                     save_step = FALSE,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     method.variance = "simple",
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
   
   expect_warning(res_new <- PhyloEM(phylo = tree,
@@ -746,14 +746,14 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
                                     stationary.root = TRUE,
                                     alpha = selection.strength,
                                     save_step = FALSE,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     method.variance = "upward_downward",
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
   
   ## Time is different
@@ -771,11 +771,11 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
 
 test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
   testthat::skip_on_cran()
-  ntaxa = 100
+  ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
   # tree <- reorder(tree, order = "postorder")
-  p <- 4
+  p <- 2
   variance <- diag(0.2, p, p) +  matrix(0.8, p, p)
   selection.strength <- 3
   independent <- FALSE
@@ -784,10 +784,10 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
                      value.root = NA,
                      exp.root = rep(1, p),
                      var.root = compute_stationary_variance(variance, selection.strength))
-  shifts = list(edges = c(25, 119, 164),
-                values = cbind(c(5, 5, -5, -5),
-                               c(-5, -5, 5, 5),
-                               c(3, 3, 3, 3)),
+  shifts = list(edges = c(25, 10, 31),
+                values = cbind(c(5, 5),
+                               c(-5, -5),
+                               c(3, 3)),
                 relativeTimes = 0)
   paramsSimu <- list(variance = variance,
                      shifts = shifts,
@@ -822,14 +822,14 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
                                     stationary.root = TRUE,
                                     alpha = c(1.33, selection.strength),
                                     save_step = FALSE,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     method.variance = "simple",
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
   
   expect_warning(res_new <- PhyloEM(phylo = tree,
@@ -840,14 +840,14 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
                                     stationary.root = TRUE,
                                     alpha = c(1.33, selection.strength),
                                     save_step = FALSE,
-                                    Nbr_It_Max = 5,
+                                    Nbr_It_Max = 2,
                                     method.variance = "upward_downward",
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 5),
+                                    K_lag_init = 2),
                  "The maximum number of iterations")
   
   ## Time is different
@@ -878,11 +878,11 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
 
 test_that("Upward Downward - PhyloEM - OU - independent", {
   testthat::skip_on_cran()
-  ntaxa = 100
+  ntaxa = 50
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
   tree <- reorder(tree, order = "postorder")
-  p <- 4
+  p <- 2
   variance <- diag(0.2, p, p)
   selection.strength <- diag(3, p, p)
   independent <- FALSE
@@ -891,10 +891,10 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
                      value.root = NA,
                      exp.root = rep(1, p),
                      var.root = compute_stationary_variance(variance, selection.strength))
-  shifts = list(edges = c(25, 119, 164),
-                values = cbind(c(5, 5, -5, -5),
-                               c(-5, -5, 5, 5),
-                               c(3, 3, 3, 3)),
+  shifts = list(edges = c(25, 10, 59),
+                values = cbind(c(5, 5),
+                               c(-5, -5),
+                               c(3, 3)),
                 relativeTimes = 0)
   paramsSimu <- list(variance = variance,
                      shifts = shifts,
@@ -938,8 +938,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 1),
-                 "The maximum number of iterations")
+                                    K_lag_init = 1))
   
   expect_warning(res_new <- PhyloEM(phylo = tree,
                                     Y_data = traits,
@@ -958,8 +957,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
                                     method.selection = "BirgeMassart1",
                                     impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
-                                    K_lag_init = 1),
-                 "The maximum number of iterations")
+                                    K_lag_init = 1))
   
   ## Time is different
   res_new$alpha_max$results_summary$time <- 0
@@ -1122,7 +1120,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #   expect_warning(res_old <- estimateEM(phylo = tree, 
 #                                        Y_data = traits, 
 #                                        process = "scOU", 
-#                                        Nbr_It_Max = 5, 
+#                                        Nbr_It_Max = 2, 
 #                                        method.variance = "simple", 
 #                                        method.init = "lasso",
 #                                        method.init.alpha = "estimation",
@@ -1143,13 +1141,13 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                                        sBM_variance = FALSE,
 #                                        method.OUsun = "rescale",
 #                                        impute_init_Rphylopars = FALSE,
-#                                        K_lag_init = 5),
+#                                        K_lag_init = 2),
 #                  "The maximum number of iterations")
 #   
 #   expect_warning(res_new <- estimateEM(phylo = tree, 
 #                                        Y_data = traits, 
 #                                        process = "scOU", 
-#                                        Nbr_It_Max = 5, 
+#                                        Nbr_It_Max = 2, 
 #                                        method.variance = "upward_downward", 
 #                                        method.init = "lasso",
 #                                        method.init.alpha = "estimation",
@@ -1170,7 +1168,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                                        sBM_variance = FALSE,
 #                                        method.OUsun = "rescale",
 #                                        impute_init_Rphylopars = FALSE,
-#                                        K_lag_init = 5),
+#                                        K_lag_init = 2),
 #                  "The maximum number of iterations")
 #   
 #   expect_that(res_new, equals(as.vector(res_old)))
