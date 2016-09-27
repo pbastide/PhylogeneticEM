@@ -562,7 +562,7 @@ compute_sum_var_diff <- function(phylo, var_diff){
     # vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
     # arr <- array(vv, dim = c(p, p, nEdges))
     res <- apply(vv, 1, rowSums)
-    if (!isSymmetric(res, tol = 10000 * .Machine$double.eps)){
+    if (!isSymmetric(res, tol = .Machine$double.eps^0.5)){
       stop("Sum of variances should be symmetric. It is not.")
     }
     return(forceSymmetric(res))
