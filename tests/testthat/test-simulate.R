@@ -184,6 +184,65 @@ test_that("Mean of the OU", {
   expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
 
+test_that("OU - fixed root", {
+  set.seed(1899)
+  ntaxa <- 32
+  tree <- rcoal(ntaxa)
+  
+  ## Simulate Process
+  p <- 3
+  variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+  optimal.value <- c(-3, 5, 0)
+  selection.strength <- diag(3, p, p) + tcrossprod(c(0.1, 0.2, 0.3))
+  exp.stationary <- optimal.value
+  # var.stationary  <- compute_stationary_variance(variance, selection.strength)
+  root.state <- list(random = FALSE,
+                     stationary.root = FALSE,
+                     value.root = exp.stationary,
+                     exp.root = NA,
+                     var.root = NA)
+  shifts = list(edges = c(11, 35, 44),
+                values=cbind(c(4, -10, 3),
+                             c(-5, 5.4, 0),
+                             c(2, -8, 0.3)),
+                relativeTimes = 0)
+  
+  X1 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "OU",
+                 variance = variance,
+                 optimal.value = optimal.value,
+                 selection.strength = selection.strength,
+                 shifts = shifts)
+  
+  X1.tips.exp <- extract.simulate(X1, where = "tips", what = "exp")
+  
+  ## Compute expectations with tree matrix
+  T_tree <- incidence.matrix(tree)
+  Delta <- shifts.list_to_matrix(tree, shifts)
+  W <- compute_actualization_matrix_ultrametric(tree, selection.strength)
+  
+  vec_Y <- kronecker(T_tree, diag(1, p, p)) %*% W %*% as.vector(Delta)
+  
+  X1.tips.exp.mat <- matrix(vec_Y, p, ntaxa) + optimal.value
+  
+  expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
+  
+  ## Without simulate
+  X2 <- simulate(tree,
+                 p = p,
+                 root.state = root.state,
+                 process = "OU",
+                 variance = variance,
+                 optimal.value = optimal.value,
+                 selection.strength = selection.strength,
+                 shifts = shifts,
+                 simulate_random = FALSE)
+  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  expect_that(X2.tips.exp, equals(X2.tips.exp))
+})
+
 test_that("Multivariate Scalar (scOU)", {
   testthat::skip_on_cran()
   set.seed(586)

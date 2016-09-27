@@ -5,13 +5,15 @@
 \title{Extraction of the actual number of solutions.}
 \usage{
 \method{extract}{parsimonyNumber}(obj, node = attr(obj$nbrReconstructions,
-  "ntaxa") + 1)
+  "ntaxa") + 1, ...)
 }
 \arguments{
 \item{obj}{an object of class "\code{parsimonyNumber}", result of function
 \code{\link{parsimonyNumber}}.}
 
 \item{node}{the root node of the subtree. By default, the root of the tree.}
+
+\item{...}{unused}
 }
 \value{
 An integer giving the number of equivalent parsimonious solutions.

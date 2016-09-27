@@ -96,6 +96,24 @@ correspondanceEdges <- function(edges, from, to){
 # REVISIONS:
 # 22/05/14 - Initial release
 ##
+##
+#' @title Comon Ancestors Times
+#'
+#' @description
+#' \code{compute_times_ca} computes the times t_ij between the root and the comon
+#' ancestor of two tips i, j.
+#' 
+#' @details
+#' Tis function relies on \code{ape} functions
+#' \code{\link[ape]{node.depth.edgelength}} and \code{\link[ape]{mrca}}.
+#'
+#' @param phy a phylogenetic tree of class \code{\link[ape]{phylo}}.
+#'
+#' @return a matrix of times of shared evolutions, ordered as the tips of the
+#' tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
+#'
+#' @export
+##
 compute_times_ca <- function(phy) {
   times <- ape::node.depth.edgelength(phy)
   prac <- ape::mrca(phy,full=TRUE)
@@ -437,6 +455,21 @@ coherence_stationary_case <- function(root.state, optimal.value,
   }
 }
 
+##
+#' @title Compute the stationary matrix variance
+#'
+#' @description
+#' \code{compute_stationary_variance} computes the stationary matrix variance of
+#' an OU process.
+#'
+#' @param variance the variance (rate matrix) of the process.
+#' @param selection.strength the selection strength (alpha) matrix of the 
+#' process.
+#'
+#' @return A positive definite Matrix of class \code{\link[Matrix]{dpoMatrix-class}}.
+#' 
+#' @export
+##
 compute_stationary_variance <- function(variance, selection.strength){
   if (is.null(selection.strength)) return(NA)
   if (length(as.vector(selection.strength)) == 1){

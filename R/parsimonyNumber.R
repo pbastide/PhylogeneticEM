@@ -124,18 +124,21 @@ update.parsimonyCost <- function(daughtersParams, ...){
 #'
 #' @description
 #' \code{extract} the needed quantities out of an S3 object.
-#' 
-#' @seealso \code{\link{extract.parsimonyNumber}},
-#' \code{\link{extract.parsimonyCost}}, \code{\link{extract.enumerate_parsimony}}
 #'
 #' @param obj an S3 object.
-#' @param node the node where to extract. Default to the root of the tree.
+# @param node the node where to extract. Default to the root of the tree.
+#' @param ... further arguments to be passed to the specific method.
 #' 
 #' @return An integer giving the number of equivalent parsimonious solutions.
 #' 
+#' #' @seealso \code{\link{extract.parsimonyNumber}},
+#' \code{\link{extract.parsimonyCost}},
+#' \code{\link{extract.enumerate_parsimony}},
+#' \code{\link{extract.partitionsNumber}}
+#' 
 #' @export
 ##
-extract <- function(obj, node) UseMethod("extract")
+extract <- function(obj, ...) UseMethod("extract")
 
 ##
 #' @title Extraction of the actual number of solutions.
@@ -148,14 +151,15 @@ extract <- function(obj, node) UseMethod("extract")
 #' @param obj an object of class "\code{parsimonyCost}", result of function
 #' \code{\link{parsimonyCost}}.
 #' @param node the root node of the subtree. By default, the root of the tree.
+#' @param ... unused
 #' 
 #' @return An integer giving the minimum cost of the subtree.
 #' 
 #' @export
 ##
 extract.parsimonyCost <- function(obj, 
-                                  node = attr(costReconstructions$nbrReconstructions, "ntaxa") + 1){
-  return(min(costReconstructions[node, ]))
+                                  node = attr(obj$nbrReconstructions, "ntaxa") + 1, ...){
+  return(min(obj[node, ]))
 }
 
 ###############################################################################
@@ -172,14 +176,15 @@ extract.parsimonyCost <- function(obj,
 #' with a given clustering of the tips.
 #'
 #' @details
-#' This functin does a recursion up the tree, using functions 
-#' \code{init.parsimonyNumber} for the initialization at the tips, 
-#' \code{updateUp} for the actual recursion on the tree,
-#' and \code{update.parsimonyNumber} for the actualisation of the parameters.
-#' The function \code{extract_parsimonyNumber} furnishes the result seeked for any
-#' subtree.
+#' This function does a recursion up the tree.
+# using functions 
+# \code{init.parsimonyNumber} for the initialization at the tips, 
+# \code{updateUp} for the actual recursion on the tree,
+# and \code{update.parsimonyNumber} for the actualisation of the parameters.
+#' The function \code{\link{extract.parsimonyNumber}} gives the result seeked for
+#' any subtree.
 #' The matrix of costs of the states (number of shifts) is also required, it is
-#' computed by function \code{parsimonyCost}.
+#' computed by function \code{\link{parsimonyCost}}.
 #'
 #' @param phylo phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
@@ -192,6 +197,9 @@ extract.parsimonyCost <- function(obj,
 #'  \item{costReconstructions}{an object of class "\code{parsimonyCost}",
 #'  result of function \code{\link{parsimonyCost}}.}
 #' }
+#' 
+#' @seealso \code{\link{extract.parsimonyNumber}},
+#' \code{\link{partitionsNumber}}, \code{\link{parsimonyCost}}
 #' 
 #' @export
 #' 
@@ -341,13 +349,14 @@ compute_state_filter <- function (cost, k) {
 #' @param obj an object of class "\code{parsimonyNumber}", result of function
 #' \code{\link{parsimonyNumber}}.
 #' @param node the root node of the subtree. By default, the root of the tree.
+#' @param ... unused
 #' 
 #' @return An integer giving the number of equivalent parsimonious solutions.
 #' 
 #' @export
 ##
 extract.parsimonyNumber <- function(obj, 
-                                    node = attr(obj$nbrReconstructions, "ntaxa") + 1){
+                                    node = attr(obj$nbrReconstructions, "ntaxa") + 1, ...){
   cost <- obj$costReconstructions[node, ]
   nbr <- obj$nbrReconstructions[node, ]
   return(sum(nbr[which(cost == min(cost))]))
@@ -415,7 +424,8 @@ enumerate_tips_under_edges <- function (tree) {
 #' @export
 #'
 ##
-clusters_from_shifts_ism <- function (tree, edges, part.list = enumerate_tips_under_edges(tree)) {
+clusters_from_shifts_ism <- function (tree, edges,
+                                      part.list = enumerate_tips_under_edges(tree)) {
   ntaxa <- length(tree$tip.label)
   part <- rep(0, ntaxa)
   if (length(edges) > 0 ){
@@ -480,6 +490,36 @@ clusters_from_shifts_expectations <- function (tree,
 ##
 check_parsimony_ism <- function(tree, edges, ...){
   clusters <- clusters_from_shifts_ism(tree, edges, ...)
+  nclus <- length(unique(clusters))
+  nshifts <- length(edges)
+  return((nclus - 1) == nshifts)
+}
+
+##
+#' @title Check wether an allocation of the shifts is parsimonious, 
+#' in the "infinite site model".
+#'
+#' @description
+#' \code{check_parsimony_clusters} takes a vector clusters of the tips, and
+#' checks wether the number of groups of the tips induced by this allocation is
+#' exactly the number of shifts plus one.
+#'
+#' @details
+#' This function computes explicitely the clustering of the tips, using 
+#' function \code{check_parsimony}.
+#' By default, this function uses \code{enumerate_tips_under_edges} to compute 
+#' the list of tips under each edge, but a list can be provided (if many tests are done).
+#'
+#' @param tree phylogenetic tree.
+#' @param clusters a vector of clusters of the tips of the tree (result of
+#' function \code{\link{clusters_from_shifts_ism}}).
+#' 
+#' @return boolean : TRUE if the allocation is parsimonious.
+#' 
+#' @keywords internal
+#'
+##
+check_parsimony_clusters <- function(tree, edges, clusters){
   nclus <- length(unique(clusters))
   nshifts <- length(edges)
   return((nclus - 1) == nshifts)
@@ -739,6 +779,8 @@ add_complementary <- function(z){
 #' result of function \code{\link{enumerate_parsimony}}.
 #' @param node the node where to retrive the parsimony number. Default to the
 #' root of the tree.
+#' @param ... unused
+
 #'
 #' @return A matrix with ntaxa + nNode columns, and as many rows as the number of
 #' possible parsimonious reconstructions.
@@ -746,8 +788,8 @@ add_complementary <- function(z){
 #' @export
 ##
 extract.enumerate_parsimony <- function(obj, 
-                                        node = attr(obj$allocations,
-                                                    "ntaxa") + 1){
+                                        node = attr(obj$allocations,"ntaxa") + 1,
+                                        ...){
   cost <- obj$costReconstructions[node, ]
   allocations <- obj$allocations[[node]]
   return(do.call(rbind, allocations[which(cost == min(cost))]))
@@ -757,12 +799,151 @@ extract.enumerate_parsimony <- function(obj,
 ## Compute equivalent shifts given one solution
 ###############################################################################
 
-equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
-  ntaxa <- length(tree$tip.label)
-  clusters <- clusters_from_shifts_primary_opt(tree, shifts, ...)
-  betas_allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree, clusters))
-  eq_shifts <- apply(betas_allocs, 1, compute_shifts_from_betas, phylo = tree)
-  betas_0 <- betas_allocs[, ntaxa + 1]
+# equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
+#   ntaxa <- length(tree$tip.label)
+#   clusters <- clusters_from_shifts_primary_opt(tree, shifts, ...)
+#   betas_allocs <- extract.enumerate_parsimony(enumerate_parsimony(tree, clusters))
+#   eq_shifts <- apply(betas_allocs, 1, compute_shifts_from_betas, phylo = tree)
+#   betas_0 <- betas_allocs[, ntaxa + 1]
+# }
+
+##
+#' @title Find all equivalent shifts allocations and values.
+#'
+#' @description
+#' \code{equivalent_shifts} computes the equivalent shifts positions using
+#' \code{\link{equivalent_shifts_edges}}, and then there corresponding values,
+#' assuming an ultrametric tree.
+#' 
+#' @details
+#' This function is only valid for ultrametric trees, and for models: BM, OU with
+#' fixed root or stationary root.
+#' 
+#' @param phylo a phylogenetic tree, ape's class \code{phylo}.
+#' @param params an object of class \code{params_process}, result inference by
+#' function \code{\link{PhyloEM}}, or constructed throught function
+#' \code{\link{params_process}}
+#' @param T_tree (optional) matrix of incidence of the tree, result of function 
+#' \code{\link{incidence.matrix}}
+#' @param part.list (optional) list of partition of the tree, result of function
+#' \code{\link{enumerate_tips_under_edges}}.
+#' @param times_shared (optional) a matrix, result of function
+#' \code{\link{compute_times_ca}}.
+#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
+#'
+#' @return object of class \code{equivalent_shifts}, whith entries:
+#' \describe{
+#' \item{eq_shifts_edges}{matrix of equivalent shifts, result of function
+#' \code{\link{equivalent_shifts_edges}}}
+#' \item{shifts_and_betas}{matrix of corresponding shifts values}
+#' \item{phylo}{the entry phylogenetic tree}
+#' \item{p}{the dimention}
+#' }
+#' 
+#' @seealso \code{\link{plot.equivalent_shifts}},
+#' \code{\link{equivalent_shifts_edges}}
+#' 
+#' @export
+##
+equivalent_shifts <- function(phylo, params,
+                              T_tree = incidence.matrix(phylo),
+                              part.list = enumerate_tips_under_edges(phylo),
+                              times_shared = NULL){
+  if (length(params$shifts$edges) == 0){
+    stop("There are no shifts in the parameters !")
+  }
+  p <- nrow(params$shifts$values)
+  ntaxa <- length(phylo$tip.label)
+  nedges <- dim(phylo$edge)[1]
+  ## Process
+  process <- "BM"
+  if (!is.null(params$selection.strength) && sum(abs(params$selection.strength)) > 0) process <- "OU"
+  ## Check feasible
+  if (process == "OU" && params$root.state$random && !params$root.state$stationary.root){
+    stop("The random OU with non-stationary root is not implemented.")
+  }
+  ## Equivalent shifts positions
+  eq_shifts_edges <- equivalent_shifts_edges(phylo, params$shifts$edges,
+                                             part.list)
+  ## Regression Matrix
+  Delta <- shifts.list_to_matrix(phylo, params$shifts)
+  W <- diag(1, p*nedges, p*nedges)
+  if (process == "OU"){
+    if (is.null(times_shared)) times_shared <- compute_times_ca(phylo)
+    W <- compute_actualization_matrix_ultrametric(phylo,
+                                                  params$selection.strength,
+                                                  times_shared = times_shared)
+  }
+  T_tree_ac <- kronecker(T_tree, diag(1, p, p)) %*% W
+  ## Value of the means
+  if (params$root.state$random){
+    reste <- params$root.state$exp.root
+  } else {
+    reste <- params$root.state$value.root
+  }
+  vect_Y <- T_tree_ac %*% as.vector(Delta) + reste
+  shifts_and_betas <- equivalent_shifts_values(phylo, 
+                                               eq_shifts_edges,
+                                               T_tree_ac, vect_Y, p)
+  res <- list(eq_shifts_edges = eq_shifts_edges,
+              shifts_and_betas = shifts_and_betas,
+              phylo = phylo,
+              p = p)
+  class(res) <- "equivalent_shifts"
+  return(res)
+}
+
+##
+#' @title Extract the shifts values for one trait.
+#'
+#' @description
+#' \code{extract_shifts_values} takes an object of class
+#' \code{equivalent_shifts}, result of function \code{\link{equivalent_shifts}},
+#' and returns the shifts values at a given trait.
+#' 
+#' @param eq_shifts an object of class \code{equivalent_shifts}, result of
+#' function \code{\link{equivalent_shifts}}
+#' @param trait the number of the trait to be extracted.
+#'
+#' @return a matrix with the values of the shifts on the trait for each
+#' equivalent configuration. Each column is one configuration. Rows are the
+#' values of the shifts given by \code{eq_shifts_edges}, the result of function
+#' \code{\link{equivalent_shifts_edges}}.
+#' 
+#' @seealso \code{\link{plot.equivalent_shifts}},
+#' \code{\link{equivalent_shifts_edges}}
+#' 
+#' @export
+##
+extract_shifts_values <- function(eq_shifts, trait){
+  nbrShifts <- dim(eq_shifts$eq_shifts_edges)[1]
+  return(eq_shifts$shifts_and_betas[1:nbrShifts * eq_shifts$p + trait, ])
+}
+
+##
+#' @title Extract the shifts values for one trait.
+#'
+#' @description
+#' \code{extract_root_values} takes an object of class
+#' \code{equivalent_shifts}, result of function \code{\link{equivalent_shifts}},
+#' and returns the root values at a given trait.
+#' 
+#' @param eq_shifts an object of class \code{equivalent_shifts}, result of
+#' function \code{\link{equivalent_shifts}}
+#' @param trait the number of the trait to be extracted.
+#'
+#' @return a matrix with the values of the root on the trait for each
+#' equivalent configuration. Each column is one configuration. Rows are the
+#' values of the shifts given by \code{eq_shifts_edges}, the result of function
+#' \code{\link{equivalent_shifts_edges}}.
+#' 
+#' @seealso \code{\link{plot.equivalent_shifts}},
+#' \code{\link{equivalent_shifts_edges}}
+#' 
+#' @export
+##
+extract_root_values <- function(eq_shifts, trait){
+  return(eq_shifts$shifts_and_betas[trait, , drop = F])
 }
 
 ##
@@ -782,20 +963,26 @@ equivalent_shifts.BM <- function(tree, shifts, beta_0, ...){
 #' 
 #' @param phylo a phylogenetic tree.
 #' @param shifts_edges a vector of shifts positions on the edges of the tree.
-#' @param ... further arguments to be passed to 
-#' \code{\link{clusters_from_shifts_ism}}.
+#' @param part.list (optional) list of partition of the tree, result of function
+#' \code{\link{enumerate_tips_under_edges}}.
 #'
 #' @return a matrix with as many columns as equivalent allocation, each column
 #'  representing a possible parsimonious allocation of shifts on the tree.
 #'  
 #' @export
 ##
-equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
-  if(!check_parsimony_ism(phylo, shifts_edges, ...)) stop("The edges entered are not parsimonious.")
-  clusters <- clusters_from_shifts_ism(phylo, shifts_edges, ...) + 1
+equivalent_shifts_edges <- function(phylo,
+                                    shifts_edges,
+                                    part.list = enumerate_tips_under_edges(phylo)){
+  clusters <- clusters_from_shifts_ism(phylo, shifts_edges,
+                                       part.list = part.list) + 1
+  if(!check_parsimony_clusters(phylo, shifts_edges, clusters))
+    stop("The edges entered are not parsimonious.")
   regime_allocs <- extract.enumerate_parsimony(enumerate_parsimony(phylo, clusters))
-  eq_shifts_edges <- apply(regime_allocs, 1, allocate_shifts_from_regimes, phylo = phylo)
-  if (length(shifts_edges) == 1) eq_shifts_edges <- matrix(eq_shifts_edges, nrow = 1) # Deal with dimentions
+  eq_shifts_edges <- apply(regime_allocs, 1,
+                           allocate_shifts_from_regimes, phylo = phylo)
+  if (length(shifts_edges) == 1)
+    eq_shifts_edges <- matrix(eq_shifts_edges, nrow = 1) # Deal with dimentions
   return(eq_shifts_edges)
 }
 
@@ -830,22 +1017,23 @@ equivalent_shifts_edges <- function(phylo, shifts_edges, ...){
 #' corresponding to the shifts positions in eq_shifts_edges; and "betas_0" a
 #' vector of corresponding root optimal values.
 #' 
-#' @export
+#' @keywords internal
 ##
 equivalent_shifts_values <- function(phylo, 
-                                     shifts, beta_0, 
-                                     eq_shifts_edges = equivalent_shifts_edges(phylo,shifts$edges),
-                                     T_tree_ac) {
+                                     eq_shifts_edges,
+                                     T_tree_ac, vect_Y, p) {
   ## corresponding values at tips
-  delta <- shifts.list_to_vector(phylo, shifts)
-  m_Y <- T_tree_ac %*% delta + beta_0
+  # delta <- shifts.list_to_vector(phylo, shifts)
+  # m_Y <- T_tree_ac %*% delta + beta_0
   ## find the right coefficients for each combination of edges (! stationary case)
   shifts_and_beta <- apply(eq_shifts_edges, 2,
-                           find_shift_values, T_tree_ac = T_tree_ac, m_Y = m_Y)
+                           find_shift_values,
+                           T_tree_ac = T_tree_ac, vect_Y = vect_Y,
+                           p = p, ntaxa = length(phylo$tip.label))
   ## exclude NAs column (when qr.solve failed)
   shifts_and_beta <- t(na.omit(t(shifts_and_beta)))
-  return(list(shifts_values = shifts_and_beta[-1,, drop = FALSE],
-              betas_0 = shifts_and_beta[1,]))
+  ## Create Object
+  return(shifts_and_beta)
 }
 
 ##
@@ -870,9 +1058,10 @@ equivalent_shifts_values <- function(phylo,
 #' 
 #' @keywords internal
 ##
-find_shift_values <- function(shifts_edges, T_tree_ac, m_Y){
-  mat <- cbind(rep(1, dim(T_tree_ac)[1]), T_tree_ac[, shifts_edges]) # stationary case assumption used here
-  coefs <- try(qr.solve_exact(mat, m_Y), silent = TRUE)
+find_shift_values <- function(shifts_edges, T_tree_ac, vect_Y, p, ntaxa){
+  pos_shifts <- as.vector(sapply(shifts_edges, function(z) p * (z-1) + 1:p))
+  mat <- cbind(t(matrix(rep(diag(1, p, p), ntaxa), nrow = p)), T_tree_ac[, pos_shifts]) # stationary case assumption used here
+  coefs <- try(qr.solve_exact(mat, vect_Y), silent = TRUE)
   if (inherits(coefs, "try-error")){
     warning("Had a problem solving exactly the linear system.")
     return(rep(NA, length(shifts_edges) + 1))
@@ -922,43 +1111,46 @@ qr.solve_exact <- function (a, b, tol = 1e-07) {
 #' @title Plot all the equivalent solutions.
 #'
 #' @description
-#' \code{plot_equivalent_shifts} plots and save a representation of all the equivalent
-#' shifts allocations, with a representation of the shifts and their values, and a 
-#' coloration of the branches in term of regimes. Black is the ancestral regime.
+#' \code{plot.equivalent_shifts} plots a representation of all the equivalent
+#' shifts allocations, with a representation of the shifts and their values,
+#' and a coloration of the branches in term of regimes.
 #' 
 #' @details
-#' This function uses \code{qr.solve} for rectangular linear system solving.
+#' This function uses function \code{\link[ape]{plot.phylo}} for the actual
+#' plotting of the trees.
 #' 
-#' @param phylo a phylogenetic tree.
-#' @param eq_shifts_edges matrix, result of function \code{equivalent_shifts_edges}.
-#' @param eq_shifts_values, result of function \code{equivalent_shifts_values}.
-#' @param PATH a string linking to the path were the plot is to be stored.
-#' @param name a name to be given to the plot.
+#' @param x an object of class \code{equivalent_shifts}, result of
+#' function \code{\link{equivalent_shifts}}
+#' @param trait (integer) the trait to be plotted, if multivariate. Default to 1.
+#' @param numbering wheter to number the solutions. Default to FALSE.
+#' @param colors_tips user-provided colors for the tips of the tree. A vector
+#' vector with as many colors as there are tips. Will be automatically computed
+#' if not provided.
+#' @param nbr_col the number of columns on which to display the plot.
+#' Default to 3.
+#' @param gray_scale if TRUE, a gray scale is used instead of colors. Default to
+#' FALSE.
+#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
+#' 
+#' @return A plot of the equivalent shifts allocations.
+#' 
+#' @seealso \code{\link[ape]{plot.phylo}}
 #' 
 #' @export
 #' 
 ##
-plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
-                                   PATH, name){
-  pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
-      width = 4*3, height = nbrLignes * 3)
-  plot_equivalent_shifts.actual(phylo, eq_shifts_edges, eq_shifts_values)
-  dev.off()
-  
-}
-
-plot_equivalent_shifts.actual <- function(phylo,
-                                          eq_shifts_edges,
-                                          eq_shifts_values,
-                                          numbering = FALSE,
-                                          colors_tips = NULL,
-                                          nbr_col = 3, 
-                                          gray_scale = FALSE, ...){
+plot.equivalent_shifts <- function(x,
+                                   trait = 1,
+                                   numbering = FALSE,
+                                   colors_tips = NULL,
+                                   nbr_col = 3, 
+                                   gray_scale = FALSE, ...){
+  phylo <- eq_shifts$phylo
   ntaxa <- length(phylo$tip.label)
-  nbrSol <- dim(eq_shifts_edges)[2]
+  nbrSol <- dim(eq_shifts$eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% nbr_col) + 1
   if (nbrSol %% nbr_col == 0) nbrLignes <- nbrLignes - 1
-  nbrShifts <- dim(eq_shifts_edges)[1]
+  nbrShifts <- dim(eq_shifts$eq_shifts_edges)[1]
   ## Colors
   if (is.null(colors_tips)){
     if (!gray_scale){
@@ -972,14 +1164,17 @@ plot_equivalent_shifts.actual <- function(phylo,
     colors <- unique(colors_tips)
   }
   scr <- split.screen(c(nbrLignes, nbr_col))
+  shifts_values <- extract_shifts_values(eq_shifts, trait)
+  root_values <- extract_root_values(eq_shifts, trait)
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
-    params <- list(optimal.value = eq_shifts_values$betas_0[sol],
-                   shifts = list(edges = eq_shifts_edges[, sol],
-                                 values = eq_shifts_values$shifts_values[, sol],
+    params <- list(optimal.value = root_values[, sol],
+                   shifts = list(edges = eq_shifts$eq_shifts_edges[, sol],
+                                 values = shifts_values[, sol],
                                  relativeTimes = rep(0, nbrShifts)))
     ## Regimes
-    regimes <- allocate_regimes_from_shifts(phylo, eq_shifts_edges[, sol])
+    regimes <- allocate_regimes_from_shifts(phylo,
+                                            eq_shifts$eq_shifts_edges[, sol])
     regimes <- as.factor(regimes)
     cor_col_reg <- cbind(unique(regimes[1:ntaxa]), colors)
     levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
@@ -1023,6 +1218,14 @@ plot_equivalent_shifts.actual <- function(phylo,
   close.screen(all.screens = TRUE)
 }
 
+# plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
+#                                    PATH, name){
+#   pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
+#       width = 4*3, height = nbrLignes * 3)
+#   plot_equivalent_shifts.actual(phylo, eq_shifts_edges, eq_shifts_values)
+#   dev.off()
+#   
+# }
 
 ##
 #' @title Transform the shift values

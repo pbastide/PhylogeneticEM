@@ -4,15 +4,10 @@
 \alias{equivalent_shifts_values}
 \title{Find values given edges. OU stationary case. Ultrametric tree.}
 \usage{
-equivalent_shifts_values(phylo, shifts, beta_0,
-  eq_shifts_edges = equivalent_shifts_edges(phylo, shifts$edges), T_tree_ac)
+equivalent_shifts_values(phylo, eq_shifts_edges, T_tree_ac, vect_Y, p)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree.}
-
-\item{shifts}{a list of positions and values of original shifts.}
-
-\item{beta_0}{value of the original optimal value at the root.}
 
 \item{eq_shifts_edges}{matrix (optional) result of function
 \code{\link{equivalent_shifts_edges}}.}
@@ -20,6 +15,10 @@ equivalent_shifts_values(phylo, shifts, beta_0,
 \item{T_tree_ac}{matrix of incidence of the tree, result of function 
 \code{\link{incidence.matrix}}, actualized with coeficients computed by
 function \code{\link{incidence_matrix_actualization_factors}}.}
+
+\item{shifts}{a list of positions and values of original shifts.}
+
+\item{beta_0}{value of the original optimal value at the root.}
 }
 \value{
 Named list, with "shifts_values" a matrix of shifts values
@@ -40,4 +39,5 @@ and the means at the tips. Function \code{compute_actualization_factors} is
 used to compute the actualization factor that multipies the shifts values at
 the tips. Carefull, only work for ULTRAMETRIC trees.
 }
+\keyword{internal}
 

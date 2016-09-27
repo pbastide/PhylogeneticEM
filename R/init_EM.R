@@ -175,6 +175,253 @@ init.EM.default.OU <- function(phylo = NULL,
   return(params_init)
 }
 
+##
+#' @title Create an object \code{params_process}
+#'
+#' @description
+#' \code{params_process} creates a coherent object params_process from user 
+#' provided values of the paramerters.
+#'
+#' @param process one of "BM" or "OU"
+#' @param ... specified parameters, see functions \code{\link{params_BM}} and 
+#' \code{\link{params_OU}} for details.
+#' 
+#' @return an object of class \code{params_process}.
+#' 
+#' @seealso \code{\link{params_BM}}, \code{\link{params_OU}}
+#' 
+#' @export
+#'
+##
+params_process <- function(process, ...){
+  if (process == "BM"){
+    res <- params_BM(...)
+  } else if (process == "OU"){
+    res <- params_OU(...)
+  }
+  return(res)
+}
+
+##
+#' @title Create an object \code{params_process} for a BM
+#'
+#' @description
+#' \code{params_BM} creates a coherent object params_process from user 
+#' provided values of the paramerters. Non specidied parameters are set to 
+#' default values.
+#'
+#' @param p the dimension (number of traits) of the parameters. Default to 1.
+#' @param variance the variance (rate matrix) of the BM. Default to 
+#' \code{diag(1, p, p)}.
+#' @param random whether the root of the BM is random (TRUE) or fixed (FALSE).
+#' Default to FALSE.
+#' @param value.root if random=FALSE, the root value. Default to 0.
+#' @param exp.root if random=TRUE, the root expectation. Default to 0.
+#' @param var.root if random=TRUE, the root variance. Default to
+#' \code{diag(1, p, p)}.
+#' @param edges a vector of edges where the shifts occur. Default to NULL
+#' (no shift).
+#' @param values a matrix of shift values, with p lines and as many columns as
+#' the number of shifts. Each column is the p values for one shift. Default to
+#' \code{matrix(0, p, length(edges))}.
+#' @param relativeTimes (unused) the relative position of the shift on the
+#' branch, between 0 (begining of the branch) and 1 (end of the branch). Default
+#' to 0.
+#' @param nbr_of_shifts the number of shifts to use (randomly drawn). Use only
+#' if \code{edges} is not specified. In that case, a phylogenetic tree must be
+#' provided (to allow a random sampling of its edges).
+#' @param phylo a phylogenetic tree of class \code{phylo}. Needed only if
+#' the shifts edges are not specified, or if sBM_variance=TRUE. Default to NULL.
+#' If sBM_variance=TRUE, it must have a specified value for the root branch
+#' length (slot root.edge).
+#' @param sBM_variance if the root is random, does it depend on the length of the
+#' root edge ? (For equivalent purposes with a rescaled OU). Default to FALSE. If
+#' TRUE, a phylogenetic tree with root edge length must be provided.
+#' @param ... unused.
+#' 
+#' @return an object of class \code{params_process}.
+#' 
+#' @seealso \code{\link{params_process}}, \code{\link{params_OU}}
+#' 
+#' @export
+#'
+##
+params_BM <- function(p = 1,
+                      variance = diag(1, p, p),
+                      random = FALSE,
+                      value.root = rep(0, p),
+                      exp.root = rep(0, p),
+                      var.root = diag(1, p, p),
+                      edges = NULL,
+                      values = matrix(0, p, length(edges)),
+                      relativeTimes = NULL,
+                      nbr_of_shifts = length(edges),
+                      phylo = NULL,
+                      sBM_variance = FALSE,
+                      ...) {
+  if (random) {
+    value.root <- NA
+    if (sBM_variance){
+      var.root <- phylo$root.edge * variance
+    }
+  } else {
+    exp.root <- NA
+    var.root <- NA
+  }
+  # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
+  if (length(edges) < nbr_of_shifts){
+    miss <- nbr_of_shifts - length(edges)
+    auth_edges <- which(!(1:nrow(phylo$edge) %in% edges))
+    new_edges <- sample(auth_edges, miss)
+    edges <- c(edges, new_edges)
+    # edges <- c(edges, sample_shifts_edges(phylo, miss, part.list = subtree.list))
+  }
+  # If not enought values, complete with 0s
+  if (is.null(values) || is.vector(values)){
+    n_shifts_provided <- length(values)
+  } else {
+    n_shifts_provided <- ncol(values)
+  }
+  if (n_shifts_provided < nbr_of_shifts){
+    miss <- nbr_of_shifts - ncol(values)
+    values <- cbind(values, matrix(0, ncol = miss, nrow = p))
+  }
+  params_init = list(variance = variance,
+                     root.state = list(random = random,
+                                       value.root = value.root,
+                                       exp.root = exp.root,
+                                       var.root = var.root),
+                     shifts = list(edges = edges,
+                                   values = values,
+                                   relativeTimes = relativeTimes))
+  params_init <- check_dimensions(p,
+                                  params_init$root.state,
+                                  params_init$shifts,
+                                  params_init$variance)
+  params_init$root.state <- test.root.state(params_init$root.state, "BM")
+  params_init$variance <- as(params_init$variance, "dpoMatrix")
+  class(params_init) <- "params_process"
+  return(params_init)
+}
+
+##
+#' @title Create an object \code{params_process} for an OU
+#'
+#' @description
+#' \code{params_OU} creates a coherent object params_process from user 
+#' provided values of the paramerters. Non specidied parameters are set to 
+#' default values.
+#'
+#' @param p the dimension (number of traits) of the parameters. Default to 1.
+#' @param variance the variance (rate matrix) of the BM. Default to 
+#' \code{diag(1, p, p)}.
+#' @param selection.strength the selection strenght matrix. Default to 
+#' \code{diag(1, p, p)}.
+#' @param optimal.value the vector of the optimal values at the root. Default
+#' to \code{rep(0, p)}.
+#' @param random whether the root of the OU is random (TRUE) or fixed (FALSE).
+#' Default to TRUE.
+#' @param stationary.root wheter the root of the OU is stationary (TRUE) or not.
+#' Default to TRUE.
+#' @param value.root if random=FALSE, the root value. Default to 0.
+#' @param exp.root if random=TRUE, the root expectation. Default to 0. If
+#' stationary.root=TRUE, default to \code{optimal.value}.
+#' @param var.root if random=TRUE, the root variance. Default to
+#' \code{diag(1, p, p)}. If stationary.root=TRUE, default to
+#' the stationary variance computed from \code{variance} and
+#' \code{selection.strength}, see function
+#' \code{\link{compute_stationary_variance}}.
+#' @param edges a vector of edges where the shifts occur. Default to NULL
+#' (no shift).
+#' @param values a matrix of shift values, with p lines and as many columns as
+#' the number of shifts. Each column is the p values for one shift. Default to
+#' \code{matrix(0, p, length(edges))}.
+#' @param relativeTimes (unused) the relative position of the shift on the
+#' branch, between 0 (begining of the branch) and 1 (end of the branch). Default
+#' to 0.
+#' @param nbr_of_shifts the number of shifts to use (randomly drawn). Use only
+#' if \code{edges} is not specified. In that case, a phylogenetic tree must be
+#' provided (to allow a random sampling of its edges).
+#' @param phylo a phylogenetic tree of class \code{phylo}. Needed only if
+#' the shifts edges are not specified.
+#' @param ... unused.
+#' 
+#' @return an object of class \code{params_process}.
+#' 
+#' @seealso \code{\link{params_process}}, \code{\link{params_BM}}
+#' 
+#' @export
+#'
+##
+params_OU <- function(p = 1,
+                      variance = diag(1, p, p),
+                      selection.strength = diag(1, p, p),
+                      optimal.value = rep(0, p),
+                      random = TRUE,
+                      stationary.root = TRUE,
+                      value.root = rep(0, p),
+                      exp.root = rep(0, p),
+                      var.root = diag(1, p, p),
+                      edges = NULL,
+                      values = matrix(0, p, length(edges)),
+                      relativeTimes = NULL,
+                      nbr_of_shifts = length(edges),
+                      phylo = NULL,
+                      ...) {
+  if (random) {
+    value.root <- NA
+    if (stationary.root) {
+      exp.root <- optimal.value
+      var.root <- compute_stationary_variance(variance, selection.strength)
+    }
+  } else {
+    exp.root=NA
+    var.root=NA
+  }
+  # Always start with some shifts, in case of default initialisation (if number of shifts different from 0)
+  if (length(edges) < nbr_of_shifts){
+    miss <- nbr_of_shifts - length(edges)
+    auth_edges <- which(!(1:nrow(phylo$edge) %in% edges))
+    new_edges <- sample(auth_edges, miss)
+    edges <- c(edges, new_edges)
+    # edges <- c(edges, sample_shifts_edges(phylo, miss, part.list = subtree.list))
+  }
+  # If not enought values, complete with 0s
+  if (is.null(values) || is.vector(values)){
+    n_shifts_provided <- length(values)
+  } else {
+    n_shifts_provided <- ncol(values)
+  }
+  if (n_shifts_provided < nbr_of_shifts){
+    miss <- nbr_of_shifts - ncol(values)
+    values <- cbind(values, matrix(0, ncol = miss, nrow = p))
+  }
+  params_init <- list(variance = variance,
+                      root.state = list(random = random,
+                                        stationary.root = stationary.root,
+                                        value.root = value.root,
+                                        exp.root = exp.root,
+                                        var.root = var.root),
+                      shifts = list(edges = edges,
+                                    values = values,
+                                    relativeTimes = relativeTimes),
+                      selection.strength = selection.strength,
+                      optimal.value = optimal.value)
+  params_init <- check_dimensions(p,
+                                  params_init$root.state,
+                                  params_init$shifts,
+                                  params_init$variance,
+                                  params_init$selection.strength,
+                                  params_init$optimal.value)
+  params_init$root.state <- test.root.state(params_init$root.state, "OU",
+                                            variance = variance,
+                                            selection.strength = params_init$selection.strength,
+                                            optimal.value = optimal.value)
+  params_init$variance <- as(params_init$variance, "dpoMatrix")
+  class(params_init) <- "params_process"
+  return(params_init)
+}
+
 
 #########################################################
 ## Lasso initializations

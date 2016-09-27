@@ -4,7 +4,7 @@
 \alias{find_shift_values}
 \title{Find values given edges. OU stationary case. Ultrametric tree.}
 \usage{
-find_shift_values(shifts_edges, T_tree_ac, m_Y)
+find_shift_values(shifts_edges, T_tree_ac, vect_Y, p, ntaxa)
 }
 \arguments{
 \item{shifts_edges}{a vector of positions of shifts on the tree.}

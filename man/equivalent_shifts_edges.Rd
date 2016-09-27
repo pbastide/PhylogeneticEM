@@ -4,15 +4,16 @@
 \alias{equivalent_shifts_edges}
 \title{Find all the equivalent shift edges allocations.}
 \usage{
-equivalent_shifts_edges(phylo, shifts_edges, ...)
+equivalent_shifts_edges(phylo, shifts_edges,
+  part.list = enumerate_tips_under_edges(phylo))
 }
 \arguments{
 \item{phylo}{a phylogenetic tree.}
 
 \item{shifts_edges}{a vector of shifts positions on the edges of the tree.}
 
-\item{...}{further arguments to be passed to 
-\code{\link{clusters_from_shifts_ism}}.}
+\item{part.list}{(optional) list of partition of the tree, result of function
+\code{\link{enumerate_tips_under_edges}}.}
 }
 \value{
 a matrix with as many columns as equivalent allocation, each column

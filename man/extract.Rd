@@ -4,21 +4,22 @@
 \alias{extract}
 \title{Extraction function}
 \usage{
-extract(obj, node)
+extract(obj, ...)
 }
 \arguments{
 \item{obj}{an S3 object.}
 
-\item{node}{the node where to extract. Default to the root of the tree.}
+\item{...}{further arguments to be passed to the specific method.}
 }
 \value{
 An integer giving the number of equivalent parsimonious solutions.
+
+#' @seealso \code{\link{extract.parsimonyNumber}},
+\code{\link{extract.parsimonyCost}},
+\code{\link{extract.enumerate_parsimony}},
+\code{\link{extract.partitionsNumber}}
 }
 \description{
 \code{extract} the needed quantities out of an S3 object.
-}
-\seealso{
-\code{\link{extract.parsimonyNumber}},
-\code{\link{extract.parsimonyCost}}, \code{\link{extract.enumerate_parsimony}}
 }
 

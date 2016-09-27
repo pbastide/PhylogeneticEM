@@ -27,13 +27,14 @@ the shifts on the tree, i.e allocations that are parsimonious and compatible
 with a given clustering of the tips.
 }
 \details{
-This functin does a recursion up the tree, using functions 
-\code{init.parsimonyNumber} for the initialization at the tips, 
-\code{updateUp} for the actual recursion on the tree,
-and \code{update.parsimonyNumber} for the actualisation of the parameters.
-The function \code{extract_parsimonyNumber} furnishes the result seeked for any
-subtree.
+This function does a recursion up the tree.
+The function \code{\link{extract.parsimonyNumber}} gives the result seeked for
+any subtree.
 The matrix of costs of the states (number of shifts) is also required, it is
-computed by function \code{parsimonyCost}.
+computed by function \code{\link{parsimonyCost}}.
+}
+\seealso{
+\code{\link{extract.parsimonyNumber}},
+\code{\link{partitionsNumber}}, \code{\link{parsimonyCost}}
 }
 

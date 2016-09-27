@@ -25,20 +25,33 @@
 ## Main functions
 #########################
 ##
-# partitionsNumber (phylo, npart)
-# PARAMETERS:
-# @phylo (tree) imput tree
-# @npart (int) : number of partitions of the tips allowed
-# RETURNS:
-# (matrix) matrix with Nnodes+ntaxa rows and 2*npart columns. Each column contains two vectors : for k=1:npart it contains the number of partitions with k groups compatible with the tree and the shift process; and for k=(npart+1):2*npart, it contains the number of "marqued" partitions with (k-npart) groups compatible with the tree and the shift process.
-# DEPENDENCIES:
-# init.partitionsNumber, update.partitionsNumber.bin (, extract.partitionsNumber)
-# PURPOSE:
-# Find the number of partitions with npart groups of the tips that are compatible with the structure of the tree and the shift process
-# NOTES:
-# Only works for rooted, binary trees.
-# REVISIONS:
-# 26/05/14 - Initial release
+#' @title Number of different models
+#'
+#' @description
+#' \code{partitionsNumber} computes the number of different models with a given
+#' number of shifts K. It is also the number of colorings of the tips to the 
+#' tree in npart=K+1 colors.
+#'
+#' @param phylo a phylogenetic tree of class \code{\link[ape]{phylo}}.
+#' @param npart the numbers of partitions (colors) allowed at the tips. This
+#' is the number of shifts plus one.
+#'
+#' @return an object of class \code{partitionsNumber}. This is made of a matrix
+#' with Nnodes+ntaxa rows and 2*npart columns. Each column contains two vectors :
+#' for k=1:npart it contains the number of partitions with k groups compatible
+#' with the tree and the shift process; and for k=(npart+1):2*npart, it contains
+#' the number of "marqued" partitions with (k-npart) groups compatible with the
+#' tree and the shift process.
+#' 
+#' @seealso \code{\link{extract.partitionsNumber}}, \code{\link{parsimonyNumber}}
+#'
+#' @references
+#' Paul Bastide, Mahendra Mariadassou, Stéphane Robin:
+#' Detection of adaptive shifts on phylogenies using shifted stochastic processes
+#' on a tree.
+#' 
+#' @export
+#' 
 ##
 partitionsNumber <- function(phylo, npart){
   if (!is.rooted(phylo)) stop("The tree must be rooted !")
@@ -55,6 +68,7 @@ partitionsNumber <- function(phylo, npart){
   nbrCompatiblePartitions <- recursionUp(phy, nbrCompatiblePartitions, update.partitionsNumber)
   attr(nbrCompatiblePartitions, "ntaxa") <- ntaxa
   attr(nbrCompatiblePartitions, "npart") <- npart
+  class(nbrCompatiblePartitions) <- "partitionsNumber"
   return(nbrCompatiblePartitions)
 }
 
@@ -177,9 +191,38 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 # 26/05/14 - Initial release
 # 27/05/14 - Add "marqued"
 ##
-extract.partitionsNumber <- function(nbrCompatiblePartitions, node=attr(nbrCompatiblePartitions, "ntaxa")+1, npart=attr(nbrCompatiblePartitions, "npart"), marqued=FALSE){
-  if (marqued) return(nbrCompatiblePartitions[node,attr(nbrCompatiblePartitions, "npart")+npart])
-  return(nbrCompatiblePartitions[node,npart])
+
+##
+#' @title Extract from object \code{partitionsNumber}
+#'
+#' @description
+#' \code{extract.partitionsNumber} extracts the number of partitions for a 
+#' given sub-tree, either marked or non-marked.
+#'
+#' @param obj an object of class \code{partitionsNumber}, result of function
+#' \code{\link{partitionsNumber}}.
+#' @param node the root node of the subtree where to get the result.
+#' Default to the root of the tree.
+#' @param npart the number of partitions (colors) allowed at the tips.
+#' Default to the value used in the call of function
+#' \code{\link{partitionsNumber}} (the maximum).
+#' @param marqued whether to extract the marqued (TRUE) or un-marqued (FALSE)
+#' partitions. The number of models is the number of un-marqued partitions.
+#' Default to FALSE.
+#' @param ... unused.
+#'
+#' @return the number of partitions with npart colors, on the sub-tree starting
+#' at node, marqued or not.
+#'
+#' @export
+#' 
+##
+extract.partitionsNumber <- function(obj,
+                                     node = attr(obj, "ntaxa") + 1,
+                                     npart = attr(obj, "npart"),
+                                     marqued = FALSE, ...){
+  if (marqued) return(obj[node, attr(obj, "npart") + npart])
+  return(obj[node,npart])
 }
 ##################################
 ## Some small technical functions
