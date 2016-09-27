@@ -1145,12 +1145,12 @@ plot.equivalent_shifts <- function(x,
                                    colors_tips = NULL,
                                    nbr_col = 3, 
                                    gray_scale = FALSE, ...){
-  phylo <- eq_shifts$phylo
+  phylo <- x$phylo
   ntaxa <- length(phylo$tip.label)
-  nbrSol <- dim(eq_shifts$eq_shifts_edges)[2]
+  nbrSol <- dim(x$eq_shifts_edges)[2]
   nbrLignes <- (nbrSol %/% nbr_col) + 1
   if (nbrSol %% nbr_col == 0) nbrLignes <- nbrLignes - 1
-  nbrShifts <- dim(eq_shifts$eq_shifts_edges)[1]
+  nbrShifts <- dim(x$eq_shifts_edges)[1]
   ## Colors
   if (is.null(colors_tips)){
     if (!gray_scale){
@@ -1169,12 +1169,12 @@ plot.equivalent_shifts <- function(x,
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
     params <- list(optimal.value = root_values[, sol],
-                   shifts = list(edges = eq_shifts$eq_shifts_edges[, sol],
+                   shifts = list(edges = x$eq_shifts_edges[, sol],
                                  values = shifts_values[, sol],
                                  relativeTimes = rep(0, nbrShifts)))
     ## Regimes
     regimes <- allocate_regimes_from_shifts(phylo,
-                                            eq_shifts$eq_shifts_edges[, sol])
+                                            x$eq_shifts_edges[, sol])
     regimes <- as.factor(regimes)
     cor_col_reg <- cbind(unique(regimes[1:ntaxa]), colors)
     levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
