@@ -4,8 +4,7 @@
 \alias{extract.parsimonyCost}
 \title{Extraction of the actual number of solutions.}
 \usage{
-\method{extract}{parsimonyCost}(obj, node = attr(obj$nbrReconstructions,
-  "ntaxa") + 1, ...)
+\method{extract}{parsimonyCost}(obj, node = attr(obj, "ntaxa") + 1, ...)
 }
 \arguments{
 \item{obj}{an object of class "\code{parsimonyCost}", result of function
@@ -22,5 +21,8 @@ An integer giving the minimum cost of the subtree.
 \code{extract.parsimonyCost} takes an object of class "\code{parsimonyCost}",
 result of function \code{\link{parsimonyCost}}, and computes the minimum cost
 at the given node.
+}
+\seealso{
+\code{\link{parsimonyCost}}
 }
 

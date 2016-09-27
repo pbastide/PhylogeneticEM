@@ -1036,7 +1036,8 @@ compute_K_max <- function(ntaxa, kappa = 0.9){
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}.
 #' 
 #' 
-#' @return An object of class Phylogenetic EM (TO DO).
+#' @return
+#' An object of class \code{PhyloEM}.
 #' 
 #' @export
 #'
@@ -1213,6 +1214,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   for (meth.sel in method.selection){
     X <- model_selection(meth.sel)
   }
+  class(X) <- "PhyloEM"
   return(X)
 }
 

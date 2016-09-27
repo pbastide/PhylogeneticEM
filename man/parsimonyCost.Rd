@@ -26,4 +26,13 @@ This functin does a recursion up the tree, using functions
 \code{updateUp} for the actual recursion on the tree,
 and \code{update.parsimonyCost} for the actualisation of the parameters.
 }
+\examples{
+tree <- read.tree(text="(((1,1),2),2);")
+plot(tree); nodelabels()
+clusters <- c(1, 1, 2, 2)
+costs <- parsimonyCost(tree, clusters)
+extract(costs) ## Extract the parsimony cost at the root
+extract(costs, 7) ## Extract the cost for the sub-tree below node 7
+
+}
 

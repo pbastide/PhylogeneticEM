@@ -5,7 +5,7 @@
 \title{Extract the result of \code{enumerate_parsimony} at a node.}
 \usage{
 \method{extract}{enumerate_parsimony}(obj, node = attr(obj$allocations,
-  "ntaxa") + 1, ...)
+  "ntaxa") + 1, what = c("solutions", "number", "cost"), ...)
 }
 \arguments{
 \item{obj}{an object of class "\code{enumerate_parsimony}",
@@ -13,6 +13,10 @@ result of function \code{\link{enumerate_parsimony}}.}
 
 \item{node}{the node where to retrive the parsimony number. Default to the
 root of the tree.}
+
+\item{what}{the qhautity to retrieve. Either "solutions" for the full
+solutions, "number" for the number of solutions, or "cost" for the minimal
+cost of a solution. Default to "solutions"}
 
 \item{...}{unused}
 }

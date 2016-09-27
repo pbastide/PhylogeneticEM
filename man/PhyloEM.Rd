@@ -137,7 +137,7 @@ too high. Default to 5.}
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}.}
 }
 \value{
-An object of class Phylogenetic EM (TO DO).
+An object of class \code{PhyloEM}.
 }
 \description{
 \code{PhyloEM} is the main function of the package. It uses maximum likelihood

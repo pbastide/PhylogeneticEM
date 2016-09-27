@@ -13,7 +13,7 @@ enumerate_parsimony(phylo, clusters = rep(1, length(phylo$tip.label)))
 \item{clusters}{a vector representing the group of each tip.}
 }
 \value{
-an S3 object of class "\code{enumerate_parsimony}", with;
+an S3 object of class "\code{enumerate_parsimony}", with:
 \describe{
 \item{nbrReconstructions}{an object of class "\code{parsimonyCost}", result
 of function \code{\link{parsimonyCost}}.}
@@ -22,6 +22,7 @@ represents the solutions for the subtree starting at node i. It is a list with
 nclus entries, each entry being a matrix. A line of the kth matrix for the
 ith node is one possible allocation of the shifts, starting with regime k
 for node i.}
+\item{phylo}{the entry phylogenetic tree}
 }
 }
 \description{
@@ -36,5 +37,27 @@ This functin does a recursion up the tree, using functions
 and \code{update.enumerate_parsimony} for the actualisation of the parameters.
 The function \code{extract_enumerate_parsimony} furnishes the result in a nice
 form of a matrix (for any subtree).
+}
+\examples{
+tree <- read.tree(text="(((0,1),2),2);")
+plot(tree); nodelabels()
+clusters <- c(0, 1, 2, 2)
+sols <- enumerate_parsimony(tree, clusters)
+
+## Extract the parsimonious solutions from the root
+extract(sols) # each line is a solution, with states of each node
+## Extract the number of solutions from the root
+extract(sols, what = "number")
+# same result, more efficient:
+extract(parsimonyNumber(tree, clusters))
+## Extract the cost of the solutions from the root
+extract(sols, what = "cost")
+# same, but less efficient than:
+extract(parsimonyCost(tree, clusters))
+## Extract for the sub-tree below node 7
+extract(sols, 7)
+# NAs: non-existing nodes in the sub-tree
+plot(sols)
+
 }
 

@@ -33,6 +33,22 @@ any subtree.
 The matrix of costs of the states (number of shifts) is also required, it is
 computed by function \code{\link{parsimonyCost}}.
 }
+\examples{
+tree <- read.tree(text="(((0,1),2),2);")
+plot(tree); nodelabels()
+clusters <- c(0, 1, 2, 2)
+n_sols <- parsimonyNumber(tree, clusters)
+
+## Extract the number of parsimonious solutions at the root
+extract(n_sols) #Result: 3 (the ancestral state is always "2").
+## Extract the cost of the solutions from the root
+extract(n_sols, what = "cost")
+# same, but less efficient than:
+extract(parsimonyCost(tree, clusters))
+## Extract for the sub-tree below node 7
+extract(n_sols, 7) # Result: 2 (the ancestral state is either "0" or "1"). 
+
+}
 \seealso{
 \code{\link{extract.parsimonyNumber}},
 \code{\link{partitionsNumber}}, \code{\link{parsimonyCost}}

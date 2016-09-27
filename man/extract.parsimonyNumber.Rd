@@ -5,13 +5,16 @@
 \title{Extraction of the actual number of solutions.}
 \usage{
 \method{extract}{parsimonyNumber}(obj, node = attr(obj$nbrReconstructions,
-  "ntaxa") + 1, ...)
+  "ntaxa") + 1, what = c("number", "cost"), ...)
 }
 \arguments{
 \item{obj}{an object of class "\code{parsimonyNumber}", result of function
 \code{\link{parsimonyNumber}}.}
 
 \item{node}{the root node of the subtree. By default, the root of the tree.}
+
+\item{what}{the quantity to retrieve. Either "number" for the number of
+solutions, or "cost" for the minimal cost of a solution. Default to "number".}
 
 \item{...}{unused}
 }
