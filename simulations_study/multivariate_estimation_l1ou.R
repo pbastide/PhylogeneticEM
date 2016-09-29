@@ -62,9 +62,9 @@ estimations_l1ou <- function(X){
                                       l1ou.options = NA)
   )
   # Change shift format
-  shifts = list(edges = correspondanceEdges(res$shift.configuration,
-                                            trees_postorder[[paste0(X$ntaxa)]],
-                                            trees[[paste0(X$ntaxa)]]),
+  shifts = list(edges = PhylogeneticEM::correspondenceEdges(res$shift.configuration,
+                                                            trees_postorder[[paste0(X$ntaxa)]],
+                                                            trees[[paste0(X$ntaxa)]]),
                 values = res$shift.values,
                 relativesTimes = 0)
   res$params_estims <- list(shifts = shifts,
@@ -79,11 +79,11 @@ estimations_l1ou <- function(X){
   # total time
   res$total_time <- time_l1ou
   # number of equivalent solutions
-  clusters <- clusters_from_shifts_ism(trees[[paste0(X$ntaxa)]],
-                                       shifts$edges,
-                                       part.list = subtree.list[[paste0(X$ntaxa)]])
-  Neq <- extract.parsimonyNumber(parsimonyNumber(trees[[paste0(X$ntaxa)]],
-                                                 clusters))
+  clusters <- PhylogeneticEM::clusters_from_shifts_ism(trees[[paste0(X$ntaxa)]],
+                                                       shifts$edges,
+                                                       part.list = subtree.list[[paste0(X$ntaxa)]])
+  Neq <- PhylogeneticEM:::extract.parsimonyNumber(PhylogeneticEM::parsimonyNumber(trees[[paste0(X$ntaxa)]],
+                                                                                  clusters))
   # Summary
   res$results_summary <- data.frame(
     "log_likelihood" = sum(res$logLik),
@@ -94,6 +94,14 @@ estimations_l1ou <- function(X){
   ret <- list(sim = X,
               res = res)
   return(ret)
+}
+
+###############
+## Forgottent subtreee.list
+###############
+subtree.list <- vector(mode = "list")
+for (nta in c(128, 32, 64, 96, 160, 192, 256)){
+  subtree.list[[paste0(nta)]] <- PhylogeneticEM:::enumerate_tips_under_edges(trees[[paste0(nta)]])
 }
 
 ###############
