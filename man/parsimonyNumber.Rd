@@ -7,9 +7,10 @@
 parsimonyNumber(phylo, clusters = rep(1, length(phylo$tip.label)))
 }
 \arguments{
-\item{phylo}{phylogenetic tree.}
+\item{phylo}{phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{clusters}{the vector of the clusters of the tips.}
+\item{clusters}{the vector of the clusters of the tips. Default to all the tips
+in one single cluster.}
 }
 \value{
 an object of S3 class "\code{parsimonyNumber}" with:
@@ -40,17 +41,18 @@ clusters <- c(0, 1, 2, 2)
 n_sols <- parsimonyNumber(tree, clusters)
 
 ## Extract the number of parsimonious solutions at the root
-extract(n_sols) #Result: 3 (the ancestral state is always "2").
+extract(n_sols)
+
 ## Extract the cost of the solutions from the root
 extract(n_sols, what = "cost")
-# same, but less efficient than:
-extract(parsimonyCost(tree, clusters))
+extract(parsimonyCost(tree, clusters)) # same, more efficient
+
 ## Extract for the sub-tree below node 7
 extract(n_sols, 7) # Result: 2 (the ancestral state is either "0" or "1"). 
 
 }
 \seealso{
-\code{\link{extract.parsimonyNumber}},
-\code{\link{partitionsNumber}}, \code{\link{parsimonyCost}}
+\code{\link{extract.parsimonyNumber}}, \code{\link{parsimonyCost}}, 
+\code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}}
 }
 

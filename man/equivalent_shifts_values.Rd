@@ -7,7 +7,7 @@
 equivalent_shifts_values(phylo, eq_shifts_edges, T_tree_ac, vect_Y, p)
 }
 \arguments{
-\item{phylo}{a phylogenetic tree.}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{eq_shifts_edges}{matrix (optional) result of function
 \code{\link{equivalent_shifts_edges}}.}

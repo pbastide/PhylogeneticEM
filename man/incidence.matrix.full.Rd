@@ -7,7 +7,7 @@
 incidence.matrix.full(phylo)
 }
 \arguments{
-\item{phylo}{Input tree.}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 }
 \value{
 Matrix of incidence, size ntaxa + nNodes

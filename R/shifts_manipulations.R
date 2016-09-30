@@ -39,7 +39,7 @@
 #' with the initialization function \code{init.incidence.matrix} and update
 #' function \code{update.incidence.matrix}.
 #'
-#' @param phylo Input tree.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' 
 #' @return Matrix of incidence.
 #' 
@@ -132,7 +132,7 @@ update.incidence.matrix <- function(daughtersParams, ...){
 #' with the initialization function \code{init.incidence.matrix.full} and update
 #' function \code{update.incidence.matrix.full}.
 #'
-#' @param phylo Input tree.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' 
 #' @return Matrix of incidence, size ntaxa + nNodes
 #' 
@@ -475,9 +475,9 @@ update.compute_betas <- function(edgeNbr, ancestral, shifts, ...){
 #' with \code{init.compute_betas} for the initialization of the vector, and 
 #' \code{update.compute_betas} for its actualization.
 #'
-#' @param phylo : imput tree
-#' @param optimal.value the optimal value at the root of the tree
-#' @param shifts position and values of the shifts 
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param optimal.value the optimal value at the root of the tree.
+#' @param shifts position and values of the shifts .
 #' 
 #' @return Vector of size (ntaxa + nNodes) of the ptimal values at the tips
 #' of the tree.
@@ -567,8 +567,8 @@ update.allocate_regimes_from_shifts <- function(edgeNbr, ancestral, shifts_edges
 #' with \code{init.allocate_regimes_from_shifts} for the initialization of the
 #' vector, and \code{update.allocate_regimes_from_shifts} for its actualization.
 #'
-#' @param phylo : imput tree
-#' @param shifts_edges edges were the shifts are
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param shifts_edges edges were the shifts are.
 #' 
 #' @return Vector of size (ntaxa + nNodes) of the regimes of each node and tip.
 #'
@@ -596,11 +596,11 @@ allocate_regimes_from_shifts <- function(phylo, shifts_edges){
 #' @details
 #' This function uses function fun on each row of matrix of edges.
 #'
-#' @param phylo : imput tree
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param regimes : vector of size (ntaxa + nNodes) of the regimes of each node
 #' and tip.
 #' 
-#' @return vector of edges numbers where the shifts are
+#' @return vector of edges numbers where the shifts are.
 #' 
 #' @export
 #'
@@ -628,11 +628,11 @@ allocate_shifts_from_regimes <- function(phylo, regimes){
 #' @details
 #' This function uses function fun on each row of matrix of edges.
 #'
-#' @param phylo : imput tree
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param betas : vector of size (ntaxa + nNodes) of the optimal values at each
 #' node and tip.
 #' 
-#' @return list of shifts
+#' @return list of shifts.
 #' 
 #' @export
 #'

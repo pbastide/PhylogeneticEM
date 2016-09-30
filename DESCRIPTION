@@ -21,6 +21,7 @@ Imports:
     RcppArmadillo (>= 0.7.200.2.0),
     robustbase (>= 0.92.6)
 Suggests:
+    combinat (>= 0.0.8),
     doParallel (>= 1.0.10),
     graphics (>= 3.2.3),
     phytools (>= 0.5.38),

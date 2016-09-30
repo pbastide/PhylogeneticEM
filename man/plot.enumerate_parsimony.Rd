@@ -10,12 +10,13 @@
 \item{x}{an object of class \code{enumerate_parsimony}, result of
 function \code{\link{enumerate_parsimony}}}
 
-\item{numbering}{wheter to number the solutions. Default to FALSE.}
+\item{numbering}{whether to number the solutions. Default to FALSE.}
 
 \item{nbr_col}{the number of columns on which to display the plot.
 Default to 3.}
 
-\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
+\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}} or 
+\code{\link[ape]{nodelabels}}.}
 }
 \value{
 A plot of the equivalent shifts allocations.
@@ -25,11 +26,11 @@ A plot of the equivalent shifts allocations.
 solutions.
 }
 \details{
-This function uses function \code{\link[ape]{plot.phylo}} for the actual
-plotting of the trees.
+This function uses functions \code{\link[ape]{plot.phylo}} and
+\code{\link[ape]{nodelabels}} for the actual plotting of the trees.
 }
 \seealso{
 \code{\link[ape]{plot.phylo}}, \code{\link{enumerate_parsimony}},
-\code{\link{plot.equivalent_shifts}}
+\code{\link{plot.equivalent_shifts}}, \code{\link[ape]{nodelabels}}
 }
 

@@ -23,28 +23,40 @@
 #'
 #' @description
 #' \code{parsimonyCost} is an implementation of the Sankoff algorithm,
-#'  when the cost of transition between two state is always one.
+#' when the cost of transition between two state is always one. It is used
+#' in functions \code{\link{parsimonyNumber}} and \code{\link{enumerate_parsimony}}
+#' to count or enumerate all the parsimonious solutions given one clustering of the
+#' tips.
 #'
-#' @details
-#' This functin does a recursion up the tree, using functions 
-#' \code{init.parsimonyCost} for the initialization at the tips, 
-#' \code{updateUp} for the actual recursion on the tree,
-#' and \code{update.parsimonyCost} for the actualisation of the parameters.
-#'
-#' @param phylo phylogenetic tree.
-#' @param clusters the vector of the clusters of the tips.
+# @details
+# This functin does a recursion up the tree, using functions 
+# \code{init.parsimonyCost} for the initialization at the tips, 
+# \code{updateUp} for the actual recursion on the tree,
+# and \code{update.parsimonyCost} for the actualisation of the parameters.
+#
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param clusters the vector of the clusters of the tips. (Default to all the tips
+#' in a single group).
 #' 
 #' @return An S3 class "\code{parsimonyCost}" containing a 
 #' (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed to
-#' get the clustering, if starting from a node in state k.
+#' get the clustering, if starting from a node in state k. The cost can be
+#' extract from any subtree with function \code{\link{extract.parsimonyCost}}.
+#' 
+#' @seealso \code{\link{extract.parsimonyCost}}, \code{\link{parsimonyNumber}}, 
+#' \code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}}
 #' 
 #' @examples
 #' tree <- read.tree(text="(((1,1),2),2);")
 #' plot(tree); nodelabels()
 #' clusters <- c(1, 1, 2, 2)
 #' costs <- parsimonyCost(tree, clusters)
-#' extract(costs) ## Extract the parsimony cost at the root
-#' extract(costs, 7) ## Extract the cost for the sub-tree below node 7
+#' 
+#' ## Extract the parsimony cost at the root
+#' extract(costs)
+#' 
+#' ## Extract the cost for the sub-tree below node 7
+#' extract(costs, 7)
 #' 
 #' @export
 ##
@@ -72,7 +84,7 @@ parsimonyCost <- function(phylo,
 #' At a tip i in state k, the line-vector is initialized as follow : 
 #' (1 - Ind(k=p)_{1<=p<=nclus})*Inf (where Inf * 0 = 0)
 #'
-#' @param phylo phylogenetic tree.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param clusters the vector of the clusters of the tips.
 #' 
 #' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
@@ -196,8 +208,9 @@ extract.parsimonyCost <- function(obj,
 #' The matrix of costs of the states (number of shifts) is also required, it is
 #' computed by function \code{\link{parsimonyCost}}.
 #'
-#' @param phylo phylogenetic tree.
-#' @param clusters the vector of the clusters of the tips.
+#' @param phylo phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param clusters the vector of the clusters of the tips. Default to all the tips
+#' in one single cluster.
 #' 
 #' @return an object of S3 class "\code{parsimonyNumber}" with:
 #' \describe{
@@ -215,16 +228,17 @@ extract.parsimonyCost <- function(obj,
 #' n_sols <- parsimonyNumber(tree, clusters)
 #' 
 #' ## Extract the number of parsimonious solutions at the root
-#' extract(n_sols) #Result: 3 (the ancestral state is always "2").
+#' extract(n_sols)
+#' 
 #' ## Extract the cost of the solutions from the root
 #' extract(n_sols, what = "cost")
-#' # same, but less efficient than:
-#' extract(parsimonyCost(tree, clusters))
+#' extract(parsimonyCost(tree, clusters)) # same, more efficient
+#' 
 #' ## Extract for the sub-tree below node 7
 #' extract(n_sols, 7) # Result: 2 (the ancestral state is either "0" or "1"). 
 #' 
-#' @seealso \code{\link{extract.parsimonyNumber}},
-#' \code{\link{partitionsNumber}}, \code{\link{parsimonyCost}}
+#' @seealso \code{\link{extract.parsimonyNumber}}, \code{\link{parsimonyCost}}, 
+#' \code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}}
 #' 
 #' @export
 #' 
@@ -587,18 +601,21 @@ check_parsimony_clusters <- function(tree, edges, clusters){
 #' @description
 #' \code{enumerate_parsimony} enumerate all the equivalent allocation of the 
 #' regimes in the tree, a clustering of the tips being given. The number of such
-#' equivalent regimes is given by \code{parsimonyNumber} (which is faster).
+#' equivalent regimes is given by \code{\link{parsimonyNumber}} (which is faster).
 #' 
 #' @details
-#' This functin does a recursion up the tree, using functions 
-#' \code{init.enumerate_parsimony} for the initialization at the tips, 
-#' \code{updateUp_list} for the effective recursion on the tree,
-#' and \code{update.enumerate_parsimony} for the actualisation of the parameters.
-#' The function \code{extract_enumerate_parsimony} furnishes the result in a nice
-#' form of a matrix (for any subtree).
+# This functin does a recursion up the tree, using functions 
+# \code{init.enumerate_parsimony} for the initialization at the tips, 
+# \code{updateUp_list} for the effective recursion on the tree,
+# and \code{update.enumerate_parsimony} for the actualisation of the parameters.
+#' Function \code{\link{extract.enumerate_parsimony}} furnishes the result in a
+#' human readable form (for any subtree).
+#' Function \code{\link{plot.enumerate_parsimony}} plots all the solutions found on
+#' the tree.
 #' 
-#' @param phylo Input tree.
-#' @param clusters a vector representing the group of each tip.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param clusters a vector representing the group of each tip. (Default to only one
+#' group with all the tips.)
 #' 
 #' @return
 #' an S3 object of class "\code{enumerate_parsimony}", with:
@@ -612,27 +629,31 @@ check_parsimony_clusters <- function(tree, edges, clusters){
 #' for node i.}
 #' \item{phylo}{the entry phylogenetic tree}
 #' }
+#' 
+#' @seealso \code{\link{extract.enumerate_parsimony}},
+#' \code{\link{plot.enumerate_parsimony}}, \code{\link{parsimonyCost}},
+#' \code{\link{parsimonyNumber}}, \code{\link{partitionsNumber}}
 #'
 #' @examples
 #' tree <- read.tree(text="(((0,1),2),2);")
-#' plot(tree); nodelabels()
+#' plot(tree)
 #' clusters <- c(0, 1, 2, 2)
 #' sols <- enumerate_parsimony(tree, clusters)
+#' plot(sols)
 #' 
 #' ## Extract the parsimonious solutions from the root
 #' extract(sols) # each line is a solution, with states of each node
+#' 
 #' ## Extract the number of solutions from the root
 #' extract(sols, what = "number")
-#' # same result, more efficient:
-#' extract(parsimonyNumber(tree, clusters))
+#' extract(parsimonyNumber(tree, clusters)) # same result, more efficient
+#' 
 #' ## Extract the cost of the solutions from the root
 #' extract(sols, what = "cost")
-#' # same, but less efficient than:
-#' extract(parsimonyCost(tree, clusters))
+#' extract(parsimonyCost(tree, clusters)) # same result, more efficient:
+#' 
 #' ## Extract for the sub-tree below node 7
-#' extract(sols, 7)
-#' # NAs: non-existing nodes in the sub-tree
-#' plot(sols)
+#' extract(sols, 7) # NAs: non-existing nodes in the sub-tree
 #' 
 #' @export
 ##
@@ -670,13 +691,15 @@ enumerate_parsimony <- function(phylo,
 #' result of function \code{\link{enumerate_parsimony}}.
 #' @param node the node where to retrive the parsimony number. Default to the
 #' root of the tree.
-#' @param what the qhautity to retrieve. Either "solutions" for the full
+#' @param what the quantity to retrieve. Either "solutions" for the full
 #' solutions, "number" for the number of solutions, or "cost" for the minimal
 #' cost of a solution. Default to "solutions"
 #' @param ... unused
 #'
 #' @return A matrix with ntaxa + nNode columns, and as many rows as the number of
 #' possible parsimonious reconstructions.
+#' 
+#' @seealso \code{\link{enumerate_parsimony}}, \code{\link{plot.enumerate_parsimony}}
 #' 
 #' @export
 ##
@@ -701,20 +724,21 @@ extract.enumerate_parsimony <- function(obj,
 #' solutions.
 #' 
 #' @details
-#' This function uses function \code{\link[ape]{plot.phylo}} for the actual
-#' plotting of the trees.
+#' This function uses functions \code{\link[ape]{plot.phylo}} and
+#' \code{\link[ape]{nodelabels}} for the actual plotting of the trees.
 #' 
 #' @param x an object of class \code{enumerate_parsimony}, result of
 #' function \code{\link{enumerate_parsimony}}
-#' @param numbering wheter to number the solutions. Default to FALSE.
+#' @param numbering whether to number the solutions. Default to FALSE.
 #' @param nbr_col the number of columns on which to display the plot.
 #' Default to 3.
-#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
+#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}} or 
+#' \code{\link[ape]{nodelabels}}.
 #' 
 #' @return A plot of the equivalent shifts allocations.
 #' 
 #' @seealso \code{\link[ape]{plot.phylo}}, \code{\link{enumerate_parsimony}},
-#' \code{\link{plot.equivalent_shifts}}
+#' \code{\link{plot.equivalent_shifts}}, \code{\link[ape]{nodelabels}}
 #' 
 #' @export
 #' 
@@ -931,7 +955,7 @@ add_complementary <- function(z){
 #' This function is only valid for ultrametric trees, and for models: BM, OU with
 #' fixed root or stationary root.
 #' 
-#' @param phylo a phylogenetic tree, ape's class \code{phylo}.
+#' @param phylo a phylogenetic tree, of class \code{\link[ape]{phylo}}.
 #' @param params an object of class \code{params_process}, result inference by
 #' function \code{\link{PhyloEM}}, or constructed throught function
 #' \code{\link{params_process}}
@@ -1073,7 +1097,7 @@ extract_root_values <- function(eq_shifts, trait){
 #' \code{\link{allocate_shifts_from_regimes}} to convert back a parametrization
 #' in term of regimes to a parametrization in term of shifts.
 #' 
-#' @param phylo a phylogenetic tree.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param shifts_edges a vector of shifts positions on the edges of the tree.
 #' @param part.list (optional) list of partition of the tree, result of function
 #' \code{\link{enumerate_tips_under_edges}}.
@@ -1116,7 +1140,7 @@ equivalent_shifts_edges <- function(phylo,
 #' used to compute the actualization factor that multipies the shifts values at
 #' the tips. Carefull, only work for ULTRAMETRIC trees.
 #' 
-#' @param phylo a phylogenetic tree.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param shifts a list of positions and values of original shifts.
 #' @param beta_0 value of the original optimal value at the root.
 #' @param eq_shifts_edges matrix (optional) result of function
@@ -1353,7 +1377,7 @@ plot.equivalent_shifts <- function(x,
 #' @param from alpha value of the original process. If equals 0, then the original process is 
 #' taken to be a BM.
 #' @param to alpha value of the destination process
-#' @param phylo the phlogenetic tree (un-scaled)
+#' @param phylo the phylogenetic tree (un-scaled)
 #' 
 #' @keywords internal
 #' 

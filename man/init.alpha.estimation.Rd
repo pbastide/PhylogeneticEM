@@ -8,7 +8,7 @@ init.alpha.estimation(phylo, Y_data, nbr_of_shifts, distances_phylo,
   max_triplet_number, ...)
 }
 \arguments{
-\item{phylo}{phylogenetic tree.}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{Y_data}{data at the tips.}
 

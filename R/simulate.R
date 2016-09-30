@@ -26,7 +26,7 @@
 #' @description
 #' \code{simulate} simulate a stochastic process on a tree.
 #'
-#' @param phylo Input tree
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param process The model used for the simulation. One of "BM" (for a full BM
 #' model, univariate or multivariate); "OU" (for a full OU model, univariate or
 #' multivariate); or "scOU" (for a "scalar OU" model).

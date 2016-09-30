@@ -54,7 +54,7 @@ to 0.}
 if \code{edges} is not specified. In that case, a phylogenetic tree must be
 provided (to allow a random sampling of its edges).}
 
-\item{phylo}{a phylogenetic tree of class \code{phylo}. Needed only if
+\item{phylo}{a phylogenetic tree of class \code{\link[ape]{phylo}}. Needed only if
 the shifts edges are not specified.}
 
 \item{...}{unused.}

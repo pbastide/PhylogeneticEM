@@ -2255,11 +2255,13 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 #' \code{check_data} tests if the data matrix has the right format, and if it is
 #' correctly ordered to match the tips names.
 #'
-#' @param phylo a phylogenetic tree
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param Y_data matrix of data at the tips (pxntaxa)
 #' @param check.tips.names (bool) whether to check the tips names or not
 #' 
 #' @return Y_data a re-ordered matrix of data (if necessary)
+#' 
+#' @keywords internal
 #'
 ##
 

@@ -7,9 +7,9 @@
 allocate_regimes_from_shifts(phylo, shifts_edges)
 }
 \arguments{
-\item{phylo}{: imput tree}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{shifts_edges}{edges were the shifts are}
+\item{shifts_edges}{edges were the shifts are.}
 }
 \value{
 Vector of size (ntaxa + nNodes) of the regimes of each node and tip.

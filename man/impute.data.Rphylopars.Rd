@@ -7,7 +7,7 @@
 impute.data.Rphylopars(phylo, Y_data, process, random.init)
 }
 \arguments{
-\item{phylo}{a phylogenetic tree}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{Y_data}{data at the tips.}
 

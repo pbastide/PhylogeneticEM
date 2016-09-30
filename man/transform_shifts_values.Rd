@@ -14,7 +14,7 @@ taken to be a BM.}
 
 \item{to}{alpha value of the destination process}
 
-\item{phylo}{the phlogenetic tree (un-scaled)}
+\item{phylo}{the phylogenetic tree (un-scaled)}
 }
 \description{
 \code{transform_shifts_values} takes the shifts generating a given expectation structure

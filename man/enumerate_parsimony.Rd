@@ -8,9 +8,10 @@ of the tips.}
 enumerate_parsimony(phylo, clusters = rep(1, length(phylo$tip.label)))
 }
 \arguments{
-\item{phylo}{Input tree.}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{clusters}{a vector representing the group of each tip.}
+\item{clusters}{a vector representing the group of each tip. (Default to only one
+group with all the tips.)}
 }
 \value{
 an S3 object of class "\code{enumerate_parsimony}", with:
@@ -28,36 +29,39 @@ for node i.}
 \description{
 \code{enumerate_parsimony} enumerate all the equivalent allocation of the 
 regimes in the tree, a clustering of the tips being given. The number of such
-equivalent regimes is given by \code{parsimonyNumber} (which is faster).
+equivalent regimes is given by \code{\link{parsimonyNumber}} (which is faster).
 }
 \details{
-This functin does a recursion up the tree, using functions 
-\code{init.enumerate_parsimony} for the initialization at the tips, 
-\code{updateUp_list} for the effective recursion on the tree,
-and \code{update.enumerate_parsimony} for the actualisation of the parameters.
-The function \code{extract_enumerate_parsimony} furnishes the result in a nice
-form of a matrix (for any subtree).
+Function \code{\link{extract.enumerate_parsimony}} furnishes the result in a
+human readable form (for any subtree).
+Function \code{\link{plot.enumerate_parsimony}} plots all the solutions found on
+the tree.
 }
 \examples{
 tree <- read.tree(text="(((0,1),2),2);")
-plot(tree); nodelabels()
+plot(tree)
 clusters <- c(0, 1, 2, 2)
 sols <- enumerate_parsimony(tree, clusters)
+plot(sols)
 
 ## Extract the parsimonious solutions from the root
 extract(sols) # each line is a solution, with states of each node
+
 ## Extract the number of solutions from the root
 extract(sols, what = "number")
-# same result, more efficient:
-extract(parsimonyNumber(tree, clusters))
+extract(parsimonyNumber(tree, clusters)) # same result, more efficient
+
 ## Extract the cost of the solutions from the root
 extract(sols, what = "cost")
-# same, but less efficient than:
-extract(parsimonyCost(tree, clusters))
-## Extract for the sub-tree below node 7
-extract(sols, 7)
-# NAs: non-existing nodes in the sub-tree
-plot(sols)
+extract(parsimonyCost(tree, clusters)) # same result, more efficient:
 
+## Extract for the sub-tree below node 7
+extract(sols, 7) # NAs: non-existing nodes in the sub-tree
+
+}
+\seealso{
+\code{\link{extract.enumerate_parsimony}},
+\code{\link{plot.enumerate_parsimony}}, \code{\link{parsimonyCost}},
+\code{\link{parsimonyNumber}}, \code{\link{partitionsNumber}}
 }
 

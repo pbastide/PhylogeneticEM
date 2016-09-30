@@ -8,7 +8,7 @@ equivalent_shifts(phylo, params, T_tree = incidence.matrix(phylo),
   part.list = enumerate_tips_under_edges(phylo), times_shared = NULL)
 }
 \arguments{
-\item{phylo}{a phylogenetic tree, ape's class \code{phylo}.}
+\item{phylo}{a phylogenetic tree, of class \code{\link[ape]{phylo}}.}
 
 \item{params}{an object of class \code{params_process}, result inference by
 function \code{\link{PhyloEM}}, or constructed throught function

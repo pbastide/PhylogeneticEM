@@ -7,7 +7,7 @@
 check_data(phylo, Y_data, check.tips.names)
 }
 \arguments{
-\item{phylo}{a phylogenetic tree}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{Y_data}{matrix of data at the tips (pxntaxa)}
 
@@ -20,4 +20,5 @@ Y_data a re-ordered matrix of data (if necessary)
 \code{check_data} tests if the data matrix has the right format, and if it is
 correctly ordered to match the tips names.
 }
+\keyword{internal}
 

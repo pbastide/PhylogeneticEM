@@ -32,4 +32,7 @@ at node, marqued or not.
 \code{extract.partitionsNumber} extracts the number of partitions for a 
 given sub-tree, either marked or non-marked.
 }
+\seealso{
+\code{\link{partitionsNumber}}
+}
 

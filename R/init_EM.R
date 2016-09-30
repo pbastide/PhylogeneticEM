@@ -230,7 +230,7 @@ params_process <- function(process, ...){
 #' @param nbr_of_shifts the number of shifts to use (randomly drawn). Use only
 #' if \code{edges} is not specified. In that case, a phylogenetic tree must be
 #' provided (to allow a random sampling of its edges).
-#' @param phylo a phylogenetic tree of class \code{phylo}. Needed only if
+#' @param phylo a phylogenetic tree of class \code{\link[ape]{phylo}}. Needed only if
 #' the shifts edges are not specified, or if sBM_variance=TRUE. Default to NULL.
 #' If sBM_variance=TRUE, it must have a specified value for the root branch
 #' length (slot root.edge).
@@ -342,7 +342,7 @@ params_BM <- function(p = 1,
 #' @param nbr_of_shifts the number of shifts to use (randomly drawn). Use only
 #' if \code{edges} is not specified. In that case, a phylogenetic tree must be
 #' provided (to allow a random sampling of its edges).
-#' @param phylo a phylogenetic tree of class \code{phylo}. Needed only if
+#' @param phylo a phylogenetic tree of class \code{\link[ape]{phylo}}. Needed only if
 #' the shifts edges are not specified.
 #' @param ... unused.
 #' 
@@ -1646,7 +1646,7 @@ init.alpha.default <- function(init.selection.strength, known.selection.strength
 #' @details
 #' Function \code{robustbase::nlrob} is used for the robust fit.
 #'
-#' @param phylo phylogenetic tree.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param Y_data data at the tips.
 #' @param nbr_of_shifts : number of shifts wanted
 #' @param distances_phylo (matrix) : phylogenetics distance, result of function 
@@ -2047,7 +2047,7 @@ estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
 #' This function assume that there are no shifts on the tree. It is only a first approximation
 #' for initialization purposes.
 #'
-#' @param phylo a phylogenetic tree
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param Y_data data at the tips.
 #' @param process the stochastic process
 #' @param random.init wether root is random or fixed.

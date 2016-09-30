@@ -8,7 +8,7 @@ equivalent_shifts_edges(phylo, shifts_edges,
   part.list = enumerate_tips_under_edges(phylo))
 }
 \arguments{
-\item{phylo}{a phylogenetic tree.}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{shifts_edges}{a vector of shifts positions on the edges of the tree.}
 

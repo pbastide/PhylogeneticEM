@@ -7,11 +7,11 @@
 compute_betas(phylo, optimal.value, shifts)
 }
 \arguments{
-\item{phylo}{: imput tree}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{optimal.value}{the optimal value at the root of the tree}
+\item{optimal.value}{the optimal value at the root of the tree.}
 
-\item{shifts}{position and values of the shifts}
+\item{shifts}{position and values of the shifts .}
 }
 \value{
 Vector of size (ntaxa + nNodes) of the ptimal values at the tips

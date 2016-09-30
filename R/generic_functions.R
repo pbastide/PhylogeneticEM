@@ -687,7 +687,8 @@ find_grid_alpha <- function(phy, alpha = NULL,
 #' on the new tree produces the same observations at the tips than an OU with
 #' parameter alpha.
 #'
-#' @param phylo A phylogenetic tree of class 'phylo', with branch lengths.
+#' @param phylo A phylogenetic tree of class \code{\link[ape]{phylo}}, with branch
+#' lengths.
 #' @param alp Value of the selection strength.
 #'     
 #' @return phylo The same phylogenetic tree, with transformed branch lengths.

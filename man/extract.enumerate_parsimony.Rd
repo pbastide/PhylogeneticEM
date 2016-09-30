@@ -14,7 +14,7 @@ result of function \code{\link{enumerate_parsimony}}.}
 \item{node}{the node where to retrive the parsimony number. Default to the
 root of the tree.}
 
-\item{what}{the qhautity to retrieve. Either "solutions" for the full
+\item{what}{the quantity to retrieve. Either "solutions" for the full
 solutions, "number" for the number of solutions, or "cost" for the minimal
 cost of a solution. Default to "solutions"}
 
@@ -27,5 +27,8 @@ possible parsimonious reconstructions.
 \description{
 \code{extract.enumerate_parsimony} returns a matrix containing all the
 possible regime allocations for the nodes of a given subtree.
+}
+\seealso{
+\code{\link{enumerate_parsimony}}, \code{\link{plot.enumerate_parsimony}}
 }
 

@@ -10,25 +10,43 @@ partitionsNumber(phylo, npart)
 \item{phylo}{a phylogenetic tree of class \code{\link[ape]{phylo}}.}
 
 \item{npart}{the numbers of partitions (colors) allowed at the tips. This
-is the number of shifts plus one.}
+is the number of shifts plus one (npart = K + 1).}
 }
 \value{
 an object of class \code{partitionsNumber}. This is made of a matrix
-with Nnodes+ntaxa rows and 2*npart columns. Each column contains two vectors :
+with (Nnodes + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
 for k=1:npart it contains the number of partitions with k groups compatible
 with the tree and the shift process; and for k=(npart+1):2*npart, it contains
 the number of "marqued" partitions with (k-npart) groups compatible with the
-tree and the shift process.
+tree and the shift process. The actual number can be extracted with function
+\code{\link{extract.partitionsNumber}} (see examples below).
 }
 \description{
 \code{partitionsNumber} computes the number of different models with a given
 number of shifts K. It is also the number of colorings of the tips to the 
-tree in npart=K+1 colors.
+tree in npart = K + 1 colors.
 }
-\references{
-Paul Bastide, Mahendra Mariadassou, Stéphane Robin:
-Detection of adaptive shifts on phylogenies using shifted stochastic processes
-on a tree.
+\examples{
+npart <- 8 # number of colors at the tips allowed
+tree <- read.tree(text="(A,(A,(A,A,A),A,A));") # a tree with polytomies
+plot(tree)
+parts_num <- partitionsNumber(tree, npart)
+
+## Number of possible colorings of the tips in npart colors
+extract(parts_num)
+
+## Get all the solutions for colorings with 1 to nparts colors
+extract(parts_num, npart = 1:npart)
+
+## Number of possible colorings of the tips in npart colors
+## For the sub-tree starting at node 17
+extract(parts_num, node = 10)
+
+## Number of possible colorings of the tips in npart colors
+## with one marked color
+extract(parts_num, marqued = TRUE)
+
+
 }
 \seealso{
 \code{\link{extract.partitionsNumber}}, \code{\link{parsimonyNumber}}

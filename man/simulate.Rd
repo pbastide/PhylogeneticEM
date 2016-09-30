@@ -12,7 +12,7 @@ simulate(phylo, process = c("BM", "OU", "scOU", "StudentOU"), p = 1,
   simulate_random = TRUE, U_tree = NULL, df = 1)
 }
 \arguments{
-\item{phylo}{Input tree}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{process}{The model used for the simulation. One of "BM" (for a full BM
 model, univariate or multivariate); "OU" (for a full OU model, univariate or

@@ -7,13 +7,13 @@
 allocate_shifts_from_regimes(phylo, regimes)
 }
 \arguments{
-\item{phylo}{: imput tree}
+\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{regimes}{: vector of size (ntaxa + nNodes) of the regimes of each node
 and tip.}
 }
 \value{
-vector of edges numbers where the shifts are
+vector of edges numbers where the shifts are.
 }
 \description{
 \code{allocate_shifts_from_regimes} returns the position of the shifts induced

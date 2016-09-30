@@ -7,7 +7,8 @@
 transform_branch_length(phylo, alp)
 }
 \arguments{
-\item{phylo}{A phylogenetic tree of class 'phylo', with branch lengths.}
+\item{phylo}{A phylogenetic tree of class \code{\link[ape]{phylo}}, with branch
+lengths.}
 
 \item{alp}{Value of the selection strength.}
 }
