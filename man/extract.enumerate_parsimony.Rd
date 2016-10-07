@@ -4,11 +4,11 @@
 \alias{extract.enumerate_parsimony}
 \title{Extract the result of \code{enumerate_parsimony} at a node.}
 \usage{
-\method{extract}{enumerate_parsimony}(obj, node = attr(obj$allocations,
-  "ntaxa") + 1, what = c("solutions", "number", "cost"), ...)
+\method{extract}{enumerate_parsimony}(x, node = attr(x$allocations, "ntaxa") +
+  1, what = c("solutions", "number", "cost"), ...)
 }
 \arguments{
-\item{obj}{an object of class "\code{enumerate_parsimony}",
+\item{x}{an object of class "\code{enumerate_parsimony}",
 result of function \code{\link{enumerate_parsimony}}.}
 
 \item{node}{the node where to retrive the parsimony number. Default to the

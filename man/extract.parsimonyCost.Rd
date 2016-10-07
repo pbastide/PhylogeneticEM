@@ -4,10 +4,10 @@
 \alias{extract.parsimonyCost}
 \title{Extraction of the actual number of solutions.}
 \usage{
-\method{extract}{parsimonyCost}(obj, node = attr(obj, "ntaxa") + 1, ...)
+\method{extract}{parsimonyCost}(x, node = attr(x, "ntaxa") + 1, ...)
 }
 \arguments{
-\item{obj}{an object of class "\code{parsimonyCost}", result of function
+\item{x}{an object of class "\code{parsimonyCost}", result of function
 \code{\link{parsimonyCost}}.}
 
 \item{node}{the root node of the subtree. By default, the root of the tree.}

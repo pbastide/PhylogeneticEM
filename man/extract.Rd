@@ -4,10 +4,10 @@
 \alias{extract}
 \title{Extraction function}
 \usage{
-extract(obj, ...)
+extract(x, ...)
 }
 \arguments{
-\item{obj}{an S3 object.}
+\item{x}{an S3 object.}
 
 \item{...}{further arguments to be passed to the specific method.}
 }

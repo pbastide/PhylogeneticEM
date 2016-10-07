@@ -30,6 +30,7 @@ tree <- read.tree(text="(((1,1),2),2);")
 plot(tree); nodelabels()
 clusters <- c(1, 1, 2, 2)
 costs <- parsimonyCost(tree, clusters)
+costs
 
 ## Extract the parsimony cost at the root
 extract(costs)

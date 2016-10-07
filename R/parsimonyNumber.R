@@ -15,6 +15,27 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+##
+#' @title Extraction function
+#'
+#' @description
+#' \code{extract} the needed quantities out of an S3 object.
+#'
+#' @param x an S3 object.
+# @param node the node where to extract. Default to the root of the tree.
+#' @param ... further arguments to be passed to the specific method.
+#' 
+#' @return An integer giving the number of equivalent parsimonious solutions.
+#' 
+#' #' @seealso \code{\link{extract.parsimonyNumber}},
+#' \code{\link{extract.parsimonyCost}},
+#' \code{\link{extract.enumerate_parsimony}},
+#' \code{\link{extract.partitionsNumber}}
+#' 
+#' @export
+##
+extract <- function(x, ...) UseMethod("extract")
+
 ###############################################################################
 ## Function implementing the Sankoff alogrithm
 ###############################################################################
@@ -51,6 +72,7 @@
 #' plot(tree); nodelabels()
 #' clusters <- c(1, 1, 2, 2)
 #' costs <- parsimonyCost(tree, clusters)
+#' costs
 #' 
 #' ## Extract the parsimony cost at the root
 #' extract(costs)
@@ -71,6 +93,51 @@ parsimonyCost <- function(phylo,
   attr(costReconstructions, "ntaxa") <- ntaxa
   class(costReconstructions) <- "parsimonyCost"
   return(costReconstructions)
+}
+
+##
+#' @title Display a parsimony cost
+#'
+#' @description
+#' \code{print.parsimonyCost} prints the parsimony cost at the root of the tree,
+#' using function \code{\link{extract.parsimonyCost}}.
+#'
+#' @param x an object of class \code{\link{parsimonyCost}}.
+#' @param ... unused
+#' 
+#' @return NULL
+#' 
+#' @seealso \code{\link{parsimonyCost}}, \code{\link{extract.parsimonyCost}}
+#' 
+#' @export
+#' @method print parsimonyCost
+##
+print.parsimonyCost <- function(x, ...){
+  cat(paste0("\nParsimony cost: ", extract(x), ".\n\n"))
+}
+
+##
+#' @title Extraction of the actual number of solutions.
+#'
+#' @description
+#' \code{extract.parsimonyCost} takes an object of class "\code{parsimonyCost}",
+#' result of function \code{\link{parsimonyCost}}, and computes the minimum cost
+#' at the given node.
+#'
+#' @param x an object of class "\code{parsimonyCost}", result of function
+#' \code{\link{parsimonyCost}}.
+#' @param node the root node of the subtree. By default, the root of the tree.
+#' @param ... unused
+#' 
+#' @return An integer giving the minimum cost of the subtree.
+#' 
+#' @seealso \code{\link{parsimonyCost}}
+#' 
+#' @export
+##
+extract.parsimonyCost <- function(x, 
+                                  node = attr(x, "ntaxa") + 1, ...){
+  return(min(x[node, ]))
 }
 
 ##
@@ -139,51 +206,6 @@ update.parsimonyCost <- function(daughtersParams, ...){
   return(parCosts)
 }
 
-##
-#' @title Extraction function
-#'
-#' @description
-#' \code{extract} the needed quantities out of an S3 object.
-#'
-#' @param obj an S3 object.
-# @param node the node where to extract. Default to the root of the tree.
-#' @param ... further arguments to be passed to the specific method.
-#' 
-#' @return An integer giving the number of equivalent parsimonious solutions.
-#' 
-#' #' @seealso \code{\link{extract.parsimonyNumber}},
-#' \code{\link{extract.parsimonyCost}},
-#' \code{\link{extract.enumerate_parsimony}},
-#' \code{\link{extract.partitionsNumber}}
-#' 
-#' @export
-##
-extract <- function(obj, ...) UseMethod("extract")
-
-##
-#' @title Extraction of the actual number of solutions.
-#'
-#' @description
-#' \code{extract.parsimonyCost} takes an object of class "\code{parsimonyCost}",
-#' result of function \code{\link{parsimonyCost}}, and computes the minimum cost
-#' at the given node.
-#'
-#' @param obj an object of class "\code{parsimonyCost}", result of function
-#' \code{\link{parsimonyCost}}.
-#' @param node the root node of the subtree. By default, the root of the tree.
-#' @param ... unused
-#' 
-#' @return An integer giving the minimum cost of the subtree.
-#' 
-#' @seealso \code{\link{parsimonyCost}}
-#' 
-#' @export
-##
-extract.parsimonyCost <- function(obj, 
-                                  node = attr(obj, "ntaxa") + 1, ...){
-  return(min(obj[node, ]))
-}
-
 ###############################################################################
 ## Here is a function to compute the number of partimonious allocation of shifts
 ## on the tree, given a clustering of the tips.
@@ -226,6 +248,7 @@ extract.parsimonyCost <- function(obj,
 #' plot(tree); nodelabels()
 #' clusters <- c(0, 1, 2, 2)
 #' n_sols <- parsimonyNumber(tree, clusters)
+#' n_sols
 #' 
 #' ## Extract the number of parsimonious solutions at the root
 #' extract(n_sols)
@@ -262,6 +285,65 @@ parsimonyNumber <- function(phylo,
               costReconstructions = costReconstructions)
   class(res) <- "parsimonyNumber"
   return(res)
+}
+
+##
+#' @title Display the number of parsimonious solutions
+#'
+#' @description
+#' \code{print.parsimonyNumber} prints the number of equivalent parsimonious
+#' allocations of shifts, from the root of the tree, using function
+#' \code{\link{extract.parsimonyNumber}}.
+#'
+#' @param x an object of class \code{\link{parsimonyNumber}}.
+#' @param ... unused
+#' 
+#' @return NULL
+#' 
+#' @seealso \code{\link{parsimonyNumber}}, \code{\link{extract.parsimonyNumber}}
+#' 
+#' @export
+#' @method print parsimonyNumber
+##
+print.parsimonyNumber <- function(x, ...){
+  cat(paste0("\nNumber of parsimonious solutions: ", extract(x), ".\n\n"))
+}
+
+##
+#' @title Extraction of the actual number of solutions.
+#'
+#' @description
+#' \code{extract.parsimonyNumber} takes the two matrices computed by 
+#' \code{\link{parsimonyNumber}}, and compute the actual number of parsimonious
+#' solution for any subtree starting from a given node.
+#' 
+#' @details
+#' The parsimonious solutions are the one with the minimum number of shifts (that
+#' are given by matrice costReconstructions). This function sums the number of 
+#' solutions (given in matrice nbrReconstructions) that have the minimum number of 
+#' shifts.
+#'
+#' @param x an object of class "\code{parsimonyNumber}", result of function
+#' \code{\link{parsimonyNumber}}.
+#' @param node the root node of the subtree. By default, the root of the tree.
+#' @param what the quantity to retrieve. Either "number" for the number of
+#' solutions, or "cost" for the minimal cost of a solution. Default to "number".
+#' @param ... unused
+#' 
+#' @return An integer giving the number of equivalent parsimonious solutions.
+#' 
+#' @seealso \code{\link{parsimonyNumber}}, \code{\link{print.parsimonyNumber}}
+#' 
+#' @export
+##
+extract.parsimonyNumber <- function(x, 
+                                    node = attr(x$nbrReconstructions, "ntaxa") + 1,
+                                    what = c("number", "cost"), ...){
+  what <- match.arg(what)
+  cost <- x$costReconstructions[node, ]
+  if (what == "cost") return(min(cost))
+  nbr <- x$nbrReconstructions[node, ]
+  return(sum(nbr[which(cost == min(cost))]))
 }
 
 ##
@@ -369,41 +451,6 @@ compute_state_filter <- function (cost, k) {
   }
   ## binary matrix of candidate states for each daughter
   state.filter <- t(apply(cost, 1, candidate.states))
-}
-
-##
-#' @title Extraction of the actual number of solutions.
-#'
-#' @description
-#' \code{extract.parsimonyNumber} takes the two matrices computed by 
-#' \code{\link{parsimonyNumber}}, and compute the actual number of parsimonious
-#' solution for any subtree starting from a given node.
-#' 
-#' @details
-#' The parsimonious solutions are the one with the minimum number of shifts (that
-#' are given by matrice costReconstructions). This function sums the number of 
-#' solutions (given in matrice nbrReconstructions) that have the minimum number of 
-#' shifts.
-#'
-#' @param obj an object of class "\code{parsimonyNumber}", result of function
-#' \code{\link{parsimonyNumber}}.
-#' @param node the root node of the subtree. By default, the root of the tree.
-#' @param what the quantity to retrieve. Either "number" for the number of
-#' solutions, or "cost" for the minimal cost of a solution. Default to "number".
-#' @param ... unused
-#' 
-#' @return An integer giving the number of equivalent parsimonious solutions.
-#' 
-#' @export
-##
-extract.parsimonyNumber <- function(obj, 
-                                    node = attr(obj$nbrReconstructions, "ntaxa") + 1,
-                                    what = c("number", "cost"), ...){
-  what <- match.arg(what)
-  cost <- obj$costReconstructions[node, ]
-  if (what == "cost") return(min(cost))
-  nbr <- obj$nbrReconstructions[node, ]
-  return(sum(nbr[which(cost == min(cost))]))
 }
 
 ###############################################################################
@@ -681,13 +728,38 @@ enumerate_parsimony <- function(phylo,
 }
 
 ##
+#' @title Display the number of parsimonious solutions
+#'
+#' @description
+#' \code{print.enumerate_parsimony} prints the number of equivalent parsimonious
+#' allocations of shifts, from the root of the tree, using function
+#' \code{\link{extract.enumerate_parsimony}}.
+#'
+#' @param x an object of class \code{\link{enumerate_parsimony}}.
+#' @param ... unused
+#' 
+#' @return NULL
+#' 
+#' @seealso \code{\link{enumerate_parsimony}},
+#' \code{\link{extract.enumerate_parsimony}},
+#' \code{\link{plot.enumerate_parsimony}}
+#' 
+#' @export
+#' @method print enumerate_parsimony
+##
+print.enumerate_parsimony <- function(x, ...){
+  cat(paste0("\nNumber of parsimonious solutions: ", extract(x, what = "number"), ".\n\n"))
+  cat(paste0("Use function 'plot' to see them all.\n\n"))
+}
+
+##
 #' @title Extract the result of \code{enumerate_parsimony} at a node.
 #'
 #' @description
 #' \code{extract.enumerate_parsimony} returns a matrix containing all the
 #' possible regime allocations for the nodes of a given subtree.
 #' 
-#' @param obj an object of class "\code{enumerate_parsimony}",
+#' @param x an object of class "\code{enumerate_parsimony}",
 #' result of function \code{\link{enumerate_parsimony}}.
 #' @param node the node where to retrive the parsimony number. Default to the
 #' root of the tree.
@@ -703,14 +775,14 @@ enumerate_parsimony <- function(phylo,
 #' 
 #' @export
 ##
-extract.enumerate_parsimony <- function(obj, 
-                                        node = attr(obj$allocations,"ntaxa") + 1,
+extract.enumerate_parsimony <- function(x, 
+                                        node = attr(x$allocations,"ntaxa") + 1,
                                         what = c("solutions", "number", "cost"),
                                         ...){
   what <- match.arg(what)
-  cost <- obj$costReconstructions[node, ]
+  cost <- x$costReconstructions[node, ]
   if (what == "cost") return(min(cost))
-  allocations <- obj$allocations[[node]]
+  allocations <- x$allocations[[node]]
   res <- do.call(rbind, allocations[which(cost == min(cost))])
   if (what == "number") return(nrow(res))
   return(res)

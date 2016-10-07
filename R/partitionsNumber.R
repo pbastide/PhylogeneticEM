@@ -51,6 +51,7 @@
 #' tree <- read.tree(text="(A,(A,(A,A,A),A,A));") # a tree with polytomies
 #' plot(tree)
 #' parts_num <- partitionsNumber(tree, npart)
+#' parts_num
 #' 
 #' ## Number of possible colorings of the tips in npart colors
 #' extract(parts_num)
@@ -95,6 +96,62 @@ partitionsNumber <- function(phylo, npart){
   attr(nbrCompatiblePartitions, "npart") <- npart
   class(nbrCompatiblePartitions) <- "partitionsNumber"
   return(nbrCompatiblePartitions)
+}
+
+##
+#' @title Display the number of models
+#'
+#' @description
+#' \code{print.partitionsNumber} prints the number of tree-compatible colorings of
+#' the tips of the tree, using functio \code{\link{extract.partitionsNumber}}.
+#'
+#' @param x an object of class \code{\link{partitionsNumber}}.
+#' @param ... unused
+#' 
+#' @return NULL
+#' 
+#' @seealso \code{\link{partitionsNumber}}, \code{\link{extract.partitionsNumber}}
+#' 
+#' @export
+#' @method print partitionsNumber
+##
+print.partitionsNumber <- function(x, ...){
+  cat(paste0("\nNumber of models with ", attr(x, "npart") - 1, " shifts: ", extract(x), ".\n\n"))
+}
+
+##
+#' @title Extract from object \code{partitionsNumber}
+#'
+#' @description
+#' \code{extract.partitionsNumber} extracts the number of partitions for a 
+#' given sub-tree, either marked or non-marked.
+#'
+#' @param x an object of class \code{partitionsNumber}, result of function
+#' \code{\link{partitionsNumber}}.
+#' @param node the root node of the subtree where to get the result.
+#' Default to the root of the tree.
+#' @param npart the number of partitions (colors) allowed at the tips.
+#' Default to the value used in the call of function
+#' \code{\link{partitionsNumber}} (the maximum).
+#' @param marqued whether to extract the marqued (TRUE) or un-marqued (FALSE)
+#' partitions. The number of models is the number of un-marqued partitions.
+#' Default to FALSE.
+#' @param ... unused.
+#'
+#' @return the number of partitions with npart colors, on the sub-tree starting
+#' at node, marqued or not.
+#' 
+#' @seealso \code{\link{partitionsNumber}}
+#'
+#' @export
+#' 
+##
+extract.partitionsNumber <- function(x,
+                                     node = attr(x, "ntaxa") + 1,
+                                     npart = attr(x, "npart"),
+                                     marqued = FALSE, ...){
+  if (marqued) return(x[node, attr(x, "npart") + npart])
+  return(x[node,npart])
 }
 
 ##
@@ -217,40 +274,6 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 # 27/05/14 - Add "marqued"
 ##
 
-##
-#' @title Extract from object \code{partitionsNumber}
-#'
-#' @description
-#' \code{extract.partitionsNumber} extracts the number of partitions for a 
-#' given sub-tree, either marked or non-marked.
-#'
-#' @param obj an object of class \code{partitionsNumber}, result of function
-#' \code{\link{partitionsNumber}}.
-#' @param node the root node of the subtree where to get the result.
-#' Default to the root of the tree.
-#' @param npart the number of partitions (colors) allowed at the tips.
-#' Default to the value used in the call of function
-#' \code{\link{partitionsNumber}} (the maximum).
-#' @param marqued whether to extract the marqued (TRUE) or un-marqued (FALSE)
-#' partitions. The number of models is the number of un-marqued partitions.
-#' Default to FALSE.
-#' @param ... unused.
-#'
-#' @return the number of partitions with npart colors, on the sub-tree starting
-#' at node, marqued or not.
-#' 
-#' @seealso \code{\link{partitionsNumber}}
-#'
-#' @export
-#' 
-##
-extract.partitionsNumber <- function(obj,
-                                     node = attr(obj, "ntaxa") + 1,
-                                     npart = attr(obj, "npart"),
-                                     marqued = FALSE, ...){
-  if (marqued) return(obj[node, attr(obj, "npart") + npart])
-  return(obj[node,npart])
-}
 ##################################
 ## Some small technical functions
 ##################################

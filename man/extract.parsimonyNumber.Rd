@@ -4,11 +4,11 @@
 \alias{extract.parsimonyNumber}
 \title{Extraction of the actual number of solutions.}
 \usage{
-\method{extract}{parsimonyNumber}(obj, node = attr(obj$nbrReconstructions,
+\method{extract}{parsimonyNumber}(x, node = attr(x$nbrReconstructions,
   "ntaxa") + 1, what = c("number", "cost"), ...)
 }
 \arguments{
-\item{obj}{an object of class "\code{parsimonyNumber}", result of function
+\item{x}{an object of class "\code{parsimonyNumber}", result of function
 \code{\link{parsimonyNumber}}.}
 
 \item{node}{the root node of the subtree. By default, the root of the tree.}
@@ -31,5 +31,8 @@ The parsimonious solutions are the one with the minimum number of shifts (that
 are given by matrice costReconstructions). This function sums the number of 
 solutions (given in matrice nbrReconstructions) that have the minimum number of 
 shifts.
+}
+\seealso{
+\code{\link{parsimonyNumber}}, \code{\link{print.parsimonyNumber}}
 }
 

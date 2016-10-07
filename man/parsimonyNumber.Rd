@@ -39,6 +39,7 @@ tree <- read.tree(text="(((0,1),2),2);")
 plot(tree); nodelabels()
 clusters <- c(0, 1, 2, 2)
 n_sols <- parsimonyNumber(tree, clusters)
+n_sols
 
 ## Extract the number of parsimonious solutions at the root
 extract(n_sols)

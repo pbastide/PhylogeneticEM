@@ -4,11 +4,11 @@
 \alias{extract.partitionsNumber}
 \title{Extract from object \code{partitionsNumber}}
 \usage{
-\method{extract}{partitionsNumber}(obj, node = attr(obj, "ntaxa") + 1,
-  npart = attr(obj, "npart"), marqued = FALSE, ...)
+\method{extract}{partitionsNumber}(x, node = attr(x, "ntaxa") + 1,
+  npart = attr(x, "npart"), marqued = FALSE, ...)
 }
 \arguments{
-\item{obj}{an object of class \code{partitionsNumber}, result of function
+\item{x}{an object of class \code{partitionsNumber}, result of function
 \code{\link{partitionsNumber}}.}
 
 \item{node}{the root node of the subtree where to get the result.

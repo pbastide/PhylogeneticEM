@@ -31,6 +31,7 @@ npart <- 8 # number of colors at the tips allowed
 tree <- read.tree(text="(A,(A,(A,A,A),A,A));") # a tree with polytomies
 plot(tree)
 parts_num <- partitionsNumber(tree, npart)
+parts_num
 
 ## Number of possible colorings of the tips in npart colors
 extract(parts_num)
