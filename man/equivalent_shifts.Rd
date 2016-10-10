@@ -35,9 +35,8 @@ object of class \code{equivalent_shifts}, whith entries:
 }
 }
 \description{
-\code{equivalent_shifts} computes the equivalent shifts positions using
-\code{\link{equivalent_shifts_edges}}, and then there corresponding values,
-assuming an ultrametric tree.
+\code{equivalent_shifts} computes the equivalent shifts positions and their
+corresponding values, assuming an ultrametric tree.
 }
 \details{
 This function is only valid for ultrametric trees, and for models: BM, OU with

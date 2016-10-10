@@ -1101,6 +1101,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   # library(robustbase) # For robust fitting of alpha
   ## Check the tree
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
+  phylo_given <- phylo
   method.variance  <- match.arg(method.variance)
   if (method.variance == "simple") check_postorder <- FALSE
   if (check_postorder){
@@ -1214,6 +1215,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   for (meth.sel in method.selection){
     X <- model_selection(meth.sel)
   }
+  X$phylo <- phylo_given
+  X$p <- p
   class(X) <- "PhyloEM"
   return(X)
 }
