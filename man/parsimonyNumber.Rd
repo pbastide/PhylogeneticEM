@@ -54,6 +54,7 @@ extract(n_sols, 7) # Result: 2 (the ancestral state is either "0" or "1").
 }
 \seealso{
 \code{\link{extract.parsimonyNumber}}, \code{\link{parsimonyCost}}, 
-\code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}}
+\code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}},
+\code{\link{equivalent_shifts}}
 }
 

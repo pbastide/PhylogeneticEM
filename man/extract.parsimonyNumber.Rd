@@ -33,6 +33,6 @@ solutions (given in matrice nbrReconstructions) that have the minimum number of
 shifts.
 }
 \seealso{
-\code{\link{parsimonyNumber}}, \code{\link{print.parsimonyNumber}}
+\code{\link{parsimonyNumber}}
 }
 

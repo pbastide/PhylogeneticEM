@@ -62,6 +62,7 @@ extract(sols, 7) # NAs: non-existing nodes in the sub-tree
 \seealso{
 \code{\link{extract.enumerate_parsimony}},
 \code{\link{plot.enumerate_parsimony}}, \code{\link{parsimonyCost}},
-\code{\link{parsimonyNumber}}, \code{\link{partitionsNumber}}
+\code{\link{parsimonyNumber}}, \code{\link{partitionsNumber}},
+\code{\link{equivalent_shifts}}
 }
 

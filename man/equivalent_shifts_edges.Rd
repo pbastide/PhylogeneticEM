@@ -31,4 +31,8 @@ by the original set of shifts given, and
 \code{\link{allocate_shifts_from_regimes}} to convert back a parametrization
 in term of regimes to a parametrization in term of shifts.
 }
+\seealso{
+\code{\link{equivalent_shifts}}, \code{\link{enumerate_parsimony}}
+}
+\keyword{internal}
 

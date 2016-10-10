@@ -44,7 +44,8 @@
 #' tree and the shift process. The actual number can be extracted with function
 #' \code{\link{extract.partitionsNumber}} (see examples below).
 #' 
-#' @seealso \code{\link{extract.partitionsNumber}}, \code{\link{parsimonyNumber}}
+#' @seealso \code{\link{extract.partitionsNumber}}, \code{\link{parsimonyNumber}},
+#' \code{\link{equivalent_shifts}}
 #' 
 #' @examples 
 #' npart <- 8 # number of colors at the tips allowed
@@ -99,19 +100,19 @@ partitionsNumber <- function(phylo, npart){
 }
 
 ##
-#' @title Display the number of models
-#'
-#' @description
-#' \code{print.partitionsNumber} prints the number of tree-compatible colorings of
-#' the tips of the tree, using functio \code{\link{extract.partitionsNumber}}.
-#'
-#' @param x an object of class \code{\link{partitionsNumber}}.
-#' @param ... unused
-#' 
-#' @return NULL
-#' 
-#' @seealso \code{\link{partitionsNumber}}, \code{\link{extract.partitionsNumber}}
-#' 
+# @title Display the number of models
+#
+# @description
+# \code{print.partitionsNumber} prints the number of tree-compatible colorings of
+# the tips of the tree, using functio \code{\link{extract.partitionsNumber}}.
+#
+# @param x an object of class \code{\link{partitionsNumber}}.
+# @param ... unused
+# 
+# @return NULL
+# 
+# @seealso \code{\link{partitionsNumber}}, \code{\link{extract.partitionsNumber}}
+# 
 #' @export
 #' @method print partitionsNumber
 ##

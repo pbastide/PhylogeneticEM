@@ -40,6 +40,6 @@ This function uses function \code{\link[ape]{plot.phylo}} for the actual
 plotting of the trees.
 }
 \seealso{
-\code{\link[ape]{plot.phylo}}
+\code{\link{equivalent_shifts}}, \code{\link[ape]{plot.phylo}}
 }
 

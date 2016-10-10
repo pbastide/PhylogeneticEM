@@ -65,7 +65,8 @@ extract <- function(x, ...) UseMethod("extract")
 #' extract from any subtree with function \code{\link{extract.parsimonyCost}}.
 #' 
 #' @seealso \code{\link{extract.parsimonyCost}}, \code{\link{parsimonyNumber}}, 
-#' \code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}}
+#' \code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}},
+#' \code{\link{equivalent_shifts}}
 #' 
 #' @examples
 #' tree <- read.tree(text="(((1,1),2),2);")
@@ -96,19 +97,19 @@ parsimonyCost <- function(phylo,
 }
 
 ##
-#' @title Display a parsimony cost
-#'
-#' @description
-#' \code{print.parsimonyCost} prints the parsimony cost at the root of the tree,
-#' using function \code{\link{extract.parsimonyCost}}.
-#'
-#' @param x an object of class \code{\link{parsimonyCost}}.
-#' @param ... unused
-#' 
-#' @return NULL
-#' 
-#' @seealso \code{\link{parsimonyCost}}, \code{\link{extract.parsimonyCost}}
-#' 
+# @title Display a parsimony cost
+#
+# @description
+# \code{print.parsimonyCost} prints the parsimony cost at the root of the tree,
+# using function \code{\link{extract.parsimonyCost}}.
+#
+# @param x an object of class \code{\link{parsimonyCost}}.
+# @param ... unused
+# 
+# @return NULL
+# 
+# @seealso \code{\link{parsimonyCost}}, \code{\link{extract.parsimonyCost}}
+# 
 #' @export
 #' @method print parsimonyCost
 ##
@@ -261,7 +262,8 @@ update.parsimonyCost <- function(daughtersParams, ...){
 #' extract(n_sols, 7) # Result: 2 (the ancestral state is either "0" or "1"). 
 #' 
 #' @seealso \code{\link{extract.parsimonyNumber}}, \code{\link{parsimonyCost}}, 
-#' \code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}}
+#' \code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}},
+#' \code{\link{equivalent_shifts}}
 #' 
 #' @export
 #' 
@@ -288,20 +290,20 @@ parsimonyNumber <- function(phylo,
 }
 
 ##
-#' @title Display the number of parsimonious solutions
-#'
-#' @description
-#' \code{print.parsimonyNumber} prints the number of equivalent parsimonious
-#' allocations of shifts, from the root of the tree, using function
-#' \code{\link{extract.parsimonyNumber}}.
-#'
-#' @param x an object of class \code{\link{parsimonyNumber}}.
-#' @param ... unused
-#' 
-#' @return NULL
-#' 
-#' @seealso \code{\link{parsimonyNumber}}, \code{\link{extract.parsimonyNumber}}
-#' 
+# @title Display the number of parsimonious solutions
+#
+# @description
+# \code{print.parsimonyNumber} prints the number of equivalent parsimonious
+# allocations of shifts, from the root of the tree, using function
+# \code{\link{extract.parsimonyNumber}}.
+#
+# @param x an object of class \code{\link{parsimonyNumber}}.
+# @param ... unused
+# 
+# @return NULL
+# 
+# @seealso \code{\link{parsimonyNumber}}, \code{\link{extract.parsimonyNumber}}
+# 
 #' @export
 #' @method print parsimonyNumber
 ##
@@ -332,7 +334,7 @@ print.parsimonyNumber <- function(x, ...){
 #' 
 #' @return An integer giving the number of equivalent parsimonious solutions.
 #' 
-#' @seealso \code{\link{parsimonyNumber}}, \code{\link{print.parsimonyNumber}}
+#' @seealso \code{\link{parsimonyNumber}}
 #' 
 #' @export
 ##
@@ -679,7 +681,8 @@ check_parsimony_clusters <- function(tree, edges, clusters){
 #' 
 #' @seealso \code{\link{extract.enumerate_parsimony}},
 #' \code{\link{plot.enumerate_parsimony}}, \code{\link{parsimonyCost}},
-#' \code{\link{parsimonyNumber}}, \code{\link{partitionsNumber}}
+#' \code{\link{parsimonyNumber}}, \code{\link{partitionsNumber}},
+#' \code{\link{equivalent_shifts}}
 #'
 #' @examples
 #' tree <- read.tree(text="(((0,1),2),2);")
@@ -728,22 +731,22 @@ enumerate_parsimony <- function(phylo,
 }
 
 ##
-#' @title Display the number of parsimonious solutions
-#'
-#' @description
-#' \code{print.enumerate_parsimony} prints the number of equivalent parsimonious
-#' allocations of shifts, from the root of the tree, using function
-#' \code{\link{extract.enumerate_parsimony}}.
-#'
-#' @param x an object of class \code{\link{enumerate_parsimony}}.
-#' @param ... unused
-#' 
-#' @return NULL
-#' 
-#' @seealso \code{\link{enumerate_parsimony}},
-#' \code{\link{extract.enumerate_parsimony}},
-#' \code{\link{plot.enumerate_parsimony}}
-#' 
+# @title Display the number of parsimonious solutions
+#
+# @description
+# \code{print.enumerate_parsimony} prints the number of equivalent parsimonious
+# allocations of shifts, from the root of the tree, using function
+# \code{\link{extract.enumerate_parsimony}}.
+#
+# @param x an object of class \code{\link{enumerate_parsimony}}.
+# @param ... unused
+# 
+# @return NULL
+# 
+# @seealso \code{\link{enumerate_parsimony}},
+# \code{\link{extract.enumerate_parsimony}},
+# \code{\link{plot.enumerate_parsimony}}
+# 
 #' @export
 #' @method print enumerate_parsimony
 ##
@@ -1019,13 +1022,12 @@ add_complementary <- function(z){
 #' @title Find all equivalent shifts allocations and values.
 #'
 #' @description
-#' \code{equivalent_shifts} computes the equivalent shifts positions using
-#' \code{\link{equivalent_shifts_edges}}, and then there corresponding values,
-#' assuming an ultrametric tree.
+#' \code{equivalent_shifts} computes the equivalent shifts positions and their
+#' corresponding values, assuming an ultrametric tree.
 #' 
 #' @details
 #' This function is only valid for ultrametric trees, and for models: BM, OU with
-#' fixed root or stationary root.
+#' fixed root or stationary root. It assumes that there are no homoplasies.
 #' 
 #' @param phylo a phylogenetic tree, of class \code{\link[ape]{phylo}}.
 #' @param params an object of class \code{params_process}, result inference by
@@ -1041,15 +1043,50 @@ add_complementary <- function(z){
 #'
 #' @return object of class \code{equivalent_shifts}, whith entries:
 #' \describe{
-#' \item{eq_shifts_edges}{matrix of equivalent shifts, result of function
-#' \code{\link{equivalent_shifts_edges}}}
+#' \item{eq_shifts_edges}{matrix of equivalent shifts}
+#result of function \code{\link{equivalent_shifts_edges}}}
 #' \item{shifts_and_betas}{matrix of corresponding shifts values}
 #' \item{phylo}{the entry phylogenetic tree}
 #' \item{p}{the dimention}
 #' }
 #' 
 #' @seealso \code{\link{plot.equivalent_shifts}},
-#' \code{\link{equivalent_shifts_edges}}
+#' \code{\link{extract.equivalent_shifts}}, \code{\link{params_BM}}, 
+#' \code{\link{params_OU}}, \code{\link{enumerate_parsimony}}
+#' 
+#' @examples
+#' ## Simualte a tree
+#' set.seed(17920902)
+#' ntaxa = 20
+#' phylo <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1,
+#'                                   mu = 0, age = 1, mrca = TRUE)[[1]]
+#' 
+#' ## Define parameters (BM, fixed root)
+#' params <- params_BM(p = 4, edges = c(4, 17, 22),
+#'                     values = cbind(1:4, -(1:4), rep(1, 4)))
+#' ## Find equivalent solutions and plot them
+#' eq_shifts <- equivalent_shifts(phylo, params)
+#' eq_shifts
+#' plot(eq_shifts)
+#' ## Extract the values
+#' # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
+#' extract(eq_shifts, trait = 2, what = "shifts_values")
+#' # Root values for trait 4, for the tree solutions (columns)
+#' extract(eq_shifts, trait = 4, what = "root_values")
+#' 
+#' ## Define parameters (OU, stationary root)
+#' params <- params_OU(p = 4, edges = c(4, 17, 22),
+#'                     values = cbind(1:4, -(1:4), rep(1, 4)),
+#'                     random = TRUE)
+#' ## Find equivalent solutions and plot them
+#' eq_shifts <- equivalent_shifts(phylo, params)
+#' eq_shifts
+#' plot(eq_shifts)
+#' ## Extract the values
+#' # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
+#' extract(eq_shifts, trait = 2, what = "shifts_values")
+#' # Root values for trait 4, for the three solutions (columns)
+#' extract(eq_shifts, trait = 4, what = "root_values")
 #' 
 #' @export
 ##
@@ -1102,57 +1139,174 @@ equivalent_shifts <- function(phylo, params,
 }
 
 ##
-#' @title Extract the shifts values for one trait.
-#'
-#' @description
-#' \code{extract_shifts_values} takes an object of class
-#' \code{equivalent_shifts}, result of function \code{\link{equivalent_shifts}},
-#' and returns the shifts values at a given trait.
-#' 
-#' @param eq_shifts an object of class \code{equivalent_shifts}, result of
-#' function \code{\link{equivalent_shifts}}
-#' @param trait the number of the trait to be extracted.
-#'
-#' @return a matrix with the values of the shifts on the trait for each
-#' equivalent configuration. Each column is one configuration. Rows are the
-#' values of the shifts given by \code{eq_shifts_edges}, the result of function
-#' \code{\link{equivalent_shifts_edges}}.
-#' 
-#' @seealso \code{\link{plot.equivalent_shifts}},
-#' \code{\link{equivalent_shifts_edges}}
-#' 
 #' @export
+#' @method print equivalent_shifts
 ##
-extract_shifts_values <- function(eq_shifts, trait){
-  nbrShifts <- dim(eq_shifts$eq_shifts_edges)[1]
-  return(eq_shifts$shifts_and_betas[1:nbrShifts * eq_shifts$p + trait, ])
+print.equivalent_shifts <- function(x, ...){
+  cat(paste0("\nThere are ", ncol(extract(x)), " equivalent solutions.\n\n"))
+  cat(paste0("Use function plot to see them all."))
 }
 
 ##
 #' @title Extract the shifts values for one trait.
 #'
 #' @description
-#' \code{extract_root_values} takes an object of class
+#' \code{extract.equivalent_shifts} takes an object of class
 #' \code{equivalent_shifts}, result of function \code{\link{equivalent_shifts}},
-#' and returns the root values at a given trait.
+#' and returns the shifts of root values for a given trait.
 #' 
-#' @param eq_shifts an object of class \code{equivalent_shifts}, result of
+#' @param x an object of class \code{equivalent_shifts}, result of
 #' function \code{\link{equivalent_shifts}}
-#' @param trait the number of the trait to be extracted.
+#' @param trait the number of the trait to be extracted. Default to 1.
+#' @param what one of "shifts_values" or "root_values".
+#' @param ... unused.
 #'
-#' @return a matrix with the values of the root on the trait for each
-#' equivalent configuration. Each column is one configuration. Rows are the
-#' values of the shifts given by \code{eq_shifts_edges}, the result of function
-#' \code{\link{equivalent_shifts_edges}}.
+#' @return A matrix with the values of the shifts (\code{what = "shifts_values"}) or
+#' the root (\code{what = "root_values"})for the trait for each equivalent
+#' configuration. Each column is one configuration.
 #' 
-#' @seealso \code{\link{plot.equivalent_shifts}},
+#' @seealso \code{\link{equivalent_shifts}}, \code{\link{plot.equivalent_shifts}},
 #' \code{\link{equivalent_shifts_edges}}
 #' 
 #' @export
 ##
+extract.equivalent_shifts <- function(x, trait = 1,
+                                      what = c("shifts_values", "root_values"),
+                                      ...){
+  what <- match.arg(what)
+  if (what == "shifts_values") return(extract_shifts_values(x, trait))
+  if (what == "root_values") return(extract_root_values(x, trait))
+  return(NULL)
+}
+
+extract_shifts_values <- function(eq_shifts, trait){
+  nbrShifts <- dim(eq_shifts$eq_shifts_edges)[1]
+  return(eq_shifts$shifts_and_betas[1:nbrShifts * eq_shifts$p + trait, , drop = F])
+}
+
 extract_root_values <- function(eq_shifts, trait){
   return(eq_shifts$shifts_and_betas[trait, , drop = F])
 }
+
+##
+#' @title Plot all the equivalent solutions.
+#'
+#' @description
+#' \code{plot.equivalent_shifts} plots a representation of all the equivalent
+#' shifts allocations, with a representation of the shifts and their values,
+#' and a coloration of the branches in term of regimes.
+#' 
+#' @details
+#' This function uses function \code{\link[ape]{plot.phylo}} for the actual
+#' plotting of the trees.
+#' 
+#' @param x an object of class \code{equivalent_shifts}, result of
+#' function \code{\link{equivalent_shifts}}
+#' @param trait (integer) the trait to be plotted, if multivariate. Default to 1.
+#' @param numbering wheter to number the solutions. Default to FALSE.
+#' @param colors_tips user-provided colors for the tips of the tree. A vector
+#' vector with as many colors as there are tips. Will be automatically computed
+#' if not provided.
+#' @param nbr_col the number of columns on which to display the plot.
+#' Default to 3.
+#' @param gray_scale if TRUE, a gray scale is used instead of colors. Default to
+#' FALSE.
+#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
+#' 
+#' @return A plot of the equivalent shifts allocations.
+#' 
+#' @seealso \code{\link{equivalent_shifts}}, \code{\link[ape]{plot.phylo}}
+#' 
+#' @export
+#' 
+##
+plot.equivalent_shifts <- function(x,
+                                   trait = 1,
+                                   numbering = FALSE,
+                                   colors_tips = NULL,
+                                   nbr_col = 3, 
+                                   gray_scale = FALSE, ...){
+  phylo <- x$phylo
+  ntaxa <- length(phylo$tip.label)
+  nbrSol <- dim(x$eq_shifts_edges)[2]
+  nbrLignes <- (nbrSol %/% nbr_col) + 1
+  if (nbrSol %% nbr_col == 0) nbrLignes <- nbrLignes - 1
+  nbrShifts <- dim(x$eq_shifts_edges)[1]
+  ## Colors
+  if (is.null(colors_tips)){
+    if (!gray_scale){
+      colors <- c("black", rainbow(nbrShifts, start = 0, v = 0.5))
+    } else {
+      colors <- gray.colors(nbrShifts + 1, start = 0, end = 0.8)
+    }
+    cor_col_reg <- as.factor(colors)
+    levels(cor_col_reg) <- 0:nbrShifts
+  } else {
+    colors <- unique(colors_tips)
+  }
+  scr <- split.screen(c(nbrLignes, nbr_col))
+  shifts_values <- extract_shifts_values(x, trait)
+  root_values <- extract_root_values(x, trait)
+  for (sol in 1:nbrSol) {
+    ## Shifts and beta_0
+    params <- list(optimal.value = root_values[, sol],
+                   shifts = list(edges = x$eq_shifts_edges[, sol],
+                                 values = shifts_values[, sol],
+                                 relativeTimes = rep(0, nbrShifts)))
+    ## Regimes
+    regimes <- allocate_regimes_from_shifts(phylo,
+                                            x$eq_shifts_edges[, sol])
+    regimes <- as.factor(regimes)
+    cor_col_reg <- cbind(unique(regimes[1:ntaxa]), colors)
+    levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
+    edges_regimes <- regimes[phylo$edge[,2]]
+    ## Shifts Colors
+    makeLighter = function(..., alpha = 0.5, saut=100) {
+      alpha = floor(255*alpha)  
+      newColor = col2rgb(col=unlist(list(...)), alpha=FALSE)
+      .makeTransparent = function(col, alpha) {
+        rgb(red=col[1] + saut, green=col[2] + saut, blue=col[3] + saut, maxColorValue=255)
+      }
+      newColor = apply(newColor, 2, .makeTransparent, alpha=alpha)
+      return(newColor)
+    }
+    if (!gray_scale){
+      box_col <- as.vector(edges_regimes)
+      box_col <- makeLighter(box_col)
+      box_col_shifts <- box_col[params$shifts$edges]
+      beta_0_col <- box_col[which(!(box_col %in% box_col_shifts))[1]]
+    } else {
+      box_col_shifts <- rep("white", length(params$shifts$edges))
+      beta_0_col <- "white"
+    }
+    ## Plot
+    screen(scr[sol])
+    plot.process.actual(0, 0, phylo, params,
+                        bg_shifts = box_col_shifts,
+                        edge.color = as.vector(edges_regimes),
+                        bg_beta_0 = beta_0_col,
+                        edge.width = 2, quant.root = 0.7, ...)
+    if(numbering){
+      legend("topleft",
+             legend = sol,
+             cex = 1,
+             bty = "n",
+             text.font = 4)
+      #              x.intersp = 0,
+      #              y.intersp = 0)
+    }
+  }
+  close.screen(all.screens = TRUE)
+}
+
+# plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
+#                                    PATH, name){
+#   pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
+#       width = 4*3, height = nbrLignes * 3)
+#   plot_equivalent_shifts.actual(phylo, eq_shifts_edges, eq_shifts_values)
+#   dev.off()
+#   
+# }
 
 ##
 #' @title Find all the equivalent shift edges allocations.
@@ -1177,7 +1331,9 @@ extract_root_values <- function(eq_shifts, trait){
 #' @return a matrix with as many columns as equivalent allocation, each column
 #'  representing a possible parsimonious allocation of shifts on the tree.
 #'  
-#' @export
+#' @seealso \code{\link{equivalent_shifts}}, \code{\link{enumerate_parsimony}}
+#'  
+#' @keywords internal
 ##
 equivalent_shifts_edges <- function(phylo,
                                     shifts_edges,
@@ -1314,126 +1470,6 @@ qr.solve_exact <- function (a, b, tol = 1e-07) {
   res[is.na(res)] <- 0
   return(res)
 }
-
-##
-#' @title Plot all the equivalent solutions.
-#'
-#' @description
-#' \code{plot.equivalent_shifts} plots a representation of all the equivalent
-#' shifts allocations, with a representation of the shifts and their values,
-#' and a coloration of the branches in term of regimes.
-#' 
-#' @details
-#' This function uses function \code{\link[ape]{plot.phylo}} for the actual
-#' plotting of the trees.
-#' 
-#' @param x an object of class \code{equivalent_shifts}, result of
-#' function \code{\link{equivalent_shifts}}
-#' @param trait (integer) the trait to be plotted, if multivariate. Default to 1.
-#' @param numbering wheter to number the solutions. Default to FALSE.
-#' @param colors_tips user-provided colors for the tips of the tree. A vector
-#' vector with as many colors as there are tips. Will be automatically computed
-#' if not provided.
-#' @param nbr_col the number of columns on which to display the plot.
-#' Default to 3.
-#' @param gray_scale if TRUE, a gray scale is used instead of colors. Default to
-#' FALSE.
-#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
-#' 
-#' @return A plot of the equivalent shifts allocations.
-#' 
-#' @seealso \code{\link[ape]{plot.phylo}}
-#' 
-#' @export
-#' 
-##
-plot.equivalent_shifts <- function(x,
-                                   trait = 1,
-                                   numbering = FALSE,
-                                   colors_tips = NULL,
-                                   nbr_col = 3, 
-                                   gray_scale = FALSE, ...){
-  phylo <- x$phylo
-  ntaxa <- length(phylo$tip.label)
-  nbrSol <- dim(x$eq_shifts_edges)[2]
-  nbrLignes <- (nbrSol %/% nbr_col) + 1
-  if (nbrSol %% nbr_col == 0) nbrLignes <- nbrLignes - 1
-  nbrShifts <- dim(x$eq_shifts_edges)[1]
-  ## Colors
-  if (is.null(colors_tips)){
-    if (!gray_scale){
-      colors <- c("black", rainbow(nbrShifts, start = 0, v = 0.5))
-    } else {
-      colors <- gray.colors(nbrShifts + 1, start = 0, end = 0.8)
-    }
-    cor_col_reg <- as.factor(colors)
-    levels(cor_col_reg) <- 0:nbrShifts
-  } else {
-    colors <- unique(colors_tips)
-  }
-  scr <- split.screen(c(nbrLignes, nbr_col))
-  shifts_values <- extract_shifts_values(eq_shifts, trait)
-  root_values <- extract_root_values(eq_shifts, trait)
-  for (sol in 1:nbrSol) {
-    ## Shifts and beta_0
-    params <- list(optimal.value = root_values[, sol],
-                   shifts = list(edges = x$eq_shifts_edges[, sol],
-                                 values = shifts_values[, sol],
-                                 relativeTimes = rep(0, nbrShifts)))
-    ## Regimes
-    regimes <- allocate_regimes_from_shifts(phylo,
-                                            x$eq_shifts_edges[, sol])
-    regimes <- as.factor(regimes)
-    cor_col_reg <- cbind(unique(regimes[1:ntaxa]), colors)
-    levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
-    edges_regimes <- regimes[phylo$edge[,2]]
-    ## Shifts Colors
-    makeLighter = function(..., alpha = 0.5, saut=100) {
-      alpha = floor(255*alpha)  
-      newColor = col2rgb(col=unlist(list(...)), alpha=FALSE)
-      .makeTransparent = function(col, alpha) {
-        rgb(red=col[1] + saut, green=col[2] + saut, blue=col[3] + saut, maxColorValue=255)
-      }
-      newColor = apply(newColor, 2, .makeTransparent, alpha=alpha)
-      return(newColor)
-    }
-    if (!gray_scale){
-      box_col <- as.vector(edges_regimes)
-      box_col <- makeLighter(box_col)
-      box_col_shifts <- box_col[params$shifts$edges]
-      beta_0_col <- box_col[which(!(box_col %in% box_col_shifts))[1]]
-    } else {
-      box_col_shifts <- rep("white", length(params$shifts$edges))
-      beta_0_col <- "white"
-    }
-    ## Plot
-    screen(scr[sol])
-    plot.process.actual(0, 0, phylo, params,
-                        bg_shifts = box_col_shifts,
-                        edge.color = as.vector(edges_regimes),
-                        bg_beta_0 = beta_0_col,
-                        edge.width = 2, quant.root = 0.7, ...)
-    if(numbering){
-      legend("topleft",
-             legend = sol,
-             cex = 1,
-             bty = "n",
-             text.font = 4)
-#              x.intersp = 0,
-#              y.intersp = 0)
-    }
-  }
-  close.screen(all.screens = TRUE)
-}
-
-# plot_equivalent_shifts <- function(phylo, eq_shifts_edges, eq_shifts_values, 
-#                                    PATH, name){
-#   pdf(paste(PATH, "equivalent_shifts_solutions", name, ".pdf", sep=""),
-#       width = 4*3, height = nbrLignes * 3)
-#   plot_equivalent_shifts.actual(phylo, eq_shifts_edges, eq_shifts_values)
-#   dev.off()
-#   
-# }
 
 ##
 #' @title Transform the shift values

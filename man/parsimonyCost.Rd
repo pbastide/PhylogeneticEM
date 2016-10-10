@@ -41,6 +41,7 @@ extract(costs, 7)
 }
 \seealso{
 \code{\link{extract.parsimonyCost}}, \code{\link{parsimonyNumber}}, 
-\code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}}
+\code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}},
+\code{\link{equivalent_shifts}}
 }
 

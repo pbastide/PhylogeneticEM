@@ -50,6 +50,7 @@ extract(parts_num, marqued = TRUE)
 
 }
 \seealso{
-\code{\link{extract.partitionsNumber}}, \code{\link{parsimonyNumber}}
+\code{\link{extract.partitionsNumber}}, \code{\link{parsimonyNumber}},
+\code{\link{equivalent_shifts}}
 }
 
