@@ -3,4 +3,7 @@ PhylogeneticEM
 
 Implementation of the EM algorithm for the detection of shifts in a phylogeny.
 
-Arxiv preprint: http://arxiv.org/abs/1508.00225
+Stable version to be released soon.
+
+Reference:
+Bastide, P., Mariadassou, M. and Robin, S. (2016), Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree. *Journal of the Royal Statistical Society: Series B (Statistical Methodology)*, doi:10.1111/rssb.12206

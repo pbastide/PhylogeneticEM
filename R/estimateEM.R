@@ -1217,8 +1217,136 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   }
   X$phylo <- phylo_given
   X$p <- p
+  X$process <- process
   class(X) <- "PhyloEM"
   return(X)
+}
+
+##
+#' @title Parameter estimates
+#'
+#' @description
+#' \code{params} takes an object of class \code{\link{PhyloEM}}, and returns the 
+#' infered parameters of the process.
+#'
+#' @param x an object of class \code{\link{PhyloEM}}
+#' @param method.selection (optional) the method selection to be used.
+#' One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and DDSE for
+#' multivariate.
+#' 
+#' 
+#' @return
+#' An object of class \code{\link{params_process}}.
+#' 
+#' @export
+#'
+##
+params.PhyloEM <- function(x, method.selection){
+  if (missing(method.selection)){
+    if (x$p == 1){
+      method.selection <- "BGH"
+    } else {
+      method.selection <- "DDSE"
+    }
+  } else {
+    method.selection <- match.arg(method.selection,
+                                  choices = c("BGH", "DDSE", "Djump")) 
+  }
+  if (method.selection == "DDSE"){
+    if (!is.null(x$alpha_max$DDSE_BM1)){
+      res <- x$alpha_max$DDSE_BM1$params_select
+    } else {
+      stop("DDSE method was not used in the fit.")
+    }
+  }
+  if (method.selection == "Djump"){
+    if (!is.null(x$alpha_max$Djump_BM1t)){
+      res <- x$alpha_max$Djump_BM1$params_select
+    } else {
+      stop("Djump method was not used in the fit.")
+    }
+  }
+  if (method.selection == "BGH"){
+    if (!is.null(x$alpha_max$BGH_BM1)){
+      res <- x$alpha_max$BGH_BM1$params_select
+    } else {
+      stop("BGH method was not used in the fit.")
+    }
+  }
+  class(res) <- "params_process"
+  return(res)
+}
+
+##
+#' @title Ancestral State Reconstruction
+#'
+#' @description
+#' \code{imputed_traits.PhyloEM} takes an object of class \code{\link{PhyloEM}},
+#' and returns the imputed traits values, either at the internal nodes (ancestral
+#' state reconstruction) or at the tips (data imputation)
+#'
+#' @param x an object of class \code{\link{PhyloEM}}.
+#' @param trait an integer giving the trait to extract. Default to 1.
+#' @param where either "nodes" for ancestral state reconstruction, or "tips" for
+#' data imputation.
+#' @param method.selection (optional) the method selection to be used.
+#' One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and DDSE for
+#' multivariate.
+#' 
+#' 
+#' @return
+#' A vector with ancestral trait value at the nodes of the tree.
+#' 
+#' @export
+#'
+##
+imputed_traits.PhyloEM <- function(x, trait = 1,
+                                   where = c("nodes", "tips"),
+                                   method.selection = method.selection){
+  if (missing(method.selection)){
+    if (x$p == 1){
+      method.selection <- "BGH"
+    } else {
+      method.selection <- "DDSE"
+    }
+  } else {
+    method.selection <- match.arg(method.selection,
+                                  choices = c("BGH", "DDSE", "Djump")) 
+  }
+  if (method.selection == "DDSE"){
+    if (!is.null(x$alpha_max$DDSE_BM1)){
+      if (where == "nodes"){
+        res <- x$alpha_max$DDSE_BM1$Zhat[trait, , drop = F]
+      } else if (where == "tips"){
+        res <- x$alpha_max$DDSE_BM1$Yhat[trait, , drop = F]
+      }
+    } else {
+      stop("DDSE method was not used in the fit.")
+    }
+  }
+  if (method.selection == "Djump"){
+    if (!is.null(x$alpha_max$Djump_BM1)){
+      if (where == "nodes"){
+        res <- x$alpha_max$Djump_BM1$Zhat[trait, , drop = F]
+      } else if (where == "tips"){
+        res <- x$alpha_max$Djump_BM1$Yhat[trait, , drop = F]
+      }
+    } else {
+      stop("Djump method was not used in the fit.")
+    }
+  }
+  if (method.selection == "BGH"){
+    if (!is.null(x$alpha_max$BGH)){
+      if (where == "nodes"){
+        res <- x$alpha_max$BGH$Zhat[trait, , drop = F]
+      } else if (where == "tips"){
+        res <- x$alpha_max$BGH$Yhat[trait, , drop = F]
+      }
+    } else {
+      stop("BGH method was not used in the fit.")
+    }
+  }
+  return(res)
 }
 
 PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),

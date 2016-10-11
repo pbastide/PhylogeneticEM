@@ -114,7 +114,7 @@ plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("B
     dev.off()
 }
 
-plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, bg_shifts = "chocolate4", bg_beta_0 = "chocolate4", quant.root = 0.25, ...){
+plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, shifts_bg = "chocolate4", root_bg = "chocolate4", quant.root = 0.25, ...){
   ntaxa <- length(phylo$tip.label)
   if (normalize){
     norm <- mean(abs(Y.state))
@@ -133,9 +133,9 @@ plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normali
     value <- lapply(value, function(x) parse(text = x))
     return(value)
   }
-  nodelabels(text = round(paramsEstimate$optimal.value, 2), node=ntaxa + 1, bg=bg_beta_0, cex = 1, adj = adj)
+  nodelabels(text = round(paramsEstimate$optimal.value, 2), node=ntaxa + 1, bg=root_bg, cex = 1, adj = adj)
   if ( !is.null(paramsEstimate$shifts$edges) ) {
-    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg = bg_shifts, cex = 1)
+    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg = shifts_bg, cex = 1)
   }
 }
 
@@ -211,11 +211,12 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param value_in_box whether to plot the value of the shift in a box on the edges.
 #' Only available when only one trait is plotted. Can be difficult to read on big
 #' trees. The size of the text in the boxes is controlled by parameter.
+#' Default to FALSE.
 #' @param ancestral_as_shift whether to represent the ancestral value at the root
-#' as an ancestral shift on the root edge. Default to TRUE.
+#' as an ancestral shift on the root edge. Default to FALSE.
 #' \code{shifts_cex} (see below).
 #' @param shifts_cex if \code{value_in_box=TRUE}, the size of the text in the boxes.
-#' Default to 1.
+#' Default to 0.8.
 #' @param shifts_bg if \code{value_in_box=TRUE}, the background color of the boxes.
 #' @param root_bg if \code{value_in_box=TRUE} and \code{ancestral_as_shift=TRUE},
 #' the background color of the ancestral boxe.
@@ -232,9 +233,10 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' the border of the box. Default to 70.
 #' @param show.tip.label whether to show the tip labels. Default to FALSE.
 #' @param label_cex if \code{show.tip.label=TRUE}, the size of the labels. default
-#' to 1.
+#' to 0.5.
 #' @param label_offset if \code{show.tip.label=TRUE}, the size of the offset between
 #' the tree and the labels. Default to 0.
+#' @param axis_cex cex for the label values of the plot. Default to 0.8.
 #' @param edge.width width of the edge. Default to 1.
 #' @param margin_plot vector giving the margin to around the plot.
 #' Default to \code{c(0, 0, 0, 0)}.
@@ -251,16 +253,17 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 
 plot.PhyloEM <- function(x,
                          traits = 1:(x$p),
-                         automatic_colors = FALSE,
+                         method.selection = "DDSE",
+                         automatic_colors = TRUE,
                          color_characters = "black",
                          color_edges = "black",
                          plot_ancestral_states = FALSE,
                          imposed_scale = x$Y_data,
                          ancestral_cex = 2,
                          ancestral_pch = 19,
-                         value_in_box = TRUE,
-                         ancestral_as_shift = TRUE,
-                         shifts_cex = 1,
+                         value_in_box = FALSE,
+                         ancestral_as_shift = FALSE,
+                         shifts_cex = 0.6,
                          shifts_bg = "chocolate4",
                          root_bg = "chocolate4",
                          shifts_adj = 0,
@@ -269,22 +272,84 @@ plot.PhyloEM <- function(x,
                          regime_boxes = FALSE,
                          alpha_border = 70,
                          show.tip.label = FALSE,
-                         label_cex = 1,
+                         label_cex = 0.5,
                          label_offset = 0,
+                         axis_cex = 0.7,
                          edge.width = 1,
                          margin_plot = c(0,0,0,0),
                          gray_scale = FALSE,
                          ...){
+  ## Checking consistency
+  if (plot_ancestral_states && length(traits) > 1) stop("Ancestral state plotting is only allowed for one single trait. Please select the trait you would like to plot with argument 'traits' (see documentation).")
+  if (value_in_box && length(traits) > 1) stop("Showing the shifts values on the tree is only allowed for one single trait. Please select the trait you would like to plot with argument 'traits' (see documentation).")
   
+  ## Save curent par
+  .pardefault <- par(no.readonly = T)
+  on.exit(par(.pardefault), add = TRUE)
+  
+  ## parameters
+  params <- params.PhyloEM(x, method.selection = method.selection)
+  # If on trait, select relevent quantities
+  if (length(traits) == 1){
+    params <- split_params_independent(params)
+    params <- params[[traits]]
+  }
+  
+  ## Ancestral and imputed traits
+  ancestral_states <- imputed_traits.PhyloEM(x, trait = traits,
+                                             where = "nodes",
+                                             method.selection = method.selection)
+  Y_state <- imputed_traits.PhyloEM(x, trait = traits,
+                                    where = "tips",
+                                    method.selection = method.selection)
+  rownames(Y_state) <- rownames(x$Y_data)[traits]
+  
+  ## Plotting
+  plot.data.process.actual(Y.state = Y_state,
+                           phylo = x$phylo,
+                           params = params,
+                           process = x$process,
+                           miss = is.na(x$Y_data[traits, ]),
+                           imposed_scale = imposed_scale,
+                           root_adj = root_adj,
+                           shifts_adj = shifts_adj,
+                           shifts_bg = shifts_bg,
+                           root_bg = root_bg,
+                           quant.root = 0.25,
+                           color_characters = color_characters,
+                           color_edges = color_edges,
+                           edge.width = edge.width,
+                           automatic_colors = automatic_colors,
+                           regime_boxes = regime_boxes,
+                           alpha_border = alpha_border,
+                           value_in_box = value_in_box,
+                           shifts_cex = shifts_cex,
+                           axis_cex = axis_cex,
+                           margin_plot = margin_plot,
+                           color_shifts_regimes = color_shifts_regimes,
+                           # shifts_regimes = shifts_regimes,
+                           plot_ancestral_states = plot_ancestral_states,
+                           ancestral_states = ancestral_states,
+                           # imposed_scale.nodes = imposed_scale.nodes,
+                           ancestral_cex = ancestral_cex,
+                           ancestral_pch = ancestral_pch,
+                           label_cex = label_cex,
+                           show.tip.label = show.tip.label,
+                           # underscore = underscore,
+                           # label.offset = label.offset,
+                           ancestral_as_shift = ancestral_as_shift,
+                           gray_scale = gray_scale,
+                           ...)
 }
 
 plot.data.process.actual <- function(Y.state, phylo, params,
+                                     miss = is.na(Y.state),
                                      process = "BM",
                                      #norm = max(abs(Y.state)),
                                      imposed_scale = Y.state,
-                                     adj.root = 1, adj.nodes = 0,
-                                     bg_shifts = "chocolate4",
-                                     bg_beta_0 = "chocolate4", quant.root = 0.25,
+                                     root_adj = 1, shifts_adj = 0,
+                                     shifts_bg = "chocolate4",
+                                     root_bg = "chocolate4", quant.root = 0.25,
                                      color_characters = "black",
                                      color_edges = "black",
                                      edge.width = 1,
@@ -293,9 +358,10 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      alpha_border = 70,
                                      value_in_box = TRUE,
                                      shifts_cex = 1,
+                                     axis_cex = 0.8,
                                      margin_plot = c(0,0,0,0),
                                      color_shifts_regimes = FALSE,
-                                     shifts_regimes = NULL,
+                                     # shifts_regimes = NULL,
                                      plot_ancestral_states = FALSE,
                                      ancestral_states = NULL,
                                      imposed_scale.nodes = ancestral_states,
@@ -308,7 +374,12 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      ancestral_as_shift = TRUE,
                                      gray_scale = FALSE,
                                      ...){
+  ## Save curent par
+  .pardefault <- par(no.readonly = T)
+  on.exit(par(.pardefault), add = TRUE)
+  
   ntaxa <- length(phylo$tip.label)
+  p_dim <- nrow(Y.state)
   #   if (normalize){
   #     norm <- max(abs(Y.state))
   #   } else {
@@ -380,7 +451,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       # If plotting ancestral, colors of the tips values to match colors of the palette
       if (!is.null(Y.state)){
         color_characters_regimes <- color_characters
-        color_characters <- map2color(Y.state, pal, limits = imp.scale.nodes)
+        color_characters <- map2color(as.vector(Y.state),
+                                      pal, limits = imp.scale.nodes)
       }
     }
   }
@@ -395,15 +467,13 @@ plot.data.process.actual <- function(Y.state, phylo, params,
          edge.width = edge.width, ...)
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
   } else {
-    imp.scale  <- c(min(0, min(imposed_scale, na.rm = TRUE)),
-                    max(imposed_scale, na.rm = TRUE))
     h_p <- max(ape::node.depth.edgelength(phylo))
     if (show.tip.label){
       size_labels <- h_p / 4 
     } else {
       size_labels <- 0
     }
-    x.lim.max <- h_p + h_p / 5 + size_labels
+    x.lim.max <- h_p + p_dim * h_p / 3 + size_labels
     y.lim.min <- -ntaxa/10
     y.lim.max <- ntaxa + ntaxa/10
     plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
@@ -415,41 +485,65 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       size_labels <- max(strwidth(phylo$tip.label, cex = label_cex))
     }
     # Plot data at tips
-    # length available for character plotting
+    ## length available for character plotting
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
     pos_last_tip <- max(lastPP$xx)
-    available_x <- x.lim.max - pos_last_tip - size_labels - label.offset
-    offset <- available_x/8
-    ell <- available_x - offset # lenght for the plot of the character
-    mult <- ell / (imp.scale[2] - imp.scale[1])
-    Y.plot <- mult * Y.state
-    unit <- mult * unit
-    minY <- min(Y.plot, na.rm = TRUE)
-    maxY <- max(Y.plot, na.rm = TRUE)
-    eccart_g <- -min(minY, 0) + offset
-    # 0 bar
-    segments(pos_last_tip + eccart_g, y.lim.min,
-             pos_last_tip + eccart_g, y.lim.max - ntaxa/10,
-             lty = 3)
-    text(pos_last_tip + eccart_g, y.lim.max - 2*ntaxa/30,
-         "0", cex = lastPP$cex)
-    # characters
-    segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa],
-             pos_last_tip + eccart_g + Y.plot, lastPP$yy[1:ntaxa],
-             col = as.vector(color_characters),
-             lwd = edge.width)
-    # unit length
-    segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
-             pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
-             lwd = 2)
-    text(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
-         "Unit", cex = lastPP$cex,
-         pos = 2)
+    # label.offset <- 1/8 * (x.lim.max - pos_last_tip - size_labels)
+    available_x <- x.lim.max - pos_last_tip - size_labels
+    offset <- available_x/7
+    ell <- (available_x - offset * (p_dim + 1)) / p_dim # lenght for the plot of one character
+    
+    ## Plots characters
+    for (t in 1:p_dim){
+      imp.scale  <- c(min(0, min(imposed_scale[t, ], na.rm = TRUE)),
+                      max(imposed_scale[t, ], na.rm = TRUE))
+      mult <- ell / (imp.scale[2] - imp.scale[1])
+      Y.plot <- mult * Y.state[t, ]
+      unit <- mult * unit
+      minY <- min(Y.plot, na.rm = TRUE)
+      maxY <- max(Y.plot, na.rm = TRUE)
+      eccart_g <- -min(minY, 0) + offset
+      # 0 bar
+      segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
+               pos_last_tip + eccart_g, y.lim.max - ntaxa/10,
+               lty = 3)
+    # text(pos_last_tip + eccart_g, y.lim.max - 2*ntaxa/30,
+    #      "0", cex = lastPP$cex)
+      if (!is.null(rownames(Y.state))){
+        text(pos_last_tip + eccart_g, y.lim.max - 2*ntaxa/30,
+             rownames(Y.state)[t], cex = axis_cex)
+      }
+      # unit length
+      axis(1, at = pos_last_tip + eccart_g + range(Y.plot, na.rm = TRUE),
+           labels = round(range(Y.state[t, ], na.rm = TRUE), digits = 2),
+           pos = y.lim.min + ntaxa/15, 
+           cex.axis = axis_cex, padj = -0.5)
+      # segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
+      #          pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
+      #          lwd = 2)
+      # text(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
+      #      "Unit", cex = lastPP$cex,
+      #      pos = 2)
+      # characters
+      segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][!miss],
+               pos_last_tip + eccart_g + Y.plot[!miss], lastPP$yy[1:ntaxa][!miss],
+               col = as.vector(color_characters)[!miss],
+               lwd = edge.width)
+      # missing ones as dotted
+      segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss],
+               pos_last_tip + eccart_g + Y.plot[miss], lastPP$yy[1:ntaxa][miss],
+               col = as.vector(color_characters)[miss],
+               lwd = edge.width,
+               lty = 3)
+    
+      # report for next
+      pos_last_tip <- pos_last_tip + ell + offset
+    }
     ## Tip Labels
     if (show.tip.label){
       if (is.expression(phylo$tip.label)) underscore <- TRUE
       if (!underscore) phylo$tip.label <- gsub("_", " ", phylo$tip.label)
-      x.lim.max.data <- max(pos_last_tip + eccart_g + Y.plot, na.rm = TRUE) + label.offset
+      x.lim.max.data <- max(pos_last_tip, na.rm = TRUE) + label.offset
       if (!exists("color_characters_regimes")) color_characters_regimes <- color_characters
       text(x.lim.max.data, lastPP$yy[1:ntaxa], phylo$tip.label, 
            cex = label_cex, pos = 4,
@@ -472,18 +566,18 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     if (!is.null(root.val) && ancestral_as_shift){
       nodelabels(text = round(root.val, 1), 
                  node = ntaxa + 1,
-                 bg = bg_beta_0,
+                 bg = root_bg,
                  cex = shifts_cex,
-                 adj = adj.root)
+                 adj = root_adj)
     }
     # Plot shifts
     if ( !is.null(params$shifts$edges) ) {
       edgelabels_home(text = round(params$shifts$values, 1), 
                       edge = params$shifts$edges, 
-                      bg = bg_shifts,
+                      bg = shifts_bg,
                       cex = shifts_cex,
                       beg = TRUE,
-                      adj = adj.nodes)
+                      adj = shifts_adj)
     }
   } else {
     if (color_shifts_regimes){ # Shift has one color for each regime
@@ -500,7 +594,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                       cex = shifts_cex,
                       bg = col_shifts,
                       beg = TRUE)
-    } else { # Color code for shifts values
+    } else if (p_dim == 1) { # Color code for shifts values
       values <- c(root.val, params$shifts$values)
       if (!gray_scale){
         col_shifts <- color_palette(values)
@@ -522,6 +616,16 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                         frame = "circle",
                         cex = shifts_cex,
                         bg = col_shifts,
+                        beg = TRUE)
+      }
+    } else {
+      # Plot shifts
+      if ( !is.null(params$shifts$edges) ) {
+        edgelabels_home(text = rep("", length(params$shifts$edges)),
+                        edge = params$shifts$edges, 
+                        frame = "circle",
+                        cex = shifts_cex,
+                        bg = "black",
                         beg = TRUE)
       }
     }
