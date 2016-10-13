@@ -258,7 +258,7 @@ plot.PhyloEM <- function(x,
                          color_characters = "black",
                          color_edges = "black",
                          plot_ancestral_states = FALSE,
-                         imposed_scale = x$Y_data,
+                         imposed_scale,
                          ancestral_cex = 2,
                          ancestral_pch = 19,
                          value_in_box = FALSE,
@@ -303,6 +303,7 @@ plot.PhyloEM <- function(x,
                                     where = "tips",
                                     method.selection = method.selection)
   rownames(Y_state) <- rownames(x$Y_data)[traits]
+  if (missing(imposed_scale)) imposed_scale <- Y_state
   
   ## Plotting
   plot.data.process.actual(Y.state = Y_state,
@@ -490,8 +491,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     pos_last_tip <- max(lastPP$xx)
     # label.offset <- 1/8 * (x.lim.max - pos_last_tip - size_labels)
     available_x <- x.lim.max - pos_last_tip - size_labels
-    offset <- available_x/7
-    ell <- (available_x - offset * (p_dim + 1)) / p_dim # lenght for the plot of one character
+    ell <- available_x / (p_dim +  (p_dim + 1) / 4)# lenght for the plot of one character
+    offset <- ell / 4
     
     ## Plots characters
     for (t in 1:p_dim){

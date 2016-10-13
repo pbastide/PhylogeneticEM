@@ -4,15 +4,16 @@
 \alias{plot.PhyloEM}
 \title{Plot for class \code{PhyloEM}}
 \usage{
-\method{plot}{PhyloEM}(x, traits = 1:(x$p), automatic_colors = FALSE,
-  color_characters = "black", color_edges = "black",
-  plot_ancestral_states = FALSE, imposed_scale = x$Y_data,
-  ancestral_cex = 2, ancestral_pch = 19, value_in_box = TRUE,
-  ancestral_as_shift = TRUE, shifts_cex = 1, shifts_bg = "chocolate4",
-  root_bg = "chocolate4", shifts_adj = 0, root_adj = 1,
-  color_shifts_regimes = FALSE, regime_boxes = FALSE, alpha_border = 70,
-  show.tip.label = FALSE, label_cex = 1, label_offset = 0,
-  edge.width = 1, margin_plot = c(0, 0, 0, 0), gray_scale = FALSE, ...)
+\method{plot}{PhyloEM}(x, traits = 1:(x$p), method.selection = "DDSE",
+  automatic_colors = TRUE, color_characters = "black",
+  color_edges = "black", plot_ancestral_states = FALSE,
+  imposed_scale = x$Y_data, ancestral_cex = 2, ancestral_pch = 19,
+  value_in_box = FALSE, ancestral_as_shift = FALSE, shifts_cex = 0.6,
+  shifts_bg = "chocolate4", root_bg = "chocolate4", shifts_adj = 0,
+  root_adj = 1, color_shifts_regimes = FALSE, regime_boxes = FALSE,
+  alpha_border = 70, show.tip.label = FALSE, label_cex = 0.5,
+  label_offset = 0, axis_cex = 0.7, edge.width = 1, margin_plot = c(0,
+  0, 0, 0), gray_scale = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{PhyloEM}, result of function
@@ -47,14 +48,15 @@ ancestral states. Default to circles (\code{pch=19}).}
 
 \item{value_in_box}{whether to plot the value of the shift in a box on the edges.
 Only available when only one trait is plotted. Can be difficult to read on big
-trees. The size of the text in the boxes is controlled by parameter.}
+trees. The size of the text in the boxes is controlled by parameter.
+Default to FALSE.}
 
 \item{ancestral_as_shift}{whether to represent the ancestral value at the root
-as an ancestral shift on the root edge. Default to TRUE.
+as an ancestral shift on the root edge. Default to FALSE.
 \code{shifts_cex} (see below).}
 
 \item{shifts_cex}{if \code{value_in_box=TRUE}, the size of the text in the boxes.
-Default to 1.}
+Default to 0.8.}
 
 \item{shifts_bg}{if \code{value_in_box=TRUE}, the background color of the boxes.}
 
@@ -80,10 +82,12 @@ the border of the box. Default to 70.}
 \item{show.tip.label}{whether to show the tip labels. Default to FALSE.}
 
 \item{label_cex}{if \code{show.tip.label=TRUE}, the size of the labels. default
-to 1.}
+to 0.5.}
 
 \item{label_offset}{if \code{show.tip.label=TRUE}, the size of the offset between
 the tree and the labels. Default to 0.}
+
+\item{axis_cex}{cex for the label values of the plot. Default to 0.8.}
 
 \item{edge.width}{width of the edge. Default to 1.}
 
