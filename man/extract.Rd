@@ -13,13 +13,14 @@ extract(x, ...)
 }
 \value{
 An integer giving the number of equivalent parsimonious solutions.
-
-#' @seealso \code{\link{extract.parsimonyNumber}},
-\code{\link{extract.parsimonyCost}},
-\code{\link{extract.enumerate_parsimony}},
-\code{\link{extract.partitionsNumber}}
 }
 \description{
 \code{extract} the needed quantities out of an S3 object.
+}
+\seealso{
+\code{\link{extract.parsimonyNumber}},
+\code{\link{extract.parsimonyCost}},
+\code{\link{extract.enumerate_parsimony}},
+\code{\link{extract.partitionsNumber}}
 }
 

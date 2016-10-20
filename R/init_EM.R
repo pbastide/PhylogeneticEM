@@ -176,13 +176,33 @@ init.EM.default.OU <- function(phylo = NULL,
 }
 
 ##
+#' @title Create an object params_process
+#'
+#' @description
+#' \code{params_process} creates or extracts a set of parameters of class
+#' \code{params_process}.
+#'
+#' @param x an S3 object.
+#' @param ... further arguments to be passed to the specific method.
+#' 
+#' @return An S3 object of class \code{params_process}.
+#' 
+#' @seealso \code{\link{params_process.character}},
+#' \code{\link{params_process.PhyloEM}},
+#' \code{\link{params_BM}}, \code{\link{params_OU}}
+#' 
+#' @export
+##
+params_process <- function(x, ...) UseMethod("params_process")
+
+##
 #' @title Create an object \code{params_process}
 #'
 #' @description
 #' \code{params_process} creates a coherent object params_process from user 
 #' provided values of the paramerters.
 #'
-#' @param process one of "BM" or "OU"
+#' @param x one of "BM" or "OU"
 #' @param ... specified parameters, see functions \code{\link{params_BM}} and 
 #' \code{\link{params_OU}} for details.
 #' 
@@ -193,10 +213,10 @@ init.EM.default.OU <- function(phylo = NULL,
 #' @export
 #'
 ##
-params_process <- function(process, ...){
-  if (process == "BM"){
+params_process.character <- function(x, ...){
+  if (x == "BM"){
     res <- params_BM(...)
-  } else if (process == "OU"){
+  } else if (x == "OU"){
     res <- params_OU(...)
   }
   return(res)

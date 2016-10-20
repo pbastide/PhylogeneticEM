@@ -191,6 +191,9 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' \code{\link{PhyloEM}}.
 #' @param traits a vector of integers giving the numbers of the trait to be plotted.
 #' Default to 1:p (all the traits).
+#' @param method.selection select the parameters to plot. One of "BGH", "DDSE",
+#' "Djump". Default to "BGH" for univariate, and "DDSE" for multivariate. See
+#' \code{\link{params_process.PhyloEM}}.
 #' @param automatic_colors whether to color the edges automatically according to
 #' their regimes. Default to TRUE. If FALSE, colors can be mannually precised through
 #' arguments \code{color_characters} and \code{colro_edges} (see below).
@@ -248,12 +251,14 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @return
 #' An object of class \code{PhyloEM}.
 #' 
+#' @seealso \code{\link{params_process.PhyloEM}}, \code{\link{imputed_traits.PhyloEM}}
+#' 
 #' @export
 #'
 
 plot.PhyloEM <- function(x,
                          traits = 1:(x$p),
-                         method.selection = "DDSE",
+                         method.selection = NULL,
                          automatic_colors = TRUE,
                          color_characters = "black",
                          color_edges = "black",
@@ -288,21 +293,26 @@ plot.PhyloEM <- function(x,
   on.exit(par(.pardefault), add = TRUE)
   
   ## parameters
-  params <- params.PhyloEM(x, method.selection = method.selection)
+  params <- params_process.PhyloEM(x, method.selection = method.selection)
   # If on trait, select relevent quantities
   if (length(traits) == 1){
-    if (length(as.vector(params$selection.strength)) == 2) params$selection.strength <- diag(rep(params$selection.strength, x$p))
+    if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, x$p))
     params <- split_params_independent(params)
     params <- params[[traits]]
   }
   
   ## Ancestral and imputed traits
+  reconstructed_traits <- imputed_traits.PhyloEM(x, trait = traits,
+                                                 save_all = TRUE,
+                                                 method.selection = method.selection)
   ancestral_states <- imputed_traits.PhyloEM(x, trait = traits,
                                              where = "nodes",
-                                             method.selection = method.selection)
+                                             method.selection = method.selection,
+                                             reconstructed_states = reconstructed_traits)
   Y_state <- imputed_traits.PhyloEM(x, trait = traits,
                                     where = "tips",
-                                    method.selection = method.selection)
+                                    method.selection = method.selection,
+                                    reconstructed_states = reconstructed_traits)
   rownames(Y_state) <- rownames(x$Y_data)[traits]
   if (missing(imposed_scale)) imposed_scale <- Y_state
   

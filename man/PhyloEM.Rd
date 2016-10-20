@@ -137,7 +137,9 @@ too high. Default to 5.}
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}.}
 }
 \value{
-An object of class \code{PhyloEM}.
+An object of class \code{PhyloEM}. Relevent quantities can be extracted from it 
+using helper functions \code{\link{params_process.PhyloEM}},
+\code{\link{imputed_traits.PhyloEM}}
 }
 \description{
 \code{PhyloEM} is the main function of the package. It uses maximum likelihood
@@ -158,5 +160,9 @@ For the OU in the multivariate setting, two assumptions can be made:
 strength matrix is assumed to be scalar, i.e. all the traits are supposed to
 go to their optimum values with the same speed.
 }
+}
+\seealso{
+\code{\link{plot.PhyloEM}}, \code{\link{params_process.PhyloEM}},
+\code{\link{imputed_traits.PhyloEM}}
 }
 

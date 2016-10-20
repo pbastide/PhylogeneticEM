@@ -2,24 +2,25 @@
 % Please edit documentation in R/init_EM.R
 \name{params_process}
 \alias{params_process}
-\title{Create an object \code{params_process}}
+\title{Create an object params_process}
 \usage{
-params_process(process, ...)
+params_process(x, ...)
 }
 \arguments{
-\item{process}{one of "BM" or "OU"}
+\item{x}{an S3 object.}
 
-\item{...}{specified parameters, see functions \code{\link{params_BM}} and 
-\code{\link{params_OU}} for details.}
+\item{...}{further arguments to be passed to the specific method.}
 }
 \value{
-an object of class \code{params_process}.
+An S3 object of class \code{params_process}.
 }
 \description{
-\code{params_process} creates a coherent object params_process from user 
-provided values of the paramerters.
+\code{params_process} creates or extracts a set of parameters of class
+\code{params_process}.
 }
 \seealso{
+\code{\link{params_process.character}},
+\code{\link{params_process.PhyloEM}},
 \code{\link{params_BM}}, \code{\link{params_OU}}
 }
 

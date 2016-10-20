@@ -4,7 +4,7 @@
 \alias{plot.PhyloEM}
 \title{Plot for class \code{PhyloEM}}
 \usage{
-\method{plot}{PhyloEM}(x, traits = 1:(x$p), method.selection = "DDSE",
+\method{plot}{PhyloEM}(x, traits = 1:(x$p), method.selection = NULL,
   automatic_colors = TRUE, color_characters = "black",
   color_edges = "black", plot_ancestral_states = FALSE, imposed_scale,
   ancestral_cex = 2, ancestral_pch = 19, value_in_box = FALSE,
@@ -21,6 +21,10 @@
 
 \item{traits}{a vector of integers giving the numbers of the trait to be plotted.
 Default to 1:p (all the traits).}
+
+\item{method.selection}{select the parameters to plot. One of "BGH", "DDSE",
+"Djump". Default to "BGH" for univariate, and "DDSE" for multivariate. See
+\code{\link{params_process.PhyloEM}}.}
 
 \item{automatic_colors}{whether to color the edges automatically according to
 their regimes. Default to TRUE. If FALSE, colors can be mannually precised through
@@ -105,5 +109,8 @@ An object of class \code{PhyloEM}.
 \description{
 This function takes an object of class \code{PhyloEM}, result of function
 \code{\link{PhyloEM}}, and plots the result of the inferrence.
+}
+\seealso{
+\code{\link{params_process.PhyloEM}}, \code{\link{imputed_traits.PhyloEM}}
 }
 

@@ -200,14 +200,14 @@ assign_results_model_selection <- function(res, pen, crit, name){
   res$K_select[[paste0("K_select_", name)]] <- K_select
   ## Extract parameters and reconstructions
   res[[paste0(name)]]$params_select <- res$params_estim[[paste(K_select)]]
-  res[[paste0(name)]]$params_raw <- res$params_raw[[paste(K_select)]]
+  # res[[paste0(name)]]$params_raw <- res$params_raw[[paste(K_select)]]
   res[[paste0(name)]]$params_init_estim <- res$params_init_estim[[paste(K_select)]]
   res[[paste0(name)]]$results_summary <- res$results_summary[K_select + 1, ]
-  res[[paste0(name)]]$Yhat <- res$Yhat[[paste(K_select)]]
-  res[[paste0(name)]]$Zhat <- res$Zhat[[paste(K_select)]]
-  res[[paste0(name)]]$Yvar <- res$Yvar[[paste(K_select)]]
-  res[[paste0(name)]]$Zvar <- res$Zvar[[paste(K_select)]]
-  res[[paste0(name)]]$m_Y_estim <- res$m_Y_estim[[paste(K_select)]]
+  # res[[paste0(name)]]$Yhat <- res$Yhat[[paste(K_select)]]
+  # res[[paste0(name)]]$Zhat <- res$Zhat[[paste(K_select)]]
+  # res[[paste0(name)]]$Yvar <- res$Yvar[[paste(K_select)]]
+  # res[[paste0(name)]]$Zvar <- res$Zvar[[paste(K_select)]]
+  # res[[paste0(name)]]$m_Y_estim <- res$m_Y_estim[[paste(K_select)]]
   res[[paste0(name)]]$edge.quality <- res$edge.quality[[paste(K_select)]]
   if (attr(res[[paste0(name)]]$params_select, "Neq") > 1) {
     message(paste0("There are some equivalent solutions to the set of shifts selected by the ",
