@@ -1124,6 +1124,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       res <- compute_raw_parameters(x$phylo, res) 
     }
   }
+  res$process <- x$process
   class(res) <- "params_process"
   return(res)
 }
@@ -1278,6 +1279,17 @@ compute_ancestral_traits <- function(x,
               m_Z_estim = extract.simulate(tmpsim,
                                            where = "nodes",
                                            what = "expectations")))
+}
+
+##
+#' @export
+#' @method print PhyloEM
+##
+print.PhyloEM <- function(x, ...){
+  cat("Result of the PhyloEM algorithm.\n")
+  cat("Selected parameters by the default method:")
+  print(params_process.PhyloEM(x))
+  cat("\n\nSee help to see all plotting and handling functions.")
 }
 
 ###############################################################################

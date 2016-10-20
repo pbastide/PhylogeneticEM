@@ -196,6 +196,76 @@ init.EM.default.OU <- function(phylo = NULL,
 params_process <- function(x, ...) UseMethod("params_process")
 
 ##
+#' @export
+#' @method print params_process
+##
+print.params_process <- function(x, ...){
+  if (x$process == "BM"){
+    cat(paste0("\n", ncol(x$variance), " dimensional BM process with a "))
+    if (x$root.state$random){
+      cat("random root.\n")
+      cat("Root expectations:\n")
+      print(x$root.state$exp.root)
+      cat("\n")
+      cat("Root variance:\n")
+      print(as.matrix(x$root.state$var.root))
+      cat("\n")
+    } else {
+      cat("fixed root.\n")
+      cat("\nRoot value:\n")
+      print(x$root.state$value.root)
+      cat("\n")
+    }
+    cat("Process variance:\n")
+    print(as.matrix(x$variance))
+    cat("\n")
+  } else {
+    if (x$process == "OU"){
+      cat(paste0("\n", ncol(x$variance), " dimensional OU process with a "))
+    } else if (x$process == "scOU"){
+      cat(paste0("\n", ncol(x$variance), " dimensional scOU process with a "))
+    }
+    if (x$root.state$random){
+      if (x$root.state$stationary.root){
+        cat("random stationary root.\n\n") 
+      } else {
+        cat("random root.\n\n") 
+      }
+      cat("Root expectations:\n")
+      print(x$root.state$exp.root)
+      cat("\n")
+      cat("Root variance:\n")
+      print(as.matrix(x$root.state$var.root))
+      cat("\n")
+    } else {
+      cat("fixed root.\n\n") 
+      cat("\nRoot value:\n")
+      print(x$root.state$value.root)
+      cat("\n")
+    }
+    cat("Process variance:\n")
+    print(as.matrix(x$variance))
+    cat("\n")
+    cat("Process selection strength:\n")
+    print(as.matrix(x$selection.strength))
+    cat("\n")
+    cat("Process root optimal values:\n")
+    print(x$optimal.value)
+    cat("\n")
+  }
+  
+  if (length(x$shifts$edges) > 0){
+    cat(paste0("Shifts positions on branches: ", paste(x$shifts$edges, collapse = ", "), " \n"))
+    cat("Shifts values:\n")
+    colnames(x$shifts$values) <- x$shifts$edges
+    print(x$shifts$values)
+    cat("\n")
+  } else {
+    cat(paste0("This process has no shift.\n"))
+  }
+}
+
+##
 #' @title Create an object \code{params_process}
 #'
 #' @description
@@ -320,6 +390,7 @@ params_BM <- function(p = 1,
                                   params_init$variance)
   params_init$root.state <- test.root.state(params_init$root.state, "BM")
   params_init$variance <- as(params_init$variance, "dpoMatrix")
+  params_init$process <- "BM"
   class(params_init) <- "params_process"
   return(params_init)
 }
@@ -438,6 +509,7 @@ params_OU <- function(p = 1,
                                             selection.strength = params_init$selection.strength,
                                             optimal.value = optimal.value)
   params_init$variance <- as(params_init$variance, "dpoMatrix")
+  params_init$process <- "OU"
   class(params_init) <- "params_process"
   return(params_init)
 }
