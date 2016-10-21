@@ -39,9 +39,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// log_likelihood
-double log_likelihood(arma::mat const& data, arma::umat const& ed, arma::mat const& Delta, arma::mat const& Variance, arma::vec const& edge_length, Rcpp::List const& root_state_list);
-RcppExport SEXP PhylogeneticEM_log_likelihood(SEXP dataSEXP, SEXP edSEXP, SEXP DeltaSEXP, SEXP VarianceSEXP, SEXP edge_lengthSEXP, SEXP root_state_listSEXP) {
+// log_likelihood_BM
+double log_likelihood_BM(arma::mat const& data, arma::umat const& ed, arma::mat const& Delta, arma::mat const& Variance, arma::vec const& edge_length, Rcpp::List root_state_list);
+RcppExport SEXP PhylogeneticEM_log_likelihood_BM(SEXP dataSEXP, SEXP edSEXP, SEXP DeltaSEXP, SEXP VarianceSEXP, SEXP edge_lengthSEXP, SEXP root_state_listSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -50,8 +50,25 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat const& >::type Delta(DeltaSEXP);
     Rcpp::traits::input_parameter< arma::mat const& >::type Variance(VarianceSEXP);
     Rcpp::traits::input_parameter< arma::vec const& >::type edge_length(edge_lengthSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List const& >::type root_state_list(root_state_listSEXP);
-    __result = Rcpp::wrap(log_likelihood(data, ed, Delta, Variance, edge_length, root_state_list));
+    Rcpp::traits::input_parameter< Rcpp::List >::type root_state_list(root_state_listSEXP);
+    __result = Rcpp::wrap(log_likelihood_BM(data, ed, Delta, Variance, edge_length, root_state_list));
+    return __result;
+END_RCPP
+}
+// log_likelihood_OU
+double log_likelihood_OU(arma::mat const& data, arma::umat const& ed, arma::mat const& Beta, arma::mat const& Stationary_Var, arma::vec const& edge_length, arma::mat const& Alpha, Rcpp::List root_state_list);
+RcppExport SEXP PhylogeneticEM_log_likelihood_OU(SEXP dataSEXP, SEXP edSEXP, SEXP BetaSEXP, SEXP Stationary_VarSEXP, SEXP edge_lengthSEXP, SEXP AlphaSEXP, SEXP root_state_listSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat const& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::umat const& >::type ed(edSEXP);
+    Rcpp::traits::input_parameter< arma::mat const& >::type Beta(BetaSEXP);
+    Rcpp::traits::input_parameter< arma::mat const& >::type Stationary_Var(Stationary_VarSEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type edge_length(edge_lengthSEXP);
+    Rcpp::traits::input_parameter< arma::mat const& >::type Alpha(AlphaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type root_state_list(root_state_listSEXP);
+    __result = Rcpp::wrap(log_likelihood_OU(data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list));
     return __result;
 END_RCPP
 }

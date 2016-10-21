@@ -585,25 +585,43 @@ Rcpp::List upward_downward_OU(arma::mat const & data, arma::umat const & ed,
   return res;
 }
 
-// [[Rcpp::export]]
-double log_likelihood(arma::mat const & data, arma::umat const & ed,
-                      arma::mat const & Delta, arma::mat const & Variance,
-                      arma::vec const & edge_length,
-                      Rcpp::List const & root_state_list) {
+double log_likelihood_mod(arma::mat const & data, arma::umat const & ed,
+                          Model const & mod,
+                          Rcpp::List root_state_list) {
   // Numbers
   int nE = ed.n_rows;
   int ntaxa = data.n_cols;
   int p_d = data.n_rows;
   // Construct objects and initialize
   Upward upw(data, nE);
-  // BM
-  Model mod(Delta, Variance, edge_length);
   // Upward Recursion
   upw.recursion(mod, ed, p_d, ntaxa);
-  
-  // Return to R in list format
+  // Likelihood Computation
   Root_State root_state = Root_State(root_state_list);
-  double res = upw.Log_Likelihood(root_state, ntaxa);
+  double logLik = upw.Log_Likelihood(root_state, ntaxa);
+  // Result
+  return logLik;
+}
+
+// [[Rcpp::export]]
+double log_likelihood_BM(arma::mat const & data, arma::umat const & ed,
+                         arma::mat const & Delta, arma::mat const & Variance,
+                         arma::vec const & edge_length,
+                         Rcpp::List root_state_list) {
+  // BM
+  Model mod(Delta, Variance, edge_length);
+  double res = log_likelihood_mod(data, ed, mod, root_state_list);
+  return res;
+}
+
+// [[Rcpp::export]]
+double log_likelihood_OU(arma::mat const & data, arma::umat const & ed,
+                         arma::mat const & Beta, arma::mat const & Stationary_Var,
+                         arma::vec const & edge_length, arma::mat const & Alpha,
+                         Rcpp::List root_state_list) {
+  // OU
+  Model mod(Beta, Stationary_Var, edge_length, Alpha);
+  double res = log_likelihood_mod(data, ed, mod, root_state_list);
   return res;
 }
 
@@ -635,14 +653,14 @@ source("~/Dropbox/These/Code/Phylogenetic-EM/R/simulate.R")
 source("~/Dropbox/These/Code/Phylogenetic-EM/R/generic_functions.R")
 source("~/Dropbox/These/Code/Phylogenetic-EM/R/shifts_manipulations.R")
 source("~/Dropbox/These/Code/Phylogenetic-EM/R/E_step.R")
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-traits <- extract.simulate(X1, where = "tips", what = "state")
+traits <- extract_simulate_internal(X1, where = "tips", what = "state")
 nMiss <- floor(ntaxa * p * 0.5)
 miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
 chars <- (miss - 1) %% p + 1

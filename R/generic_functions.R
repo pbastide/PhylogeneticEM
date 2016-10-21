@@ -513,37 +513,37 @@ kronecker_sum <- function(M, N){
 }
 
 ##
-#' @title Log Likelihood of a model
-#'
-#' @description
-#' \code{likelihood.OU} computes the likelihhod of the data given a model. This
-#' is a non-efficient debugging function.
-#'
-#' @details
-#' This function uses functions \code{compute_mean_variance.simple}, \code{compute_times_ca}, \code{compute_dist_phy}, \code{compute_log_likelihood.simple}
-#'
-#' @param Y the vector of the data at the tips
-#' @param phylo a phylogenetic tree
-#' @param params list of parameters with the correct structure
-#'
-#' @return boolean
-#' 
-#' @keywords internal
+# @title Log Likelihood of a model
+#
+# @description
+# \code{likelihood.OU} computes the likelihhod of the data given a model. This
+# is a non-efficient debugging function.
+#
+# @details
+# This function uses functions \code{compute_mean_variance.simple}, \code{compute_times_ca}, \code{compute_dist_phy}, \code{compute_log_likelihood.simple}
+#
+# @param Y the vector of the data at the tips
+# @param phylo a phylogenetic tree
+# @param params list of parameters with the correct structure
+#
+# @return boolean
+# 
+# @keywords internal
 #02/10/14 - Initial release
 ##
-log_likelihood.OU <- function(Y, phylo, params, ...) {
-  moments <- compute_mean_variance.simple(phylo = phylo,
-                                          times_shared = compute_times_ca(phylo),
-                                          distances_phylo = compute_dist_phy(phylo),
-                                          process = "OU",
-                                          params_old = params, ...)
-  LL <- compute_log_likelihood.simple(phylo = phylo,
-                                      Y_data = Y,
-                                      sim = moments$sim,
-                                      Sigma = moments$Sigma,
-                                      Sigma_YY_inv = moments$Sigma_YY_inv)
-  return(LL)
-}
+# log_likelihood.OU <- function(Y, phylo, params, ...) {
+#   moments <- compute_mean_variance.simple(phylo = phylo,
+#                                           times_shared = compute_times_ca(phylo),
+#                                           distances_phylo = compute_dist_phy(phylo),
+#                                           process = "OU",
+#                                           params_old = params, ...)
+#   LL <- compute_log_likelihood.simple(phylo = phylo,
+#                                       Y_data = Y,
+#                                       sim = moments$sim,
+#                                       Sigma = moments$Sigma,
+#                                       Sigma_YY_inv = moments$Sigma_YY_inv)
+#   return(LL)
+# }
 
 ##
 #' @title Check dimensions of the parameters

@@ -1016,6 +1016,99 @@ compute_E.upward_downward <- function(phylo,
   }
 }
 
+##
+#' @title Log Likelihood of a fitted object
+#'
+#' @description
+#' \code{log_likelihood} computes the log likelihood of some parameters.
+#'
+#' @param x an object of class \code{\link{params_process}} or \code{\link{PhyloEM}}.
+#' @param Y_data matrix of data at the tips, size p x ntaxa. Each line is a
+#' trait, and each column is a tip. The column names are checked against the
+#' tip names of the tree.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+# @param U_tree (optional) full incidence matrix of the tree, result of function
+#' \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.
+#' @param ... for a \code{PhyloEM} object, further arguments to be passed on to
+#' \code{\link{params_process.PhyloEM}} (to choose which parameters to extract from
+#' the results, see documentation of this function).
+#'     
+#' @return
+#' The log likelihood of the data with the provided parameters on the tree.
+#'  
+#' @seealso \code{\link{params_process}}, \code{\link{PhyloEM}}
+#' 
+#' @export
+#' 
+##
+log_likelihood <- function(x, ...) UseMethod("log_likelihood")
+
+##
+#' @describeIn log_likelihood \code{\link{params_process}} object
+##
+log_likelihood.params_process <- function(x,
+                                          Y_data,
+                                          phylo, ...){
+  phy <- reorder(phylo, order = "postorder")
+  # Trace edges
+  x$shifts$edges <- correspondanceEdges(edges = x$shifts$edges,
+                                        from = phylo, to = phy)
+  Delta <- shifts.list_to_matrix(phy, x$shifts)
+  x$root.state$var.root <- as.matrix(x$root.state$var.root)
+  ## BM Process
+  if (x$process == "BM"){
+    x$variance <- as.matrix(x$variance)
+    return(log_likelihood_BM(Y_data, phy$edge, Delta,
+                              x$variance, phy$edge.length,
+                              x$root.state))
+    ## OU process
+  } else if (x$process == "OU"){
+    U_tree <- incidence.matrix.full(phy)
+    Beta1 <- tcrossprod(Delta, U_tree) + x$optimal.value
+    Beta <- Beta1[, phy$edge[, 2], drop = F] # re-order by edge
+    if (x$root.state$stationary.root){
+      Stationary_Var <- as.matrix(x$root.state$var.root)
+    } else {
+      Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, x$selection.strength))
+    }
+    x$selection.strength <- as.matrix(x$selection.strength)
+    res <- log_likelihood_OU(Y_data, phy$edge,
+                              Beta, Stationary_Var,
+                              phy$edge.length, x$selection.strength,
+                              x$root.state)
+    return(res)
+    ## scOU process
+  } else if (x$process == "scOU"){
+    U_tree <- incidence.matrix.full(phy)
+    Beta1 <- tcrossprod(Delta, U_tree) + x$optimal.value
+    Beta <- Beta1[, phy$edge[, 2]] # re-order by edge
+    if (x$root.state$stationary.root){
+      Stationary_Var <- as.matrix(x$root.state$var.root)
+    } else {
+      Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, x$selection.strength))
+    }
+    Alpha <- x$selection.strength * diag(rep(1, ncol(Stationary_Var)))
+    res <- log_likelihood_OU(Y_data, phy$edge,
+                             Beta, Stationary_Var,
+                             phy$edge.length, Alpha,
+                             x$root.state)
+    return(res)
+  }
+}
+
+##
+#' @describeIn log_likelihood \code{\link{PhyloEM}} object
+##
+log_likelihood.PhyloEM <- function(x, ...){
+  
+  params <- params_process(x, ...)
+  
+  return(log_likelihood.params_process(params,
+                                       x$Y_data,
+                                       x$phylo,
+                                       U_tree = U_tree))
+}
+
 ###############################################################################
 ## Wrapper (independent case)
 ###############################################################################

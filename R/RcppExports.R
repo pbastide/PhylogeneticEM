@@ -9,7 +9,11 @@ upward_downward_OU <- function(data, ed, Beta, Stationary_Var, edge_length, Alph
     .Call('PhylogeneticEM_upward_downward_OU', PACKAGE = 'PhylogeneticEM', data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list)
 }
 
-log_likelihood <- function(data, ed, Delta, Variance, edge_length, root_state_list) {
-    .Call('PhylogeneticEM_log_likelihood', PACKAGE = 'PhylogeneticEM', data, ed, Delta, Variance, edge_length, root_state_list)
+log_likelihood_BM <- function(data, ed, Delta, Variance, edge_length, root_state_list) {
+    .Call('PhylogeneticEM_log_likelihood_BM', PACKAGE = 'PhylogeneticEM', data, ed, Delta, Variance, edge_length, root_state_list)
+}
+
+log_likelihood_OU <- function(data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list) {
+    .Call('PhylogeneticEM_log_likelihood_OU', PACKAGE = 'PhylogeneticEM', data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list)
 }
 

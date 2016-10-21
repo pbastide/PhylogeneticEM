@@ -373,6 +373,9 @@ test_that("Upward Downward - PhyloEM - BM", {
   res_old$alpha_max$Djump_BM1$results_summary$time <- 0
   
   expect_equal(res_new, res_old, tolerance = .Machine$double.eps ^ 0.3)
+  
+  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  expect_equal(log_likelihood(res_new, K = 5, alpha = 0), res_new$alpha_0$results_summary$log_likelihood[6])
 })
 
 
@@ -672,6 +675,9 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
   res_old$alpha_max$Djump_BM1$results_summary$time <- 0
 
   expect_that(res_new, equals(res_old))
+  
+  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  expect_equal(log_likelihood(res_new, K = 5, alpha = "max"), res_new$alpha_max$results_summary$log_likelihood[6])
 })
 
 test_that("Upward Downward - PhyloEM - scOU - random root", {
@@ -767,6 +773,9 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
   res_old$alpha_max$Djump_BM1$results_summary$time <- 0
   
   expect_that(res_new, equals(res_old))
+  
+  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  expect_equal(log_likelihood(res_new, K = 5, alpha = "max"), res_new$alpha_max$results_summary$log_likelihood[6])
 })
 
 test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
@@ -874,6 +883,9 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
   res_old$alpha_max$Djump_BM1$params_init_estim <- NULL
   
   expect_equal(res_new, res_old, check.attributes = FALSE)
+  
+  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  expect_equal(log_likelihood(res_new, K = 5, alpha = "max"), res_new$alpha_max$results_summary$log_likelihood[6])
 })
 
 test_that("Upward Downward - PhyloEM - OU - independent", {
@@ -968,6 +980,9 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
   res_old$alpha_max$Djump_BM1$results_summary$time <- 0
   
   expect_that(res_new, equals(res_old))
+  
+  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  expect_equal(log_likelihood(res_new, K = 5, alpha = "max"), res_new$alpha_max$results_summary$log_likelihood[6])
 })
 
 # test_that("Upward Downward - full OU - random root", {
