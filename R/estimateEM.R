@@ -1658,6 +1658,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     }
     return(X)
   }
+  a_greek <- NULL
   if (parallel_alpha){
     if (!requireNamespace("doParallel", quietly = TRUE)) {
       stop("Package 'doParallel' is needed for parallel computation (option 'parallel_alpha = TRUE'). Please install this package, or set the option to 'FALSE'.",
@@ -1665,13 +1666,13 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     }
     cl <- parallel::makeCluster(Ncores, outfile = "")
     doParallel::registerDoParallel(cl)
-    X <- foreach::foreach(alp = alpha, .packages = reqpckg) %dopar%
+    X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %dopar%
     {
       ## Progress Bar
       # if(progress.bar){
       #   message(paste0("Alpha ", alp))
       # }
-      estimate_alpha_several_K(alp,
+      estimate_alpha_several_K(alp = a_greek,
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
                                process = process,
@@ -1704,13 +1705,13 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     }
     parallel::stopCluster(cl)
   } else {
-    X <- foreach::foreach(alp = alpha, .packages = reqpckg) %do%
+    X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %do%
     {
       ## Progress Bar
       # if(progress.bar){
       #   message(paste0("Alpha ", alp))
       # }
-      estimate_alpha_several_K(alp,
+      estimate_alpha_several_K(alp = a_greek,
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
                                process = process,
