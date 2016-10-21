@@ -27,7 +27,9 @@ Suggests:
     phytools (>= 0.5.38),
     Rphylopars (>= 0.2.9),
     testthat (>= 1.0.2),
-    TreeSim (>= 2.2)
+    TreeSim (>= 2.2),
+    knitr,
+    rmarkdown
 LinkingTo:
     Rcpp,
     RcppArmadillo
@@ -37,3 +39,4 @@ LazyData: true
 RoxygenNote: 5.0.1
 URL: https://github.com/pbastide/PhylogeneticEM
 BugReports: https://github.com/pbastide/PhylogeneticEM/issues
+VignetteBuilder: knitr
