@@ -467,13 +467,13 @@ compute_state_filter <- function (cost, k) {
 #' of the tips that have this edge as an ancestor.
 #'
 #' @details
-#' This function uses function \code{prop.part} from package \code{ape}.
+#' This function uses function \code{\link[ape]{prop.part}} from package \code{ape}.
 #'
-#' @param tree phylogenetic tree
+#' @param tree phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' 
-#' @return list of size n+m-1, entry i is the vector of tips bellow edge i.
+#' @return list of size nEdges, entry i is the vector of tips bellow edge i.
 #' 
-#' @keywords internal
+#' @export
 #'
 ##
 enumerate_tips_under_edges <- function (tree) {

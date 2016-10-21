@@ -1105,8 +1105,7 @@ log_likelihood.PhyloEM <- function(x, ...){
   
   return(log_likelihood.params_process(params,
                                        x$Y_data,
-                                       x$phylo,
-                                       U_tree = U_tree))
+                                       x$phylo))
 }
 
 ###############################################################################

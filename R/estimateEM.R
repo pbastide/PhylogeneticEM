@@ -63,6 +63,102 @@
 #            02/06/14 - OU in the special case
 #            10/06/14 - Test of divergence
 ##
+##
+#' @title Perform One EM
+#'
+#' @description
+#' \code{EstimateEM} performs one EM for one given number of shifts. It is called
+#' from function \code{\link{PhyloEM}}. Its use is mostly internal, and most user
+#' should not need it.
+#'
+#' @details
+#' See documentation of \code{\link{PhyloEM}} for further details.
+#' All the parameters monitoring the EM (like \code{tol}, \code{Nbr_It_Max}, etc.)
+#' can be called from \code{PhyloEM}.
+#' 
+#' @inheritParams PhyloEM
+#' @param Y_data_imp (optional) imputed data if previously computed, same format as
+#' \code{Y_data}. Mostly here for internal calls.
+#' @param tol the tolerance for the convergence of the parameters. A named list, with
+#' items:
+#' \describe{
+#' \item{variance}{default to 10^(-2)}
+#' \item{value.root}{default to 10^(-2)}
+#' \item{exp.root}{default to 10^(-2)}
+#' \item{var.root}{default to 10^(-2)}
+#' \item{selection.strength}{default to 10^(-2)}
+#' \item{normalized_half_life}{default to 10^(-2)}
+#' \item{log_likelihood}{default to 10^(-2)}
+#' }
+#' @param Nbr_It_Max the maximal number of iterations of the EM allowed. Default to 
+#' 500 iterations.
+#' @param nbr_of_shifts the number of shifts allowed.
+#' @param alpha_known is the selection strength assumed to be known ?
+#' Default to FALSE.
+#' @param eps tolerance on the selection strength value before switching to a BM.
+#' Default to 10^(-3).
+#' @param known.selection.strength if \code{alpha_known=TRUE}, the value of the 
+#' known selection strength.
+#' @param init.selection.strength (optional) a starting point for the selection
+#' strength value.
+#' @param max_selection.strength the maximal value allowed of the selection strength.
+#' Default to 100.
+#' @param use_sigma_for_lasso whether to use the first estimation of the variance
+#' matrix in the lasso regression. Default to TRUE.
+#' @param max_triplet_number for the initialization of the selection strength value
+#' (when estimated), the maximal number of triplets of tips to be considered.
+#' @param min_params a named list containing the minimum allowed values for the
+#' parameters. If the estimation is smaller, then the EM stops, and is considered to
+#' be divergent. Default values:
+#' \describe{
+#' \item{variance}{default to 0}
+#' \item{value.root}{default to -10^(5)}
+#' \item{exp.root}{default to -10^(5)}
+#' \item{var.root}{default to 0}
+#' \item{selection.strength}{default to 0}
+#' }
+#' @param max_params a named list containing the maximum allowed values for the
+#' parameters. If the estimation is larger, then the EM stops, and is considered to
+#' be divergent. Default values:
+#' \describe{
+#' \item{variance}{default to 10^(5)}
+#' \item{value.root}{default to 10^(5)}
+#' \item{exp.root}{default to 10^(5)}
+#' \item{var.root}{default to 10^(5)}
+#' \item{selection.strength}{default to 10^(5)}
+#' }
+#' @param var.init.root optional initialization value for the variance of the root.
+#' @param variance.init optional initialization value for the variance.
+#' @param times_shared (optional) times of shared ancestry of all nodes and tips,
+#' result of function \code{\link{compute_times_ca}}
+#' @param distances_phylo (optional) phylogenetics distances, result of function 
+#' \code{\link{compute_dist_phy}}.
+#' @param subtree.list (optional) tips descendants of all the edges, result of
+#' function \code{\link{enumerate_tips_under_edges}}.
+#' @param T_tree (optional) matrix of incidence of the tree, result of function 
+#' \code{\link{incidence.matrix}}.
+#' @param U_tree (optional) full matrix of incidence of the tree, result of function 
+#' \code{\link{incidence.matrix.full}}.
+#' @param h_tree (optional) total height of the tree.
+#' @param F_moments (optional, internal)
+#' @param tol_half_life should the tolerance criterion be applied to the phylogenetic
+#' half life (TRUE, default) or to the raw selection strength ?
+#' @param warning_several_solutions wether to issue a warning if several equivalent
+#' solutions are found (default to TRUE).
+#' @param convergence_mode one of "relative" (the default) or "absolute". Should the
+#' tolerance be applied to the raw parameters, or to the renormalized ones ?
+#' @param check_convergence_likelihood should the likelihood be taken into
+#' consideration for convergence assesment ? (default to TRUE).
+#' 
+#' 
+#' @return
+#' An object of class \code{EstimateEM}.
+#' 
+#' @seealso \code{\link{PhyloEM}}
+#' 
+#' @export
+#'
+##
 estimateEM <- function(phylo, 
                        Y_data, 
                        Y_data_imp = Y_data,
@@ -85,7 +181,6 @@ estimateEM <- function(phylo,
                        nbr_of_shifts = 0,
                        random.root = TRUE,
                        stationary.root = TRUE,
-                       shifts_at_nodes = TRUE,
                        alpha_known = FALSE,
                        eps = 10^(-3),
                        known.selection.strength = 1,
@@ -197,6 +292,7 @@ estimateEM <- function(phylo,
   
   ########## Choose functions #################################################
   # specialCase <- stationary.root && shifts_at_nodes && alpha_known
+  shifts_at_nodes <- TRUE
   compute_M  <- switch(process, 
                        BM = compute_M.BM,
                        OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
@@ -817,7 +913,8 @@ estimateEM <- function(phylo,
 #' @param K_lag_init Number of extra shifts to be considered at the initialization
 #' step. Increases the accuracy, but can make computations quite slow of taken
 #' too high. Default to 5.
-#' @param ... Further arguments to be passed to \code{\link{estimateEM}}.
+#' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
+#' tolerance parameters for stopping criterions, maximal number of iterations, etc.
 #' 
 #' 
 #' @return

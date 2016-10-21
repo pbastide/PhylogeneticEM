@@ -134,7 +134,8 @@ Default to FALSE.}
 step. Increases the accuracy, but can make computations quite slow of taken
 too high. Default to 5.}
 
-\item{...}{Further arguments to be passed to \code{\link{estimateEM}}.}
+\item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
+tolerance parameters for stopping criterions, maximal number of iterations, etc.}
 }
 \value{
 An object of class \code{PhyloEM}. Relevent quantities can be extracted from it 

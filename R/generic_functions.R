@@ -138,6 +138,24 @@ compute_times_ca <- function(phy) {
 # REVISIONS:
 # 22/05/14 - Initial release
 ##
+##
+#' @title Phylogenetic Distances
+#'
+#' @description
+#' \code{compute_dist_phy} computes the phylogenetic distances d_ij between all the
+#' tips i, j.
+#' 
+#' @details
+#' Tis function relies on \code{ape} function
+#' \code{\link[ape]{dist.nodes}}.
+#'
+#' @param phy a phylogenetic tree of class \code{\link[ape]{phylo}}.
+#'
+#' @return a matrix of phylogenetic distances, ordered as the tips of the
+#' tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
+#'
+#' @export
+##
 compute_dist_phy <- function(phy) {
   dist_phy <- ape::dist.nodes(phy)
   attr(dist_phy, "ntaxa") <- length(phy$tip.label)

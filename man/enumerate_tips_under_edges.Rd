@@ -7,17 +7,16 @@
 enumerate_tips_under_edges(tree)
 }
 \arguments{
-\item{tree}{phylogenetic tree}
+\item{tree}{phylogenetic tree, class \code{\link[ape]{phylo}}.}
 }
 \value{
-list of size n+m-1, entry i is the vector of tips bellow edge i.
+list of size nEdges, entry i is the vector of tips bellow edge i.
 }
 \description{
 \code{enumerate_tips_under_edges} gives, for each edge of the tree, the labels
 of the tips that have this edge as an ancestor.
 }
 \details{
-This function uses function \code{prop.part} from package \code{ape}.
+This function uses function \code{\link[ape]{prop.part}} from package \code{ape}.
 }
-\keyword{internal}
 
