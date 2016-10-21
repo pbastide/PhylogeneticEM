@@ -22,14 +22,14 @@ test_that("Upward Downward - BM", {
                      root.state = root.state)
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
   
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.5)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -125,13 +125,13 @@ test_that("Upward Downward - BM - no missing", {
                      root.state = root.state)
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   
   ## Log lik old way
   miss <- as.vector(is.na(traits))
@@ -235,14 +235,14 @@ test_that("Upward Downward - estimateEM - BM", {
                      root.state = root.state)
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
   
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.1)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -304,14 +304,14 @@ test_that("Upward Downward - PhyloEM - BM", {
                      root.state = root.state)
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
   
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.1)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -405,16 +405,16 @@ test_that("Upward Downward - scOU - fixed root", {
                      optimal.value = rep(1, p))
   attr(paramsSimu, "p_dim") <- p
 
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "scOU",
-                 variance = variance,
-                 shifts = shifts,
-                 selection.strength = selection.strength,
-                 optimal.value = paramsSimu$optimal.value)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "scOU",
+                          variance = variance,
+                          shifts = shifts,
+                          selection.strength = selection.strength,
+                          optimal.value = paramsSimu$optimal.value)
 
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.5)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -506,16 +506,16 @@ test_that("Upward Downward - scOU - random root", {
                      optimal.value = rep(1, p))
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "scOU",
-                 variance = variance,
-                 shifts = shifts,
-                 selection.strength = selection.strength,
-                 optimal.value = paramsSimu$optimal.value)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "scOU",
+                          variance = variance,
+                          shifts = shifts,
+                          selection.strength = selection.strength,
+                          optimal.value = paramsSimu$optimal.value)
   
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.5)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -607,16 +607,16 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
                      optimal.value = rep(1, p))
   attr(paramsSimu, "p_dim") <- p
 
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "scOU",
-                 variance = variance,
-                 shifts = shifts,
-                 selection.strength = selection.strength,
-                 optimal.value = paramsSimu$optimal.value)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "scOU",
+                          variance = variance,
+                          shifts = shifts,
+                          selection.strength = selection.strength,
+                          optimal.value = paramsSimu$optimal.value)
 
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.1)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -702,16 +702,16 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
                      optimal.value = rep(1, p))
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "scOU",
-                 variance = variance,
-                 shifts = shifts,
-                 selection.strength = selection.strength,
-                 optimal.value = paramsSimu$optimal.value)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "scOU",
+                          variance = variance,
+                          shifts = shifts,
+                          selection.strength = selection.strength,
+                          optimal.value = paramsSimu$optimal.value)
   
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.1)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -796,16 +796,16 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
                      optimal.value = rep(1, p))
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "scOU",
-                 variance = variance,
-                 shifts = shifts,
-                 selection.strength = selection.strength,
-                 optimal.value = paramsSimu$optimal.value)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "scOU",
+                          variance = variance,
+                          shifts = shifts,
+                          selection.strength = selection.strength,
+                          optimal.value = paramsSimu$optimal.value)
   
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   # nMiss <- floor(ntaxa * p * 0.1)
   # miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   # chars <- (miss - 1) %% p + 1
@@ -903,16 +903,16 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
                      optimal.value = rep(1, p))
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "OU",
-                 variance = variance,
-                 shifts = shifts,
-                 selection.strength = selection.strength,
-                 optimal.value = paramsSimu$optimal.value)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          shifts = shifts,
+                          selection.strength = selection.strength,
+                          optimal.value = paramsSimu$optimal.value)
   
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * 0.1)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1
@@ -997,7 +997,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                      optimal.value = rep(1, p))
 #   attr(paramsSimu, "p_dim") <- p
 #   
-#   X1 <- simulate(tree,
+#   X1 <- simulate_internal(tree,
 #                  p = p,
 #                  root.state = root.state,
 #                  process = "OU",
@@ -1006,7 +1006,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                  selection.strength = selection.strength,
 #                  optimal.value = paramsSimu$optimal.value)
 #   
-#   traits <- extract.simulate(X1, where = "tips", what = "state")
+#   traits <- extract_simulate_internal(X1, where = "tips", what = "state")
 #   # nMiss <- floor(ntaxa * p * 0.5)
 #   # miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
 #   # chars <- (miss - 1) %% p + 1
@@ -1099,7 +1099,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                      optimal.value = root.state$exp.root)
 #   attr(paramsSimu, "p_dim") <- p
 #   
-#   X1 <- simulate(tree,
+#   X1 <- simulate_internal(tree,
 #                  p = p,
 #                  root.state = root.state,
 #                  process = "scOU",
@@ -1108,7 +1108,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                  selection.strength = selection.strength,
 #                  optimal.value = root.state$exp.root)
 #   
-#   traits <- extract.simulate(X1, where = "tips", what = "state")
+#   traits <- extract_simulate_internal(X1, where = "tips", what = "state")
 #   nMiss <- floor(ntaxa * p * 0.1)
 #   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
 #   chars <- (miss - 1) %% p + 1

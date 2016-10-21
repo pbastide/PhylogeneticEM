@@ -10,16 +10,14 @@ incidence.matrix.full(phylo)
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 }
 \value{
-Matrix of incidence, size ntaxa + nNodes
+Matrix of incidence, size ntaxa + nNodes.
 }
 \description{
-\code{incidence.matrix.full} computes the incidence matrix T of a tree : for a 
-node i and a branch b, T[i,b]=1 if b is in the lineage i, and 0 
+\code{incidence.matrix.full} computes the incidence matrix U of a tree : for a 
+node i and a branch b, U[i,b]=1 if b is in the lineage i, and 0 
 otherwise.
 }
-\details{
-This function uses the general up tree recursion function \code{recursionUp}
-with the initialization function \code{init.incidence.matrix.full} and update
-function \code{update.incidence.matrix.full}.
+\seealso{
+\code{\link{incidence.matrix}}
 }
 

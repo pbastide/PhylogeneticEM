@@ -120,7 +120,7 @@ datasetsim <- function(alpha, gamma, K, s_noise, ntaxa, n, grp) {
                   optimal.value = beta_0)
   attr(params, "ntaxa")  <- ntaxa
   attr(params, "p_dim")  <- 1
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process,
                  root.state = root.state, 
                  variance = 2*alpha*gamma,
@@ -128,7 +128,7 @@ datasetsim <- function(alpha, gamma, K, s_noise, ntaxa, n, grp) {
                  selection.strength = alpha, 
                  optimal.value = beta_0)
   ## Add noise
-  Y_data <- extract.simulate(XX, what="states", where="tips")
+  Y_data <- extract_simulate_internal(XX, what="states", where="tips")
   Y_noise <- t(rnorm(n = ntaxa, sd = sqrt(s_noise)))
   ## Retuen results
   sim <- list(alpha = alpha,
@@ -141,8 +141,8 @@ datasetsim <- function(alpha, gamma, K, s_noise, ntaxa, n, grp) {
               shifts = shifts,
               Y_data = Y_data + Y_noise,
               Y_noise = Y_noise,
-              Z_data = extract.simulate(XX, what = "states", where = "nodes"),
-              m_Y_data = extract.simulate(XX, what="expectations", where="tips"))
+              Z_data = extract_simulate_internal(XX, what = "states", where = "nodes"),
+              m_Y_data = extract_simulate_internal(XX, what="expectations", where="tips"))
   ## Compute true likelihood and difficulty of the problem
   # Moments
   Sigma <- compute_variance_covariance.scOU(times_shared = times_shared[[paste0(ntaxa)]], 

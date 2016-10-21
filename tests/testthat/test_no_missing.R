@@ -38,13 +38,13 @@ test_that("Likelihood missing/no missing methods", {
   F_moments <- compute_fixed_moments(times_shared, ntaxa)
   
   ## Data
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
-  Y_data <- extract.simulate(X1,"tips","states")
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
+  Y_data <- extract_simulate_internal(X1,"tips","states")
   
   ## Old Method
   moments_old <- compute_mean_variance.simple(phylo = tree,

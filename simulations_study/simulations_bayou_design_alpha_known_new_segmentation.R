@@ -88,7 +88,7 @@ datasetsim <- function(alpha, gamma, K, n, grp) {
                      value.root = NA,
                      exp.root = beta_0,
                      var.root = gamma)
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process,
                  root.state = root.state, 
                  variance = 2*alpha*gamma,
@@ -101,8 +101,8 @@ datasetsim <- function(alpha, gamma, K, n, grp) {
               n = n,
               grp = grp,
               shifts = shifts,
-              Y_data = extract.simulate(XX, what="states", where="tips"),
-              Z_data = extract.simulate(XX, what = "states", where = "nodes")))
+              Y_data = extract_simulate_internal(XX, what="states", where="tips"),
+              Z_data = extract_simulate_internal(XX, what = "states", where = "nodes")))
 }
 
 sample_shifts <- function(tree, sigma_delta, K){

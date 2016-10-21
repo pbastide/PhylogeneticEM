@@ -108,7 +108,7 @@ datasetsim <- function(alpha, gamma, K, ntaxa, n, grp) {
                   shifts = shifts,
                   selection.strength = alpha, 
                   optimal.value = beta_0)
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process,
                  root.state = root.state, 
                  variance = 2*alpha*gamma,
@@ -122,9 +122,9 @@ datasetsim <- function(alpha, gamma, K, ntaxa, n, grp) {
               ntaxa = ntaxa,
               grp = grp,
               shifts = shifts,
-              Y_data = extract.simulate(XX, what="states", where="tips"),
-              Z_data = extract.simulate(XX, what = "states", where = "nodes"),
-              m_Y_data = extract.simulate(XX, what="expectations", where="tips"))
+              Y_data = extract_simulate_internal(XX, what="states", where="tips"),
+              Z_data = extract_simulate_internal(XX, what = "states", where = "nodes"),
+              m_Y_data = extract_simulate_internal(XX, what="expectations", where="tips"))
   ## Compute true likelihood and difficulty of the problem
   # Moments
   Sigma <- compute_variance_covariance.OU(times_shared = times_shared[[paste0(ntaxa)]], 

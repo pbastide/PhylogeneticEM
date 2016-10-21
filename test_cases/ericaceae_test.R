@@ -213,14 +213,14 @@ toy_paramsSimu <- list(variance = toy_variance,
                    root.state = toy_root.state)
 
 ## Simulate Process
-X1 <- simulate(toy_tree,
+X1 <- simulate_internal(toy_tree,
                p = toy_p,
                root.state = toy_root.state,
                process = "BM",
                variance = toy_variance,
                shifts = toy_shifts)
 
-toy_Y_data <- extract.simulate(X1,"tips","states")
+toy_Y_data <- extract_simulate_internal(X1,"tips","states")
 
 toy_Y_data_miss <- toy_Y_data
 set.seed(1122)

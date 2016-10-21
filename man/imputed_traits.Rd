@@ -35,8 +35,8 @@ One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and DDSE for
 multivariate.}
 
 \item{reconstructed_states}{if the reconstructed states have already been
-computed (with function \code{\link{compute_ancestral_traits}}), they can be
-passed on here (avoids multiple computtaions of the E step).}
+computed (by a previous call of the function, with \code{save_all=TRUE}),
+they can be passed on here (avoids multiple computaions of the E step).}
 }
 \value{
 A matrix or array with the computed quantities.

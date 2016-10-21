@@ -618,7 +618,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                   shifts = shifts,
                   selection.strength = alpha_mat, 
                   optimal.value = beta_0)
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process_temp,
                  p = p_base,
                  root.state = root.state, 
@@ -639,9 +639,9 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
               nrep = nrep,
               grp = grp,
               shifts = shifts,
-              Y_true = extract.simulate(XX, what="states", where="tips"),
-              Z_true = extract.simulate(XX, what = "states", where = "nodes"),
-              m_Y_true = extract.simulate(XX, what="expectations", where="tips"))
+              Y_true = extract_simulate_internal(XX, what="states", where="tips"),
+              Z_true = extract_simulate_internal(XX, what = "states", where = "nodes"),
+              m_Y_true = extract_simulate_internal(XX, what="expectations", where="tips"))
   ## NAs
   sim$Y_data <- sim$Y_true
   if (NA_per > 0){

@@ -21,7 +21,7 @@ data in the simple case where the inverse of the variance matrix is given.
 }
 \details{
 This function takes parameters sim and Sigma_YY_inv from  
-\code{compute_mean_variance.simple}. It uses function \code{extract.simulate}
+\code{compute_mean_variance.simple}. It uses function \code{extract_simulate_internal}
 to extract the needed quantities from these objects.
 }
 \keyword{internal}

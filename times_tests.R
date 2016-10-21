@@ -65,13 +65,13 @@ for(p in 1:15){
                      root.state = root.state)
   attr(paramsSimu, "p_dim") <- p
   
-  X1 <- simulate(tree,
+  X1 <- simulate_internal(tree,
                  p = p,
                  root.state = root.state,
                  process = "BM",
                  variance = variance,
                  shifts = shifts)
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   
   micro_time_old[p] <- print(microbenchmark(wrapper_E_step(phylo = tree,
                                                         times_shared = times_shared,
@@ -148,13 +148,13 @@ for(i in 1:length(ntaxa_list)){
   if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
   F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
   
-  X1 <- simulate(tree,
+  X1 <- simulate_internal(tree,
                  p = p,
                  root.state = root.state,
                  process = "BM",
                  variance = variance,
                  shifts = shifts)
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   
   micro_time_old[i] <- print(microbenchmark(wrapper_E_step(phylo = tree,
                                                            times_shared = times_shared,
@@ -226,7 +226,7 @@ root_edge_length <- 0
 if (!is.null(tree$root.edge)) root_edge_length <- tree$root.edge
 F_moments <- compute_fixed_moments(times_shared + root_edge_length, ntaxa)
 
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
@@ -239,7 +239,7 @@ micro_time_updown <- vector(length = length(ntaxa_list))
 for(i in 1:length(NA_per_list)){
   
   NA_per <- NA_per_list[i]
-  traits <- extract.simulate(X1, where = "tips", what = "state")
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
   nMiss <- floor(ntaxa * p * NA_per)
   miss <- sample(1:(p * ntaxa), nMiss, replace = FALSE)
   chars <- (miss - 1) %% p + 1

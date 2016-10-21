@@ -185,11 +185,35 @@ init.EM.default.OU <- function(phylo = NULL,
 #' @param x an S3 object.
 #' @param ... further arguments to be passed to the specific method.
 #' 
-#' @return An S3 object of class \code{params_process}.
+#' @return An S3 object of class \code{params_process}. This is essencially a list containing the following entries:
+#' \describe{
+#' \item{process}{The model used. One of "BM" (for a full BM
+#' model, univariate or multivariate); "OU" (for a full OU model, univariate or
+#' multivariate); or "scOU" (for a "scalar OU" model).}
+#' \item{p}{Dimention of the trait.}
+#' \item{root.state}{List describing the state of the root, with:
+#' \describe{
+#'  \item{random}{random state (TRUE) or deterministic state (FALSE)}
+#'  \item{value.root}{if deterministic, value of the character at the root}
+#'  \item{exp.root}{if random, expectation of the character at the root}
+#'  \item{var.root}{if random, variance of the character at the root (pxp matrix)}
+#'  }}
+#' \item{shifts}{List with position and values of the shifts:
+#' \describe{
+#'  \item{edges}{vector of the K id of edges where the shifts are}
+#'  \item{values}{matrix p x K of values of the shifts on the edges
+#'   (one column = one shift)}
+#'  \item{relativeTimes}{vector of dimension K of relative time of the shift from the parentnode of edges}
+#'  }}
+#' \item{variance}{Variance-covariance matrix size p x p.}
+#' \item{selection.strength}{Matrix of selection strength size p x p (OU).}
+#' \item{optimal.value}{Vector of p optimal values at the root (OU).}
+#' }
 #' 
 #' @seealso \code{\link{params_process.character}},
 #' \code{\link{params_process.PhyloEM}},
 #' \code{\link{params_BM}}, \code{\link{params_OU}}
+#' \code{\link{simul_process.params_process}}
 #' 
 #' @export
 ##

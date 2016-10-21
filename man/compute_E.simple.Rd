@@ -42,7 +42,7 @@ values beta(t_j)
 This function takes parameters sim, Sigma and Sigma_YY_inv from  
 \code{compute_mean_variance.simple}. It uses functions 
 \code{extract.variance_covariance}, \code{extract.covariance_parents}, and
- \code{extract.simulate} to extract the needed quantities from these objects.
+ \code{extract_simulate_internal} to extract the needed quantities from these objects.
 }
 \keyword{internal}
 

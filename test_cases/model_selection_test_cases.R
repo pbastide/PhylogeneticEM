@@ -79,7 +79,7 @@ Ncores <- 3
 # Ks <- 1:50
 # data_type <- paste0("random_ntaxa=", ntaxa, "_K_true=", K_true)
 # 
-# XX <- simulate(phylo = tree,
+# XX <- simulate_internal(phylo = tree,
 #                process = "OU",
 #                root.state = list(random = TRUE,
 #                                  stationary.root = TRUE,
@@ -91,7 +91,7 @@ Ncores <- 3
 #                selection.strength = alpha, 
 #                optimal.value = beta_0)
 # 
-# data = extract.simulate(XX, what="states", where="tips")
+# data = extract_simulate_internal(XX, what="states", where="tips")
 
 ## Easy data small tree
 set.seed(20141211)
@@ -113,7 +113,7 @@ shifts <- list(edges = c(61, 96, 87, 11, 30),
 K_max <- 30
 data_type <- paste0("easy_ntaxa=", ntaxa, "_K_true=", K_true, "_alpha_try=",alpha_try)
 
-XX <- simulate(phylo = tree,
+XX <- simulate_internal(phylo = tree,
                process = "OU",
                root.state = list(random = TRUE,
                                  stationary.root = TRUE,
@@ -125,10 +125,10 @@ XX <- simulate(phylo = tree,
                selection.strength = alpha, 
                optimal.value = beta_0)
 
-data = extract.simulate(XX, what="states", where="tips")
+data = extract_simulate_internal(XX, what="states", where="tips")
 
-plot.data.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
-                    #Z.state = extract.simulate(XX, what="states", where="nodes"),
+plot.data.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
+                    #Z.state = extract_simulate_internal(XX, what="states", where="nodes"),
                     phylo = tree, 
                     params = list(shifts = shifts, optimal.value = beta_0),
                     automatic_colors = TRUE)
@@ -152,7 +152,7 @@ plot.data.process.actual(Y.state = extract.simulate(XX, what="states", where="ti
 # K_max <- 35
 # data_type <- paste0("easy_ntaxa=", ntaxa, "_K_true=", K_true)
 # 
-# XX <- simulate(phylo = tree,
+# XX <- simulate_internal(phylo = tree,
 #                process = "OU",
 #                root.state = list(random = TRUE,
 #                                  stationary.root = TRUE,
@@ -164,10 +164,10 @@ plot.data.process.actual(Y.state = extract.simulate(XX, what="states", where="ti
 #                selection.strength = alpha, 
 #                optimal.value = beta_0)
 # 
-# data = extract.simulate(XX, what="states", where="tips")
+# data = extract_simulate_internal(XX, what="states", where="tips")
 # 
-# plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
-#                     Z.state = extract.simulate(XX, what="states", where="nodes"),
+# plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
+#                     Z.state = extract_simulate_internal(XX, what="states", where="nodes"),
 #                     phylo = tree, 
 #                     paramsEstimate = list(shifts = shifts, optimal.value = beta_0))
 
@@ -254,27 +254,27 @@ p
 
 ## Process Plots
 # True process
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
-                    Z.state = extract.simulate(XX, what="states", where="nodes"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
+                    Z.state = extract_simulate_internal(XX, what="states", where="nodes"),
                     phylo = tree, 
                     paramsEstimate = list(shifts = shifts, optimal.value = beta_0))
 # DDSE
 Kt <- as.integer(DDSE_results@model) + 1
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
                     Z.state = estimations[[Kt]]$Zhat,
                     phylo = tree, 
                     paramsEstimate = list(shifts = estimations[[Kt]]$shifts, 
                                           optimal.value = estimations[[Kt]]$beta_0_estim))
 # Djump
 Kt <- as.integer(Djump_results@model) + 1
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
                     Z.state = estimations[[Kt]]$Zhat,
                     phylo = tree, 
                     paramsEstimate = list(shifts = estimations[[Kt]]$shifts, 
                                           optimal.value = estimations[[Kt]]$beta_0_estim))
 # True K
 Kt <- 5 + 1
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
                     Z.state = estimations[[Kt]]$Zhat,
                     phylo = tree, 
                     paramsEstimate = list(shifts = estimations[[Kt]]$shifts, 

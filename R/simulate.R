@@ -26,6 +26,89 @@
 #' @description
 #' \code{simulate} simulate a stochastic process on a tree.
 #'
+#' @param x an object of class \code{\link{params_process}} or \code{\link{PhyloEM}}.
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param checks whether to check the entry parameters for consistency. Default 
+#' to TRUE.
+#' @param simulate_random set to FALSE if only the expected values are needed
+#' (and not the random sample). Default to TRUE.
+#' @param U_tree optional, full incidence matrix of the tree, result of function
+#' \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.
+# @param nsim Unused.
+# @param seed Unused.
+#' @param ... for a \code{PhyloEM} object, further arguments to be passed on to
+#' \code{\link{params_process.PhyloEM}} (to choose which parameters to extract from
+#' the results, see documentation of this function).
+#'     
+#' @return An S3 object of class \code{simulated_process}. This essencially contains:
+#' \describe{
+#'  \item{paramSimu}{An array with dimentions p x nNodes x 2 (BM)
+#'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
+#'  tree columns, containing respectively the simulated state,
+#'  expected value and optimal value for all the nodes.}
+#'  }
+#'  
+#' @seealso \code{\link{params_process}}, \code{\link{PhyloEM}}
+#' 
+#' @export
+#' 
+##
+simul_process <- function(x, ...) UseMethod("simul_process")
+
+##
+#' @describeIn simul_process \code{\link{params_process}} object
+##
+simul_process.params_process <- function(x, 
+                                         phylo, simulate_random = TRUE,
+                                         checks = TRUE,
+                                         U_tree = NULL){
+  
+  if (object$process == "BM"){ ## Just to be safe
+    object$selection.strength <- NULL
+    object$optimal.value <- NULL
+  }
+  
+  sim <- simulate_internal(phylo,
+                           process = object$process,
+                           p = ncol(object$variance),
+                           root.state = object$root.state,
+                           shifts = object$shifts,
+                           eps = 10^(-6),
+                           selection.strength = object$selection.strength,
+                           variance = object$variance,
+                           optimal.value = object$optimal.value,
+                           checks = checks,
+                           simulate_random = simulate_random,
+                           U_tree = U_tree,
+                           df = object$df)
+  
+  class(sim) <- "simulated_process"
+  return(sim)
+}
+
+##
+#' @describeIn simul_process \code{\link{PhyloEM}} object
+##
+simul_process.PhyloEM <- function(x, 
+                                  simulate_random = TRUE,
+                                  checks = TRUE,
+                                  U_tree = NULL, ...){
+  
+  params <- params_process(x, ...)
+  
+  return(simul_process.params_process(params, 
+                                      x$phylo,
+                                      simulate_random = simulate_random,
+                                      checks = checks,
+                                      U_tree = U_tree))
+}
+
+##
+#' @title Simulate a Stochastic Process on a tree
+#'
+#' @description
+#' \code{simulate_internal} simulate a stochastic process on a tree.
+#'
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param process The model used for the simulation. One of "BM" (for a full BM
 #' model, univariate or multivariate); "OU" (for a full OU model, univariate or
@@ -63,7 +146,7 @@
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.
 #'  
-#' @export
+#' @keywords internal
 #' 
 # 16/05/14 - Initial release
 # 20/05/14 - Gestion of edges (function correspondanceEdges)
@@ -71,27 +154,26 @@
 # 16/06/14 - check.selection.strength
 # 24/08/15 - Multivariate
 ##
-
-simulate <- function(phylo,
-                     process = c("BM", "OU", "scOU", "StudentOU"),
-                     p = 1,
-                     # independent = FALSE,
-                     root.state = list(random = FALSE, 
-                                       stationary.root = FALSE, 
-                                       value.root = NA, 
-                                       exp.root = NA,
-                                       var.root = NA),
-                     shifts = list(edges = NULL,
-                                   values = NULL,
-                                   relativeTimes = NULL),
-                     eps=10^(-6),
-                     selection.strength = NULL,
-                     variance = NULL,
-                     optimal.value = NULL,
-                     checks = TRUE,
-                     simulate_random = TRUE,
-                     U_tree = NULL,
-                     df = 1) {
+simulate_internal <- function(phylo,
+                              process = c("BM", "OU", "scOU", "StudentOU"),
+                              p = 1,
+                              # independent = FALSE,
+                              root.state = list(random = FALSE, 
+                                                stationary.root = FALSE, 
+                                                value.root = NA, 
+                                                exp.root = NA,
+                                                var.root = NA),
+                              shifts = list(edges = NULL,
+                                            values = NULL,
+                                            relativeTimes = NULL),
+                              eps=10^(-6),
+                              selection.strength = NULL,
+                              variance = NULL,
+                              optimal.value = NULL,
+                              checks = TRUE,
+                              simulate_random = TRUE,
+                              U_tree = NULL,
+                              df = 1) {
   # library(MASS)
   ntaxa <- length(phylo$tip.label)
   ## Set branch stochastic process
@@ -218,6 +300,50 @@ simulate <- function(phylo,
                              df = df)
   attr(paramSimu, "ntaxa") <- ntaxa
   return(paramSimu)
+}
+
+##
+# extract.simulate (paramSimu, where=c("tips","nodes"), what=c("states","expectations"))
+# PARAMETERS:
+# @paramSimu (matrix) return of the function simulate
+# @where (string) : where to extract the values : at the "tips" or the internal "nodes" ?
+# @what (string) : which value to extract : the simulated "states" or the "expectations" ?
+# RETURNS:
+# (vector) values choosen for nodes/tips choosen
+# DEPENDENCIES:
+# simulate
+# PURPOSE:
+# Extract the values wanted from the raw result of function simulate.
+# NOTES:
+# none
+# REVISIONS:
+# 16/05/14 - Initial release
+# 28/05/14 - Add optimal.values
+# 02/06/14 - Case where optimal.value is asked for a BM (retrun NULL)
+##
+extract_simulate_internal <- function(paramSimu,
+                                      where=c("tips", "nodes"),
+                                      what=c("states", "expectations", "optimal.values")){
+  where <- match.arg(where)
+  what <- match.arg(what)
+  ntaxa <- attr(paramSimu,"ntaxa")
+  if (where=="tips") {
+    rows <- 1:ntaxa
+  } else if (where=="nodes") {
+    rows <- (ntaxa+1):dim(paramSimu)[2]
+  }
+  if (what=="states") {
+    col <- 1
+  } else if (what=="expectations") {
+    col <- 2
+  } else if (what=="optimal.values") {
+    col <- 3
+  }
+  if (col > dim(paramSimu)[3] ){
+    return(NULL) # Case of optimal.value asked for a BM
+  } else {
+    return(matrix(paramSimu[, rows, col], nrow = dim(paramSimu)[1]))
+  }
 }
 
 ##
@@ -479,50 +605,6 @@ update.simulate.StudentOU <- function(edgeNbr, ancestral, length, shifts, varian
   SimExp <- c( ancestral[3]*(1-ee) + ancestral[1]*ee + ss + sqrt(variance*(1-ee^2)/(2*selection.strength))*rt(1, df),
                ancestral[3]*(1-ee) + ancestral[2]*ee + ss )
   return(c(SimExp,beta))
-}
-
-##
-# extract.simulate (paramSimu, where=c("tips","nodes"), what=c("states","expectations"))
-# PARAMETERS:
-# @paramSimu (matrix) return of the function simulate
-# @where (string) : where to extract the values : at the "tips" or the internal "nodes" ?
-# @what (string) : which value to extract : the simulated "states" or the "expectations" ?
-# RETURNS:
-# (vector) values choosen for nodes/tips choosen
-# DEPENDENCIES:
-# simulate
-# PURPOSE:
-# Extract the values wanted from the raw result of function simulate.
-# NOTES:
-# none
-# REVISIONS:
-# 16/05/14 - Initial release
-# 28/05/14 - Add optimal.values
-# 02/06/14 - Case where optimal.value is asked for a BM (retrun NULL)
-##
-extract.simulate <- function(paramSimu,
-                             where=c("tips", "nodes"),
-                             what=c("states", "expectations", "optimal.values")){
-  where <- match.arg(where)
-  what <- match.arg(what)
-  ntaxa <- attr(paramSimu,"ntaxa")
-  if (where=="tips") {
-    rows <- 1:ntaxa
-  } else if (where=="nodes") {
-    rows <- (ntaxa+1):dim(paramSimu)[2]
-  }
-  if (what=="states") {
-    col <- 1
-  } else if (what=="expectations") {
-    col <- 2
-  } else if (what=="optimal.values") {
-    col <- 3
-  }
-  if (col > dim(paramSimu)[3] ){
-    return(NULL) # Case of optimal.value asked for a BM
-  } else {
-    return(matrix(paramSimu[, rows, col], nrow = dim(paramSimu)[1]))
-  }
 }
 
 ##

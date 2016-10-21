@@ -62,28 +62,28 @@ compute_distance <- function(simest){
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
   Sigma_YY_inv <- solve(Sigma_YY)
   ## Mean at the tips (true parameters)
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process,
                  root.state = root.state, 
                  variance = 2 * simest$alpha * simest$gamma,
                  shifts = simest$shifts, 
                  selection.strength = simest$alpha, 
                  optimal.value = beta_0)
-  MU <- extract.simulate(XX, what="expectations", where="tips")
+  MU <- extract_simulate_internal(XX, what="expectations", where="tips")
   ## Mean at the tips (estimated parameters)
   root.state_estim <- list(random = TRUE,
                      stationary.root = TRUE,
                      value.root = NA,
                      exp.root = simest$beta_0_estim,
                      var.root  = simest$gamma_estim)
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process,
                  root.state = root.state_estim, 
                  variance = 2 * simest$alpha_estim * simest$gamma_estim,
                  shifts = simest$shifts_estim, 
                  selection.strength = simest$alpha_estim, 
                  optimal.value = simest$beta_0_estim)
-  MU_estim <- extract.simulate(XX, what="expectations", where="tips")
+  MU_estim <- extract_simulate_internal(XX, what="expectations", where="tips")
   ## Distance
   dif <- t(MU - MU_estim) %*% Sigma_YY_inv %*% (MU - MU_estim)
   return(dif)

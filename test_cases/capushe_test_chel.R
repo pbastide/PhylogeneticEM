@@ -116,27 +116,27 @@ plot(df_sub$K_try, df_sub$least_squares + 0.2 *pen_shape)
 
 ## Plots
 # True process
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
-                    Z.state = extract.simulate(XX, what="states", where="nodes"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
+                    Z.state = extract_simulate_internal(XX, what="states", where="nodes"),
                     phylo = tree, 
                     paramsEstimate = list(shifts = shifts, optimal.value = beta_0))
 # DDSE
 Kt <- as.integer(DDSE_results@model) + 1
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
                     Z.state = estimations[[Kt]]$Zhat,
                     phylo = tree, 
                     paramsEstimate = list(shifts = estimations[[Kt]]$shifts, 
                                           optimal.value = estimations[[Kt]]$beta_0_estim))
 # Djump
 Kt <- as.integer(Djump_results@model) + 1
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
                     Z.state = estimations[[Kt]]$Zhat,
                     phylo = tree, 
                     paramsEstimate = list(shifts = estimations[[Kt]]$shifts, 
                                           optimal.value = estimations[[Kt]]$beta_0_estim))
 # True K
 Kt <- 5 + 1
-plot.process.actual(Y.state = extract.simulate(XX, what="states", where="tips"),
+plot.process.actual(Y.state = extract_simulate_internal(XX, what="states", where="tips"),
                     Z.state = estimations[[Kt]]$Zhat,
                     phylo = tree, 
                     paramsEstimate = list(shifts = estimations[[Kt]]$shifts, 

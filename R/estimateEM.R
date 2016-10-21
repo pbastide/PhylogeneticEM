@@ -643,8 +643,8 @@ estimateEM <- function(phylo,
     conditional_law_X$covariances <- aperm(conditional_law_X$covariances, c(2, 3, 1))
     rm(condlaw)
     ## Mean at tips with estimated parameters
-    # m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
-    # m_Y_estim <- lapply(temp, function(z) extract.simulate(z$moments$sim, where="tips", what="expectations"))
+    # m_Y_estim <- extract_simulate_internal(tmpsim, where="tips", what="expectations")
+    # m_Y_estim <- lapply(temp, function(z) extract_simulate_internal(z$moments$sim, where="tips", what="expectations"))
     # m_Y_estim <- do.call(rbind, m_Y_estim)
   } else { ## NOT independent
     ## Likelihood and Mahalanobis of last parameters
@@ -655,21 +655,21 @@ estimateEM <- function(phylo,
     conditional_law_X <- temp$conditional_law_X
     ## Mean at tips with estimated parameters
     # m_Y_estim <- temp$conditional_law_X$expectation[, 1:ntaxa]
-    # m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
+    # m_Y_estim <- extract_simulate_internal(tmpsim, where="tips", what="expectations")
   }
   rm(temp)
-  tmpsim <- simulate(phylo = phylo,
-                     process = process,
-                     p = attr(params_scOU, "p_dim"),
-                     root.state = params_scOU$root.state,
-                     shifts = params_scOU$shifts,
-                     variance = params_scOU$variance,
-                     optimal.value = params_scOU$optimal.value,
-                     selection.strength = params_scOU$selection.strength,
-                     simulate_random = FALSE,
-                     U_tree = U_tree)
+  tmpsim <- simulate_internal(phylo = phylo,
+                              process = process,
+                              p = attr(params_scOU, "p_dim"),
+                              root.state = params_scOU$root.state,
+                              shifts = params_scOU$shifts,
+                              variance = params_scOU$variance,
+                              optimal.value = params_scOU$optimal.value,
+                              selection.strength = params_scOU$selection.strength,
+                              simulate_random = FALSE,
+                              U_tree = U_tree)
   ## Mean at tips with estimated parameters
-  m_Y_estim <- extract.simulate(tmpsim, where="tips", what="expectations")
+  m_Y_estim <- extract_simulate_internal(tmpsim, where="tips", what="expectations")
   rm(tmpsim)
   
   ########## Number of equivalent solutions ###################################
@@ -1159,8 +1159,8 @@ extract_params <- function(x, method){
 #' One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and DDSE for
 #' multivariate.
 #' @param reconstructed_states if the reconstructed states have already been
-#' computed (with function \code{\link{compute_ancestral_traits}}), they can be
-#' passed on here (avoids multiple computtaions of the E step).
+#' computed (by a previous call of the function, with \code{save_all=TRUE}),
+#' they can be passed on here (avoids multiple computaions of the E step).
 #' @param ... further arguments to be passed on to
 #' \code{\link{params_process.PhyloEM}}
 #' 
@@ -1257,26 +1257,26 @@ compute_ancestral_traits <- function(x,
   }
   
   ## Compute the expectations
-  tmpsim <- simulate(phylo = x$phylo, 
-                     process = x$process,
-                     p = x$p,
-                     root.state = params$root.state, 
-                     shifts = params$shifts, 
-                     variance = params$variance, 
-                     optimal.value = params$optimal.value, 
-                     selection.strength = params$selection.strength,
-                     simulate_random = FALSE,
-                     U_tree = x$U_tree)
+  tmpsim <- simulate_internal(phylo = x$phylo, 
+                              process = x$process,
+                              p = x$p,
+                              root.state = params$root.state, 
+                              shifts = params$shifts, 
+                              variance = params$variance, 
+                              optimal.value = params$optimal.value, 
+                              selection.strength = params$selection.strength,
+                              simulate_random = FALSE,
+                              U_tree = x$U_tree)
   
   ## Result
   return(list(Zhat = temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
               Yhat = temp$conditional_law_X$expectations[ , 1:ntaxa],
               Zvar = temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
               Yvar = temp$conditional_law_X$variances[ , , 1:ntaxa],
-              m_Y_estim = extract.simulate(tmpsim,
+              m_Y_estim = extract_simulate_internal(tmpsim,
                                            where = "tips",
                                            what = "expectations"),
-              m_Z_estim = extract.simulate(tmpsim,
+              m_Z_estim = extract_simulate_internal(tmpsim,
                                            where = "nodes",
                                            what = "expectations")))
 }
@@ -1531,7 +1531,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     #       warning(paste0("For K = ", length(params_scOU$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
     #       # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
     #     }
-    #     tmpsim <- simulate(phylo = original_phy, 
+    #     tmpsim <- simulate_internal(phylo = original_phy, 
     #                        process = process_original,
     #                        p = attr(params_scOU, "p_dim"),
     #                        root.state = params_scOU$root.state, 
@@ -1545,7 +1545,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     #                 Yhat = temp$conditional_law_X$expectations[ , 1:ntaxa],
     #                 Zvar = temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
     #                 Yvar = temp$conditional_law_X$variances[ , , 1:ntaxa],
-    #                 m_Y_estim = extract.simulate(tmpsim,
+    #                 m_Y_estim = extract_simulate_internal(tmpsim,
     #                                              where="tips",
     #                                              what="expectations")))
     #   }

@@ -30,7 +30,7 @@
 #' This function takes parameters sim, Sigma and Sigma_YY_inv from  
 #' \code{compute_mean_variance.simple}. It uses functions 
 #' \code{extract.variance_covariance}, \code{extract.covariance_parents}, and
-#'  \code{extract.simulate} to extract the needed quantities from these objects.
+#'  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
 #' @param Y_data : vector indicating the data at the tips
@@ -117,12 +117,12 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
                             variances = array(NA, c(p, p, ntaxa + nNodes)), 
                             covariances = matrix(NA, c(p, p, ntaxa + nNodes)))
   ## Mean
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
-  m_Z <- extract.simulate(sim, where="nodes", what="expectations")
-  conditional_law_X$optimal.values <- cbind(extract.simulate(sim,
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
+  m_Z <- extract_simulate_internal(sim, where="nodes", what="expectations")
+  conditional_law_X$optimal.values <- cbind(extract_simulate_internal(sim,
                                                              where="tips",
                                                              what="optimal.values"),
-                                            extract.simulate(sim,
+                                            extract_simulate_internal(sim,
                                                              where="nodes",
                                                              what="optimal.values")) # NULL if BM
   ## Variance Covariance
@@ -245,8 +245,8 @@ compute_cond_law.simple.nomissing.BM <- function (phylo, Y_data, sim,
                             variances = array(NA, c(p, p, ntaxa + nNodes)), 
                             covariances = matrix(NA, c(p, p, ntaxa + nNodes)))
   ## Mean
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
-  m_Z <- extract.simulate(sim, where="nodes", what="expectations")
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
+  m_Z <- extract_simulate_internal(sim, where="nodes", what="expectations")
   # Conditionnal expectation of unkonwn values
   conditional_law_X$expectations <- m_Z + (Y_data- m_Y) %*% F_means
   conditional_law_X$expectations <- cbind(Y_data, conditional_law_X$expectations)
@@ -687,16 +687,16 @@ compute_mean_variance.simple <- function(phylo,
                                          scOU = compute_variance_covariance.scOU)
   ## Mean
   if (is.null(sim)){
-    sim <- simulate(phylo = phylo, 
-                    process = process,
-                    p = attr(params_old, "p_dim"),
-                    root.state = params_old$root.state, 
-                    shifts = params_old$shifts, 
-                    variance = params_old$variance, 
-                    optimal.value = params_old$optimal.value, 
-                    selection.strength = params_old$selection.strength,
-                    simulate_random = FALSE,
-                    U_tree = U_tree)
+    sim <- simulate_internal(phylo = phylo, 
+                             process = process,
+                             p = attr(params_old, "p_dim"),
+                             root.state = params_old$root.state, 
+                             shifts = params_old$shifts, 
+                             variance = params_old$variance, 
+                             optimal.value = params_old$optimal.value, 
+                             selection.strength = params_old$selection.strength,
+                             simulate_random = FALSE,
+                             U_tree = U_tree)
   }
   ## Variance Covariance
   Sigma <- compute_variance_covariance(times_shared = times_shared, 
@@ -715,16 +715,16 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
                                                        F_moments,
                                                        U_tree = NULL, ...) {
   ## Mean
-  sim <- simulate(phylo = phylo, 
-                  process = process,
-                  p = attr(params_old, "p_dim"),
-                  root.state = params_old$root.state, 
-                  shifts = params_old$shifts, 
-                  variance = params_old$variance, 
-                  optimal.value = params_old$optimal.value, 
-                  selection.strength = params_old$selection.strength,
-                  simulate_random = FALSE,
-                  U_tree = U_tree)
+  sim <- simulate_internal(phylo = phylo, 
+                           process = process,
+                           p = attr(params_old, "p_dim"),
+                           root.state = params_old$root.state, 
+                           shifts = params_old$shifts, 
+                           variance = params_old$variance, 
+                           optimal.value = params_old$optimal.value, 
+                           selection.strength = params_old$selection.strength,
+                           simulate_random = FALSE,
+                           U_tree = U_tree)
   return(list(sim = sim, C_YY = F_moments$C_YY,
               C_YY_chol_inv = F_moments$C_YY_chol_inv,
               F_means = F_moments$F_means, F_vars = F_moments$F_vars))
@@ -743,7 +743,7 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
 #'
 #' @details
 #' This function takes parameters sim and Sigma_YY_inv from  
-#' \code{compute_mean_variance.simple}. It uses function \code{extract.simulate}
+#' \code{compute_mean_variance.simple}. It uses function \code{extract_simulate_internal}
 #' to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
@@ -758,7 +758,7 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
 compute_residuals.simple <- function(phylo, Y_data_vec, sim,
                                      Sigma_YY_chol_inv, miss){
   ntaxa <- length(phylo$tip.label)
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   m_Y <- as.vector(m_Y)[!miss]
   resis <- Sigma_YY_chol_inv %*% (Y_data_vec - m_Y)
   return(resis)
@@ -774,7 +774,7 @@ compute_residuals.simple <- function(phylo, Y_data_vec, sim,
 #'
 #' @details
 #' This function takes parameters sim and Sigma_YY_inv from  
-#' \code{compute_mean_variance.simple}. It uses function \code{extract.simulate}
+#' \code{compute_mean_variance.simple}. It uses function \code{extract_simulate_internal}
 #' to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
@@ -791,7 +791,7 @@ compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
                                                 miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
                                                 ...){
   ntaxa <- length(phylo$tip.label)
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   m_Y <- as.vector(m_Y)[!miss]
 #  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
   MD <- tcrossprod(t(Y_data_vec - m_Y) %*% Sigma_YY_chol_inv)
@@ -801,7 +801,7 @@ compute_mahalanobis_distance.simple <- function(phylo, Y_data_vec, sim,
 compute_mahalanobis_distance.simple.nomissing.BM <- function(phylo, Y_data, sim,
                                                              C_YY_chol_inv, R, ...){
   ntaxa <- length(phylo$tip.label)
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
 #  MD <- t(Y_data - m_Y)%*%Sigma_YY_inv%*%(Y_data - m_Y)
   R_chol <- t(chol(R)) # R = R_chol %*% t(R_chol)
   R_chol_inv <- t(backsolve(t(R_chol), diag(ncol(R_chol))))
@@ -821,7 +821,7 @@ compute_mahalanobis_distance.simple.nomissing.BM <- function(phylo, Y_data, sim,
 #' This function takes parameters sim, Sigma and Sigma_YY_inv from  
 #' \code{compute_mean_variance.simple}. It uses functions 
 #' \code{extract.variance_covariance}, \code{extract.covariance_parents}, and
-#'  \code{extract.simulate} to extract the needed quantities from these objects.
+#'  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
 #' @param Y_data : vector indicating the data at the tips
@@ -843,7 +843,7 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
   # ntaxa <- length(phylo$tip.label)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
   logdetSigma_YY <- Matrix::determinant(Sigma_YY, logarithm = TRUE)$modulus
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   LL <- length(Y_data_vec) * log(2*pi) + logdetSigma_YY
   m_Y_vec <- as.vector(m_Y)[!miss]
 #  LL <- LL + t(Y_data_vec - m_Y_vec) %*% Sigma_YY_inv %*% (Y_data_vec - m_Y_vec)
@@ -856,7 +856,7 @@ compute_log_likelihood.simple.nomissing.BM <- function(phylo, Y_data, sim,
   # ntaxa <- length(phylo$tip.label)
   logdetC_YY <- determinant(C_YY, logarithm = TRUE)$modulus
   logdetR <- determinant(R, logarithm = TRUE)$modulus
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   LL <- prod(dim(Y_data)) * log(2*pi) + dim(R)[1] * logdetC_YY + dim(C_YY)[1] * logdetR
   LL <- LL + compute_mahalanobis_distance.simple.nomissing.BM(phylo, Y_data, sim,
                                                               C_YY_chol_inv, R)
@@ -876,7 +876,7 @@ compute_log_maha.simple <- function(phylo, Y_data_vec, sim,
                                     Sigma, Sigma_YY_chol_inv,
                                     miss, masque_data){
   ntaxa <- length(phylo$tip.label)
-  m_Y <- extract.simulate(sim, where="tips", what="expectations")
+  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   m_Y_vec <- as.vector(m_Y)[!miss]
   LL <- tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
   return(-LL/2)

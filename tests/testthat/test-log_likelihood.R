@@ -29,7 +29,7 @@
 #                      root.state = root.state)
 #   attr(paramsSimu, "p_dim") <- p
 #   
-#   X1 <- simulate(tree,
+#   X1 <- simulate_internal(tree,
 #                  p = p,
 #                  root.state = root.state,
 #                  process = "OU",
@@ -37,7 +37,7 @@
 #                  optimal.value = optimal.value,
 #                  selection.strength = selection.strength,
 #                  shifts = shifts)
-#   Y_sim <- extract.simulate(X1, "tips", "states")
+#   Y_sim <- extract_simulate_internal(X1, "tips", "states")
 #   
 #   temps <- system.time(moments <- compute_mean_variance.simple(phylo = tree,
 #                                           times_shared = compute_times_ca(tree),

@@ -240,13 +240,13 @@ root.state <- list(random=TRUE,stationary.root=TRUE, value.root=3,exp.root=exp.s
 shifts = list(edges=c(18),values=c(6),relativeTimes=c(0))
 paramsSimu <- list(variance=variance, optimal.value=optimal.value, selection.strength=selection.strength, shifts=shifts, root.state=root.state)
 
-X1 <- simulate(tree, root.state = root.state, process = "BM", variance = variance, shifts = shifts)
+X1 <- simulate_internal(tree, root.state = root.state, process = "BM", variance = variance, shifts = shifts)
 
-X1 <- simulate(tree, root.state = root.state, process = "OU", variance=variance, optimal.value=optimal.value, selection.strength=selection.strength, shifts=shifts)
+X1 <- simulate_internal(tree, root.state = root.state, process = "OU", variance=variance, optimal.value=optimal.value, selection.strength=selection.strength, shifts=shifts)
 
 plot(tree)
-X1.tips <- extract.simulate(X1,"tips","states")
-X1.nodes <- extract.simulate(X1,"nodes","states")
+X1.tips <- extract_simulate_internal(X1,"tips","states")
+X1.nodes <- extract_simulate_internal(X1,"nodes","states")
 tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
 nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
 plot.process("Plot_sim_OU_shift", TreeType, X1.tips, X1.nodes, tree, process="OU", paramsSimu=paramsSimu)
@@ -257,11 +257,11 @@ alpha <- 1
 sigma2 <- 1
 beta <- -3
 for (i in 1:1000) {
-  XX <- simulate(tree, root.state, process = "OU", variance=sigma2, optimal.value=beta, selection.strenght=alpha)
-  X.tips <- rbind(X.tips,extract.simulate(XX,"tips","states"))
+  XX <- simulate_internal(tree, root.state, process = "OU", variance=sigma2, optimal.value=beta, selection.strenght=alpha)
+  X.tips <- rbind(X.tips,extract_simulate_internal(XX,"tips","states"))
 }
 MeanEmp <- colMeans(X.tips)
-MeanTh <- extract.simulate(XX,"tips","exp")  # Theoretical Mean vector
+MeanTh <- extract_simulate_internal(XX,"tips","exp")  # Theoretical Mean vector
 MeanTh - MeanEmp
 qqnorm(X.tips[1,]); qqline(X.tips[1,])
 pairs(X.tips)
@@ -312,14 +312,14 @@ paramsSimu <- list(variance = variance,
                    shifts = shifts,
                    root.state = root.state)
 
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "OU",
@@ -329,8 +329,8 @@ X1 <- simulate(tree,
                shifts = shifts)
 
 plot(tree)
-X1.tips <- extract.simulate(X1,"tips","expe")
-X1.nodes <- extract.simulate(X1,"nodes","states")
+X1.tips <- extract_simulate_internal(X1,"tips","expe")
+X1.nodes <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -389,15 +389,15 @@ paramsSimu <- list(variance = variance,
                    root.state = root.state)
 
 ## Simulate Process
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_data <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_data <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -491,15 +491,15 @@ paramsSimu <- list(variance = variance,
                    root.state = root.state)
 
 ## Simulate Process
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_data <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_data <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -578,7 +578,7 @@ paramsSimu <- list(variance = variance,
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "scOU",
@@ -587,7 +587,7 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -715,15 +715,15 @@ paramsSimu <- list(variance = variance,
                    root.state = root.state)
 
 ## Simulate Process
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_data <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_data <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -799,15 +799,15 @@ paramsSimu
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_data <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_data <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -922,15 +922,15 @@ paramsSimu
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_data <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_data <- extract_simulate_internal(X1,"nodes","states")
 
 ## Mising data
 Y_data_miss <- Y_data
@@ -1059,14 +1059,14 @@ paramsSimu
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-Y_data <- extract.simulate(X1,"tips","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -1180,7 +1180,7 @@ paramsSimu <- list(variance = variance,
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "scOU",
@@ -1189,8 +1189,8 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -1388,7 +1388,7 @@ attr(paramsSimu, "p_dim") <- 1
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                root.state = root.state,
                process = "OU",
                variance = variance,
@@ -1396,8 +1396,8 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -1747,7 +1747,7 @@ attr(paramsSimu, "p_dim") <- p
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "scOU",
@@ -1756,8 +1756,8 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
 
 ## Mising data
 Y_data_miss <- Y_data
@@ -1940,7 +1940,7 @@ attr(paramsSimu, "p_dim") <- 1
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                root.state = root.state,
                process = "OU",
                variance = variance,
@@ -1948,8 +1948,8 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -2031,7 +2031,7 @@ paramsSimu1 <- list(variance = 1,
                    selection.strength = alpha,
                    optimal.value = lambda)
 
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                root.state = paramsSimu1$root.state,
                process = "OU",
                variance = paramsSimu1$variance,
@@ -2039,10 +2039,10 @@ X1 <- simulate(tree,
                selection.strength = paramsSimu1$selection.strength,
                optimal.value = paramsSimu1$optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
-Y_exp_1 <- extract.simulate(X1, "tips", "expectations")
-Z_exp_1 <- extract.simulate(X1, "nodes", "expectations")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
+Y_exp_1 <- extract_simulate_internal(X1, "tips", "expectations")
+Z_exp_1 <- extract_simulate_internal(X1, "nodes", "expectations")
 
 ## Second simu
 beta_0 <- -2
@@ -2056,7 +2056,7 @@ paramsSimu2$root.state <- list(random = FALSE,
                                var.root = NA)
 paramsSimu2$optimal.value <- beta_0
 
-X2 <- simulate(tree,
+X2 <- simulate_internal(tree,
                root.state = paramsSimu2$root.state,
                process = "OU",
                variance = paramsSimu2$variance,
@@ -2064,8 +2064,8 @@ X2 <- simulate(tree,
                selection.strength = paramsSimu2$selection.strength,
                optimal.value = paramsSimu2$optimal.value)
 
-Y_exp_2 <- extract.simulate(X2, "tips", "expectations")
-Z_exp_2 <- extract.simulate(X2, "nodes", "expectations")
+Y_exp_2 <- extract_simulate_internal(X2, "tips", "expectations")
+Z_exp_2 <- extract_simulate_internal(X2, "nodes", "expectations")
 all.equal(Y_exp_1, Y_exp_2)
 
 ## plots
@@ -2136,7 +2136,7 @@ attr(paramsSimu, "p_dim") <- 1
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                root.state = root.state,
                process = "OU",
                variance = variance,
@@ -2144,8 +2144,8 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
 
 plot.data.process.actual(Y.state = Y_data,
                          phylo = tree, 
@@ -2365,7 +2365,7 @@ paramsSimu <- list(variance = variance,
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "scOU",
@@ -2374,8 +2374,8 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
 
 ## Mising data
 Y_data_miss <- Y_data
@@ -2466,15 +2466,15 @@ paramsSimu <- list(variance = variance,
                    root.state = root.state)
 
 ## Simulate Process
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_data <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_data <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -2543,10 +2543,10 @@ edgelabels()
 
 root.state <- list(random=FALSE,value.root=-1,exp.root=3,var.root=2)
 shifts = list(edges=c(2),values=c(2),relativeTimes=c(0))
-X1 <- simulate(tree, root.state, process = "BM", shifts, variance=1)
+X1 <- simulate_internal(tree, root.state, process = "BM", shifts, variance=1)
 plot(tree)
-X1.tips <- extract.simulate(X1,"tips","expectations")
-X1.nodes <- extract.simulate(X1,"nodes","exp")
+X1.tips <- extract_simulate_internal(X1,"tips","expectations")
+X1.nodes <- extract_simulate_internal(X1,"nodes","exp")
 tiplabels(pch = 19, cex = abs(X1.tips), col = ifelse(X1.tips >= 0, "orangered", "lightblue"))
 nodelabels(pch = 19, cex = abs(X1.nodes), col = ifelse(X1.nodes >= 0, "orangered", "lightblue"))
 
@@ -2744,9 +2744,9 @@ root.state <- test.root.state(process=process, root.state=root.state, variance=v
 paramsSimu <- list(root.state=root.state, shifts=shifts, variance=variance, selection.strength=selection.strength, optimal.value=optimal.value)
 paramsSimu
 # Simulate
-XX <- simulate(phy, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
-Y_data <- extract.simulate(XX, what="states", where="tips")
-Z.nodes <- extract.simulate(XX,"nodes","states"); Z.nodes
+XX <- simulate_internal(phy, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
+Y_data <- extract_simulate_internal(XX, what="states", where="tips")
+Z.nodes <- extract_simulate_internal(XX,"nodes","states"); Z.nodes
 
 ## Nombre de ruptures pour l'initialisation
 K <- 2
@@ -2832,9 +2832,9 @@ process <- "BM"
 variance <- 1
 root.state <- test.root.state(process=process, root.state=root.state, variance=variance, selection.strength=selection.strength, optimal.value=optimal.value)
 paramsSimu <- list(root.state=root.state, shifts=shifts, variance=variance)
-XX <- simulate(tree, root.state, process = process, variance=variance, shifts=shifts)
-Y_data <- extract.simulate(XX, what="states", where="tips")
-Z.nodes <- extract.simulate(XX,"nodes","states"); Z.nodes
+XX <- simulate_internal(tree, root.state, process = process, variance=variance, shifts=shifts)
+Y_data <- extract_simulate_internal(XX, what="states", where="tips")
+Z.nodes <- extract_simulate_internal(XX,"nodes","states"); Z.nodes
 plot.process("Plot_simulation", TreeType, Y_data, Z.nodes, tree, process = process, paramsSimu=paramsSimu, directory="Results/Miscellaneous_Evals/")
 save.process("Data_simulated",TreeType, XX, process, paramsSimu, directory="Results/Miscellaneous_Evals/")
 
@@ -2851,10 +2851,10 @@ plot.process("Plot_reconstructed", TreeType, Y_data, Z_reconstructed, tree, proc
 save.process("Data_reconstructed",TreeType, XX, process, paramsSimu=paramsSimu, paramsEstimate=params_estim_EM, estimate=TRUE, directory="Results/Miscellaneous_Evals/")
 
 # Simulate a process with estimated parameters
-XX_sim <- simulate(tree, root.state=params_estim_EM$root.state, process = "BM", variance=params_estim_EM$variance)
+XX_sim <- simulate_internal(tree, root.state=params_estim_EM$root.state, process = "BM", variance=params_estim_EM$variance)
 plot(tree)
-Y_sim <- extract.simulate(XX_sim, what="states", where="tips")
-Z_sim <- extract.simulate(XX_sim,"nodes","states")
+Y_sim <- extract_simulate_internal(XX_sim, what="states", where="tips")
+Z_sim <- extract_simulate_internal(XX_sim,"nodes","states")
 tiplabels(pch = 19, cex = abs(Y_sim)/mean(abs(Y_sim)), col = ifelse(Y_sim >= 0, "orangered", "lightblue"))
 nodelabels(pch = 19, cex = abs(Z_sim)/mean(abs(Z_sim)), col = ifelse(Z_sim >= 0, "orangered", "lightblue"))
 
@@ -2888,10 +2888,10 @@ root.state <- test.root.state(process=process, root.state=root.state, variance=v
 paramsSimu <- list(root.state=root.state, shifts=shifts, variance=variance, selection.strength=selection.strength, optimal.value=optimal.value)
 paramsSimu
   # Simulate
-XX <- simulate(tree, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
+XX <- simulate_internal(tree, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
   # Plot and save
-Y_data <- extract.simulate(XX, what="states", where="tips")
-Z.nodes <- extract.simulate(XX,"nodes","states"); Z.nodes
+Y_data <- extract_simulate_internal(XX, what="states", where="tips")
+Z.nodes <- extract_simulate_internal(XX,"nodes","states"); Z.nodes
 plot.process("Plot_sim", TreeType, Y_data, Z.nodes, tree, process = process, paramsSimu=paramsSimu, directory="Results/Miscellaneous_Evals/")
 save.process("Data_sim",TreeType, XX, process, paramsSimu, directory="Results/Miscellaneous_Evals/")
 
@@ -2955,10 +2955,10 @@ root.state <- test.root.state(process=process, root.state=root.state, variance=v
 paramsSimu <- list(root.state=root.state, shifts=shifts, variance=variance, selection.strength=selection.strength, optimal.value=optimal.value)
 paramsSimu
 # Simulate
-XX <- simulate(tree, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
+XX <- simulate_internal(tree, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
 # Plot and save
-Y_data <- extract.simulate(XX, what="states", where="tips")
-Z.nodes <- extract.simulate(XX,"nodes","states"); Z.nodes
+Y_data <- extract_simulate_internal(XX, what="states", where="tips")
+Z.nodes <- extract_simulate_internal(XX,"nodes","states"); Z.nodes
 plot.process("Plot_sim", TreeType, Y_data, Z.nodes, tree, process = process, paramsSimu=paramsSimu, directory="Results/Miscellaneous_Evals/")
 save.process("Data_sim",TreeType, XX, process, paramsSimu, directory="Results/Miscellaneous_Evals/")
 rm(root.state, shifts, process, variance, selection.strength, optimal.value, XX, Z.nodes)
@@ -3067,10 +3067,10 @@ root.state <- test.root.state(process=process, root.state=root.state, variance=v
 paramsSimu <- list(root.state=root.state, shifts=shifts, variance=variance)
 paramsSimu
 # Simulate
-XX <- simulate(tree, root.state, process = process, variance=variance, shifts=shifts)
+XX <- simulate_internal(tree, root.state, process = process, variance=variance, shifts=shifts)
 # Plot and save
-Y_data <- extract.simulate(XX, what="states", where="tips")
-Z.nodes <- extract.simulate(XX,"nodes","states"); Z.nodes
+Y_data <- extract_simulate_internal(XX, what="states", where="tips")
+Z.nodes <- extract_simulate_internal(XX,"nodes","states"); Z.nodes
 plot.process("Plot_sim", TreeType, Y_data, Z.nodes, tree, process = process, paramsSimu=paramsSimu, directory="Results/Miscellaneous_Evals/")
 save.process("Data_sim",TreeType, XX, process, paramsSimu, directory="Results/Miscellaneous_Evals/")
 rm(root.state, shifts, process, variance, XX, Z.nodes)
@@ -3196,10 +3196,10 @@ root.state <- test.root.state(process=process, root.state=root.state, variance=v
 paramsSimu <- list(root.state=root.state, shifts=shifts, variance=variance, selection.strength=selection.strength, optimal.value=optimal.value)
 paramsSimu
 # Simulate
-XX <- simulate(tree, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
+XX <- simulate_internal(tree, root.state, process = process, variance=variance, shifts=shifts, selection.strength=selection.strength, optimal.value=optimal.value)
 # Plot and save
-Y_data <- extract.simulate(XX, what="states", where="tips")
-Z.nodes <- extract.simulate(XX,"nodes","states"); Z.nodes
+Y_data <- extract_simulate_internal(XX, what="states", where="tips")
+Z.nodes <- extract_simulate_internal(XX,"nodes","states"); Z.nodes
 plot.process("Plot_sim", TreeType, Y_data, Z.nodes, tree, process = process, paramsSimu=paramsSimu, directory="Results/Miscellaneous_Evals/")
 save.process("Data_sim",TreeType, XX, process, paramsSimu, directory="Results/Miscellaneous_Evals/")
 rm(root.state, shifts, process, variance, selection.strength, optimal.value, XX, Z.nodes)
@@ -3405,7 +3405,7 @@ datasetsim <- function(alpha, gamma, K, n, grp) {
                      value.root = NA,
                      exp.root = beta_0,
                      var.root = gamma)
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process,
                  root.state = root.state, 
                  variance = 2*alpha*gamma,
@@ -3418,8 +3418,8 @@ datasetsim <- function(alpha, gamma, K, n, grp) {
               n = n,
               grp = grp,
               shifts = shifts,
-              Y_data = extract.simulate(XX, what="states", where="tips"),
-              Z_data = extract.simulate(XX, what = "states", where = "nodes"),
+              Y_data = extract_simulate_internal(XX, what="states", where="tips"),
+              Z_data = extract_simulate_internal(XX, what = "states", where = "nodes"),
               params = list(variance = 2*alpha*gamma,
                             root.state = root.state,
                             shifts = shifts,
@@ -3657,7 +3657,7 @@ datasetsim <- function(alpha, gamma, K, shifts, n, grp) {
                      value.root = NA,
                      exp.root = beta_0,
                      var.root = gamma)
-  XX <- simulate(phylo = tree,
+  XX <- simulate_internal(phylo = tree,
                  process = process,
                  root.state = root.state, 
                  variance = 2*alpha*gamma,
@@ -3670,8 +3670,8 @@ datasetsim <- function(alpha, gamma, K, shifts, n, grp) {
               n = n,
               grp = grp,
               shifts = shifts,
-              Y_data = extract.simulate(XX, what="states", where="tips"),
-              Z_data = extract.simulate(XX, what = "states", where = "nodes"),
+              Y_data = extract_simulate_internal(XX, what="states", where="tips"),
+              Z_data = extract_simulate_internal(XX, what = "states", where = "nodes"),
               params = list(variance = 2*alpha*gamma,
                             root.state = root.state,
                             shifts = shifts,
@@ -3914,14 +3914,14 @@ shifts = list(edges = c(18, 32),
                            c(-5, 5, 0)),
               relativeTimes = 0)
 f1 <- function(tree, p, root.state, variance, shifts){
-  X1 <- simulate(tree,
+  X1 <- simulate_internal(tree,
                  p = p,
                  root.state = root.state,
                  process = "BM",
                  variance = variance,
                  shifts = shifts)
   
-  return(extract.simulate(X1, where = "tips", what = "exp"))
+  return(extract_simulate_internal(X1, where = "tips", what = "exp"))
 }
 
 T_tree <- incidence.matrix(tree)
@@ -3960,15 +3960,15 @@ paramsSimu <- list(variance = variance,
 regimes <- allocate_regimes_from_shifts(tree, shifts$edges)
 
 set.seed(17920902)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-traits <- t(extract.simulate(X1, where = "tips", what = "state"))
-ancestral <- extract.simulate(X1, where = "nodes", what = "states")
+traits <- t(extract_simulate_internal(X1, where = "tips", what = "state"))
+ancestral <- extract_simulate_internal(X1, where = "nodes", what = "states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -4067,15 +4067,15 @@ paramsSimu <- list(variance = variance,
 regimes <- allocate_regimes_from_shifts(tree, shifts$edges)
 
 set.seed(17920902)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-traits <- t(extract.simulate(X1, where = "tips", what = "state"))
-ancestral <- extract.simulate(X1, where = "nodes", what = "states")
+traits <- t(extract_simulate_internal(X1, where = "tips", what = "state"))
+ancestral <- extract_simulate_internal(X1, where = "nodes", what = "states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -4146,15 +4146,15 @@ shifts = list(edges = c(18),
 regimes <- allocate_regimes_from_shifts(tree, shifts$edges)
 
 set.seed(17920902)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "BM",
                variance = variance,
                shifts = shifts)
 
-traits <- t(extract.simulate(X1, where = "tips", what = "state"))
-ancestral <- extract.simulate(X1, where = "nodes", what = "states")
+traits <- t(extract_simulate_internal(X1, where = "tips", what = "state"))
+ancestral <- extract_simulate_internal(X1, where = "nodes", what = "states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){
@@ -4281,7 +4281,7 @@ paramsSimu <- list(variance = variance,
 
 ## Simulate Process
 set.seed(1344)
-X1 <- simulate(tree,
+X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
                process = "OU",
@@ -4290,8 +4290,8 @@ X1 <- simulate(tree,
                selection.strength = alpha,
                optimal.value = optimal.value)
 
-Y_data <- extract.simulate(X1,"tips","states")
-Z_states <- extract.simulate(X1,"nodes","states")
+Y_data <- extract_simulate_internal(X1,"tips","states")
+Z_states <- extract_simulate_internal(X1,"nodes","states")
 
 par(mfrow = c(1,p), mar = c(0, 0, 0, 0), omi = c(0, 0, 0, 0))
 for (l in 1:p){

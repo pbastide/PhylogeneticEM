@@ -17,14 +17,14 @@ test_that("Mean of the BM", {
                              c(-5, 5, 0)),
                 relativeTimes = 0)
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
   
-  X1.tips.exp <- extract.simulate(X1, where = "tips", what = "exp")
+  X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
   
   ## Compute expectations with tree matrix
   T_tree <- incidence.matrix(tree)
@@ -39,20 +39,20 @@ test_that("Mean of the BM", {
   Delta <- shifts.list_to_matrix(tree, shifts)
   X1.all.exp.mat <- tcrossprod(Delta, U_tree) + root.state$value.root
   
-  X1.nodes.exp <- extract.simulate(X1, where = "nodes", what = "exp")
+  X1.nodes.exp <- extract_simulate_internal(X1, where = "nodes", what = "exp")
   X1.all.exp <- cbind(X1.tips.exp, X1.nodes.exp)
   
   expect_that(X1.all.exp.mat, equals(X1.all.exp))
   
   ## Without simulating
-  X2 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts,
-                 simulate_random = FALSE)
-  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  X2 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts,
+                          simulate_random = FALSE)
+  X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X1.tips.exp, equals(X2.tips.exp))
 })
 
@@ -73,25 +73,25 @@ test_that("Mean of the BM - random root", {
                              c(-5, 5, 0)),
                 relativeTimes = 0)
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
   
-  X1.tips.exp <- extract.simulate(X1, where = "tips", what = "exp")
+  X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
   
   ## Does adding a root edge change anything ?
   tree$root.edge <- 1
-  X2 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts)
+  X2 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts)
   
-  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X1.tips.exp, equals(X2.tips.exp))
   
   ## Compute expectations with tree matrix
@@ -107,21 +107,21 @@ test_that("Mean of the BM - random root", {
   Delta <- shifts.list_to_matrix(tree, shifts)
   X1.all.exp.mat <- tcrossprod(Delta, U_tree) + root.state$exp.root
   
-  X1.nodes.exp <- extract.simulate(X1, where = "nodes", what = "exp")
+  X1.nodes.exp <- extract_simulate_internal(X1, where = "nodes", what = "exp")
   X1.all.exp <- cbind(X1.tips.exp, X1.nodes.exp)
   
   expect_that(X1.all.exp.mat, equals(X1.all.exp))
   
   ## Without simulating
-  X2 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "BM",
-                 variance = variance,
-                 shifts = shifts,
-                 simulate_random = FALSE,
-                 U_tree = U_tree)
-  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  X2 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "BM",
+                          variance = variance,
+                          shifts = shifts,
+                          simulate_random = FALSE,
+                          U_tree = U_tree)
+  X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X1.tips.exp, equals(X2.tips.exp))
 })
 
@@ -148,16 +148,16 @@ test_that("Mean of the OU", {
                              c(2, -8, 0.3)),
                 relativeTimes = 0)
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "OU",
-                 variance = variance,
-                 optimal.value = optimal.value,
-                 selection.strength = selection.strength,
-                 shifts = shifts)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts)
   
-  X1.tips.exp <- extract.simulate(X1, where = "tips", what = "exp")
+  X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
   
   ## Compute expectations with tree matrix
   T_tree <- incidence.matrix(tree)
@@ -171,16 +171,16 @@ test_that("Mean of the OU", {
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
   
   ## Without simulate
-  X2 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "OU",
-                 variance = variance,
-                 optimal.value = optimal.value,
-                 selection.strength = selection.strength,
-                 shifts = shifts,
-                 simulate_random = FALSE)
-  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  X2 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts,
+                          simulate_random = FALSE)
+  X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
 
@@ -207,16 +207,16 @@ test_that("OU - fixed root", {
                              c(2, -8, 0.3)),
                 relativeTimes = 0)
   
-  X1 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "OU",
-                 variance = variance,
-                 optimal.value = optimal.value,
-                 selection.strength = selection.strength,
-                 shifts = shifts)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts)
   
-  X1.tips.exp <- extract.simulate(X1, where = "tips", what = "exp")
+  X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
   
   ## Compute expectations with tree matrix
   T_tree <- incidence.matrix(tree)
@@ -230,16 +230,16 @@ test_that("OU - fixed root", {
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
   
   ## Without simulate
-  X2 <- simulate(tree,
-                 p = p,
-                 root.state = root.state,
-                 process = "OU",
-                 variance = variance,
-                 optimal.value = optimal.value,
-                 selection.strength = selection.strength,
-                 shifts = shifts,
-                 simulate_random = FALSE)
-  X2.tips.exp <- extract.simulate(X2, where = "tips", what = "exp")
+  X2 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts,
+                          simulate_random = FALSE)
+  X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
 
@@ -268,35 +268,35 @@ test_that("Multivariate Scalar (scOU)", {
                 relativeTimes = 0)
   
   ## Forget that it is scalar
-  Xnot <- simulate(tree,
-                   p = p,
-                   root.state = root.state,
-                   process = "OU",
-                   variance = variance,
-                   optimal.value = optimal.value,
-                   selection.strength = selection.strength,
-                   shifts = shifts)
+  Xnot <- simulate_internal(tree,
+                            p = p,
+                            root.state = root.state,
+                            process = "OU",
+                            variance = variance,
+                            optimal.value = optimal.value,
+                            selection.strength = selection.strength,
+                            shifts = shifts)
   ## Use that it is scalar
-  Xsc <- simulate(tree,
-                  p = p,
-                  root.state = root.state,
-                  process = "scOU",
-                  variance = variance,
-                  optimal.value = optimal.value,
-                  selection.strength = selection.strength,
-                  shifts = shifts)
+  Xsc <- simulate_internal(tree,
+                           p = p,
+                           root.state = root.state,
+                           process = "scOU",
+                           variance = variance,
+                           optimal.value = optimal.value,
+                           selection.strength = selection.strength,
+                           shifts = shifts)
   
   expect_that(Xnot[,,2:3], equals(Xsc[,,2:3]))
   ## Do not simulate
-  Xsc2 <- simulate(tree,
-                   p = p,
-                   root.state = root.state,
-                   process = "scOU",
-                   variance = variance,
-                   optimal.value = optimal.value,
-                   selection.strength = selection.strength,
-                   shifts = shifts,
-                   simulate_random = FALSE)
+  Xsc2 <- simulate_internal(tree,
+                            p = p,
+                            root.state = root.state,
+                            process = "scOU",
+                            variance = variance,
+                            optimal.value = optimal.value,
+                            selection.strength = selection.strength,
+                            shifts = shifts,
+                            simulate_random = FALSE)
   
   expect_that(Xnot[,,2:3], equals(Xsc2[,,2:3]))
 })
@@ -324,7 +324,7 @@ test_that("Multivariate Scalar (scOU)", {
 #                      shifts = shifts,
 #                      root.state = root.state)
 #   
-#   Xnot <- simulate(tree,
+#   Xnot <- simulate_internal(tree,
 #                    p = p,
 #                    independent = FALSE,
 #                    root.state = root.state,
@@ -334,7 +334,7 @@ test_that("Multivariate Scalar (scOU)", {
 #                    selection.strength = selection.strength,
 #                    shifts = shifts)
 #   
-#   Xind <- simulate(tree,
+#   Xind <- simulate_internal(tree,
 #                    p = p,
 #                    independent = TRUE,
 #                    root.state = root.state,
