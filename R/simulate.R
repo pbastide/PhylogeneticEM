@@ -40,12 +40,15 @@
 #' \code{\link{params_process.PhyloEM}} (to choose which parameters to extract from
 #' the results, see documentation of this function).
 #'     
-#' @return An S3 object of class \code{simulated_process}. This essencially contains:
+#' @return An S3 object of class \code{simul_process}. This contains:
 #' \describe{
-#'  \item{paramSimu}{An array with dimentions p x nNodes x 2 (BM)
-#'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
+#'  \item{sim_traits}{an array with dimentions p x nNodes x 2 (BM)
+#'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.}
+#'  \item{phylo}{the phylogenetic tree used for the simulations (class \code{phylo}).}
+#'  \item{params}{the parameters used for the simulations
+#'  (class \code{params_proces}).}
 #'  }
 #'  
 #' @seealso \code{\link{params_process}}, \code{\link{PhyloEM}}
@@ -57,37 +60,42 @@ simul_process <- function(x, ...) UseMethod("simul_process")
 
 ##
 #' @describeIn simul_process \code{\link{params_process}} object
+#' @export
 ##
 simul_process.params_process <- function(x, 
                                          phylo, simulate_random = TRUE,
                                          checks = TRUE,
-                                         U_tree = NULL){
+                                         U_tree = NULL, ...){
   
-  if (object$process == "BM"){ ## Just to be safe
-    object$selection.strength <- NULL
-    object$optimal.value <- NULL
+  if (x$process == "BM"){ ## Just to be safe
+    x$selection.strength <- NULL
+    x$optimal.value <- NULL
   }
   
   sim <- simulate_internal(phylo,
-                           process = object$process,
-                           p = ncol(object$variance),
-                           root.state = object$root.state,
-                           shifts = object$shifts,
+                           process = x$process,
+                           p = ncol(x$variance),
+                           root.state = x$root.state,
+                           shifts = x$shifts,
                            eps = 10^(-6),
-                           selection.strength = object$selection.strength,
-                           variance = object$variance,
-                           optimal.value = object$optimal.value,
+                           selection.strength = x$selection.strength,
+                           variance = x$variance,
+                           optimal.value = x$optimal.value,
                            checks = checks,
                            simulate_random = simulate_random,
                            U_tree = U_tree,
-                           df = object$df)
+                           df = x$df)
   
-  class(sim) <- "simulated_process"
-  return(sim)
+  res <- list(sim_traits = sim,
+              phylo = phylo,
+              params = x)
+  class(res) <- "simul_process"
+  return(res)
 }
 
 ##
 #' @describeIn simul_process \code{\link{PhyloEM}} object
+#' @export
 ##
 simul_process.PhyloEM <- function(x, 
                                   simulate_random = TRUE,
@@ -101,6 +109,169 @@ simul_process.PhyloEM <- function(x,
                                       simulate_random = simulate_random,
                                       checks = checks,
                                       U_tree = U_tree))
+}
+
+##
+#' ##
+#' @title Extraction of simulated traits
+#'
+#' @description
+#' \code{extract.simul_process} takes an object of class "\code{simul_process}",
+#' result of function \code{\link{simul_process}}, and extracts the traits values, 
+#' expectations or optimal values at the tips or the internal nodes.
+#'
+#' @param x an object of class "\code{simul_process}", result of function
+#' \code{\link{simul_process}}.
+#' @param where one of "tips" (the default) or "nodes". Where to extract the results.
+#' @param what one of "states" (the default), "expectation", or "optimal.values".
+#' @param ... unused
+#' 
+#' @return A matrix giving the selected quantities at the selected nodes or tips. If
+#' the tips or nods are labelled, then the colnames of the matrix are set accordingly.
+#' 
+#' @seealso \code{\link{simul_process}}
+#' 
+#' @export
+##
+extract.simul_process <- function(x,
+                                  where = c("tips", "nodes"),
+                                  what = c("states", "expectations", "optimal.values"),
+                                  ...) {
+  res <- extract_simulate_internal(x$sim_traits, where = where, what = what)
+  if (where == "tips"){
+    colnames(res) <- x$phylo$tip.label
+  } else if (where == "nodes"){
+    colnames(res) <- x$phylo$node.label
+  }
+  return(res)
+}
+
+##
+#' @title Plot for class \code{simul_process}
+#'
+#' @description
+#' This function takes an object of class \code{simul_process}, result of function
+#' \code{\link{simul_process}}, and plots the simulated traits.
+#'
+#' @param x an object of class \code{simul_process}, result of function
+#' @param phylo a phylogenetic tree.
+#' @param data a matrix of data at the tips of the tree. Must have p rows and
+#' ntaxa columns. If these are simulated, use the \code{\link{extract.simul_process}}
+#' function.
+#' @param ancestral_states if \code{plot_ancestral_states=TRUE}, the ancestral states 
+#' must be specified. If these are simulated, use the
+#' \code{\link{extract.simul_process}} function.
+#' @inheritParams plot.PhyloEM
+#' 
+#' @return
+#' NULL
+#' 
+#' @seealso \code{\link{simul_process}}, \code{\link{plot.PhyloEM}}
+#' 
+#' @export
+#'
+
+plot.params_process <- function(x,
+                                phylo,
+                                data = NULL,
+                                traits,
+                                automatic_colors = TRUE,
+                                color_characters = "black",
+                                color_edges = "black",
+                                plot_ancestral_states = FALSE,
+                                ancestral_states = NULL,
+                                imposed_scale,
+                                ancestral_cex = 2,
+                                ancestral_pch = 19,
+                                value_in_box = FALSE,
+                                ancestral_as_shift = FALSE,
+                                shifts_cex = 0.6,
+                                shifts_bg = "chocolate4",
+                                root_bg = "chocolate4",
+                                shifts_adj = 0,
+                                root_adj = 1,
+                                color_shifts_regimes = FALSE,
+                                regime_boxes = FALSE,
+                                alpha_border = 70,
+                                show.tip.label = FALSE,
+                                label_cex = 0.5,
+                                label_offset = 0,
+                                axis_cex = 0.7,
+                                edge.width = 1,
+                                margin_plot = c(0,0,0,0),
+                                gray_scale = FALSE,
+                                ...){
+  if (missing(traits)) traits <- 1:ncol(x$variance)
+  ## Checking consistency
+  if (plot_ancestral_states && length(traits) > 1) stop("Ancestral state plotting is only allowed for one single trait. Please select the trait you would like to plot with argument 'traits' (see documentation).")
+  if (plot_ancestral_states && is.null(ancestral_states)){
+    stop("The ancestral traits must be specified. Use function 'extract' if you simulated them.")
+  }
+  if (value_in_box && length(traits) > 1){
+    stop("Showing the shifts values on the tree is only allowed for one single trait. Please select the trait you would like to plot with argument 'traits' (see documentation).")
+  }
+  if (!is.null(data)){
+    if (nrow(data) < length(traits)){
+      stop("The data matrix must have as many rows as the number of traits to be plotted.")
+    }
+    if (ncol(data) != length(phylo$tip.label)){
+      stop("The data matrix must have as many columns as the number of tips in the tree.")
+    } 
+  }
+  
+  ## Save curent par
+  .pardefault <- par(no.readonly = T)
+  on.exit(par(.pardefault), add = TRUE)
+  
+  ## parameters
+  params <- x
+  
+  # If on trait, select relevent quantities
+  if (length(traits) == 1){
+    if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, ncol(x$variance)))
+    params <- split_params_independent(params)
+    params <- params[[traits]]
+  }
+  
+  Y_state <- data
+  if (missing(imposed_scale)) imposed_scale <- Y_state
+  
+  ## Plotting
+  plot.data.process.actual(Y.state = Y_state,
+                           phylo = phylo,
+                           params = params,
+                           process = x$process,
+                           miss = is.na(Y_state[traits, ]),
+                           imposed_scale = imposed_scale,
+                           root_adj = root_adj,
+                           shifts_adj = shifts_adj,
+                           shifts_bg = shifts_bg,
+                           root_bg = root_bg,
+                           quant.root = 0.25,
+                           color_characters = color_characters,
+                           color_edges = color_edges,
+                           edge.width = edge.width,
+                           automatic_colors = automatic_colors,
+                           regime_boxes = regime_boxes,
+                           alpha_border = alpha_border,
+                           value_in_box = value_in_box,
+                           shifts_cex = shifts_cex,
+                           axis_cex = axis_cex,
+                           margin_plot = margin_plot,
+                           color_shifts_regimes = color_shifts_regimes,
+                           # shifts_regimes = shifts_regimes,
+                           plot_ancestral_states = plot_ancestral_states,
+                           ancestral_states = ancestral_states,
+                           # imposed_scale.nodes = imposed_scale.nodes,
+                           ancestral_cex = ancestral_cex,
+                           ancestral_pch = ancestral_pch,
+                           label_cex = label_cex,
+                           show.tip.label = show.tip.label,
+                           # underscore = underscore,
+                           # label.offset = label.offset,
+                           ancestral_as_shift = ancestral_as_shift,
+                           gray_scale = gray_scale,
+                           ...)
 }
 
 ##

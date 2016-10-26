@@ -1045,6 +1045,7 @@ log_likelihood <- function(x, ...) UseMethod("log_likelihood")
 
 ##
 #' @describeIn log_likelihood \code{\link{params_process}} object
+#' @export
 ##
 log_likelihood.params_process <- function(x,
                                           Y_data,
@@ -1098,6 +1099,7 @@ log_likelihood.params_process <- function(x,
 
 ##
 #' @describeIn log_likelihood \code{\link{PhyloEM}} object
+#' @export
 ##
 log_likelihood.PhyloEM <- function(x, ...){
   

@@ -9,7 +9,7 @@
 simul_process(x, ...)
 
 \method{simul_process}{params_process}(x, phylo, simulate_random = TRUE,
-  checks = TRUE, U_tree = NULL)
+  checks = TRUE, U_tree = NULL, ...)
 
 \method{simul_process}{PhyloEM}(x, simulate_random = TRUE, checks = TRUE,
   U_tree = NULL, ...)
@@ -33,12 +33,15 @@ to TRUE.}
 \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.}
 }
 \value{
-An S3 object of class \code{simulated_process}. This essencially contains:
+An S3 object of class \code{simul_process}. This contains:
 \describe{
- \item{paramSimu}{An array with dimentions p x nNodes x 2 (BM)
- or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
+ \item{sim_traits}{an array with dimentions p x nNodes x 2 (BM)
+ or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.}
+ \item{phylo}{the phylogenetic tree used for the simulations (class \code{phylo}).}
+ \item{params}{the parameters used for the simulations
+ (class \code{params_proces}).}
  }
 }
 \description{

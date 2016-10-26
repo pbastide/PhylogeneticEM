@@ -191,6 +191,9 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' \code{\link{PhyloEM}}.
 #' @param traits a vector of integers giving the numbers of the trait to be plotted.
 #' Default to 1:p (all the traits).
+#' @param params (optional) sume user-specifed parameters.
+#' Must be of class \code{\link{params_process}}. If left blank, there are extracted
+#' using the \code{method.selection} argument (see below).
 #' @param method.selection select the parameters to plot. One of "BGH", "DDSE",
 #' "Djump". Default to "BGH" for univariate, and "DDSE" for multivariate. See
 #' \code{\link{params_process.PhyloEM}}.
@@ -249,7 +252,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' 
 #' 
 #' @return
-#' An object of class \code{PhyloEM}.
+#' NULL
 #' 
 #' @seealso \code{\link{params_process.PhyloEM}}, \code{\link{imputed_traits.PhyloEM}}
 #' 
@@ -258,6 +261,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 
 plot.PhyloEM <- function(x,
                          traits = 1:(x$p),
+                         params = NULL,
                          method.selection = NULL,
                          automatic_colors = TRUE,
                          color_characters = "black",
@@ -293,7 +297,14 @@ plot.PhyloEM <- function(x,
   on.exit(par(.pardefault), add = TRUE)
   
   ## parameters
-  params <- params_process.PhyloEM(x, method.selection = method.selection)
+  if (is.null(params)){
+    params <- params_process.PhyloEM(x,
+                                     method.selection = method.selection)
+  } else {
+    if (class(params) != "params_process") {
+      stop("The user specified parameters must be of class 'params_process'.")
+    }
+  }
   # If on trait, select relevent quantities
   if (length(traits) == 1){
     if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, x$p))
@@ -392,6 +403,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   
   ntaxa <- length(phylo$tip.label)
   p_dim <- nrow(Y.state)
+  if (is.null(p_dim)) p_dim <- 0
   #   if (normalize){
   #     norm <- max(abs(Y.state))
   #   } else {
@@ -502,8 +514,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     pos_last_tip <- max(lastPP$xx)
     # label.offset <- 1/8 * (x.lim.max - pos_last_tip - size_labels)
     available_x <- x.lim.max - pos_last_tip - size_labels
-    ell <- available_x / (p_dim +  (p_dim + 1) / 4)# lenght for the plot of one character
-    offset <- ell / 4
+    ell <- available_x / (p_dim +  (p_dim + 1) / 3)# lenght for the plot of one character
+    offset <- ell / 3
     
     ## Plots characters
     for (t in 1:p_dim){
@@ -542,11 +554,13 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                col = as.vector(color_characters)[!miss],
                lwd = edge.width)
       # missing ones as dotted
-      segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss],
-               pos_last_tip + eccart_g + Y.plot[miss], lastPP$yy[1:ntaxa][miss],
-               col = as.vector(color_characters)[miss],
-               lwd = edge.width,
-               lty = 3)
+      if (any(miss)){
+        segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss],
+                 pos_last_tip + eccart_g + Y.plot[miss], lastPP$yy[1:ntaxa][miss],
+                 col = as.vector(color_characters)[miss],
+                 lwd = edge.width,
+                 lty = 3) 
+      }
     
       # report for next
       pos_last_tip <- pos_last_tip + ell + offset
