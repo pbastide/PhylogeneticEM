@@ -976,7 +976,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     Ncores = 3,
                     # exportFunctions = ls(),
                     impute_init_Rphylopars = FALSE,
-                    K_lag_init = 0,
+                    K_lag_init = 5,
                     ...){
   ## Required packages
   # library(doParallel)
@@ -1277,6 +1277,7 @@ imputed_traits <- function(x, ...) UseMethod("imputed_traits")
 
 ##
 #' @describeIn imputed_traits \code{\link{PhyloEM}} object
+#' @export
 ##
 imputed_traits.PhyloEM <- function(x, trait = 1,
                                    save_all = FALSE,
@@ -1320,38 +1321,15 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
 
 compute_ancestral_traits <- function(x,
                                      method.selection, ...){
-  
   ## parameters
   params <- params_process(x, method.selection, ...)
+
   ## Needed quatities
   ntaxa <- length(x$phylo$tip.label)
   miss <- as.vector(is.na(x$Y_data))
   Y_data_vec_known <- as.vector(x$Y_data[!miss])
   masque_data <- rep(FALSE, (ntaxa + x$phylo$Nnode) * x$p)
   masque_data[1:(x$p * ntaxa)] <- !miss
-  
-  ## E step
-  temp <- wrapper_E_step(phylo = x$phylo,
-                         times_shared = x$times_shared,
-                         distances_phylo = x$distances_phylo,
-                         process = x$process,
-                         params_old = params,
-                         masque_data = masque_data,
-                         F_moments = NULL,
-                         independent = FALSE,
-                         Y_data_vec_known = Y_data_vec_known,
-                         miss = miss,
-                         Y_data = x$Y_data,
-                         U_tree = x$U_tree,
-                         compute_E = compute_E.upward_downward)
-  
-  ## Checking for consistency
-  if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
-                        attr(params, "log_likelihood"),
-                        tol = .Machine$double.eps ^ 0.2))){
-    warning(paste0("For K = ", length(params$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
-    # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
-  }
   
   ## Compute the expectations
   tmpsim <- simulate_internal(phylo = x$phylo, 
@@ -1364,6 +1342,36 @@ compute_ancestral_traits <- function(x,
                               selection.strength = params$selection.strength,
                               simulate_random = FALSE,
                               U_tree = x$U_tree)
+  
+  ## Post order
+  phy <- reorder(x$phylo, "postorder")
+  params$shifts$edges <- correspondanceEdges(edges = params$shifts$edges,
+                                             from = x$phylo, to = phy)
+  U_tree <- x$U_tree[, correspondanceEdges(edges = 1:nrow(phy$edge),
+                                           from = phy, to = x$phylo)]
+  
+  ## E step
+  temp <- wrapper_E_step(phylo = phy,
+                         times_shared = NULL,
+                         distances_phylo = NULL,
+                         process = x$process,
+                         params_old = params,
+                         masque_data = masque_data,
+                         F_moments = NULL,
+                         independent = FALSE,
+                         Y_data_vec_known = Y_data_vec_known,
+                         miss = miss,
+                         Y_data = x$Y_data,
+                         U_tree = U_tree,
+                         compute_E = compute_E.upward_downward)
+  
+  ## Checking for consistency
+  if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
+                        attr(params, "log_likelihood"),
+                        tol = .Machine$double.eps ^ 0.2))){
+    warning(paste0("For K = ", length(params$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
+    # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
+  }
   
   ## Result
   return(list(Zhat = temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
