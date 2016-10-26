@@ -891,8 +891,8 @@ color_palette <- function (values) {
   nbrColPos <- sum(indPos)
   nbrColNeg <- sum(indNeg)
   nbrColNull <- sum(indNull)
-  palettePos <- colorRampPalette(c("orangered", "red"))(nbrColPos)
-  paletteNeg <- colorRampPalette(c("blue", "lightblue"))(nbrColNeg)
+  palettePos <- grDevices::colorRampPalette(c("orangered", "red"))(nbrColPos)
+  paletteNeg <- grDevices::colorRampPalette(c("blue", "lightblue"))(nbrColNeg)
   col_shifts <- rep(NA, length(values))
   if (nbrColPos <= 1){
     col_shifts[indPos] <- palettePos
@@ -908,16 +908,16 @@ color_palette <- function (values) {
   return(col_shifts)
 }
 
-# Function to plot color bar
-# (http://stackoverflow.com/questions/9314658/colorbar-from-custom-colorramppalette)
-color.bar <- function(lut, min, max=-min, nticks=11, ticks=seq(min, max, len=nticks), title='') {
-  scale = (length(lut)-1)/(max-min)
-  
-  dev.new(width=1.75, height=5)
-  plot(c(0,10), c(min,max), type='n', bty='n', xaxt='n', xlab='', yaxt='n', ylab='', main=title)
-  axis(2, ticks, las=1)
-  for (i in 1:(length(lut)-1)) {
-    y = (i-1)/scale + min
-    rect(0,y,10,y+1/scale, col=lut[i], border=NA)
-  }
-}
+# # Function to plot color bar
+# # (http://stackoverflow.com/questions/9314658/colorbar-from-custom-colorramppalette)
+# color.bar <- function(lut, min, max=-min, nticks=11, ticks=seq(min, max, len=nticks), title='') {
+#   scale = (length(lut)-1)/(max-min)
+#   
+#   dev.new(width=1.75, height=5)
+#   plot(c(0,10), c(min,max), type='n', bty='n', xaxt='n', xlab='', yaxt='n', ylab='', main=title)
+#   axis(2, ticks, las=1)
+#   for (i in 1:(length(lut)-1)) {
+#     y = (i-1)/scale + min
+#     rect(0,y,10,y+1/scale, col=lut[i], border=NA)
+#   }
+# }

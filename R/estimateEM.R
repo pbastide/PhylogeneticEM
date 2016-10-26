@@ -25,8 +25,13 @@
 ## : shutoff.R
 ###############################################################################
 
+# @import stats
+# @import utils
+# @import graphics
+#' @import methods
 #' @import ape
 #' @import Matrix
+
 #' @importFrom foreach %dopar%
 #' @importFrom foreach %do%
 
