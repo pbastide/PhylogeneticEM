@@ -39,31 +39,31 @@
 # REVISIONS:
 # 26/05/14 - Initial release
 ##
-make.name <- function(process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, params_algo_EM=NULL, ...) {
-  ## Choose Process
-  catch.ProcessParams <- switch(process,
-                                BM = catch.ProcessParams.BM,
-                                OU = catch.ProcessParams.OU)
-  catch.TolParams <- switch(process,
-                            BM = catch.TolParams.BM,
-                            OU = catch.TolParams.OU)
-  ## Define File name
-  RootState <- paste("_root-rand=",paramsSimu$root.state$random,"_val-root=",paramsSimu$root.state$value.root,"_exp-root=",paramsSimu$root.state$exp.root,"_var-root=",paramsSimu$root.state$var.root,sep="")
-  if (is.null(paramsEstimate$shifts$edges)){
-    ShiftsState <- "_no-shift"
-  } else {
-    ShiftsState <- paste("_shifts-edges=", paste(paramsSimu$shifts$edges,collapse="-"), "_shifts-val=", paste(paramsSimu$shifts$values, collapse="-"), "_shifts-T=", paste(paramsSimu$shifts$relativeTimes,collapse="-"), sep="")
-  }
-  ProcessParams <- catch.ProcessParams(paramsSimu)
-  ## Parametrers of the EM if relevent
-  if (estimate) {
-    TolParams <- "" # catch.TolParams(params_algo_EM)
-    EstimParams <- paste(TolParams, "_process-used=", params_algo_EM$process, "_met-variance=", params_algo_EM$method.variance, "_met-init=", params_algo_EM$method.init, "_nbr-shifts=", params_algo_EM$nbr_of_shifts, sep="")
-  } else {
-    EstimParams <- ""
-  }
-  return(paste(ProcessParams, RootState, ShiftsState, EstimParams, sep=""))
-}
+# make.name <- function(process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, params_algo_EM=NULL, ...) {
+#   ## Choose Process
+#   catch.ProcessParams <- switch(process,
+#                                 BM = catch.ProcessParams.BM,
+#                                 OU = catch.ProcessParams.OU)
+#   catch.TolParams <- switch(process,
+#                             BM = catch.TolParams.BM,
+#                             OU = catch.TolParams.OU)
+#   ## Define File name
+#   RootState <- paste("_root-rand=",paramsSimu$root.state$random,"_val-root=",paramsSimu$root.state$value.root,"_exp-root=",paramsSimu$root.state$exp.root,"_var-root=",paramsSimu$root.state$var.root,sep="")
+#   if (is.null(paramsEstimate$shifts$edges)){
+#     ShiftsState <- "_no-shift"
+#   } else {
+#     ShiftsState <- paste("_shifts-edges=", paste(paramsSimu$shifts$edges,collapse="-"), "_shifts-val=", paste(paramsSimu$shifts$values, collapse="-"), "_shifts-T=", paste(paramsSimu$shifts$relativeTimes,collapse="-"), sep="")
+#   }
+#   ProcessParams <- catch.ProcessParams(paramsSimu)
+#   ## Parametrers of the EM if relevent
+#   if (estimate) {
+#     TolParams <- "" # catch.TolParams(params_algo_EM)
+#     EstimParams <- paste(TolParams, "_process-used=", params_algo_EM$process, "_met-variance=", params_algo_EM$method.variance, "_met-init=", params_algo_EM$method.init, "_nbr-shifts=", params_algo_EM$nbr_of_shifts, sep="")
+#   } else {
+#     EstimParams <- ""
+#   }
+#   return(paste(ProcessParams, RootState, ShiftsState, EstimParams, sep=""))
+# }
 
 ##
 # plot.process (Name, TreeType, Y.state, Z.state, phylo, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, ...)
@@ -90,29 +90,29 @@ make.name <- function(process = c("BM", "OU"), paramsSimu, paramsEstimate=params
 # 26/05/14 - Initial release
 # 06/06.14 - Add directory
 ##
-plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, position.legend="bottomleft", directory, params_algo_EM=NULL) {
-  ## Define legend
-  LegendProcess <- catch.LegendProcess(process, paramsEstimate, estimate, params_algo_EM)
-  LegendRoot <- c(#paste("Random Root = ",round(paramsEstimate$root.state$random,2),sep=""),
-    #paste("Root Value (if not random) = ",round(paramsEstimate$root.state$value.root,2),sep=""),
-    paste("Root expectation = ",round(paramsEstimate$root.state$exp.root,2),sep=""),
-    paste("Root variance = ",round(paramsEstimate$root.state$var.root,2), sep=""))
-  ## Define File Name
-  FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, params_algo_EM)
-  ## Plot
-  FileName <- paste(Name, TreeType, FileName, sep="")
-  pdf(paste(directory, FileName, ".pdf",sep=""), height=10,width=20)
-  plot.process.actual <- function(Y.state = Y.state, 
-                                  Z.state = Z.state, 
-                                  phylo = phylo, 
-                                  process = process,
-                                  paramsEstimate = paramsEstimate,
-                                  estimate = estimate,
-                                  position.legend = position.legend,
-                                  params_algo_EM = params_algo_EM)
-    legend(paste(position.legend),legend=c(LegendProcess,LegendRoot), col="black", cex = 2)
-    dev.off()
-}
+# plot.process <- function(Name, TreeType, Y.state, Z.state, phylo, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, position.legend="bottomleft", directory, params_algo_EM=NULL) {
+#   ## Define legend
+#   LegendProcess <- catch.LegendProcess(process, paramsEstimate, estimate, params_algo_EM)
+#   LegendRoot <- c(#paste("Random Root = ",round(paramsEstimate$root.state$random,2),sep=""),
+#     #paste("Root Value (if not random) = ",round(paramsEstimate$root.state$value.root,2),sep=""),
+#     paste("Root expectation = ",round(paramsEstimate$root.state$exp.root,2),sep=""),
+#     paste("Root variance = ",round(paramsEstimate$root.state$var.root,2), sep=""))
+#   ## Define File Name
+#   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, params_algo_EM)
+#   ## Plot
+#   FileName <- paste(Name, TreeType, FileName, sep="")
+#   pdf(paste(directory, FileName, ".pdf",sep=""), height=10,width=20)
+#   plot.process.actual <- function(Y.state = Y.state, 
+#                                   Z.state = Z.state, 
+#                                   phylo = phylo, 
+#                                   process = process,
+#                                   paramsEstimate = paramsEstimate,
+#                                   estimate = estimate,
+#                                   position.legend = position.legend,
+#                                   params_algo_EM = params_algo_EM)
+#     legend(paste(position.legend),legend=c(LegendProcess,LegendRoot), col="black", cex = 2)
+#     dev.off()
+# }
 
 plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, shifts_bg = "chocolate4", root_bg = "chocolate4", quant.root = 0.25, ...){
   ntaxa <- length(phylo$tip.label)
@@ -682,26 +682,26 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   }
 }
 
-save.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
-  ## Define File Name
-  FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
-  FileName <- paste(Name, TreeType, FileName, sep="")
-  save(XX, paramsSimu, paramsEstimate, file=paste(directory, FileName, ".RData",sep=""))
-}
+# save.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
+#   ## Define File Name
+#   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
+#   FileName <- paste(Name, TreeType, FileName, sep="")
+#   save(XX, paramsSimu, paramsEstimate, file=paste(directory, FileName, ".RData",sep=""))
+# }
 
-write.table.results <- function(Name, TreeType, res, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
-  ## Define File Name
-  FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
-  FileName <- paste(Name, TreeType, FileName, sep="")
-  write.table(res, paste(directory, FileName, ".csv",sep=""))
-}
+# write.table.results <- function(Name, TreeType, res, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
+#   ## Define File Name
+#   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
+#   FileName <- paste(Name, TreeType, FileName, sep="")
+#   write.table(res, paste(directory, FileName, ".csv",sep=""))
+# }
 
-load.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
-  ## Define File Name
-  FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
-  FileName <- paste(Name, TreeType, FileName, sep="")
-  load(file=paste(directory, FileName, ".RData",sep=""))
-}
+# load.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
+#   ## Define File Name
+#   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
+#   FileName <- paste(Name, TreeType, FileName, sep="")
+#   load(file=paste(directory, FileName, ".RData",sep=""))
+# }
 
 ##
 # catch.ProcessParams (paramsSimu)
@@ -718,13 +718,13 @@ load.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu
 # REVISIONS:
 # 26/05/14 - Initial release
 ##
-catch.ProcessParams.BM <- function(paramsSimu){
-  return(paste("_process=BM","_var=",paramsSimu$variance,sep=""))
-}
+# catch.ProcessParams.BM <- function(paramsSimu){
+#   return(paste("_process=BM","_var=",paramsSimu$variance,sep=""))
+# }
 
-catch.ProcessParams.OU <- function(paramsSimu){
-  return(paste("_process=OU","_var=",paramsSimu$variance,"_opt-val=",paramsSimu$optimal.value,"_sel-strength=",paramsSimu$selection.strength,sep=""))
-}
+# catch.ProcessParams.OU <- function(paramsSimu){
+#   return(paste("_process=OU","_var=",paramsSimu$variance,"_opt-val=",paramsSimu$optimal.value,"_sel-strength=",paramsSimu$selection.strength,sep=""))
+# }
 
 ##
 # catch.LegendProcess (paramsEstimate)
@@ -741,29 +741,29 @@ catch.ProcessParams.OU <- function(paramsSimu){
 # REVISIONS:
 # 26/05/14 - Initial release
 ##
-catch.LegendProcess <- function(process, paramsEstimate, estimate, params_algo_EM=NULL) {
-  if (estimate) {
-    proc <- params_algo_EM$process
-  } else {
-    proc <- process
-  }
-  if (proc=="BM") {
-    return(catch.LegendProcess.BM(paramsEstimate))
-  } else if (proc=="OU") {
-    return(catch.LegendProcess.OU(paramsEstimate))
-  }
-}
-catch.LegendProcess.BM <- function(paramsEstimate){
-  return( c("Process : BM",
-            paste("Process Variance = ", round(paramsEstimate$variance,2), sep="")) )
-}
-
-catch.LegendProcess.OU <- function(paramsEstimate){
-  return( c("Process : OU",
-            paste("Process Variance = ", round(paramsEstimate$variance,2),sep=""),
-            paste("Beta_0 = ", round(paramsEstimate$optimal.value,2), sep=""),
-            paste("Selection Strength = ", round(paramsEstimate$selection.strength,2), sep="")) )
-}
+# catch.LegendProcess <- function(process, paramsEstimate, estimate, params_algo_EM=NULL) {
+#   if (estimate) {
+#     proc <- params_algo_EM$process
+#   } else {
+#     proc <- process
+#   }
+#   if (proc=="BM") {
+#     return(catch.LegendProcess.BM(paramsEstimate))
+#   } else if (proc=="OU") {
+#     return(catch.LegendProcess.OU(paramsEstimate))
+#   }
+# }
+# catch.LegendProcess.BM <- function(paramsEstimate){
+#   return( c("Process : BM",
+#             paste("Process Variance = ", round(paramsEstimate$variance,2), sep="")) )
+# }
+# 
+# catch.LegendProcess.OU <- function(paramsEstimate){
+#   return( c("Process : OU",
+#             paste("Process Variance = ", round(paramsEstimate$variance,2),sep=""),
+#             paste("Beta_0 = ", round(paramsEstimate$optimal.value,2), sep=""),
+#             paste("Selection Strength = ", round(paramsEstimate$selection.strength,2), sep="")) )
+# }
 
 ##
 # catch.TolParams (params_algo_EM)
@@ -780,41 +780,41 @@ catch.LegendProcess.OU <- function(paramsEstimate){
 # REVISIONS:
 # 26/05/14 - Initial release
 ##
-catch.TolParams.BM <- function(params_algo_EM){
-  return(paste("_tol-variance=", params_algo_EM$tol$variance,
-               "_tol-exp-root=", params_algo_EM$tol$exp.root,
-               "_tol-var-root=", params_algo_EM$tol$var.root,sep=""))
-}
-
-catch.TolParams.OU <- function(params_algo_EM){
-  return(paste("_tol-variance=", params_algo_EM$tol$variance,
-               "_tol-exp-root=", params_algo_EM$tol$exp.root,
-               "_tol-var-root=", params_algo_EM$tol$var.root,
-               "_tol-optim-value=", params_algo_EM$tol$optim.value,
-               "_tol-selection-strength=", params_algo_EM$tol$selection.strength,sep=""))
-}
+# catch.TolParams.BM <- function(params_algo_EM){
+#   return(paste("_tol-variance=", params_algo_EM$tol$variance,
+#                "_tol-exp-root=", params_algo_EM$tol$exp.root,
+#                "_tol-var-root=", params_algo_EM$tol$var.root,sep=""))
+# }
+# 
+# catch.TolParams.OU <- function(params_algo_EM){
+#   return(paste("_tol-variance=", params_algo_EM$tol$variance,
+#                "_tol-exp-root=", params_algo_EM$tol$exp.root,
+#                "_tol-var-root=", params_algo_EM$tol$var.root,
+#                "_tol-optim-value=", params_algo_EM$tol$optim.value,
+#                "_tol-selection-strength=", params_algo_EM$tol$selection.strength,sep=""))
+# }
 
 #####################################################################
 ## Plot the history of the estimations
 #####################################################################
 
-list_to_table.history <- function(params_history) {
-  ll <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood")[1]))
-#  ll_bis <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood_bis")[1]))
-  #method <- unlist(sapply(params_history, function(x) attr(x, "segmentation_algorithm_used")))
-  nbr_of_shifts <- length(params_history[['1']]$shifts$edges)
-  params_history[['0']] <- replaceInList(params_history[['0']], function(x) if(is.null(x))rep(0,nbr_of_shifts) else x)
-  params_history <- lapply(params_history, unlist)
-  history <- do.call(cbind, params_history)
-  history <- rbind(history, log_likelihood = c(ll))#, log_likelihood_bis = c(ll_bis, NA)), segmentation_algorithm = c(method, NA, NA))
-  return(history)
-}
+# list_to_table.history <- function(params_history) {
+#   ll <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood")[1]))
+# #  ll_bis <- unlist(sapply(params_history, function(x) attr(x, "log_likelihood_bis")[1]))
+#   #method <- unlist(sapply(params_history, function(x) attr(x, "segmentation_algorithm_used")))
+#   nbr_of_shifts <- length(params_history[['1']]$shifts$edges)
+#   params_history[['0']] <- replaceInList(params_history[['0']], function(x) if(is.null(x))rep(0,nbr_of_shifts) else x)
+#   params_history <- lapply(params_history, unlist)
+#   history <- do.call(cbind, params_history)
+#   history <- rbind(history, log_likelihood = c(ll))#, log_likelihood_bis = c(ll_bis, NA)), segmentation_algorithm = c(method, NA, NA))
+#   return(history)
+# }
 
-write.table.history <- function(history, params_algo_EM, PATH, ...) {
-  ## Define File Name
-  name <- paste(PATH, "history_parameters", "_init=", params_algo_EM$method.init, "_initalpha=", params_algo_EM$method.init.alpha, "_nbrofshifts=", params_algo_EM$nbr_of_shifts, ".csv", sep="")
-  write.csv2(history, name, ...)
-}
+# write.table.history <- function(history, params_algo_EM, PATH, ...) {
+#   ## Define File Name
+#   name <- paste(PATH, "history_parameters", "_init=", params_algo_EM$method.init, "_initalpha=", params_algo_EM$method.init.alpha, "_nbrofshifts=", params_algo_EM$nbr_of_shifts, ".csv", sep="")
+#   write.csv2(history, name, ...)
+# }
 
 # plot.history.OU.stationary <- function(params_history, tree, params_ref, Y_data_ref, PATH, name, ref = "true"){
 #   if (missing(params_ref)){
