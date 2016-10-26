@@ -31,10 +31,17 @@
 #' @import methods
 #' @import ape
 #' @import Matrix
+NULL
 
 #' @importFrom foreach %dopar%
 #' @importFrom foreach %do%
-
+#' @importFrom stats coef cophenetic cov lm lm.fit mad median na.omit nls.control
+#' optimize quantile rbinom reorder residuals rnorm rt var
+#' @importFrom graphics axis close.screen legend par plot rect screen segments
+#' split.screen strwidth text
+#' @importFrom grDevices col2rgb gray gray.colors palette rainbow rgb
+#' @importFrom utils capture.output combn setTxtProgressBar txtProgressBar
+NULL
 ###############################################################################
 ## estimateEM
 ###############################################################################
