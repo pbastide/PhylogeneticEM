@@ -4,7 +4,8 @@
 library(doParallel)
 library(foreach)
 library(l1ou)
-reqpckg <- c("l1ou")
+library(phytools)
+reqpckg <- c("l1ou", "phytools")
 
 ## Set number of parallel cores
 Ncores <- 5
@@ -44,9 +45,13 @@ estimations_l1ou <- function(X){
   Y_data <- t(X$Y_data)
   if (anyNA(Y_data))   return(list(sim = X, res = NULL))
   rownames(Y_data) <- trees[[paste0(X$ntaxa)]]$tip.label
+  ## Do a pPCA
+  Y_data_pPCA <- phyl.pca(trees_postorder[[paste0(X$ntaxa)]], Y_data)
+  Y_data_pPCA <- Y_data_pPCA$S
+  ## l1ou fit
   time_l1ou <- system.time(
   res <- estimate_shift_configuration(tree = trees_postorder[[paste0(X$ntaxa)]],
-                                      Y = Y_data,
+                                      Y = Y_data_pPCA,
                                       # max.nShifts = floor(length(trees_postorder[[paste0(X$ntaxa)]]$tip.label)/2),
                                       criterion = "pBIC",
                                       root.model = "OUrandomRoot",
