@@ -1110,6 +1110,39 @@ log_likelihood.PhyloEM <- function(x, ...){
                                        x$phylo))
 }
 
+##
+#' @title Residuals of a fitted object
+#'
+#' @description
+#' \code{residuals} computes the residuals of some parameters.
+#'
+#' @param object an object of class \code{\link{params_process}} or \code{\link{PhyloEM}}.
+# @param Y_data matrix of data at the tips, size p x ntaxa. Each line is a
+#' trait, and each column is a tip. The column names are checked against the
+#' tip names of the tree.
+# @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+# @param U_tree (optional) full incidence matrix of the tree, result of function
+#' \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.
+#' @param ... for a \code{PhyloEM} object, further arguments to be passed on to
+#' \code{\link{params_process.PhyloEM}} (to choose which parameters to extract from
+#' the results, see documentation of this function).
+#'     
+#' @return
+#' The log likelihood of the data with the provided parameters on the tree.
+#'  
+#' @seealso \code{\link{params_process}}, \code{\link{PhyloEM}}
+#' 
+#' @export
+##
+residuals.PhyloEM <- function(object, ...){
+  
+  m_Y <- imputed_traits(object, trait = 1:object$p,
+                        where = c("tips"),
+                        what = c("expectations"))
+  
+  return(object$Y_data - m_Y)
+}
+
 ###############################################################################
 ## Wrapper (independent case)
 ###############################################################################

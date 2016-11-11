@@ -150,6 +150,7 @@ test_that("compute_mean_variance.simple", {
                                    age = 1, mrca = TRUE)[[1]]
   times_shared <- compute_times_ca(tree)
   distances_phylo <- compute_dist_phy(tree)
+  U_tree <- incidence.matrix.full(tree)
   p <- 4
   
   Y_data <- matrix(1:(ntaxa * p), ncol = ntaxa)
@@ -187,7 +188,8 @@ test_that("compute_mean_variance.simple", {
                           Y_data_vec_known = Y_data_vec_known,
                           miss = miss,
                           Y_data = Y_data,
-                          compute_E = compute_E.simple)
+                          compute_E = compute_E.simple,
+                          U_tree = U_tree)
   
   res_2 <- wrapper_E_step(phylo = tree,
                           times_shared = times_shared,
@@ -200,7 +202,8 @@ test_that("compute_mean_variance.simple", {
                           Y_data_vec_known = Y_data_vec_known,
                           miss = miss,
                           Y_data = Y_data,
-                          compute_E = compute_E.simple)
+                          compute_E = compute_E.simple,
+                          U_tree = U_tree)
   
   expect_equal(as.vector(res_1$log_likelihood_old),
               sum(sapply(res_2, function(z) return(z$log_likelihood_old))))

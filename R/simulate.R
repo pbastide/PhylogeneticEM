@@ -34,6 +34,9 @@
 #' (and not the random sample). Default to TRUE.
 #' @param U_tree optional, full incidence matrix of the tree, result of function
 #' \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.
+#' @param times_shared optional, times of shared ancestry of all nodes and tips,
+#' result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+#' computations.
 # @param nsim Unused.
 # @param seed Unused.
 #' @param ... for a \code{PhyloEM} object, further arguments to be passed on to
@@ -65,7 +68,8 @@ simul_process <- function(x, ...) UseMethod("simul_process")
 simul_process.params_process <- function(x, 
                                          phylo, simulate_random = TRUE,
                                          checks = TRUE,
-                                         U_tree = NULL, ...){
+                                         U_tree = NULL,
+                                         times_shared = NULL, ...){
   
   if (x$process == "BM"){ ## Just to be safe
     x$selection.strength <- NULL
@@ -84,6 +88,7 @@ simul_process.params_process <- function(x,
                            checks = checks,
                            simulate_random = simulate_random,
                            U_tree = U_tree,
+                           times_shared = times_shared,
                            df = x$df)
   
   res <- list(sim_traits = sim,
@@ -100,7 +105,8 @@ simul_process.params_process <- function(x,
 simul_process.PhyloEM <- function(x, 
                                   simulate_random = TRUE,
                                   checks = TRUE,
-                                  U_tree = NULL, ...){
+                                  U_tree = NULL,
+                                  times_shared = NULL, ...){
   
   params <- params_process(x, ...)
   
@@ -108,7 +114,8 @@ simul_process.PhyloEM <- function(x,
                                       x$phylo,
                                       simulate_random = simulate_random,
                                       checks = checks,
-                                      U_tree = U_tree))
+                                      U_tree = U_tree,
+                                      times_shared = times_shared))
 }
 
 ##
@@ -311,6 +318,9 @@ plot.params_process <- function(x,
 #' the choosen student law. default to 1.
 #' @param U_tree optional, full incidence matrix of the tree, result of function
 #' \code{incidence.matrix.full}.
+#' @param times_shared optional, times of shared ancestry of all nodes and tips,
+#' result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+#' computations.
 #'     
 #' @return paramSimu An array with dimentions p x nNodes x 2 (BM)
 #'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
@@ -344,6 +354,7 @@ simulate_internal <- function(phylo,
                               checks = TRUE,
                               simulate_random = TRUE,
                               U_tree = NULL,
+                              times_shared = NULL,
                               df = 1) {
   # library(MASS)
   ntaxa <- length(phylo$tip.label)
@@ -403,13 +414,24 @@ simulate_internal <- function(phylo,
     stop("Optimal values for the OU simulation must be specified.")
   }
   ## Special case BM
-  if ((process == "BM") && !simulate_random){
-    paramSimu <- compute_expectations.BM(phylo,
-                                         root.state = root.state,
-                                         shifts = shifts,
-                                         U_tree = U_tree)
-    attr(paramSimu, "ntaxa") <- ntaxa
-    return(paramSimu)
+  if (!simulate_random){
+    if (process == "BM") {
+      paramSimu <- compute_expectations.BM(phylo,
+                                           root.state = root.state,
+                                           shifts = shifts,
+                                           U_tree = U_tree)
+      attr(paramSimu, "ntaxa") <- ntaxa
+      return(paramSimu) 
+    } else if (process == "scOU"){
+      paramSimu <- compute_expectations.scOU(phylo,
+                                             root.state = root.state,
+                                             shifts = shifts,
+                                             alpha = selection.strength,
+                                             U_tree = U_tree,
+                                             times_shared = times_shared)
+      attr(paramSimu, "ntaxa") <- ntaxa
+      return(paramSimu) 
+    }
   }
   ## Reorder tree
   phy <- reorder(phylo, order = "cladewise")
@@ -815,5 +837,52 @@ compute_expectations.BM <- function(phylo, root.state, shifts, U_tree = NULL){
   paramSimu <- tcrossprod(Delta, U_tree) + root_value
   # Put in the right format (for extraction)
   paramSimu <- array(rep(paramSimu, 2), c(dim(paramSimu), 2))
+  return(paramSimu)
+}
+
+##
+#' @title Compute the expected states of a scOU
+#'
+#' @description
+#' \code{compute_expectations.scOU} use the matrix formulation to compute the 
+#' expected values at all the nodes. Assumes a stationary root.
+#'
+#' @param phylo: Input tree.
+#' @param root.state (list): state of the root, with:
+#'     random : random state (TRUE) or deterministic state (FALSE)
+#'     value.root : if deterministic, value of the character at the root
+#'     exp.root : if random, expectation of the character at the root
+#'     var.root : if random, variance of the character at the root (pxp matrix)
+#' @param shifts (list) position and values of the shifts :
+#'     edges : vector of the K id of edges where the shifts are
+#'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
+#'     relativeTimes : vector of dimension K of relative time of the shift from the
+#'     parentnode of edges
+#'     
+#' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+#'  paramSimu[t, , ] has two columns, both containing the expected values for
+#'  all the nodes.
+#'  
+#' @keywords internal
+#'  
+##
+compute_expectations.scOU <- function(phylo, root.state, shifts, alpha, 
+                                      U_tree = NULL, times_shared = NULL){
+  if (is.null(U_tree)) U_tree <- incidence.matrix.full(phylo)
+  if (is.null(times_shared)) times_shared <- compute_times_ca(phylo)
+  A <- diag(exp(-alpha * diag(times_shared)))
+  B <- diag(exp(alpha * diag(times_shared[phylo$edge[, 1], phylo$edge[, 1]])))
+  Delta <- shifts.list_to_matrix(phylo, shifts)
+  if (root.state$random){
+    root_value = root.state$exp.root
+  } else {
+    root_value = root.state$value.root
+  }
+  paramSimu <- tcrossprod(Delta, U_tree - A%*%U_tree%*%B) + root_value
+  # Put in the right format (for extraction)
+  paramSimu <- array(rep(paramSimu, 2), c(dim(paramSimu), 3))
+  ## Computes optimal values
+  opt_val <- tcrossprod(Delta, U_tree) + root_value
+  paramSimu[, , 3] <- opt_val
   return(paramSimu)
 }

@@ -301,6 +301,63 @@ test_that("Multivariate Scalar (scOU)", {
   expect_that(Xnot[,,2:3], equals(Xsc2[,,2:3]))
 })
 
+test_that("Multivariate Scalar (scOU) - Fixed Root", {
+  testthat::skip_on_cran()
+  set.seed(586)
+  ntaxa <- 100
+  tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
+                                   lambda = 1, mu = 0,
+                                   age = 1, mrca = TRUE)[[1]]
+  
+  p <- 6
+  variance <- diag(0.5, p, p)
+  optimal.value <- c(-3, 5, 0, 7, 3, 0)
+  selection.strength <- diag(3, p, p)
+  exp.stationary <- optimal.value
+  root.state <- list(random = FALSE,
+                     stationary.root = FALSE,
+                     value.root = exp.stationary,
+                     exp.root = NA,
+                     var.root = NA)
+  shifts = list(edges = c(18, 32),
+                values=cbind(c(4, -10, 3, 2, 2, 9),
+                             c(-5, 5, 0, -7, 5, -4)),
+                relativeTimes = 0)
+  
+  ## Forget that it is scalar
+  Xnot <- simulate_internal(tree,
+                            p = p,
+                            root.state = root.state,
+                            process = "OU",
+                            variance = variance,
+                            optimal.value = optimal.value,
+                            selection.strength = selection.strength,
+                            shifts = shifts)
+  ## Use that it is scalar
+  Xsc <- simulate_internal(tree,
+                           p = p,
+                           root.state = root.state,
+                           process = "scOU",
+                           variance = variance,
+                           optimal.value = optimal.value,
+                           selection.strength = selection.strength,
+                           shifts = shifts)
+  
+  expect_that(Xnot[,,2:3], equals(Xsc[,,2:3]))
+  ## Do not simulate
+  Xsc2 <- simulate_internal(tree,
+                            p = p,
+                            root.state = root.state,
+                            process = "scOU",
+                            variance = variance,
+                            optimal.value = optimal.value,
+                            selection.strength = selection.strength,
+                            shifts = shifts,
+                            simulate_random = FALSE)
+  
+  expect_that(Xnot[,,2:3], equals(Xsc2[,,2:3]))
+})
+
 # test_that("Multivariate Independent (BM)", {
 #   set.seed(586)
 #   ntaxa <- 200

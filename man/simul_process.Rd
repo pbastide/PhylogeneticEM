@@ -9,10 +9,10 @@
 simul_process(x, ...)
 
 \method{simul_process}{params_process}(x, phylo, simulate_random = TRUE,
-  checks = TRUE, U_tree = NULL, ...)
+  checks = TRUE, U_tree = NULL, times_shared = NULL, ...)
 
 \method{simul_process}{PhyloEM}(x, simulate_random = TRUE, checks = TRUE,
-  U_tree = NULL, ...)
+  U_tree = NULL, times_shared = NULL, ...)
 }
 \arguments{
 \item{x}{an object of class \code{\link{params_process}} or \code{\link{PhyloEM}}.}
@@ -31,6 +31,10 @@ to TRUE.}
 
 \item{U_tree}{optional, full incidence matrix of the tree, result of function
 \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.}
+
+\item{times_shared}{optional, times of shared ancestry of all nodes and tips,
+result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+computations.}
 }
 \value{
 An S3 object of class \code{simul_process}. This contains:

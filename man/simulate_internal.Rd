@@ -9,7 +9,8 @@ simulate_internal(phylo, process = c("BM", "OU", "scOU", "StudentOU"),
   value.root = NA, exp.root = NA, var.root = NA), shifts = list(edges = NULL,
   values = NULL, relativeTimes = NULL), eps = 10^(-6),
   selection.strength = NULL, variance = NULL, optimal.value = NULL,
-  checks = TRUE, simulate_random = TRUE, U_tree = NULL, df = 1)
+  checks = TRUE, simulate_random = TRUE, U_tree = NULL,
+  times_shared = NULL, df = 1)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
@@ -52,6 +53,10 @@ to TRUE.}
 
 \item{U_tree}{optional, full incidence matrix of the tree, result of function
 \code{incidence.matrix.full}.}
+
+\item{times_shared}{optional, times of shared ancestry of all nodes and tips,
+result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+computations.}
 
 \item{df}{if the process is "StudentOU", the number of degree of freedom of
 the choosen student law. default to 1.}
