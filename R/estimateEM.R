@@ -802,7 +802,8 @@ estimateEM <- function(phylo,
                  gamma_0 = init.a.g$gamma_0,
                  params_history = params_history,
                  number_new_shifts = number_new_shifts,
-                 number_equivalent_solutions = Neq)
+                 number_equivalent_solutions = Neq,
+                 least_squares = sum((Y_data - m_Y_estim)^2, na.rm = TRUE))
   #                  CLL_history = CLL_history
   if (transform_scOU) result$params_scOU <-  params_scOU
   ## Handle convergence
@@ -967,7 +968,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
                     use_previous = FALSE,
                     order = TRUE,
-                    method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
+                    method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
                     C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
                     method.variance = c("upward_downward", "simple"),
                     method.init = "lasso",
@@ -1090,27 +1091,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              K_lag_init = K_lag_init,
                              ...)
   }
+  
+  ## Return to original order if needed
   if (check_postorder){
     X <- return_to_original_order(X, phylo_original_order, phylo)
-  }
-  ## Model Selection
-  model_selection <- function(one.method.selection){
-    mod_sel  <- switch(one.method.selection, 
-                       BirgeMassart1 = model_selection_BM1,
-                       BirgeMassart2 = model_selection_BM2,
-                       BGH = model_selection_BGH)
-    selection <- try(mod_sel(X$alpha_max, ntaxa = ncol(Y_data),
-                             C.BM1 = C.BM1, C.BM2 = C.BM2, C.BGH = C.BGH))
-    if (inherits(selection, "try-error")){
-      warning(paste0("Model Selection ",  one.method.selection, " failled"))
-    } else {
-      X$alpha_max <- selection
-    }
-    return(X)
-  }
-  ## Selection(s)
-  for (meth.sel in method.selection){
-    X <- model_selection(meth.sel)
   }
   
   ## Save some paramaters
@@ -1124,6 +1108,37 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   X$U_tree <- incidence.matrix.full(X$phylo)
   X$h_tree <- max(diag(as.matrix(X$times_shared))[1:ntaxa])
   X$Y_data <- Y_data
+  
+  ## Model Selection
+  model_selection <- function(one.method.selection){
+    mod_sel  <- switch(one.method.selection, 
+                       BirgeMassart1 = model_selection_BM1,
+                       BirgeMassart2 = model_selection_BM2,
+                       BGHlsq = model_selection_BGH_leastsquares,
+                       BGHml = model_selection_BGH_ml,
+                       BGHmlraw = model_selection_BGH_mlraw,
+                       BGHlsqraw = model_selection_BGH_leastsquares_raw,
+                       pBIC = model_selection_pBIC,
+                       pBIC_l1ou = model_selection_pBIC_l1ou)
+    selection <- try(mod_sel(X, ntaxa = ncol(Y_data),
+                             C.BM1 = C.BM1, C.BM2 = C.BM2, C.BGH = C.BGH,
+                             tree = phylo_given, independent = independent,
+                             T_tree = X$T_tree, times_shared = X$times_shared, 
+                             distances_phylo = X$distances_phylo,
+                             process = X$process, Y_data = X$Y_data))
+    if (inherits(selection, "try-error")){
+      warning(paste0("Model Selection ",  one.method.selection, " failled"))
+    } else if (one.method.selection %in% c("BGHlsq", "BGHlsqraw")) {
+      X$alpha_min <- selection
+    } else {
+      X$alpha_max <- selection
+    }
+    return(X)
+  }
+  ## Selection(s)
+  for (meth.sel in method.selection){
+    X <- model_selection(meth.sel)
+  }
   
   ## Class and return
   class(X) <- "PhyloEM"
@@ -1204,18 +1219,27 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       if (x$p == 1){
         method.selection <- "BGH"
       } else {
-        method.selection <- "DDSE"
+        for (method in c("DDSE_BM1", "Djump_BM1", "pBIC")){
+          if (!is.null(x$alpha_max[[method]])){
+            method.selection <- method
+            break
+          }
+        }
+        if (is.null(method.selection)) stop("No model selection procedure was found !")
       }
     } else {
       method.selection <- match.arg(method.selection,
                                     choices = c("BGH", "DDSE", "Djump")) 
     }
-    if (method.selection == "DDSE"){
+    if (method.selection %in% c("DDSE", "DDSE_BM1")){
       res <- extract_params(x, "DDSE_BM1")
     }
-    if (method.selection == "Djump"){
+    if (method.selection %in% c("Djump", "Djump_BM1")){
       res <- extract_params(x, "Djump_BM1")
     }
+    if (method.selection == "pBIC"){
+      res <- extract_params(x, "pBIC")
+    } 
     if (method.selection == "BGH"){
       res <- extract_params(x, "BGH")
     } 
@@ -1298,10 +1322,10 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
                                    method.selection = NULL,
                                    reconstructed_states = NULL,
                                    ...){
-  
   ## Computes all the moments if needed
   if (is.null(reconstructed_states)){
-    reconstructed_states <- compute_ancestral_traits(x, method.selection, ...)
+    if (save_all) what <- c("imputed", "variances", "expectations")
+    reconstructed_states <- compute_ancestral_traits(x, method.selection, what, ...)
   }
   
   ## Stop here if save_all=TRUE
@@ -1332,7 +1356,7 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
 }
 
 compute_ancestral_traits <- function(x,
-                                     method.selection, ...){
+                                     method.selection, what = c("imputed", "variances", "expectations"), ...){
   ## parameters
   params <- params_process(x, method.selection, ...)
 
@@ -1343,59 +1367,68 @@ compute_ancestral_traits <- function(x,
   masque_data <- rep(FALSE, (ntaxa + x$phylo$Nnode) * x$p)
   masque_data[1:(x$p * ntaxa)] <- !miss
   
+  ## what to do
+  what <- match.arg(what, several.ok = TRUE)
+  res <- vector(mode = "list")
+  
   ## Compute the expectations
-  tmpsim <- simulate_internal(phylo = x$phylo, 
-                              process = x$process,
-                              p = x$p,
-                              root.state = params$root.state, 
-                              shifts = params$shifts, 
-                              variance = params$variance, 
-                              optimal.value = params$optimal.value, 
-                              selection.strength = params$selection.strength,
-                              simulate_random = FALSE,
-                              U_tree = x$U_tree)
+  if ("expectations" %in% what){
+    tmpsim <- simulate_internal(phylo = x$phylo, 
+                                process = x$process,
+                                p = x$p,
+                                root.state = params$root.state, 
+                                shifts = params$shifts, 
+                                variance = params$variance, 
+                                optimal.value = params$optimal.value, 
+                                selection.strength = params$selection.strength,
+                                simulate_random = FALSE,
+                                U_tree = x$U_tree)
+    res$m_Y_estim <- extract_simulate_internal(tmpsim,
+                                               where = "tips",
+                                               what = "expectations")
+    res$m_Z_estim <- extract_simulate_internal(tmpsim,
+                                               where = "nodes",
+                                               what = "expectations")
+  }
   
   ## Post order
-  phy <- reorder(x$phylo, "postorder")
-  params$shifts$edges <- correspondanceEdges(edges = params$shifts$edges,
-                                             from = x$phylo, to = phy)
-  U_tree <- x$U_tree[, correspondanceEdges(edges = 1:nrow(phy$edge),
-                                           from = phy, to = x$phylo)]
-  
-  ## E step
-  temp <- wrapper_E_step(phylo = phy,
-                         times_shared = NULL,
-                         distances_phylo = NULL,
-                         process = x$process,
-                         params_old = params,
-                         masque_data = masque_data,
-                         F_moments = NULL,
-                         independent = FALSE,
-                         Y_data_vec_known = Y_data_vec_known,
-                         miss = miss,
-                         Y_data = x$Y_data,
-                         U_tree = U_tree,
-                         compute_E = compute_E.upward_downward)
-  
-  ## Checking for consistency
-  if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
-                        attr(params, "log_likelihood"),
-                        tol = .Machine$double.eps ^ 0.2))){
-    warning(paste0("For K = ", length(params$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
-    # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
+  if ("imputed" %in% what || "variances" %in% what){
+    phy <- reorder(x$phylo, "postorder")
+    params$shifts$edges <- correspondanceEdges(edges = params$shifts$edges,
+                                               from = x$phylo, to = phy)
+    U_tree <- x$U_tree[, correspondanceEdges(edges = 1:nrow(phy$edge),
+                                             from = phy, to = x$phylo)]
+    
+    ## E step
+    temp <- wrapper_E_step(phylo = phy,
+                           times_shared = NULL,
+                           distances_phylo = NULL,
+                           process = x$process,
+                           params_old = params,
+                           masque_data = masque_data,
+                           F_moments = NULL,
+                           independent = FALSE,
+                           Y_data_vec_known = Y_data_vec_known,
+                           miss = miss,
+                           Y_data = x$Y_data,
+                           U_tree = U_tree,
+                           compute_E = compute_E.upward_downward)
+    
+    ## Checking for consistency
+    if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
+                          attr(params, "log_likelihood"),
+                          tol = .Machine$double.eps ^ 0.2))){
+      warning(paste0("For K = ", length(params$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
+      # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
+    }
+    res$Zhat <- temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)]
+    res$Yhat <- temp$conditional_law_X$expectations[ , 1:ntaxa]
+    res$Zvar <- temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)]
+    res$Yvar <- temp$conditional_law_X$variances[ , , 1:ntaxa]
   }
   
   ## Result
-  return(list(Zhat = temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
-              Yhat = temp$conditional_law_X$expectations[ , 1:ntaxa],
-              Zvar = temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
-              Yvar = temp$conditional_law_X$variances[ , , 1:ntaxa],
-              m_Y_estim = extract_simulate_internal(tmpsim,
-                                           where = "tips",
-                                           what = "expectations"),
-              m_Z_estim = extract_simulate_internal(tmpsim,
-                                           where = "nodes",
-                                           what = "expectations")))
+  return(res)
 }
 
 ##
@@ -1417,7 +1450,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                independent = FALSE,
                                K_max, use_previous = TRUE,
                                order = TRUE,
-                               method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
+                               method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
                                C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
                                method.variance = "simple",
                                method.init = "default",
@@ -1784,7 +1817,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                                 independent = TRUE,
                                 K_max, use_previous = TRUE,
                                 order = TRUE,
-                                method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH"),
+                                method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
                                 C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
                                 method.variance = c("simple", "upward_downward"),
                                 method.init = "default",
@@ -2064,6 +2097,50 @@ merge_max_grid_alpha <- function(X, alpha){
     # X$alpha_max$m_Y_estim[[paste(K_t)]] <- res_max$m_Y_estim[[paste(K_t)]]
   }
   X$alpha_max$results_summary <- as.data.frame(X$alpha_max$results_summary)
+  return(X)
+}
+
+add_lsq <- function(X){
+  nums <- grep("alpha_[[:digit:]]", names(X))
+  for (i in nums){
+    X[[i]]$results_summary$least_squares <- sapply(X[[i]]$m_Y_estim,
+                                                   function(z) sum((X$Y_data - z)^2))
+    # X[[i]]$results_summary$least_squares <- sapply(X[[i]]$params_estim, function(z) sum(diag(z$variance)))
+  }
+  return(X)
+}
+
+merge_min_grid_alpha <- function(X){
+  nums <- grep("alpha_[[:digit:]]", names(X))
+  summary_all <- X[[nums[1]]]$results_summary
+  for (i in nums[-1]){
+    summary_all <- rbind(summary_all,
+                         X[[i]]$results_summary)
+  }
+  summary_all$alpha_name <- rep(as.numeric(sub("alpha_", "", names(X)[nums])),
+                                each = length(X$K_try))
+  X$alpha_min$results_summary <- matrix(NA, nrow = length(X$K_try),
+                                        ncol = ncol(summary_all))
+  colnames(X$alpha_min$results_summary) <- colnames(summary_all)
+  X$alpha_min$edge.quality <- vector(length = length(X$K_try), mode = "list")
+  for (K_t in X$K_try){
+    min_sum <- summary_all[summary_all$K_try == K_t, ]
+    min_sum <- min_sum[which.min(min_sum$least_squares), ]
+    # subset(subset(summary_all, K_try == K_t), log_likelihood == min(log_likelihood))
+    res_min <- X[[match(paste0("alpha_", min_sum$alpha_name), names(X))]]
+    params <- res_min$params_estim[[paste(K_t)]]
+    X$alpha_min$results_summary[K_t + 1, ] <- as.vector(unname(as.matrix(min_sum)))
+    X$alpha_min$params_estim[[paste(K_t)]] <- params
+    # X$alpha_min$params_raw[[paste(K_t)]] <- res_min$params_raw[[paste(K_t)]]
+    X$alpha_min$params_init_estim[[paste(K_t)]] <- res_min$params_init_estim[[paste(K_t)]]
+    # X$alpha_min$Yhat[[paste(K_t)]] <- res_min$Yhat[[paste(K_t)]]
+    # X$alpha_min$Zhat[[paste(K_t)]] <- res_min$Zhat[[paste(K_t)]]
+    # X$alpha_min$Yvar[[paste(K_t)]] <- res_min$Yvar[[paste(K_t)]]
+    # X$alpha_min$Zvar[[paste(K_t)]] <- res_min$Zvar[[paste(K_t)]]
+    X$alpha_min$edge.quality[[paste(K_t)]] <- res_min$edge.quality[[paste(K_t)]]
+    # X$alpha_min$m_Y_estim[[paste(K_t)]] <- res_min$m_Y_estim[[paste(K_t)]]
+  }
+  X$alpha_min$results_summary <- as.data.frame(X$alpha_min$results_summary)
   return(X)
 }
 
@@ -2440,6 +2517,7 @@ format_output <- function(results_estim_EM, phylo, time = NA){
     # "gamma_estim" = params$root.state$var.root,
     # "beta_0_estim" = params$root.state$exp.root,
     "log_likelihood" = attr(params, "log_likelihood")[1],
+    "least_squares" = results_estim_EM$least_squares,
     # "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
     #"least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
     ## Convergence Monitoring Quantities

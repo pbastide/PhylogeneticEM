@@ -52,6 +52,7 @@ penalty_BirgeMassart_shape1 <- function(K, p, model_complexity, B = 0.1){
 }
 
 model_selection_BM1 <- function(res, C.BM1, ...){
+  res <- res$alpha_max
   p <- nrow(res$params_estim$`0`$variance)
   pen_shape <- penalty_BirgeMassart_shape1(res$results_summary$K_try,
                                            p,
@@ -128,6 +129,7 @@ penalty_BirgeMassart_shape2 <- function(K, p, model_complexity, C = 2.5){
 }
 
 model_selection_BM2 <- function(res, C.BM2, ...){
+  res <- res$alpha_max
   p <- nrow(res$params_estim$`0`$variance)
   pen_shape <- penalty_BirgeMassart_shape2(res$results_summary$K_try,
                                            p,
@@ -137,6 +139,9 @@ model_selection_BM2 <- function(res, C.BM2, ...){
   return(res)
 }
 
+#############################################
+## LINSelect
+#############################################
 ##
 #' @title Penalty function type Baraud Giraud Huet.
 #'
@@ -191,6 +196,296 @@ model_selection_BGH <- function(res, ntaxa, C.BGH, ...){
   return(res)
 }
 
+penalty_BaraudGiraudHuet_leastsquares <- function(K, model_complexity, ntaxa, 
+                                                  C = 1.1){
+  Delta <- log(model_complexity) + log(K + 2)
+  Delta <- c(0, Delta) # We start with dimension 1 (K=0)
+  res <- LINselect::penalty(Delta, n = ntaxa, p = 2 * ntaxa - 2, K = C)
+  res <- res[-1]
+  return(res / (ntaxa - K - 1))
+}
+
+model_selection_BGH_leastsquares <- function(res, ntaxa, C.BGH, ...){
+  # res <- add_lsq(res)
+  res <- merge_min_grid_alpha(res)
+  res <- res$alpha_min
+  p <- nrow(res$params_estim$`0`$variance)
+  ## Penalty
+  pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
+                                               res$results_summary$complexity,
+                                               ntaxa,
+                                               C.BGH)
+  ## least squares
+  # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
+  lsq <- res$results_summary$least_squares
+  crit <- ntaxa * lsq * (1 + pen)
+  ## Assign results
+  res <- assign_results_model_selection(res, pen, crit, "BGHlsq")
+  return(res)
+}
+
+model_selection_BGH_ml <- function(res, ntaxa, C.BGH, ...){
+  # res <- add_lsq(res)
+  # res <- merge_min_grid_alpha(res)
+  res <- res$alpha_max
+  p <- nrow(res$params_estim$`0`$variance)
+  ## Penalty
+  pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
+                                               res$results_summary$complexity,
+                                               ntaxa,
+                                               C.BGH)
+  ## least squares
+  # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
+  lsq <- res$results_summary$least_squares
+  crit <- ntaxa * lsq * (1 + pen)
+  ## Assign results
+  res <- assign_results_model_selection(res, pen, crit, "BGHml")
+  return(res)
+}
+
+model_selection_BGH_mlraw <- function(res, ntaxa, C.BGH, ...){
+  # res <- add_lsq(res)
+  # res <- merge_min_grid_alpha(res)
+  res <- res$alpha_max
+  p <- nrow(res$params_estim$`0`$variance)
+  ## Penalty
+  pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
+                                               res$results_summary$complexity,
+                                               ntaxa,
+                                               C.BGH)
+  ## least squares
+  # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
+  lsq <- res$results_summary$least_squares_raw
+  crit <- ntaxa * lsq * (1 + pen)
+  ## Assign results
+  res <- assign_results_model_selection(res, pen, crit, "BGHmlraw")
+  return(res)
+}
+
+model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.BGH, ...){
+  # res <- add_lsq(res)
+  # res <- merge_min_grid_alpha(res)
+  res <- res$alpha_min
+  p <- nrow(res$params_estim$`0`$variance)
+  ## Penalty
+  pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
+                                               res$results_summary$complexity,
+                                               ntaxa,
+                                               C.BGH)
+  ## least squares
+  # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
+  lsq <- res$results_summary$least_squares_raw
+  crit <- ntaxa * lsq * (1 + pen)
+  ## Assign results
+  res <- assign_results_model_selection(res, pen, crit, "BGHlsqraw")
+  return(res)
+}
+
+#############################################
+## pBIC
+#############################################
+##
+#' @title Penalty function type pBIC
+#'
+#' @description
+#' \code{penalty_pBIC_scalarOU} is the pBIC.
+#'
+#' @param K the dimension of the model.
+#' @param model_complexity the complexity of the set of models with dimention K.
+#' @param ntaxa the number of tips.
+#' @param C a constant, C > 1. Default is C = 1.1
+#' (as suggested in Baraud Giraud Huet (2009))
+#' 
+#' @return value of the penalty.
+#' 
+#' @seealso \code{\link{penalty_BirgeMassart_shape1}},
+#' \code{\link{penalty_BirgeMassart_shape2}}
+#' 
+#' @keywords internal
+#'
+##
+
+penalty_pBIC <- function(all_params, model_complexity, independent, tree, times_shared, distances_phylo, T_tree, p, K, ntaxa, process){
+  if (independent){
+    penalty_pBIC_unit <- penalty_pBIC_independent
+  } else {
+    penalty_pBIC_unit <- penalty_pBIC_scalarOU
+  }
+  ## Computations
+  pen <- sapply(all_params, penalty_pBIC_unit,
+                tree, times_shared, distances_phylo, T_tree, process)
+  ## Model Complexity term
+  pen <- pen + 2 * log(model_complexity)
+  ## Constant term
+  Cst <- p * (p+1)/2 * log(ntaxa - K - 1)
+  # Cst <- Cst - p * (K + 1) * log(2 * pi)
+  # Cst <- Cst - p*(p+1)/2 * log(2*pi) + 2*p * log(2)
+  pen <- pen + Cst
+  ## Alpha parameter
+  if (independent){
+    pen <- pen + p * log(ntaxa)
+  } else {
+    pen <- pen + log(ntaxa) 
+  }
+  return(pen)
+}
+
+penalty_pBIC_scalarOU <- function(params, tree, times_shared, distances_phylo, T_tree, process){
+  if (length(as.vector(params$selection.strength)) > 1){
+    stop("pBIC only works for scalar OU.")
+  }
+  ntaxa <- length(tree$tip.label)
+  K <- length(params$shifts$edges)
+  p <- ncol(params$variance)
+  ## Variance term
+  # pen <- (p - K) * determinant(params$variance, logarithm = TRUE)$modulus
+  # pen <- as.vector(pen)
+  ## Model Design term
+  # Correlation matrix
+  compute_tree_correlations_matrix  <- switch(process, 
+                                              BM = compute_tree_correlations_matrix.BM,
+                                              OU = compute_tree_correlations_matrix.scOU,
+                                              scOU = compute_tree_correlations_matrix.scOU)
+  C <- compute_tree_correlations_matrix(times_shared, distances_phylo, params)
+  C <- extract.variance_covariance(C, what="YY",
+                                   masque_data = c(rep(TRUE, ntaxa),
+                                                   rep(FALSE, dim(C)[1] - ntaxa)))
+  C <- 1/(2*as.vector(params$selection.strength)) * C
+  C_inv <- solve(C)
+  # Tree Matrix
+  ac_tree <- incidence_matrix_actualization_factors(tree = tree, 
+                                                    selection.strength = as.vector(params$selection.strength),
+                                                    times_shared = times_shared)
+  Tr <- T_tree * ac_tree
+  Tr <- Tr[, params$shifts$edges, drop = F]
+  Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
+  # Det
+  pen <- p * determinant(t(Tr) %*% C_inv %*% Tr, logarithm = TRUE)$modulus
+  pen <- as.vector(pen)
+  return(pen)
+}
+
+penalty_pBIC_independent <- function(params, model_complexity, tree, times_shared, distances_phylo, T_tree, process){
+  ntaxa <- length(tree$tip.label)
+  K <- length(params$shifts$edges)
+  p <- ncol(params$variance)
+  ## Variance term
+  pen <- (p - K) * determinant(params$variance, logarithm = TRUE)$modulus
+  pen <- as.vector(pen)
+  ## Model Design term
+  # Correlation matrix
+  compute_tree_correlations_matrix  <- switch(process, 
+                                              BM = compute_tree_correlations_matrix.BM,
+                                              OU = compute_tree_correlations_matrix.scOU,
+                                              scOU = compute_tree_correlations_matrix.scOU)
+  C <- compute_tree_correlations_matrix(times_shared, distances_phylo, params)
+  C <- extract.variance_covariance(C, what="YY",
+                                   masque_data = c(rep(TRUE, ntaxa),
+                                                   rep(FALSE, dim(C)[1] - ntaxa)))
+  C_inv <- solve(C)
+  alphas <- diag(params$selection.strength)
+  for (alp in alphas){
+    # Tree Matrix
+    ac_tree <- incidence_matrix_actualization_factors(tree = tree, 
+                                                      selection.strength = alp,
+                                                      times_shared = times_shared)
+    Tr <- T_tree * ac_tree
+    Tr <- Tr[, params$shifts$edges, drop = F]
+    Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
+    # Det
+    pen <- pen + determinant(t(Tr) %*% C_inv %*% Tr, logarithm = TRUE)
+    pen <- as.vector(pen)
+  }
+  return(pen)
+}
+
+model_selection_pBIC <- function(res, independent, tree, times_shared, distances_phylo, T_tree, ntaxa, process, ...){
+  res <- res$alpha_max
+  p <- nrow(res$params_estim$`0`$variance)
+  ## Penalty
+  pen <- 1/2 * penalty_pBIC(res$params_estim,
+                            res$results_summary$complexity,
+                            independent, tree,
+                            times_shared, distances_phylo, T_tree,
+                            p, res$results_summary$K_try, ntaxa, process)
+  ## Criterion
+  crit <- - res$results_summary$log_likelihood + pen
+  ## Assign results
+  res <- assign_results_model_selection(res, pen, crit, "pBIC")
+  return(res)
+}
+
+#############################################
+## l1ou
+#############################################
+penalty_pBIC_l1ou <- function(all_params, model_complexity, independent, tree, times_shared, distances_phylo, T_tree, p, K, ntaxa, process, Y_data){
+  ## Computations
+  pen <- sapply(all_params, penalty_pBIC_l1ou_unit,
+                tree, times_shared, distances_phylo, T_tree, process, Y_data)
+  ## Model Complexity term
+  pen <- pen + 2 * log(model_complexity)
+  return(pen)
+}
+
+penalty_pBIC_l1ou_unit <- function(params, tree, times_shared, distances_phylo,
+                                   T_tree, process, Y_data){
+  ntaxa <- length(tree$tip.label)
+  K <- length(params$shifts$edges)
+  p <- ncol(params$variance)
+  ## Variance term
+  browser()
+  vars <- apply(Y_data, 1, var)
+  vars <- vars - diag(params$variance)
+  pen <- sum(log(vars))
+  pen <- (K+1) * as.vector(pen)
+  ## Model Design term
+  # Correlation matrix
+  compute_tree_correlations_matrix  <- switch(process, 
+                                              BM = compute_tree_correlations_matrix.BM,
+                                              OU = compute_tree_correlations_matrix.scOU,
+                                              scOU = compute_tree_correlations_matrix.scOU)
+  C <- compute_tree_correlations_matrix(times_shared, distances_phylo, params)
+  C <- extract.variance_covariance(C, what="YY",
+                                   masque_data = c(rep(TRUE, ntaxa),
+                                                   rep(FALSE, dim(C)[1] - ntaxa)))
+  C <- 1/(2*as.vector(params$selection.strength)) * C
+  C_inv <- solve(C)
+  # Tree Matrix
+  ac_tree <- incidence_matrix_actualization_factors(tree = tree, 
+                                                    selection.strength = as.vector(params$selection.strength),
+                                                    times_shared = times_shared)
+  Tr <- T_tree * ac_tree
+  Tr <- Tr[, params$shifts$edges, drop = F]
+  Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
+  # Det
+  pen <- pen + p * determinant(t(Tr) %*% C_inv %*% Tr, logarithm = TRUE)$modulus
+  pen <- as.vector(pen)
+  # sigma and alpha
+  pen <- pen + 2 * log(ntaxa)
+  return(pen)
+}
+
+model_selection_pBIC_l1ou <- function(res, independent, tree, times_shared, distances_phylo, T_tree, ntaxa, process, Y_data, ...){
+  res <- res$alpha_max
+  p <- nrow(res$params_estim$`0`$variance)
+  ## Penalty
+  pen <- 1/2 * penalty_pBIC_l1ou(res$params_estim,
+                                 res$results_summary$complexity,
+                                 independent, tree,
+                                 times_shared, distances_phylo, T_tree,
+                                 p, res$results_summary$K_try, ntaxa, process,
+                                 Y_data)
+  ## Criterion
+  crit <- - res$results_summary$log_likelihood + pen
+  ## Assign results
+  res <- assign_results_model_selection(res, pen, crit, "pBIC_l1ou")
+  return(res)
+}
+
+#############################################
+## Format results
+#############################################
+
 assign_results_model_selection <- function(res, pen, crit, name){
   ## Fill result summary
   res$results_summary[[paste0("pen_", name)]] <- pen
@@ -214,4 +509,66 @@ assign_results_model_selection <- function(res, pen, crit, name){
                    name, " method."))
     }
   return(res)
+}
+
+#############################################
+## Generic for model selection
+#############################################
+##
+#' @title Model Selection of a fitted object
+#'
+#' @description
+#' \code{model_selection} does the model selection on a fitted \code{\link{PhyloEM}} 
+#' object, and returns the same fitted object.
+#'
+#' @param x a fitted \code{\link{PhyloEM}} object
+#' @inheritParams PhyloEM
+#'     
+#' @return
+#' The same object, but with a slot corresponding to the model selection used. See
+#' function \code{\link{params_process.PhyloEM}} to retrieve the selected parameters.
+#'  
+#' @seealso \code{\link{PhyloEM}}, \code{\link{params_process.PhyloEM}},
+#' \code{\link{imputed_traits.PhyloEM}}
+#' 
+#' @export
+#' 
+##
+model_selection <- function(x, ...) UseMethod("model_selection")
+
+##
+#' @describeIn model_selection \code{\link{PhyloEM}} object
+#' @export
+##
+model_selection.PhyloEM <- function(x,
+                                    method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq"),
+                                    C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                                    independent = FALSE, ...){
+  browser()
+  mod_sel_unit <- function(one.method.selection){
+    mod_sel  <- switch(one.method.selection, 
+                       BirgeMassart1 = model_selection_BM1,
+                       BirgeMassart2 = model_selection_BM2,
+                       BGHlsq = model_selection_BGH_leastsquares,
+                       pBIC = model_selection_pBIC,
+                       pBIC_l1ou = model_selection_pBIC_l1ou)
+    selection <- try(mod_sel(x, ntaxa = ncol(x$Y_data),
+                             C.BM1 = C.BM1, C.BM2 = C.BM2, C.BGH = C.BGH,
+                             tree = x$phylo, independent = independent,
+                             T_tree = x$T_tree, times_shared = x$times_shared, 
+                             distances_phylo = x$distances_phylo,
+                             process = x$process, Y_data = x$Y_data))
+    if (inherits(selection, "try-error")){
+      warning(paste0("Model Selection ",  one.method.selection, " failled"))
+    } else if (one.method.selection == "BGHlsq") {
+      x$alpha_min <- selection
+    } else {
+      x$alpha_max <- selection
+    }
+    return(x)
+  }
+  for (meth.sel in method.selection){
+    x <- mod_sel_unit(meth.sel)
+  }
+  return(x)
 }

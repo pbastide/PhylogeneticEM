@@ -1,3 +1,103 @@
+test_that("log-likelihood - scOU - random root", {
+  testthat::skip_on_cran()
+  set.seed(17920902)
+  ntaxa = 20
+  tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
+                                   age = 1, mrca = TRUE)[[1]]
+  tree <- reorder(tree, order = "postorder")
+  p <- 2
+  variance <- diag(0.2, p, p) +  matrix(0.8, p, p)
+  selection.strength <- 3
+  independent <- FALSE
+  root.state <- list(random = TRUE,
+                     stationary.root = TRUE,
+                     value.root = NA,
+                     exp.root = rep(1, p),
+                     var.root = compute_stationary_variance(variance, selection.strength))
+  shifts = list(edges = c(25, 10, 31),
+                values = cbind(c(5, 5),
+                               c(-5, -5),
+                               c(3, 3)),
+                relativeTimes = 0)
+  paramsSimu <- list(variance = variance,
+                     shifts = shifts,
+                     root.state = root.state,
+                     selection.strength = selection.strength,
+                     optimal.value = rep(1, p))
+  attr(paramsSimu, "p_dim") <- p
+  
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "scOU",
+                          variance = variance,
+                          shifts = shifts,
+                          selection.strength = selection.strength,
+                          optimal.value = paramsSimu$optimal.value)
+  
+  traits <- extract_simulate_internal(X1, where = "tips", what = "state")
+  
+  res_new <- PhyloEM(phylo = tree,
+                     Y_data = traits,
+                     process = "scOU",
+                     K_max = 5,
+                     random.root = TRUE,
+                     stationary.root = TRUE,
+                     alpha = selection.strength,
+                     save_step = FALSE,
+                     Nbr_It_Max = 2000,
+                     method.variance = "upward_downward",
+                     method.init = "lasso",
+                     use_previous = FALSE,
+                     method.selection = "pBIC",
+                     impute_init_Rphylopars = FALSE,
+                     progress.bar = FALSE,
+                     K_lag_init = 2)
+  
+  expect_equal(log_likelihood(res_new, K = 1, alpha = "max"),
+               res_new$alpha_max$results_summary$log_likelihood[2])
+  
+  ## tree quantities
+  times_shared <- compute_times_ca(tree)
+  distances_phylo <- compute_dist_phy(tree)
+  T_tree <- incidence.matrix(tree)
+  ## params and correlation tree matrix
+  params <- params_process.PhyloEM(res_new, K = 1, alpha = "max")
+  C <- compute_tree_correlations_matrix.scOU(times_shared, distances_phylo, params)
+  C <- 1/(2*selection.strength) * extract.variance_covariance(C, what="YY",
+                                   masque_data = c(rep(TRUE, ntaxa),
+                                                   rep(FALSE, dim(C)[1] - ntaxa)))
+  C_inv <- solve(C)
+  ## regression matrix
+  ac_tree <- incidence_matrix_actualization_factors(tree = tree, 
+                                                    selection.strength = as.vector(params$selection.strength),
+                                                    times_shared = times_shared)
+  Tr <- T_tree * ac_tree
+  Tr <- Tr[, params$shifts$edges, drop = F]
+  Tr <- cbind(Tr, rep(1, dim(Tr)[1]))
+  
+  P <- C_inv %*% Tr %*% solve(t(Tr) %*% C_inv %*% Tr) %*% t(Tr) %*% C_inv
+  ## Max ll parameters
+  R_max <- traits %*% (C_inv - P) %*% t(traits) / ntaxa
+  Delta_max <- solve(t(Tr) %*% C_inv %*% Tr) %*% t(Tr) %*% C_inv %*% t(traits)
+  
+  expect_equal(Delta_max[2, ], params$root.state$exp.root)
+  expect_equal(Delta_max[1, ], params$shifts$values[, 1])
+  expect_equal(as.matrix(R_max),
+               as.matrix(params$variance), tolerance = 10^(-1))
+  
+  ## Max likelihood
+  LL_max <- -ntaxa*p/2*(log(2*pi)+1) - ntaxa/2*determinant(R_max, logarithm = TRUE)$modulus - p/2 * determinant(C, logarithm = T)$modulus
+  expect_equal(log_likelihood(res_new, K = 1, alpha = "max"),
+               as.vector(LL_max), tolerance = 10^(-2))
+  
+  ## Least squares
+  lsq_1 <- sum(apply(t(traits) - Tr %*% Delta_max, 2, function(z) as.vector(t(z) %*% C_inv %*% z)))
+  lsq_2 <- ntaxa * sum(diag(R_max))
+  expect_equal(lsq_1, lsq_2)
+})
+
+
 # context("Log Likelihood Computation")
 # 
 # test_that("independent computations", {
