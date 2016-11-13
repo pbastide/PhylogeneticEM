@@ -433,7 +433,7 @@ penalty_pBIC_l1ou_unit <- function(params, tree, times_shared, distances_phylo,
   K <- length(params$shifts$edges)
   p <- ncol(params$variance)
   ## Variance term
-  browser()
+  # browser()
   vars <- apply(Y_data, 1, var)
   vars <- vars - diag(params$variance)
   pen <- sum(log(vars))
@@ -544,7 +544,7 @@ model_selection.PhyloEM <- function(x,
                                     method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq"),
                                     C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
                                     independent = FALSE, ...){
-  browser()
+  # browser()
   mod_sel_unit <- function(one.method.selection){
     mod_sel  <- switch(one.method.selection, 
                        BirgeMassart1 = model_selection_BM1,
