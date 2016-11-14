@@ -1025,6 +1025,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   ## Inference per se
   if (!is.null(estimates)){ # If the user already has the estimates
     X <- estimates ## Get estimations from presiously computed results
+    check_postorder <- FALSE
   } else if (alpha_grid) { # For a grid estimation of alpha
     X <- PhyloEM_grid_alpha(phylo = phylo,
                             Y_data = Y_data,
