@@ -18,7 +18,7 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   check.tips.names = FALSE, progress.bar = TRUE, estimates = NULL,
   save_step = FALSE, sBM_variance = FALSE, method.OUsun = "rescale",
   parallel_alpha = FALSE, Ncores = 3, impute_init_Rphylopars = FALSE,
-  K_lag_init = 5, ...)
+  K_lag_init = 5, light_result = TRUE, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -133,6 +133,10 @@ Default to FALSE.}
 \item{K_lag_init}{Number of extra shifts to be considered at the initialization
 step. Increases the accuracy, but can make computations quite slow of taken
 too high. Default to 5.}
+
+\item{light_result}{if TRUE (the default), the object returned is enlighted,
+without easilly computatble quantities. If FALSE, the object can be very heavy, but
+its subsequent manipulations can be faster (especially for plotting).}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
 tolerance parameters for stopping criterions, maximal number of iterations, etc.}

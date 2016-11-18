@@ -926,6 +926,9 @@ estimateEM <- function(phylo,
 #' @param K_lag_init Number of extra shifts to be considered at the initialization
 #' step. Increases the accuracy, but can make computations quite slow of taken
 #' too high. Default to 5.
+#' @param light_result if TRUE (the default), the object returned is enlighted,
+#' without easilly computatble quantities. If FALSE, the object can be very heavy, but
+#' its subsequent manipulations can be faster (especially for plotting).
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
 #' tolerance parameters for stopping criterions, maximal number of iterations, etc.
 #' 
@@ -990,6 +993,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     # exportFunctions = ls(),
                     impute_init_Rphylopars = FALSE,
                     K_lag_init = 5,
+                    light_result = TRUE,
                     ...){
   ## Required packages
   # library(doParallel)
@@ -1058,6 +1062,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             # exportFunctions = exportFunctions, 
                             impute_init_Rphylopars = impute_init_Rphylopars, 
                             K_lag_init = K_lag_init,
+                            light_result = light_result,
                             ...)
   } else { # For an in-loop estimation of alpha (independent = TRUE)
     if (!independent){
@@ -1090,6 +1095,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              method.OUsun = "raw", 
                              impute_init_Rphylopars = impute_init_Rphylopars, 
                              K_lag_init = K_lag_init,
+                             light_result = light_result,
                              ...)
   }
   
@@ -1109,6 +1115,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   X$U_tree <- incidence.matrix.full(X$phylo)
   X$h_tree <- max(diag(as.matrix(X$times_shared))[1:ntaxa])
   X$Y_data <- Y_data
+  X$light_result <- light_result
   
   ## Model Selection
   model_selection <- function(one.method.selection){
@@ -1358,8 +1365,25 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
 
 compute_ancestral_traits <- function(x,
                                      method.selection, what = c("imputed", "variances", "expectations"), ...){
+  
   ## parameters
   params <- params_process(x, method.selection, ...)
+  
+  ## Heavy results
+  if (!x$light_result && x$process == "scOU"){
+    K <- length(params$shifts$edges)
+    alpha <- params$selection.strength
+    tmp <- x[[paste0("alpha_", alpha)]]
+    res <- list(
+      m_Y_estim = tmp$m_Y_estim[[paste0(K)]],
+      m_Z_estim = NULL,
+      Zhat = tmp$Zhat[[paste0(K)]],
+      Yhat = tmp$Yhat[[paste0(K)]],
+      Zvar = tmp$Zvar[[paste0(K)]],
+      Yvar = tmp$Yvar[[paste0(K)]]
+    )
+    return(res)
+  }
 
   ## Needed quatities
   ntaxa <- length(x$phylo$tip.label)
@@ -1473,6 +1497,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                # exportFunctions = ls(),
                                impute_init_Rphylopars = FALSE,
                                K_lag_init = 0,
+                               light_result = TRUE,
                                ...){
   # reqpckg <- c("ape", "glmnet", "robustbase")
   reqpckg <- c("PhylogeneticEM")
@@ -1537,6 +1562,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        T_tree,
                                        U_tree,
                                        K_lag_init,
+                                       light_result,
                                        ...){
     if(progress.bar){
       message(paste0("Alpha ", alp))
@@ -1643,6 +1669,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              method.OUsun = method.OUsun,
                              impute_init_Rphylopars = impute_init_Rphylopars,
                              K_lag_init = K_lag_init,
+                             light_result = light_result,
                              ...)
     ## Trnasform back parameters to OU if needed
     if (transform_scOU){
@@ -1655,60 +1682,62 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       }
       X$params_estim <- lapply(X$params_estim, fun1)
       rm(fun1)
-    #   ## Ancestral state reconstruction
-    #   compute_E  <- switch(method.variance, 
-    #                        simple = compute_E.simple,
-    #                        upward_downward = compute_E.upward_downward)
-    #   fun2 <- function(params_scOU){
-    #     temp <- wrapper_E_step(phylo = original_phy,
-    #                            times_shared = times_shared_original,
-    #                            distances_phylo = distances_phylo_original,
-    #                            process = process_original,
-    #                            params_old = params_scOU,
-    #                            masque_data = masque_data,
-    #                            F_moments = NULL,
-    #                            independent = FALSE,
-    #                            Y_data_vec_known = Y_data_vec_known,
-    #                            miss = miss,
-    #                            Y_data = Y_data,
-    #                            U_tree = U_tree,
-    #                            # compute_mean_variance = compute_mean_variance.simple,
-    #                            # compute_log_likelihood = compute_log_likelihood.simple,
-    #                            # compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
-    #                            compute_E = compute_E)
-    #     if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
-    #                    attr(params_scOU, "log_likelihood"),
-    #                    tol = .Machine$double.eps ^ 0.2))){
-    #       warning(paste0("For K = ", length(params_scOU$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
-    #       # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
-    #     }
-    #     tmpsim <- simulate_internal(phylo = original_phy, 
-    #                        process = process_original,
-    #                        p = attr(params_scOU, "p_dim"),
-    #                        root.state = params_scOU$root.state, 
-    #                        shifts = params_scOU$shifts, 
-    #                        variance = params_scOU$variance, 
-    #                        optimal.value = params_scOU$optimal.value, 
-    #                        selection.strength = params_scOU$selection.strength,
-    #                        simulate_random = FALSE,
-    #                        U_tree = U_tree)
-    #     return(list(Zhat = temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
-    #                 Yhat = temp$conditional_law_X$expectations[ , 1:ntaxa],
-    #                 Zvar = temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
-    #                 Yvar = temp$conditional_law_X$variances[ , , 1:ntaxa],
-    #                 m_Y_estim = extract_simulate_internal(tmpsim,
-    #                                              where="tips",
-    #                                              what="expectations")))
-    #   }
-    #   temp_list <- lapply(X$params_estim, fun2)
-    #   rm(fun2)
-    #   ## "Ancestral States Reconstruction"
-    #   X$Zhat <- lapply(temp_list, function(z) z$Zhat)
-    #   X$Yhat <- lapply(temp_list, function(z) z$Yhat)
-    #   X$Zvar <- lapply(temp_list, function(z) z$Zvar)
-    #   X$Yvar <- lapply(temp_list, function(z) z$Yvar)
-    #   X$m_Y_estim <- lapply(temp_list, function(z) z$m_Y_estim)
-    #   rm(temp_list)
+      ## Ancestral state reconstruction
+      if (!light_result){
+        compute_E  <- switch(method.variance,
+                             simple = compute_E.simple,
+                             upward_downward = compute_E.upward_downward)
+        fun2 <- function(params_scOU){
+          temp <- wrapper_E_step(phylo = original_phy,
+                                 times_shared = times_shared_original,
+                                 distances_phylo = distances_phylo_original,
+                                 process = process_original,
+                                 params_old = params_scOU,
+                                 masque_data = masque_data,
+                                 F_moments = NULL,
+                                 independent = FALSE,
+                                 Y_data_vec_known = Y_data_vec_known,
+                                 miss = miss,
+                                 Y_data = Y_data,
+                                 U_tree = U_tree,
+                                 # compute_mean_variance = compute_mean_variance.simple,
+                                 # compute_log_likelihood = compute_log_likelihood.simple,
+                                 # compute_mahalanobis_distance = compute_mahalanobis_distance.simple,
+                                 compute_E = compute_E)
+          if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
+                                attr(params_scOU, "log_likelihood"),
+                                tol = .Machine$double.eps ^ 0.2))){
+            warning(paste0("For K = ", length(params_scOU$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
+            # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
+          }
+          tmpsim <- simulate_internal(phylo = original_phy,
+                                      process = process_original,
+                                      p = attr(params_scOU, "p_dim"),
+                                      root.state = params_scOU$root.state,
+                                      shifts = params_scOU$shifts,
+                                      variance = params_scOU$variance,
+                                      optimal.value = params_scOU$optimal.value,
+                                      selection.strength = params_scOU$selection.strength,
+                                      simulate_random = FALSE,
+                                      U_tree = U_tree)
+          return(list(Zhat = temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
+                      Yhat = temp$conditional_law_X$expectations[ , 1:ntaxa],
+                      Zvar = temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)],
+                      Yvar = temp$conditional_law_X$variances[ , , 1:ntaxa],
+                      m_Y_estim = extract_simulate_internal(tmpsim,
+                                                            where="tips",
+                                                            what="expectations")))
+        }
+        temp_list <- lapply(X$params_estim, fun2)
+        rm(fun2)
+        ## "Ancestral States Reconstruction"
+        X$Zhat <- lapply(temp_list, function(z) z$Zhat)
+        X$Yhat <- lapply(temp_list, function(z) z$Yhat)
+        X$Zvar <- lapply(temp_list, function(z) z$Zvar)
+        X$Yvar <- lapply(temp_list, function(z) z$Yvar)
+        X$m_Y_estim <- lapply(temp_list, function(z) z$m_Y_estim)
+        rm(temp_list) 
+      }
     }
     return(X)
   }
@@ -1755,6 +1784,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                T_tree = T_tree,
                                U_tree = U_tree,
                                K_lag_init = K_lag_init,
+                               light_result = light_result,
                                ...)
     }
     parallel::stopCluster(cl)
@@ -1794,6 +1824,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                T_tree = T_tree,
                                U_tree = U_tree,
                                K_lag_init = K_lag_init,
+                               light_result = light_result,
                                ...)
     }
   }
@@ -1805,8 +1836,10 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   X$ntaxa <- ntaxa
 
   ## Select max solution for each K
-  X <- merge_max_grid_alpha(X, alpha)
-  
+  X <- merge_max_grid_alpha(X, alpha, light_result)
+  if (any(c("BGHlsq", "BGHlsqraw") %in% method.selection)){
+    X <- merge_min_grid_alpha(X, light_result) 
+  }
   return(X)
 }
 
@@ -1836,6 +1869,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                                 method.OUsun = "raw",
                                 impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
+                                light_result = TRUE,
                                 ...){
   ## Fixed quantities
   ntaxa <- length(phylo$tip.label)
@@ -1898,6 +1932,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                            method.OUsun = method.OUsun,
                            impute_init_Rphylopars = impute_init_Rphylopars,
                            K_lag_init = K_lag_init,
+                           light_result = light_result,
                            ...)
   
   ## Format Output
@@ -1950,6 +1985,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 method.OUsun = "rescale", 
                                 impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
+                                light_result = TRUE,
                                 ...){
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
@@ -2060,7 +2096,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
     if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
   }
   ## Format results and return
-  res <- format_output_several_K_single(XX)
+  res <- format_output_several_K_single(XX, light_result)
   if (save_step) save(res, file = paste0("Tmp_", alp, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
   return(res)
 }
@@ -2069,7 +2105,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
 ## merge_max_grid_alpha
 ###############################################################################
 
-merge_max_grid_alpha <- function(X, alpha){
+merge_max_grid_alpha <- function(X, alpha, light_result = TRUE){
   summary_all <- X[[paste0("alpha_", alpha[1])]]$results_summary
   for (alp in alpha[-1]){
     summary_all <- rbind(summary_all,
@@ -2090,12 +2126,14 @@ merge_max_grid_alpha <- function(X, alpha){
     X$alpha_max$params_estim[[paste(K_t)]] <- params
     # X$alpha_max$params_raw[[paste(K_t)]] <- res_max$params_raw[[paste(K_t)]]
     X$alpha_max$params_init_estim[[paste(K_t)]] <- res_max$params_init_estim[[paste(K_t)]]
-    # X$alpha_max$Yhat[[paste(K_t)]] <- res_max$Yhat[[paste(K_t)]]
-    # X$alpha_max$Zhat[[paste(K_t)]] <- res_max$Zhat[[paste(K_t)]]
-    # X$alpha_max$Yvar[[paste(K_t)]] <- res_max$Yvar[[paste(K_t)]]
-    # X$alpha_max$Zvar[[paste(K_t)]] <- res_max$Zvar[[paste(K_t)]]
     X$alpha_max$edge.quality[[paste(K_t)]] <- res_max$edge.quality[[paste(K_t)]]
-    # X$alpha_max$m_Y_estim[[paste(K_t)]] <- res_max$m_Y_estim[[paste(K_t)]]
+    if (!light_result){
+      X$alpha_max$Yhat[[paste(K_t)]] <- res_max$Yhat[[paste(K_t)]]
+      X$alpha_max$Zhat[[paste(K_t)]] <- res_max$Zhat[[paste(K_t)]]
+      X$alpha_max$Yvar[[paste(K_t)]] <- res_max$Yvar[[paste(K_t)]]
+      X$alpha_max$Zvar[[paste(K_t)]] <- res_max$Zvar[[paste(K_t)]]
+      X$alpha_max$m_Y_estim[[paste(K_t)]] <- res_max$m_Y_estim[[paste(K_t)]]
+    }
   }
   X$alpha_max$results_summary <- as.data.frame(X$alpha_max$results_summary)
   return(X)
@@ -2111,7 +2149,7 @@ add_lsq <- function(X){
   return(X)
 }
 
-merge_min_grid_alpha <- function(X){
+merge_min_grid_alpha <- function(X, light_result = TRUE){
   nums <- grep("alpha_[[:digit:]]", names(X))
   summary_all <- X[[nums[1]]]$results_summary
   for (i in nums[-1]){
@@ -2134,12 +2172,14 @@ merge_min_grid_alpha <- function(X){
     X$alpha_min$params_estim[[paste(K_t)]] <- params
     # X$alpha_min$params_raw[[paste(K_t)]] <- res_min$params_raw[[paste(K_t)]]
     X$alpha_min$params_init_estim[[paste(K_t)]] <- res_min$params_init_estim[[paste(K_t)]]
-    # X$alpha_min$Yhat[[paste(K_t)]] <- res_min$Yhat[[paste(K_t)]]
-    # X$alpha_min$Zhat[[paste(K_t)]] <- res_min$Zhat[[paste(K_t)]]
-    # X$alpha_min$Yvar[[paste(K_t)]] <- res_min$Yvar[[paste(K_t)]]
-    # X$alpha_min$Zvar[[paste(K_t)]] <- res_min$Zvar[[paste(K_t)]]
     X$alpha_min$edge.quality[[paste(K_t)]] <- res_min$edge.quality[[paste(K_t)]]
-    # X$alpha_min$m_Y_estim[[paste(K_t)]] <- res_min$m_Y_estim[[paste(K_t)]]
+    if (!light_result){
+      X$alpha_min$Yhat[[paste(K_t)]] <- res_min$Yhat[[paste(K_t)]]
+      X$alpha_min$Zhat[[paste(K_t)]] <- res_min$Zhat[[paste(K_t)]]
+      X$alpha_min$Yvar[[paste(K_t)]] <- res_min$Yvar[[paste(K_t)]]
+      X$alpha_min$Zvar[[paste(K_t)]] <- res_min$Zvar[[paste(K_t)]]
+      X$alpha_min$m_Y_estim[[paste(K_t)]] <- res_min$m_Y_estim[[paste(K_t)]] 
+    }
   }
   X$alpha_min$results_summary <- as.data.frame(X$alpha_min$results_summary)
   return(X)
@@ -2573,7 +2613,7 @@ format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
   return(out)
 }
 
-format_output_several_K_single <- function(res_sev_K){
+format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
   dd <- do.call(rbind, res_sev_K)
   df <- do.call(rbind, dd[ , "summary"])
   df <- as.data.frame(df)
@@ -2584,11 +2624,13 @@ format_output_several_K_single <- function(res_sev_K){
   # res$params_raw <- dd[, "params_raw"]
   res$params_init_estim <- dd[, "params_init"]
   res$alpha_0 <- dd[,"alpha_0" == colnames(dd)]
-  # res$Zhat <- dd[, "Zhat"]
-  # res$Yhat <- dd[, "Yhat"]
-  # res$Zvar <- dd[, "Zvar"]
-  # res$Yvar <- dd[, "Yvar"]
-  # res$m_Y_estim <- dd[, "m_Y_estim"]
+  if (!light_result){
+    res$Zhat <- dd[, "Zhat"]
+    res$Yhat <- dd[, "Yhat"]
+    res$Zvar <- dd[, "Zvar"]
+    res$Yvar <- dd[, "Yvar"]
+    res$m_Y_estim <- dd[, "m_Y_estim"]
+  }
   res$edge.quality <- dd[, "edge.quality"]
   return(res)
 }
