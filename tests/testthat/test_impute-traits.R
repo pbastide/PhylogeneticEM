@@ -49,7 +49,7 @@ test_that("imputations- scOU - random root", {
                        method.variance = "upward_downward",
                        method.init = "lasso",
                        use_previous = FALSE,
-                       method.selection = "pBIC",
+                       method.selection = c("BGHlsq", "BGHml", "BGHmlraw", "BGHlsqraw"),
                        impute_init_Rphylopars = FALSE,
                        progress.bar = FALSE,
                        K_lag_init = 2,
@@ -82,6 +82,16 @@ test_that("imputations- scOU - random root", {
                res_heavy$alpha_max$Zvar$'4')
   expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength, trait = 1:2, where = "nodes", what = "imput"),
                res_heavy$alpha_max$Zhat$'4')
+  
+  ## Select
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsq"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsq"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHml"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHml"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsqraw"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsqraw"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHmlraw"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHmlraw"))
 })
 
 test_that("imputations- scOU - fixed root", {
@@ -135,7 +145,7 @@ test_that("imputations- scOU - fixed root", {
                        method.variance = "upward_downward",
                        method.init = "lasso",
                        use_previous = FALSE,
-                       method.selection = "pBIC",
+                       method.selection = c("BGHlsq", "BGHml", "BGHmlraw", "BGHlsqraw"),
                        impute_init_Rphylopars = FALSE,
                        progress.bar = FALSE,
                        K_lag_init = 2,
@@ -168,4 +178,14 @@ test_that("imputations- scOU - fixed root", {
                res_heavy$alpha_max$Zvar$'4')
   expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength, trait = 1:2, where = "nodes", what = "imput"),
                res_heavy$alpha_max$Zhat$'4')
+  
+  ## Select
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsq"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsq"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHml"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHml"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsqraw"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsqraw"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHmlraw"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHmlraw"))
 })

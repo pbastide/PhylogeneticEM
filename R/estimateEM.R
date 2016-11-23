@@ -787,6 +787,15 @@ estimateEM <- function(phylo,
   if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params_scOU, "Neq") <- Neq
   
+  ### lsq ####
+  if (!independent){
+    lsq <- sum(diag(params_scOU$variance)/(2*params_scOU$selection.strength))
+  } else {
+    pp <- split_params_independent(params_scOU)
+    lsq <- sapply(pp, function(z) sum(diag(z$variance)/(2*z$selection.strength)))
+    lsq <- sum(lsq)
+  }
+  
   ########## Result  ##########################################################
   conditional_law_X$expectations <- matrix(conditional_law_X$expectations, nrow = p)
   result <- list(params = params_scOU, # Return untransformed parameters as default
@@ -803,7 +812,8 @@ estimateEM <- function(phylo,
                  params_history = params_history,
                  number_new_shifts = number_new_shifts,
                  number_equivalent_solutions = Neq,
-                 least_squares = sum((Y_data - m_Y_estim)^2, na.rm = TRUE))
+                 least_squares_raw = sum((Y_data - m_Y_estim)^2, na.rm = TRUE),
+                 least_squares = lsq)
   #                  CLL_history = CLL_history
   if (transform_scOU) result$params_scOU <-  params_scOU
   ## Handle convergence
@@ -1136,8 +1146,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              process = X$process, Y_data = X$Y_data))
     if (inherits(selection, "try-error")){
       warning(paste0("Model Selection ",  one.method.selection, " failled"))
-    } else if (one.method.selection %in% c("BGHlsq", "BGHlsqraw")) {
+    } else if (one.method.selection == "BGHlsq") {
       X$alpha_min <- selection
+    } else if (one.method.selection == "BGHlsqraw") {
+      X$alpha_min_raw <- selection
     } else {
       X$alpha_max <- selection
     }
@@ -1227,8 +1239,16 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       if (x$p == 1){
         method.selection <- "BGH"
       } else {
-        for (method in c("DDSE_BM1", "Djump_BM1", "pBIC")){
-          if (!is.null(x$alpha_max[[method]])){
+        for (method in c("BGHlsq", "BGHml", "DDSE_BM1", "Djump_BM1",
+                         "BGHmlraw", "pBIC")){
+          if (method == "BGHlsq"){
+            alpha_str <- "alpha_min"
+          } else if (method == "BGHlsqraw"){
+            alpha_str <- "alpha_min_raw"
+          } else {
+            alpha_str <- "alpha_max"
+          }
+          if (!is.null(x[[alpha_str]][[method]])){
             method.selection <- method
             break
           }
@@ -1237,19 +1257,32 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       }
     } else {
       method.selection <- match.arg(method.selection,
-                                    choices = c("BGH", "DDSE", "Djump")) 
+                                    choices = c("BGH", "DDSE", "Djump", "pBIC",
+                                                "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw")) 
     }
     if (method.selection %in% c("DDSE", "DDSE_BM1")){
-      res <- extract_params(x, "DDSE_BM1")
+      res <- extract_params(x, "DDSE_BM1", "alpha_max")
     }
     if (method.selection %in% c("Djump", "Djump_BM1")){
-      res <- extract_params(x, "Djump_BM1")
+      res <- extract_params(x, "Djump_BM1", "alpha_max")
     }
     if (method.selection == "pBIC"){
-      res <- extract_params(x, "pBIC")
+      res <- extract_params(x, "pBIC", "alpha_max")
     } 
     if (method.selection == "BGH"){
-      res <- extract_params(x, "BGH")
+      res <- extract_params(x, "BGH", "alpha_max")
+    } 
+    if (method.selection == "BGHml"){
+      res <- extract_params(x, "BGHml", "alpha_max")
+    } 
+    if (method.selection == "BGHlsq"){
+      res <- extract_params(x, "BGHlsq", "alpha_min")
+    } 
+    if (method.selection == "BGHmlraw"){
+      res <- extract_params(x, "BGHmlraw", "alpha_max")
+    } 
+    if (method.selection == "BGHlsqraw"){
+      res <- extract_params(x, "BGHlsqraw", "alpha_min_raw")
     } 
   }
   ## Return to rBM parameters if needed
@@ -1270,9 +1303,9 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
   return(res)
 }
 
-extract_params <- function(x, method){
-  if (!is.null(x$alpha_max[[method]])){
-    res <- x$alpha_max[[method]]$params_select
+extract_params <- function(x, method, alpha_str){
+  if (!is.null(x[[alpha_str]][[method]])){
+    res <- x[[alpha_str]][[method]]$params_select
   } else {
     stop(paste0(method, "method was not used in the fit."))
   }
@@ -1892,8 +1925,11 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
 
   ## Select max solution for each K
   X <- merge_max_grid_alpha(X, alpha, light_result)
-  if (any(c("BGHlsq", "BGHlsqraw") %in% method.selection)){
+  if ("BGHlsq" %in% method.selection){
     X <- merge_min_grid_alpha(X, light_result) 
+  }
+  if ("BGHlsqraw" %in% method.selection){
+    X <- merge_min_grid_alpha(X, light_result, raw = TRUE) 
   }
   return(X)
 }
@@ -2204,7 +2240,7 @@ add_lsq <- function(X){
   return(X)
 }
 
-merge_min_grid_alpha <- function(X, light_result = TRUE){
+merge_min_grid_alpha <- function(X, light_result = TRUE, raw = FALSE){
   nums <- grep("alpha_[[:digit:]]", names(X))
   summary_all <- X[[nums[1]]]$results_summary
   for (i in nums[-1]){
@@ -2213,30 +2249,37 @@ merge_min_grid_alpha <- function(X, light_result = TRUE){
   }
   summary_all$alpha_name <- rep(as.numeric(sub("alpha_", "", names(X)[nums])),
                                 each = length(X$K_try))
-  X$alpha_min$results_summary <- matrix(NA, nrow = length(X$K_try),
+  if (raw){
+    lsq_str <- "least_squares_raw"
+    alpha_min_str <- "alpha_min_raw"
+  } else {
+    lsq_str <- "least_squares"
+    alpha_min_str <- "alpha_min"
+  }
+  X[[alpha_min_str]]$results_summary <- matrix(NA, nrow = length(X$K_try),
                                         ncol = ncol(summary_all))
-  colnames(X$alpha_min$results_summary) <- colnames(summary_all)
-  X$alpha_min$edge.quality <- vector(length = length(X$K_try), mode = "list")
+  colnames(X[[alpha_min_str]]$results_summary) <- colnames(summary_all)
+  X[[alpha_min_str]]$edge.quality <- vector(length = length(X$K_try), mode = "list")
   for (K_t in X$K_try){
     min_sum <- summary_all[summary_all$K_try == K_t, ]
-    min_sum <- min_sum[which.min(min_sum$least_squares), ]
+    min_sum <- min_sum[which.min(min_sum[[lsq_str]]), ]
     # subset(subset(summary_all, K_try == K_t), log_likelihood == min(log_likelihood))
     res_min <- X[[match(paste0("alpha_", min_sum$alpha_name), names(X))]]
     params <- res_min$params_estim[[paste(K_t)]]
-    X$alpha_min$results_summary[K_t + 1, ] <- as.vector(unname(as.matrix(min_sum)))
-    X$alpha_min$params_estim[[paste(K_t)]] <- params
-    # X$alpha_min$params_raw[[paste(K_t)]] <- res_min$params_raw[[paste(K_t)]]
-    X$alpha_min$params_init_estim[[paste(K_t)]] <- res_min$params_init_estim[[paste(K_t)]]
-    X$alpha_min$edge.quality[[paste(K_t)]] <- res_min$edge.quality[[paste(K_t)]]
+    X[[alpha_min_str]]$results_summary[K_t + 1, ] <- as.vector(unname(as.matrix(min_sum)))
+    X[[alpha_min_str]]$params_estim[[paste(K_t)]] <- params
+    # X[[alpha_min_str]]$params_raw[[paste(K_t)]] <- res_min$params_raw[[paste(K_t)]]
+    X[[alpha_min_str]]$params_init_estim[[paste(K_t)]] <- res_min$params_init_estim[[paste(K_t)]]
+    X[[alpha_min_str]]$edge.quality[[paste(K_t)]] <- res_min$edge.quality[[paste(K_t)]]
     if (!light_result){
-      X$alpha_min$Yhat[[paste(K_t)]] <- res_min$Yhat[[paste(K_t)]]
-      X$alpha_min$Zhat[[paste(K_t)]] <- res_min$Zhat[[paste(K_t)]]
-      X$alpha_min$Yvar[[paste(K_t)]] <- res_min$Yvar[[paste(K_t)]]
-      X$alpha_min$Zvar[[paste(K_t)]] <- res_min$Zvar[[paste(K_t)]]
-      X$alpha_min$m_Y_estim[[paste(K_t)]] <- res_min$m_Y_estim[[paste(K_t)]] 
+      X[[alpha_min_str]]$Yhat[[paste(K_t)]] <- res_min$Yhat[[paste(K_t)]]
+      X[[alpha_min_str]]$Zhat[[paste(K_t)]] <- res_min$Zhat[[paste(K_t)]]
+      X[[alpha_min_str]]$Yvar[[paste(K_t)]] <- res_min$Yvar[[paste(K_t)]]
+      X[[alpha_min_str]]$Zvar[[paste(K_t)]] <- res_min$Zvar[[paste(K_t)]]
+      X[[alpha_min_str]]$m_Y_estim[[paste(K_t)]] <- res_min$m_Y_estim[[paste(K_t)]] 
     }
   }
-  X$alpha_min$results_summary <- as.data.frame(X$alpha_min$results_summary)
+  X[[alpha_min_str]]$results_summary <- as.data.frame(X[[alpha_min_str]]$results_summary)
   return(X)
 }
 
@@ -2614,6 +2657,7 @@ format_output <- function(results_estim_EM, phylo, time = NA){
     # "beta_0_estim" = params$root.state$exp.root,
     "log_likelihood" = attr(params, "log_likelihood")[1],
     "least_squares" = results_estim_EM$least_squares,
+    "least_squares_raw" = results_estim_EM$least_squares_raw,
     # "mahalanobis_distance_data_mean" = attr(params, "mahalanobis_distance_data_mean"),
     #"least_squares" = attr(params, "mahalanobis_distance_data_mean") * params$root.state$var.root,
     ## Convergence Monitoring Quantities

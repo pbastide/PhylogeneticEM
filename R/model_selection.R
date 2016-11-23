@@ -265,7 +265,7 @@ model_selection_BGH_mlraw <- function(res, ntaxa, C.BGH, ...){
 model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.BGH, ...){
   # res <- add_lsq(res)
   # res <- merge_min_grid_alpha(res)
-  res <- res$alpha_min
+  res <- res$alpha_min_raw
   p <- nrow(res$params_estim$`0`$variance)
   ## Penalty
   pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
@@ -562,6 +562,8 @@ model_selection.PhyloEM <- function(x,
       warning(paste0("Model Selection ",  one.method.selection, " failled"))
     } else if (one.method.selection == "BGHlsq") {
       x$alpha_min <- selection
+    } else if (one.method.selection == "BGHlsqraw") {
+      x$alpha_min_raw <- selection
     } else {
       x$alpha_max <- selection
     }

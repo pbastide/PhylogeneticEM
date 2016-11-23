@@ -93,9 +93,11 @@ estimations_several_K <- function(X){
                  method.variance = "upward_downward",
                  method.init = "lasso",
                  use_previous = FALSE,
-                 method.selection = c("BirgeMassart1", "BirgeMassart2"),
+                 method.selection = c("BirgeMassart1", "BirgeMassart2", "BGHml",
+                                      "BGHlsq", "BGHlsqraw", "BGHmlraw"),
                  impute_init_Rphylopars = FALSE,
-                 K_lag_init = 5)
+                 K_lag_init = 5,
+                 light = FALSE)
   )
   res <- add_total_time(res, time_SUN["elapsed"])
   ret <- list(sim = X,
@@ -126,6 +128,18 @@ add_total_time <- function(res, tot_time){
   for (i in sels){
     res$alpha_max[[i]]$results_summary$total_time <- tot_time
     res$alpha_max[[i]]$results_summary$sum_times <- sum_times
+    # res$alpha_max[[i]]$results_summary <- as.data.frame(res$alpha_max[i]$results_summary)
+  }
+  sels <- names(res$alpha_min)[c(grep("BGH", names(res$alpha_min)))]
+  for (i in sels){
+    res$alpha_min[[i]]$results_summary$total_time <- tot_time
+    res$alpha_min[[i]]$results_summary$sum_times <- sum_times
+    # res$alpha_max[[i]]$results_summary <- as.data.frame(res$alpha_max[i]$results_summary)
+  }
+  sels <- names(res$alpha_min_raw)[c(grep("BGH", names(res$alpha_min_raw)))]
+  for (i in sels){
+    res$alpha_min_raw[[i]]$results_summary$total_time <- tot_time
+    res$alpha_min_raw[[i]]$results_summary$sum_times <- sum_times
     # res$alpha_max[[i]]$results_summary <- as.data.frame(res$alpha_max[i]$results_summary)
   }
   return(res)
