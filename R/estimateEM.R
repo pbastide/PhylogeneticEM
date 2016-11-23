@@ -1467,6 +1467,61 @@ print.PhyloEM <- function(x, ...){
   cat("\n\nSee help to see all plotting and handling functions.")
 }
 
+##
+#' @title Make the result lighter
+#'
+#' @description
+#' \code{enlight.PhyloEM} takes an object of class \code{\link{PhyloEM}},
+#' and returns the same object, without saving the quantities that can be easily
+#' re-computed using function \code{\link{imputed_traits.PhyloEM}}.
+#' 
+#' @details 
+#' The resulting object can be much lighter, saving a lot of memory space, but each
+#' call to the function \code{\link{imputed_traits.PhyloEM}} will be longer. As 
+#' function \code{\link{plot.PhyloEM}} relies on this function, this makes the 
+#' plotting also longer.
+#' This has the same effect as setting the option "\code{light_result=TRUE}" in the
+#' call of \code{\link{PhyloEM}}.
+#'
+#' @param x an object of class \code{\link{PhyloEM}}.
+#' 
+#' @return
+#' Same as entry, lighter.
+#' 
+#' @seealso \code{\link{PhyloEM}}, \code{\link{imputed_traits.PhyloEM}},
+#' \code{\link{plot.PhyloEM}}
+#' 
+#' @export
+#'
+##
+enlight <- function(x) UseMethod("enlight")
+
+##
+#' @describeIn enlight \code{\link{PhyloEM}} object
+#' @export
+##
+enlight.PhyloEM <- function(x){
+  if (x$light_result){
+    message("The object was already in light format.")
+    return(x)
+  }
+  ## delete imputed quantities
+  lres <- x
+  put_imput_null <- function(y){
+    y$Zhat <- NULL
+    y$Yhat <- NULL
+    y$Zvar <- NULL
+    y$Yvar <- NULL
+    y$m_Y_estim <- NULL
+    return(y)
+  }
+  inds <- grep("alpha_", names(lres))
+  lres[inds] <- lapply(lres[inds], put_imput_null)
+  ## Put light_result to FALSE
+  lres$light_result <- TRUE
+  return(lres)
+}
+
 ###############################################################################
 ## PhyloEM_grid_alpha
 ###############################################################################
