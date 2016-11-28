@@ -789,10 +789,10 @@ estimateEM <- function(phylo,
   
   ### lsq ####
   if (!independent){
-    lsq <- sum(diag(params_scOU$variance)/(2*params_scOU$selection.strength))
+    lsq <- sum(diag(params_scOU$variance))
   } else {
     pp <- split_params_independent(params_scOU)
-    lsq <- sapply(pp, function(z) sum(diag(z$variance)/(2*z$selection.strength)))
+    lsq <- sapply(pp, function(z) sum(diag(z$variance)))
     lsq <- sum(lsq)
   }
   
@@ -1770,6 +1770,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       }
       X$params_estim <- lapply(X$params_estim, fun1)
       rm(fun1)
+      ## Normalize least squares
+      X$results_summary$least_squares <- X$results_summary$least_squares / (2 * alp)
       ## Ancestral state reconstruction
       if (!light_result){
         compute_E  <- switch(method.variance,
