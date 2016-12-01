@@ -436,7 +436,7 @@ penalty_pBIC_l1ou_unit <- function(params, tree, times_shared, distances_phylo,
   # browser()
   vars <- apply(Y_data, 1, var)
   vars <- vars - diag(params$variance)
-  pen <- sum(log(vars))
+  pen <- sum(log(abs(vars)))
   pen <- (K+1) * as.vector(pen)
   ## Model Design term
   # Correlation matrix
