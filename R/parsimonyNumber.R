@@ -1257,7 +1257,7 @@ plot.equivalent_shifts <- function(x,
     regimes <- allocate_regimes_from_shifts(phylo,
                                             x$eq_shifts_edges[, sol])
     regimes <- as.factor(regimes)
-    cor_col_reg <- cbind(unique(regimes[1:ntaxa]), colors)
+    cor_col_reg <- cbind(sort(unique(regimes[1:ntaxa])), colors)
     levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
     edges_regimes <- regimes[phylo$edge[,2]]
     ## Shifts Colors
@@ -1282,9 +1282,9 @@ plot.equivalent_shifts <- function(x,
     ## Plot
     screen(scr[sol])
     plot.process.actual(0, 0, phylo, params,
-                        bg_shifts = box_col_shifts,
+                        shifts_bg = box_col_shifts,
                         edge.color = as.vector(edges_regimes),
-                        bg_beta_0 = beta_0_col,
+                        root_bg = beta_0_col,
                         edge.width = 2, quant.root = 0.7, ...)
     if(numbering){
       legend("topleft",
