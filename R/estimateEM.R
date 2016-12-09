@@ -1298,7 +1298,20 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       res <- compute_raw_parameters(x$phylo, res) 
     }
   }
+  res <- check_dimensions(x$p,
+                          res$root.state,
+                          res$shifts,
+                          res$variance,
+                          res$selection.strength,
+                          res$optimal.value)
   res$process <- x$process
+  if (rBM) res$process <- "BM"
+  res$root.state <- test.root.state(res$root.state,
+                                    res$process,
+                                    variance = res$variance,
+                                    selection.strength = res$selection.strength,
+                                    optimal.value = res$optimal.value)
+  res$variance <- as(res$variance, "dpoMatrix")
   class(res) <- "params_process"
   return(res)
 }
