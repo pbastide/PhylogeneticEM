@@ -63,6 +63,7 @@ test_that("log-likelihood - scOU - random root", {
   T_tree <- incidence.matrix(tree)
   ## params and correlation tree matrix
   params <- params_process.PhyloEM(res_new, K = 1, alpha = "max")
+  params$selection.strength <- unique(diag(params$selection.strength))
   C <- compute_tree_correlations_matrix.scOU(times_shared, distances_phylo, params)
   C <- 1/(2*selection.strength) * extract.variance_covariance(C, what="YY",
                                    masque_data = c(rep(TRUE, ntaxa),

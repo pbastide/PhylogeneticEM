@@ -1418,7 +1418,7 @@ compute_ancestral_traits <- function(x,
   ## Heavy results
   if (!x$light_result && x$process == "scOU"){
     K <- length(params$shifts$edges)
-    alpha <- params$selection.strength
+    alpha <- unique(diag(params$selection.strength))
     tmp <- x[[paste0("alpha_", alpha)]]
     res <- list(
       m_Y_estim = tmp$m_Y_estim[[paste0(K)]],
