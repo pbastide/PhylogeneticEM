@@ -95,9 +95,9 @@ for (i in 1:nMiss){
 }
 ```
 
-By default, the inference is done on an automatically computed grid of alpha values. Here, to keep the computations to a minimum, we will only use $2$ values for alpha, including the true value. 
+By default, the inference is done on an automatically computed grid of alpha values. Here, to keep the computations to a minimum, we will only use $2$ values for alpha, including the true value. In a true application however, a grid with $10$ values of $\alpha$ is automatically chosen.
 
-```{r, label="Fit_EM"}
+```{r, label="Fit_EM", warning=FALSE}
 ## Grid on alpha
 alpha_grid <- c(1, 3)
 
@@ -118,7 +118,7 @@ res
 The fitted object contains the infered parameters for every values of $\alpha$ and $K$, as well as the parameters selected by the various model selection criteria.
 
 Here, we can see that the original shifts were recovered by the model selection procedure. We can plot the obtained solution, as shown below. The infered states a the tips are shown in dotted lines. Notice that they are coherent with the positions of the shifts that we found.
-```{r, fig.show='hold', fig.height=4, fig.width=7}
+```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
 plot(res)
 ```
 

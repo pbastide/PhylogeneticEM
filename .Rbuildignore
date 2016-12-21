@@ -11,3 +11,5 @@
 ^tests/error_parsimony_algo_MWE\.R$
 ^tests/Test-All\.R$
 ^\.travis\.yml$
+^_pkgdown\.ylm$
+^docs$
