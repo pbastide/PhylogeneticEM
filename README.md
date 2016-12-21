@@ -1,6 +1,7 @@
 PhylogeneticEM
 ===============
 [![Travis-CI Build Status](https://travis-ci.org/pbastide/PhylogeneticEM.svg?branch=develop)](https://travis-ci.org/pbastide/PhylogeneticEM)
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](http://pbastide.github.io/PhylogeneticEM/)
 
 Implementation of the EM algorithm for the detection of shifts in a phylogeny.
 
