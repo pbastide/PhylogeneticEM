@@ -109,7 +109,6 @@ res <- PhyloEM(phylo = tree,
                stationary.root = TRUE,
                alpha = alpha_grid,                 ## On a grid of alpha
                K_max = 10,                         ## Maximal number of shifts
-               method.selection = "BirgeMassart1", ## Model selection criterion
                parallel_alpha = TRUE,              ## This can be set to TRUE for
                Ncores = 2)                         ## parallel computations
 res
@@ -121,6 +120,34 @@ Here, we can see that the original shifts were recovered by the model selection 
 ```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
 plot(res)
 ```
+
+Above, we plotted the solution given by the LINselect method (the default). But we might want to see the solution given by another selection method, such as the slope heuristic. In that case, we just need to run:
+```{r, eval=FALSE}
+plot(res, params = params_process(res, method.selection = "DDSE"))
+```
+where we extracted the parameters with the method `params_process`. Here, the results are the same.
+
+We can also extract the solution for a given number of shifts and/or a given value of alpha. For instance, we can see that in this simple case, the infered position of the shifts is robust to the value of the selection strength:
+```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
+plot(res, params = params_process(res, K = 3, alpha = 1))
+```
+The infered shifts values however are quite different:
+```{r}
+params_process(res, K = 3, alpha = 1)$shifts
+params_process(res, K = 3, alpha = 3)$shifts
+```
+
+## Equivalent Solutions
+
+When there are too many shifts, the solutin might not be identifiable. For instance here, if we take the (degenerate) solution with $8$ shifts, we get this warning:
+```{r}
+params_8 <- params_process(res, K = 8)
+```
+And we can plot all the equivalent shifts allocations:
+```{r, fig.show='hold', fig.height=4, fig.width=8, warning=FALSE}
+plot(equivalent_shifts(tree, params_8))
+```
+the default only shows the shifts values for the first trait.
 
 <!-- Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format: -->
 

@@ -98,9 +98,9 @@ object, and returns the same fitted object.</p>
 tolerance parameters for stopping criterions, maximal number of iterations, etc.</dd>
       <dt>method.selection</dt>
       <dd>Method selection to be used. Several ones can be
-used at the same time. One of &quot;BGH&quot; for the Baraud Giraud Huet LINselect 
-method (onely for the univariate case); &quot;BirgeMassart1&quot; or &quot;BirgeMassart2&quot; for
-the Birgé Massart method, with one of the two described penalties.</dd>
+used at the same time. One of &quot;LINselect&quot; for the Baraud Giraud Huet LINselect 
+method; &quot;DDSE&quot; for the Slope Heuristic or &quot;Djump&quot; for the Jump Heuristic, last
+two based the Birgé Massart method.</dd>
       <dt>C.BM1</dt>
       <dd>Multiplying constant to be used for the BigeMassart1 method.
 Need to be positive. Default to 0.1.</dd>
@@ -108,7 +108,7 @@ Need to be positive. Default to 0.1.</dd>
       <dd>Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.</dd>
       <dt>C.BGH</dt>
-      <dd>Multiplying constant to be used for the BGH method. Need to be
+      <dd>Multiplying constant to be used for the LINselect method. Need to be
 greater than 1. Default to 1.1.</dd>
       <dt>independent</dt>
       <dd>Are the trait assumed to be independent from one another?

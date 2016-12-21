@@ -7,15 +7,14 @@
 PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   check_postorder = TRUE, independent = FALSE,
   K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
-  use_previous = FALSE, order = TRUE,
-  method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC",
-  "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"), C.BM1 = 0.1,
-  C.BM2 = 2.5, C.BGH = 1.1, method.variance = c("upward_downward",
-  "simple"), method.init = "lasso", method.init.alpha = "estimation",
+  use_previous = FALSE, order = TRUE, method.selection = c("LINselect",
+  "DDSE", "Djump"), C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+  method.variance = c("upward_downward", "simple"), method.init = "lasso",
+  method.init.alpha = "estimation",
   method.init.alpha.estimation = c("regression", "regression.MM", "median"),
   methods.segmentation = c("lasso", "best_single_move"), alpha_grid = TRUE,
   random.root = TRUE, stationary.root = TRUE, alpha = NULL,
-  check.tips.names = FALSE, progress.bar = TRUE, estimates = NULL,
+  check.tips.names = TRUE, progress.bar = TRUE, estimates = NULL,
   save_step = FALSE, sBM_variance = FALSE, method.OUsun = "rescale",
   parallel_alpha = FALSE, Ncores = 3, impute_init_Rphylopars = FALSE,
   K_lag_init = 5, light_result = TRUE, ...)
@@ -50,9 +49,9 @@ decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
 initialization fails. Default to TRUE.}
 
 \item{method.selection}{Method selection to be used. Several ones can be
-used at the same time. One of "BGH" for the Baraud Giraud Huet LINselect 
-method (onely for the univariate case); "BirgeMassart1" or "BirgeMassart2" for
-the Birgé Massart method, with one of the two described penalties.}
+used at the same time. One of "LINselect" for the Baraud Giraud Huet LINselect 
+method; "DDSE" for the Slope Heuristic or "Djump" for the Jump Heuristic, last
+two based the Birgé Massart method.}
 
 \item{C.BM1}{Multiplying constant to be used for the BigeMassart1 method.
 Need to be positive. Default to 0.1.}
@@ -60,7 +59,7 @@ Need to be positive. Default to 0.1.}
 \item{C.BM2}{Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.}
 
-\item{C.BGH}{Multiplying constant to be used for the BGH method. Need to be
+\item{C.BGH}{Multiplying constant to be used for the LINselect method. Need to be
 greater than 1. Default to 1.1.}
 
 \item{method.variance}{Algorithm to be used for the moments computations at the

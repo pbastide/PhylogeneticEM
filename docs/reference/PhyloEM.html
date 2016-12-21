@@ -87,15 +87,14 @@ This function can handle missing data.</p>
     <pre><span class='fu'>PhyloEM</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>),
   <span class='kw'>check_postorder</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>K_max</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='fu'>floor</span>(<span class='fu'>sqrt</span>(<span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>))), <span class='fl'>10</span>),
-  <span class='kw'>use_previous</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"BirgeMassart1"</span>, <span class='st'>"BirgeMassart2"</span>, <span class='st'>"BGH"</span>, <span class='st'>"pBIC"</span>,
-  <span class='st'>"pBIC_l1ou"</span>, <span class='st'>"BGHlsq"</span>, <span class='st'>"BGHml"</span>, <span class='st'>"BGHlsqraw"</span>, <span class='st'>"BGHmlraw"</span>), <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
-  <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>, <span class='kw'>C.BGH</span> <span class='kw'>=</span> <span class='fl'>1.1</span>, <span class='kw'>method.variance</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"upward_downward"</span>,
-  <span class='st'>"simple"</span>), <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='st'>"lasso"</span>, <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='st'>"estimation"</span>,
+  <span class='kw'>use_previous</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"LINselect"</span>,
+  <span class='st'>"DDSE"</span>, <span class='st'>"Djump"</span>), <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>, <span class='kw'>C.BGH</span> <span class='kw'>=</span> <span class='fl'>1.1</span>,
+  <span class='kw'>method.variance</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"upward_downward"</span>, <span class='st'>"simple"</span>), <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='st'>"lasso"</span>,
+  <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='st'>"estimation"</span>,
   <span class='kw'>method.init.alpha.estimation</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"regression"</span>, <span class='st'>"regression.MM"</span>, <span class='st'>"median"</span>),
   <span class='kw'>methods.segmentation</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"lasso"</span>, <span class='st'>"best_single_move"</span>), <span class='kw'>alpha_grid</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>progress.bar</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>estimates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>progress.bar</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>estimates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>save_step</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>sBM_variance</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>method.OUsun</span> <span class='kw'>=</span> <span class='st'>"rescale"</span>,
   <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>impute_init_Rphylopars</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>light_result</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
@@ -132,9 +131,9 @@ decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
 initialization fails. Default to TRUE.</dd>
       <dt>method.selection</dt>
       <dd>Method selection to be used. Several ones can be
-used at the same time. One of &quot;BGH&quot; for the Baraud Giraud Huet LINselect 
-method (onely for the univariate case); &quot;BirgeMassart1&quot; or &quot;BirgeMassart2&quot; for
-the Birgé Massart method, with one of the two described penalties.</dd>
+used at the same time. One of &quot;LINselect&quot; for the Baraud Giraud Huet LINselect 
+method; &quot;DDSE&quot; for the Slope Heuristic or &quot;Djump&quot; for the Jump Heuristic, last
+two based the Birgé Massart method.</dd>
       <dt>C.BM1</dt>
       <dd>Multiplying constant to be used for the BigeMassart1 method.
 Need to be positive. Default to 0.1.</dd>
@@ -142,7 +141,7 @@ Need to be positive. Default to 0.1.</dd>
       <dd>Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.</dd>
       <dt>C.BGH</dt>
-      <dd>Multiplying constant to be used for the BGH method. Need to be
+      <dd>Multiplying constant to be used for the LINselect method. Need to be
 greater than 1. Default to 1.1.</dd>
       <dt>method.variance</dt>
       <dd>Algorithm to be used for the moments computations at the
