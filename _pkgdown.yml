@@ -1,0 +1,6 @@
+navbar:
+  left:
+  - text: Tutorial
+    href: articles/tutorial.html
+  - text: Reference
+    href: reference/index.html

@@ -1,0 +1,171 @@
+---
+title: "An Introduction to the PhylogeneticEM Package"
+author: "Paul Bastide"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+The `PhylogeneticEM` package is designed to automatically detect shifts in quatitative traits.
+
+Simply load the package with:
+```{r, label="load", message=FALSE}
+library(PhylogeneticEM)
+```
+
+## Simulation of a dataset
+
+To show how the functions work, let's first simulate some traits with known parameters.
+
+We use function `sim.bd.taxa.age` from package `TreeSim` to simualte a phylogenetic tree.
+
+```{r, label="Simus_tree"}
+set.seed(17920902)
+ntaxa = 80
+tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
+                                 age = 1, mrca = TRUE)[[1]]
+```
+
+We then choose a set of parameters, using function `params_process`:
+
+```{r, label="Parameters"}
+params <- params_process("OU",                             ## Process
+                         p = 2,                            ## Dimension
+                         variance = diag(0.5, 2, 2) + 0.5, ## Rate matrix
+                         selection.strength = 3,           ## Selection Strength
+                         random = TRUE,                    ## Root is random
+                         stationary.root = TRUE,           ## Root is stationary
+                         edges = c(29, 89, 127),           ## Positions of the shifts
+                         values = cbind(c(5, 4),           ## Values of the shifts
+                                        c(-4, -5),
+                                        c(5, -3)))
+```
+
+Note that here, we took the selection strength to a scalar matrix, but we could specify a full matrix. Also, we did not specified the ancestral values of the optimum states: these are took to be $0$ by default.
+
+The position of the shifts is specified through to the number of the edge where it occurs. These can be saw using a standart `plot` fromp package `ape`. Once the parameters are constructed, we can check the position of the shifts by plotting them:
+
+```{r, fig.show='hold', fig.height=3, fig.width=3.4}
+plot(params, phylo = tree, traits = 1, value_in_box = TRUE, shifts_bg = "white")
+plot(params, phylo = tree, traits = 2, value_in_box = TRUE, shifts_bg = "white")
+```
+
+We can then simulate a process along the tree with these parameters:
+
+```{r, label="Simu_process", message=FALSE}
+sim <- simul_process(params, tree)
+```
+
+We can then extract a matrix of simulated data from this object:
+```{r, label="extraction"}
+data <- extract(sim,             ## The simul_process object
+                what = "states", ## We want the actual values
+                where = "tips")  ## Only at the tips of the tree
+```
+
+The column names of the matrix are set to the tip labels of the tree. By default, the row names are left blank, but, for the sake of the demonstration, let's assume that the two traits are named "A" and "B":
+
+```{r, label="rownames"}
+rownames(data) <- c("A", "B")
+```
+
+Finally, we can plot the simulated process on the tree to see what it looks like:
+
+```{r, fig.show='hold', fig.height=4, fig.width=7}
+plot(params, phylo = tree, data = data)
+```
+
+## Inference
+
+In this section, we take the traits as simulated by function `simul_process`, and use function `PhyloEM` for the inference of the parameters.
+
+To make things more interesting, let's assume that we have some missing data:
+```{r}
+nMiss <- floor(ntaxa * 2 * 0.1)                       ## 10% of missing data
+miss <- sample(1:(2 * ntaxa), nMiss, replace = FALSE) ## sample missing randomly
+chars <- (miss - 1) %% 2 + 1                          ## Trace back rows and columns
+tips <- (miss - 1) %/% 2 + 1
+for (i in 1:nMiss){
+  data[chars[i], tips[i]] <- NA                       ## Forget some values
+}
+```
+
+By default, the inference is done on an automatically computed grid of alpha values. Here, to keep the computations to a minimum, we will only use $2$ values for alpha, including the true value. In a true application however, a grid with $10$ values of $\alpha$ is automatically chosen.
+
+```{r, label="Fit_EM", warning=FALSE}
+## Grid on alpha
+alpha_grid <- c(1, 3)
+
+## Run algorithm
+res <- PhyloEM(phylo = tree,
+               Y_data = data,
+               process = "scOU",                   ## scalar OU model
+               random.root = TRUE,                 ## Root is stationary (true model)
+               stationary.root = TRUE,
+               alpha = alpha_grid,                 ## On a grid of alpha
+               K_max = 10,                         ## Maximal number of shifts
+               method.selection = "BirgeMassart1", ## Model selection criterion
+               parallel_alpha = TRUE,              ## This can be set to TRUE for
+               Ncores = 2)                         ## parallel computations
+res
+```
+
+The fitted object contains the infered parameters for every values of $\alpha$ and $K$, as well as the parameters selected by the various model selection criteria.
+
+Here, we can see that the original shifts were recovered by the model selection procedure. We can plot the obtained solution, as shown below. The infered states a the tips are shown in dotted lines. Notice that they are coherent with the positions of the shifts that we found.
+```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
+plot(res)
+```
+
+<!-- Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format: -->
+
+<!-- - Never uses retina figures -->
+<!-- - Has a smaller default figure size -->
+<!-- - Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style -->
+
+<!-- ## Vignette Info -->
+
+<!-- Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette. -->
+
+<!-- ## Styles -->
+
+<!-- The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows: -->
+
+<!--     output:  -->
+<!--       rmarkdown::html_vignette: -->
+<!--         css: mystyles.css -->
+
+<!-- ## Figures -->
+
+<!-- The figure sizes have been customised so that you can easily put two images side-by-side.  -->
+
+<!-- ```{r, fig.show='hold'} -->
+<!-- plot(1:10) -->
+<!-- plot(10:1) -->
+<!-- ``` -->
+
+<!-- You can enable figure captions by `fig_caption: yes` in YAML: -->
+
+<!--     output: -->
+<!--       rmarkdown::html_vignette: -->
+<!--         fig_caption: yes -->
+
+<!-- Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**. -->
+
+<!-- ## More Examples -->
+
+<!-- You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`. -->
+
+<!-- ```{r, echo=FALSE, results='asis'} -->
+<!-- knitr::kable(head(mtcars, 10)) -->
+<!-- ``` -->
+
+<!-- Also a quote using `>`: -->
+
+<!-- > "He who gives up [code] safety for [code] speed deserves neither." -->
+<!-- ([via](https://twitter.com/hadleywickham/status/504368538874703872)) -->
