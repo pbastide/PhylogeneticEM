@@ -1086,7 +1086,8 @@ log_likelihood.params_process <- function(x,
     if (x$root.state$stationary.root){
       Stationary_Var <- as.matrix(x$root.state$var.root)
     } else {
-      Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, x$selection.strength))
+      Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, 
+                                                              unique(diag(x$selection.strength))))
     }
     Alpha <- x$selection.strength * diag(rep(1, ncol(Stationary_Var)))
     res <- log_likelihood_OU(Y_data, phy$edge,
