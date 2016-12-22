@@ -156,11 +156,12 @@ fixed root or stationary root. It assumes that there are no homoplasies.</p>
                     <span class='kw'>values</span> <span class='kw'>=</span> <span class='fu'>cbind</span>(<span class='fl'>1</span>:<span class='fl'>4</span>, -(<span class='fl'>1</span>:<span class='fl'>4</span>), <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fl'>4</span>)),
                     <span class='kw'>random</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='co'>## Find equivalent solutions and plot them</span>
-<span class='no'>eq_shifts</span> <span class='kw'>&lt;-</span> <span class='fu'>equivalent_shifts</span>(<span class='no'>phylo</span>, <span class='no'>params</span>)
-<span class='no'>eq_shifts</span></div><div class='output co'>#&gt; 
+<span class='no'>eq_shifts</span> <span class='kw'>&lt;-</span> <span class='fu'>equivalent_shifts</span>(<span class='no'>phylo</span>, <span class='no'>params</span>)</div><div class='output co'>#&gt; <span class='message'>Note: method with signature ‘matrix#Matrix’ chosen for function ‘-’,</span>
+#&gt; <span class='message'> target signature ‘matrix#ddiMatrix’.</span>
+#&gt; <span class='message'> &quot;ANY#ddiMatrix&quot; would also be valid</span></div><div class='input'><span class='no'>eq_shifts</span></div><div class='output co'>#&gt; 
 #&gt; There are 3 equivalent solutions.
 #&gt; 
-#&gt; Use function plot to see them all.</div><div class='input'><span class='fu'>plot</span>(<span class='no'>eq_shifts</span>)</div><img src='equivalent_shifts-12.png' alt='' width='540' height='400' /><div class='input'><span class='co'>## Extract the values</span>
+#&gt; Use function plot to see them all.</div><div class='input'><span class='fu'>plot</span>(<span class='no'>eq_shifts</span>)</div><img src='equivalent_shifts-14.png' alt='' width='540' height='400' /><div class='input'><span class='co'>## Extract the values</span>
 <span class='co'># Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)</span>
 <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>eq_shifts</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"shifts_values"</span>)</div><div class='output co'>#&gt;      [,1]      [,2]       [,3]
 #&gt; [1,]    2  2.000000  2.0000000

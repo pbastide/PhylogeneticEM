@@ -2,7 +2,7 @@
 % Please edit documentation in R/generic_functions.R
 \name{compute_stationary_variance}
 \alias{compute_stationary_variance}
-\title{Compute the stationary matrix variance}
+\title{Compute the stationary variance matrix}
 \usage{
 compute_stationary_variance(variance, selection.strength)
 }
@@ -16,7 +16,7 @@ process.}
 A positive definite Matrix of class \code{\link[Matrix]{dpoMatrix-class}}.
 }
 \description{
-\code{compute_stationary_variance} computes the stationary matrix variance of
+\code{compute_stationary_variance} computes the stationary variance matrix of
 an OU process.
 }
 

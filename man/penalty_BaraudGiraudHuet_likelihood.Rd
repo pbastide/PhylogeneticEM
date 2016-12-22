@@ -36,4 +36,5 @@ Function pen is computed using function \code{penalty} from package
 \code{\link{penalty_BirgeMassart_shape1}},
 \code{\link{penalty_BirgeMassart_shape2}}
 }
+\keyword{internal}
 

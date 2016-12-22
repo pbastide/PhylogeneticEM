@@ -11,7 +11,7 @@ check_parsimony_clusters(tree, edges, clusters)
 \item{tree}{phylogenetic tree.}
 
 \item{clusters}{a vector of clusters of the tips of the tree (result of
-function \code{\link{clusters_from_shifts_ism}}).}
+function \code{\link{clusters_from_shifts}}).}
 }
 \value{
 boolean : TRUE if the allocation is parsimonious.

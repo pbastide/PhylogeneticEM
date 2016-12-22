@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Update function ofr optimal value computation — update.compute_betas • PhylogeneticEM</title>
+<title>Clustering associated to a shift allocation, assuming no homoplasy. — clusters_from_shifts • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -74,34 +74,36 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Update function ofr optimal value computation</h1>
+    <h1>Clustering associated to a shift allocation, assuming no homoplasy.</h1>
     </div>
 
     
-    <p><code>update.compute_betas</code> computes the optimal value at a daughter node, 
-knowing the optimal value at the parent node and the vector of shifts.</p>
+    <p><code>clusters_from_shifts</code> take a vector of shifts edges, and gives the
+clustering of the tips induced by them, in a &quot;no homoplasy&quot; model (i.e. no
+convergence is allowed).</p>
     
 
-    <pre><span class='fu'>update.compute_betas</span>(<span class='no'>edgeNbr</span>, <span class='no'>ancestral</span>, <span class='no'>shifts</span>, <span class='no'>...</span>)</pre>
+    <pre><span class='fu'>clusters_from_shifts</span>(<span class='no'>tree</span>, <span class='no'>edges</span>,
+  <span class='kw'>part.list</span> <span class='kw'>=</span> <span class='fu'><a href='enumerate_tips_under_edges.html'>enumerate_tips_under_edges</a></span>(<span class='no'>tree</span>))</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
-      <dt>edgeNbr</dt>
-      <dd>: Number of the edge considered</dd>
-      <dt>ancestral</dt>
-      <dd>: Computed vector for the parental node</dd>
-      <dt>shifts</dt>
-      <dd>position and values of the shifts</dd>
+      <dt>tree</dt>
+      <dd>phylogenetic tree</dd>
+      <dt>edges</dt>
+      <dd>a vector of edges of the tree, where the shifts are</dd>
+      <dt>part.list</dt>
+      <dd>a list giving the descendant tips of each edge</dd>
     </dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Updated matrix of size (nNodes + ntaxa)x1.</p>
+    <p>list of size n+m-1, entry i is the vector of tips bellow edge i.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This function is used in function <code>compute_betas</code> and is designed to 
-furnish function <code>recursionDown</code> with the right structure of data.</p>
+    <p>By default, this function uses <code><a href='enumerate_tips_under_edges.html'>enumerate_tips_under_edges</a></code> to compute 
+the list of tips under each edge.</p>
     
 
   </div>

@@ -38,7 +38,7 @@
       <h1>An Introduction to the PhylogeneticEM Package</h1>
                         <h4 class="author">Paul Bastide</h4>
             
-            <h4 class="date">2016-12-21</h4>
+            <h4 class="date">2016-12-22</h4>
           </div>
 
     
@@ -109,7 +109,6 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
                <span class="dt">stationary.root =</span> <span class="ot">TRUE</span>,
                <span class="dt">alpha =</span> alpha_grid,                 ## On a grid of alpha
                <span class="dt">K_max =</span> <span class="dv">10</span>,                         ## Maximal number of shifts
-               <span class="dt">method.selection =</span> <span class="st">"BirgeMassart1"</span>, ## Model selection criterion
                <span class="dt">parallel_alpha =</span> <span class="ot">TRUE</span>,              ## This can be set to TRUE for
                <span class="dt">Ncores =</span> <span class="dv">2</span>)                         ## parallel computations</code></pre></div>
 <pre><code>## There are some equivalent solutions to the set of shifts selected by the Djump_BM1 method.</code></pre>
@@ -152,6 +151,44 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
 <p>Here, we can see that the original shifts were recovered by the model selection procedure. We can plot the obtained solution, as shown below. The infered states a the tips are shown in dotted lines. Notice that they are coherent with the positions of the shifts that we found.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res)</code></pre></div>
 <p><img src="tutorial_files/figure-html/unnamed-chunk-4-1.png" width="672"></p>
+<p>Above, we plotted the solution given by the LINselect method (the default). But we might want to see the solution given by another selection method, such as the slope heuristic. In that case, we just need to run:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">method.selection =</span> <span class="st">"DDSE"</span>))</code></pre></div>
+<p>where we extracted the parameters with the method <code>params_process</code>. Here, the results are the same.</p>
+<p>We can also extract the solution for a given number of shifts and/or a given value of alpha. For instance, we can see that in this simple case, the infered position of the shifts is robust to the value of the selection strength:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> <span class="dv">1</span>))</code></pre></div>
+<p><img src="tutorial_files/figure-html/unnamed-chunk-6-1.png" width="672"> The infered shifts values however are quite different:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> <span class="dv">1</span>)$shifts</code></pre></div>
+<pre><code>## $edges
+## [1] 127  89  29
+## 
+## $values
+##           [,1]      [,2]     [,3]
+## [1,]  7.721542 -7.045950 7.789901
+## [2,] -4.547188 -8.427789 6.278500
+## 
+## $relativeTimes
+## [1] 0 0 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> <span class="dv">3</span>)$shifts</code></pre></div>
+<pre><code>## $edges
+## [1] 127  89  29
+## 
+## $values
+##           [,1]      [,2]     [,3]
+## [1,]  4.911583 -4.315716 4.693763
+## [2,] -2.865227 -5.089515 3.833946
+## 
+## $relativeTimes
+## [1] 0 0 0</code></pre>
+</div>
+<div id="equivalent-solutions" class="section level2">
+<h2 class="hasAnchor"><html><body><a href="#equivalent-solutions" class="anchor"> </a></body></html>Equivalent Solutions</h2>
+<p>When there are too many shifts, the solutin might not be identifiable. For instance here, if we take the (degenerate) solution with <span class="math inline">\(8\)</span> shifts, we get this warning:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">params_8 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">8</span>)</code></pre></div>
+<pre><code>## Warning in params_process.PhyloEM(res, K = 8): There are several equivalent
+## solutions for this shift position.</code></pre>
+<p>And we can plot all the equivalent shifts allocations:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw"><a href="../reference/equivalent_shifts.html">equivalent_shifts</a></span>(tree, params_8))</code></pre></div>
+<p><img src="tutorial_files/figure-html/unnamed-chunk-9-1.png" width="768"> the default only shows the shifts values for the first trait.</p>
 <!-- Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format: -->
 <!-- - Never uses retina figures -->
 <!-- - Has a smaller default figure size -->
@@ -192,6 +229,7 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
       <ul class="nav nav-pills nav-stacked"><li><a href="#introduction">Introduction</a></li>
       <li><a href="#simulation-of-a-dataset">Simulation of a dataset</a></li>
       <li><a href="#inference">Inference</a></li>
+      <li><a href="#equivalent-solutions">Equivalent Solutions</a></li>
       </ul></div>
       </div>
 

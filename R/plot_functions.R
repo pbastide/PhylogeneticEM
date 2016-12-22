@@ -607,9 +607,9 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     }
   } else {
     if (color_shifts_regimes){ # Shift has one color for each regime
-      nodes_regimes  <-  compute_betas(phylo, 
-                                       root.val,
-                                       params$shifts)
+      nodes_regimes  <-  compute_betas_from_shifts(phylo, 
+                                                   root.val,
+                                                   params$shifts)
       color_edges <- as.factor(nodes_regimes[phylo$edge[, 2]])
       levels(color_edges) <- c("black", rainbow(length(levels(color_edges)) - 1,
                                                 start = 0, v = 0.5))

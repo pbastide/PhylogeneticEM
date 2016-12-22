@@ -781,8 +781,8 @@ estimateEM <- function(phylo,
   rm(tmpsim)
   
   ########## Number of equivalent solutions ###################################
-  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges,
-                                       part.list = subtree.list)
+  clusters <- clusters_from_shifts(phylo, params$shifts$edges,
+                                   part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params_scOU, "Neq") <- Neq
@@ -874,14 +874,14 @@ estimateEM <- function(phylo,
 #' decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
 #' initialization fails. Default to TRUE.
 #' @param method.selection Method selection to be used. Several ones can be
-#' used at the same time. One of "BGH" for the Baraud Giraud Huet LINselect 
-#' method (onely for the univariate case); "BirgeMassart1" or "BirgeMassart2" for
-#' the Birgé Massart method, with one of the two described penalties.
+#' used at the same time. One of "LINselect" for the Baraud Giraud Huet LINselect 
+#' method; "DDSE" for the Slope Heuristic or "Djump" for the Jump Heuristic, last
+#' two based the Birgé Massart method.
 #' @param C.BM1 Multiplying constant to be used for the BigeMassart1 method.
 #' Need to be positive. Default to 0.1.
 #' @param C.BM2 Multiplying constant to be used for the BigeMassart2 method.
 #' Default to 2.5.
-#' @param C.BGH Multiplying constant to be used for the BGH method. Need to be
+#' @param C.BGH Multiplying constant to be used for the LINselect method. Need to be
 #' greater than 1. Default to 1.1.
 #' @param method.variance Algorithm to be used for the moments computations at the
 #' E step. One of "simple" for the naive method; of "upward_downward" for the 
@@ -981,7 +981,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
                     use_previous = FALSE,
                     order = TRUE,
-                    method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
+                    method.selection = c("LINselect", "DDSE", "Djump"),
                     C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
                     method.variance = c("upward_downward", "simple"),
                     method.init = "lasso",
@@ -992,7 +992,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     random.root = TRUE,
                     stationary.root = TRUE,
                     alpha = NULL,
-                    check.tips.names = FALSE,
+                    check.tips.names = TRUE,
                     progress.bar = TRUE,
                     estimates = NULL,
                     save_step = FALSE,
@@ -1025,13 +1025,24 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Model Selection
-  method.selection  <- match.arg(method.selection, several.ok = TRUE)
+  method.selection  <- match.arg(method.selection,
+                                 choices = c("LINselect", "DDSE", "Djump",
+                                             "BirgeMassart1", "BirgeMassart2",
+                                             "BGH", "BGHlsq", "BGHml",
+                                             "BGHlsqraw", "BGHmlraw",
+                                             "pBIC", "pBIC_l1ou"),
+                                 several.ok = TRUE)
+  method.selection <- expand_method_selection(method.selection)
   if (p > 1 && "BGH" %in% method.selection){
     method.selection <- method.selection[-which(method.selection == "BGH")]
-    warning("BGH is not implemented for multivariate data.")
+    # warning("BGH is not implemented for multivariate data.")
   }
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2"){
-    if (K_max < 10) warning("Slope and Jump heuristics need at least 10 observations. Consider choosing K_max >= 10.")
+    if (K_max < 10){
+      warning("Slope and Jump heuristics need at least 10 observations. Consider choosing K_max >= 10, or an other model selection.")
+      method.selection <- method.selection[method.selection != "BirgeMassart1"]
+      method.selection <- method.selection[method.selection != "BirgeMassart2"]
+    }
     # library(capushe) 
   }
   if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevent warnings). Please fix before carying on.")
@@ -1211,6 +1222,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
                                    K = NULL, alpha = NULL, rBM = FALSE,
                                    init = FALSE, ...){
   ## Select a given K
+  if (is.null(K) && !is.null(alpha)) stop("If you specify alpha, you must also provide K.")
   if (!is.null(K)){
     if (!(K %in% x$K_try)){
       stop(paste0("The value of K: ", K, " was not found in the fitted object."))
@@ -1239,7 +1251,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       if (x$p == 1){
         method.selection <- "BGH"
       } else {
-        for (method in c("BGHlsq", "BGHml", "DDSE_BM1", "Djump_BM1",
+        for (method in c("BGHml", "BGHlsq", "DDSE_BM1", "Djump_BM1",
                          "BGHmlraw", "pBIC")){
           if (method == "BGHlsq"){
             alpha_str <- "alpha_min"
@@ -1298,14 +1310,22 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       res <- compute_raw_parameters(x$phylo, res) 
     }
   }
-  res <- check_dimensions(x$p,
+  ## Check dimentions
+  tmp <- check_dimensions(x$p,
                           res$root.state,
                           res$shifts,
                           res$variance,
                           res$selection.strength,
                           res$optimal.value)
+  res$root.state <- tmp$root.state
+  res$shifts <- tmp$shifts
+  res$variance <- tmp$variance
+  res$selection.strength <- tmp$selection.strength
+  res$optimal.value <- tmp$optimal.value
+  ## Process
   res$process <- x$process
   if (rBM) res$process <- "BM"
+  ## Check root state
   res$root.state <- test.root.state(res$root.state,
                                     res$process,
                                     variance = res$variance,
@@ -1313,6 +1333,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
                                     optimal.value = res$optimal.value)
   res$variance <- as(res$variance, "dpoMatrix")
   class(res) <- "params_process"
+  if (attr(res, "Neq") > 1) warning("There are several equivalent solutions for this shift position.")
   return(res)
 }
 
@@ -1410,7 +1431,9 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
 }
 
 compute_ancestral_traits <- function(x,
-                                     method.selection, what = c("imputed", "variances", "expectations"), ...){
+                                     method.selection,
+                                     what = c("imputed", "variances", "expectations"),
+                                     ...){
   
   ## parameters
   params <- params_process(x, method.selection, ...)
@@ -1940,12 +1963,12 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
 
   ## Select max solution for each K
   X <- merge_max_grid_alpha(X, alpha, light_result)
-  if ("BGHlsq" %in% method.selection){
-    X <- merge_min_grid_alpha(X, light_result) 
-  }
-  if ("BGHlsqraw" %in% method.selection){
-    X <- merge_min_grid_alpha(X, light_result, raw = TRUE) 
-  }
+  # if ("BGHlsq" %in% method.selection){
+  X <- merge_min_grid_alpha(X, light_result) 
+  # }
+  # if ("BGHlsqraw" %in% method.selection){
+  X <- merge_min_grid_alpha(X, light_result, raw = TRUE) 
+  # }
   return(X)
 }
 
@@ -2772,4 +2795,29 @@ format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
 compute_K_max <- function(ntaxa, kappa = 0.9){
   if (kappa >= 1) stop("For K_max computation, one must have kappa < 1")
   return(min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+}
+
+expand_method_selection <- function(method.selection){
+  if ("Djump" %in% method.selection){
+    method.selection <- add_method_selection("BirgeMassart1", method.selection)
+    method.selection <- method.selection[method.selection != "Djump"]
+  }
+  if ("DDSE" %in% method.selection){
+    method.selection <- add_method_selection("BirgeMassart1", method.selection)
+    method.selection <- method.selection[method.selection != "DDSE"]
+  }
+  if ("LINselect" %in% method.selection){
+    for (meth in c("BGH", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw")){
+      method.selection <- add_method_selection(meth, method.selection)
+    }
+    method.selection <- method.selection[method.selection != "LINselect"]
+  }
+  return(method.selection)
+}
+
+add_method_selection <- function(meth, method.selection){
+  if (!(meth %in% method.selection)){
+    method.selection <- c(method.selection, meth)
+  }
+  return(method.selection)
 }

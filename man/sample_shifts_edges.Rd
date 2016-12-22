@@ -21,7 +21,7 @@ are parsimonious. The actual generation of edges is done by function
 }
 \details{
 This function uses function \code{enumerate_tips_under_edges} to generate a list 
-of tips under each edge, and function \code{check_parsimony_ism} to check for
+of tips under each edge, and function \code{check_parsimony} to check for
 parsimony of a given solution, under the assumption of an "infinite site model".
 }
 \keyword{internal}

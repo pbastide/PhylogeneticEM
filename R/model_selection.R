@@ -42,7 +42,7 @@
 #' @seealso \code{\link{penalty_BaraudGiraudHuet_likelihood}},
 #' \code{\link{penalty_BirgeMassart_shape2}}
 #' 
-#' @export
+#' @keywords internal
 #'
 ##
 penalty_BirgeMassart_shape1 <- function(K, p, model_complexity, B = 0.1){
@@ -118,7 +118,7 @@ assign_selected_model_capushe <- function(res, cap_res){
 #' @seealso \code{\link{penalty_BirgeMassart_shape1}},
 #' \code{\link{penalty_BaraudGiraudHuet_likelihood}}
 #' 
-#' @export
+#' @keywords internal
 #' 
 ##
 
@@ -140,7 +140,7 @@ model_selection_BM2 <- function(res, C.BM2, ...){
 }
 
 #############################################
-## LINSelect
+## LINselect
 #############################################
 ##
 #' @title Penalty function type Baraud Giraud Huet.
@@ -169,7 +169,7 @@ model_selection_BM2 <- function(res, C.BM2, ...){
 #' @seealso \code{\link{penalty_BirgeMassart_shape1}},
 #' \code{\link{penalty_BirgeMassart_shape2}}
 #' 
-#' @export
+#' @keywords internal
 #'
 ##
 
@@ -541,15 +541,17 @@ model_selection <- function(x, ...) UseMethod("model_selection")
 #' @export
 ##
 model_selection.PhyloEM <- function(x,
-                                    method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq"),
+                                    method.selection = c("LINselect", "DDSE", "Djump"),
                                     C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
                                     independent = FALSE, ...){
-  # browser()
   mod_sel_unit <- function(one.method.selection){
     mod_sel  <- switch(one.method.selection, 
                        BirgeMassart1 = model_selection_BM1,
                        BirgeMassart2 = model_selection_BM2,
                        BGHlsq = model_selection_BGH_leastsquares,
+                       BGHml = model_selection_BGH_ml,
+                       BGHmlraw = model_selection_BGH_mlraw,
+                       BGHlsqraw = model_selection_BGH_leastsquares_raw,
                        pBIC = model_selection_pBIC,
                        pBIC_l1ou = model_selection_pBIC_l1ou)
     selection <- try(mod_sel(x, ntaxa = ncol(x$Y_data),
@@ -568,6 +570,17 @@ model_selection.PhyloEM <- function(x,
       x$alpha_max <- selection
     }
     return(x)
+  }
+  method.selection  <- match.arg(method.selection,
+                                 choices = c("LINselect", "DDSE", "Djump",
+                                             "BirgeMassart1", "BirgeMassart2",
+                                             "BGH", "BGHlsq", "BGHml",
+                                             "BGHlsqraw", "BGHmlraw",
+                                             "pBIC", "pBIC_l1ou"),
+                                 several.ok = TRUE)
+  method.selection <- expand_method_selection(method.selection)
+  if (x$p > 1 && "BGH" %in% method.selection){
+    method.selection <- method.selection[-which(method.selection == "BGH")]
   }
   for (meth.sel in method.selection){
     x <- mod_sel_unit(meth.sel)

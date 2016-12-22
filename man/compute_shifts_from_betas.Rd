@@ -9,11 +9,11 @@ compute_shifts_from_betas(phylo, betas)
 \arguments{
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{betas}{: vector of size (ntaxa + nNodes) of the optimal values at each
+\item{betas}{vector of size (ntaxa + nNodes) of the optimal values at each
 node and tip.}
 }
 \value{
-list of shifts.
+vector of shifts.
 }
 \description{
 \code{compute_shifts_from_betas} computes the list of shifts corresponding

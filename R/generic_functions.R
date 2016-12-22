@@ -474,10 +474,10 @@ coherence_stationary_case <- function(root.state, optimal.value,
 }
 
 ##
-#' @title Compute the stationary matrix variance
+#' @title Compute the stationary variance matrix 
 #'
 #' @description
-#' \code{compute_stationary_variance} computes the stationary matrix variance of
+#' \code{compute_stationary_variance} computes the stationary variance matrix of
 #' an OU process.
 #'
 #' @param variance the variance (rate matrix) of the process.

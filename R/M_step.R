@@ -323,9 +323,9 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
   sh_ed <- segs[[best.method.seg]]$shifts$edges
   if (p > 1) sh_ed <- segs[[best.method.seg]][[1]]$shifts$edges
   ## Take the best method, that provides a parsimonious solution
-  while(!check_parsimony_ism(phylo,
-                             sh_ed,
-                             subtree.list)
+  while(!check_parsimony(phylo,
+                         sh_ed,
+                         subtree.list)
           && any(is.finite(obj_funcs))){
     obj_funcs[, best.method.seg] <- rep(-Inf, p)
     best.method.seg <- which.max(colSums(obj_funcs))
@@ -667,7 +667,7 @@ estimate.alpha <- function(phylo,
                            alpha_old,
                            max_selection.strength){
   #opt <- optimize(R_function, phylo=phylo, conditional_law_X=conditional_law_X, sigma2=sigma2, mu=mu, interval=c(alpha_old/2, alpha_old*2))
-  betas <- compute_betas(phylo = phylo, optimal.value = mu, shifts = shifts)
+  betas <- compute_betas_from_shifts(phylo = phylo, optimal.value = mu, shifts = shifts)
   opt2 <- optimize(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes.from_betas, 
                    phylo = phylo, conditional_law_X = conditional_law_X, 
                    sigma2 = sigma2, 
@@ -803,7 +803,7 @@ conditional_expectation_log_likelihood.OU.stationary_root_shifts_at_nodes <- fun
 }
 
 conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha){
-  betas <- compute_betas(phylo = phylo, optimal.value = mu, shifts = shifts)
+  betas <- compute_betas_from_shifts(phylo = phylo, optimal.value = mu, shifts = shifts)
   return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes.from_betas(phylo, conditional_law_X, sigma2, mu, betas, alpha))
 }
 
@@ -1115,7 +1115,7 @@ segmentation.OU.specialCase.same_shifts_same_values <- function(phylo, condition
   diff_exp <- compute_diff_exp.OU(phylo = phylo, 
                                   conditional_law_X = conditional_law_X, 
                                   selection.strength = selection.strength)
-  betas <- compute_betas(phylo = phylo, optimal.value = beta_0_old, shifts = shifts_old)
+  betas <- compute_betas_from_shifts(phylo = phylo, optimal.value = beta_0_old, shifts = shifts_old)
   daughters <- phylo$edge[,2]
   ee <- exp(- selection.strength * phylo$edge.length )
   costs <- (1 - ee^2)^(-1) * (diff_exp - betas[daughters] * (1-ee))^2

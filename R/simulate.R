@@ -157,10 +157,10 @@ extract.simul_process <- function(x,
 #' @title Plot for class \code{simul_process}
 #'
 #' @description
-#' This function takes an object of class \code{simul_process}, result of function
-#' \code{\link{simul_process}}, and plots the simulated traits.
+#' This function takes an object of class \code{params_process}, and plots them along
+#' with some data at the tips of the tree.
 #'
-#' @param x an object of class \code{simul_process}, result of function
+#' @param x an object of class \code{params_process}.
 #' @param phylo a phylogenetic tree.
 #' @param data a matrix of data at the tips of the tree. Must have p rows and
 #' ntaxa columns. If these are simulated, use the \code{\link{extract.simul_process}}
@@ -173,7 +173,8 @@ extract.simul_process <- function(x,
 #' @return
 #' NULL
 #' 
-#' @seealso \code{\link{simul_process}}, \code{\link{plot.PhyloEM}}
+#' @seealso \code{\link{simul_process}}, \code{\link{plot.PhyloEM}},
+#' \code{\link{params_BM}}, \code{\link{params_OU}}
 #' 
 #' @export
 #'

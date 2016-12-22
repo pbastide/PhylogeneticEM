@@ -415,12 +415,12 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #' @title Initialisation for the computation of the optimal values
 #'
 #' @description
-#' \code{init.compute_betas} initialize the vector of optimal values at nodes and
+#' \code{init.compute_betas_from_shifts} initialize the vector of optimal values at nodes and
 #' tips, with the value at the root.
 #'
 #' @details
-#' This function is used in function \code{compute_betas} and is designed to 
-#' furnish function \code{update.compute_betas} with the right structure of data.
+#' This function is used in function \code{compute_betas_from_shifts_from_shifts} and is designed to 
+#' furnish function \code{update.compute_betas_from_shifts} with the right structure of data.
 #'
 #' @param phy Input tree.
 #' @param optimal.value the optimal value at the root of the tree
@@ -432,7 +432,7 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #'
 #06/10/14 - Initial release
 ##
-init.compute_betas <- function(phy, optimal.value, ...){
+init.compute_betas_from_shifts <- function(phy, optimal.value, ...){
   ntaxa <- length(phy$tip.label)
   beta <- matrix(nrow = 1 + nrow(phy$edge), ncol = 1) # selection strength
   beta[ntaxa + 1,] <- optimal.value
@@ -443,11 +443,11 @@ init.compute_betas <- function(phy, optimal.value, ...){
 #' @title Update function ofr optimal value computation
 #'
 #' @description
-#' \code{update.compute_betas} computes the optimal value at a daughter node, 
+#' \code{update.compute_betas_from_shifts} computes the optimal value at a daughter node, 
 #' knowing the optimal value at the parent node and the vector of shifts.
 #'
 #' @details
-#' This function is used in function \code{compute_betas} and is designed to 
+#' This function is used in function \code{compute_betas_from_shifts} and is designed to 
 #' furnish function \code{recursionDown} with the right structure of data.
 #'
 #' @param edgeNbr : Number of the edge considered
@@ -460,7 +460,7 @@ init.compute_betas <- function(phy, optimal.value, ...){
 #'
 #06/10/14 - Initial release
 ##
-update.compute_betas <- function(edgeNbr, ancestral, shifts, ...){
+update.compute_betas_from_shifts <- function(edgeNbr, ancestral, shifts, ...){
   shiftsIndex <- which(shifts$edges == edgeNbr) #If no shifts = NULL, and sum = 0
   beta <- ancestral + sum(shifts$values[shiftsIndex])
   return(beta)
@@ -471,14 +471,15 @@ update.compute_betas <- function(edgeNbr, ancestral, shifts, ...){
 #' @title Computation of the optimal values at nodes and tips.
 #'
 #' @description
-#' \code{compute_betas} computes the optimal values at the nodes and tips of the
+#' \code{compute_betas_from_shifts} computes the optimal values at the nodes and tips of the
 #' tree, given the value at the root and the list of shifts occuring in the tree.
+#' It assumes an OU model.
 #'
-#' @details
-#' This function uses function \code{recursionDown} for recursion on the tree, 
-#' with \code{init.compute_betas} for the initialization of the vector, and 
-#' \code{update.compute_betas} for its actualization.
-#'
+# @details
+# This function uses function \code{recursionDown} for recursion on the tree, 
+# with \code{init.compute_betas_from_shifts} for the initialization of the vector, and 
+# \code{update.compute_betas_from_shifts} for its actualization.
+#
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param optimal.value the optimal value at the root of the tree.
 #' @param shifts position and values of the shifts .
@@ -490,13 +491,13 @@ update.compute_betas <- function(edgeNbr, ancestral, shifts, ...){
 #'
 #06/10/14 - Initial release
 ##
-compute_betas <- function(phylo, optimal.value, shifts){
+compute_betas_from_shifts <- function(phylo, optimal.value, shifts){
   phy <- reorder(phylo, order = "cladewise")
   ## Trace edges
   shifts_ordered <- shifts
   shifts_ordered$edges <- correspondanceEdges(edges=shifts$edges,from=phylo,to=phy)
-  betas <- init.compute_betas(phy, optimal.value)
-  betas <- recursionDown(phy, betas, update.compute_betas, shifts_ordered)
+  betas <- init.compute_betas_from_shifts(phy, optimal.value)
+  betas <- recursionDown(phy, betas, update.compute_betas_from_shifts, shifts_ordered)
   return(betas)
 }
 
@@ -566,11 +567,11 @@ update.allocate_regimes_from_shifts <- function(edgeNbr, ancestral, shifts_edges
 #' of shifts) to each node, corresponding to its regime : all nodes below shift 
 #' i are numbered by i.
 #' 
-#' @details
-#' This function uses function \code{recursionDown} for recursion on the tree, 
-#' with \code{init.allocate_regimes_from_shifts} for the initialization of the
-#' vector, and \code{update.allocate_regimes_from_shifts} for its actualization.
-#'
+# @details
+# This function uses function \code{recursionDown} for recursion on the tree, 
+# with \code{init.allocate_regimes_from_shifts} for the initialization of the
+# vector, and \code{update.allocate_regimes_from_shifts} for its actualization.
+#
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param shifts_edges edges were the shifts are.
 #' 
@@ -597,14 +598,14 @@ allocate_regimes_from_shifts <- function(phylo, shifts_edges){
 #' \code{allocate_shifts_from_regimes} returns the position of the shifts induced
 #' by the allocation of the regimes. Only works in an "infinite site" model.
 #' 
-#' @details
-#' This function uses function fun on each row of matrix of edges.
+# @details
+# This function uses function fun on each row of matrix of edges.
 #'
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param regimes : vector of size (ntaxa + nNodes) of the regimes of each node
 #' and tip.
 #' 
-#' @return vector of edges numbers where the shifts are.
+#' @return Vector of edges numbers where the shifts are.
 #' 
 #' @export
 #'
@@ -633,10 +634,10 @@ allocate_shifts_from_regimes <- function(phylo, regimes){
 #' This function uses function fun on each row of matrix of edges.
 #'
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
-#' @param betas : vector of size (ntaxa + nNodes) of the optimal values at each
+#' @param betas vector of size (ntaxa + nNodes) of the optimal values at each
 #' node and tip.
 #' 
-#' @return list of shifts.
+#' @return vector of shifts.
 #' 
 #' @export
 #'
@@ -671,7 +672,7 @@ compute_shifts_from_betas <- function(phylo, betas){
 #' 
 #' @details
 #' This function uses function \code{enumerate_tips_under_edges} to generate a list 
-#' of tips under each edge, and function \code{check_parsimony_ism} to check for
+#' of tips under each edge, and function \code{check_parsimony} to check for
 #' parsimony of a given solution, under the assumption of an "infinite site model".
 #'
 #' @param tree : imput tree
@@ -695,7 +696,7 @@ sample_shifts_edges <- function(tree, K,
     ## Generate K branches
     edges <- sample_edges_intervals(tree, K)
     ## Check that these are parsimonious
-    parsi <- check_parsimony_ism(tree, edges, part.list = part.list)
+    parsi <- check_parsimony(tree, edges, part.list = part.list)
     ## If parsiomnious, finish
     if (parsi){
       return(edges)
@@ -792,13 +793,13 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
 #' @title Simmap format mapping from list of edges
 #'
 #' @description
-#' \code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a simmap
-#' formated tree, mapped with corresponding regimes.
+#' \code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a
+#' simmap formated tree, mapped with corresponding regimes.
 #' 
 #' @details
 #' Ancestral state is always 0, and other states are consecutive integers.
 #'
-#' @param tree imput tree in "\code{phylo}" format
+#' @param tree imput tree in \code{\link[ape]{phylo}} format
 #' @param shifts_edges shifts positions on the edges
 #' 
 #' @return tree a simmap object
