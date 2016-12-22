@@ -53,10 +53,14 @@ test_that("imputations- scOU - random root", {
                        impute_init_Rphylopars = FALSE,
                        progress.bar = FALSE,
                        K_lag_init = 2,
-                       light_result = FALSE)
+                       light_result = FALSE,
+                       check.tips.names = FALSE)
   
   expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "expectations"),
                res_heavy$alpha_max$m_Y_estim$'4')
+  
+  expect_equal(sum(residuals(res_heavy, K=4)^2),
+               res_heavy$alpha_max$results_summary$least_squares_raw[5])
   
   expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "variances"),
                res_heavy$alpha_max$Yvar$'4')
@@ -153,6 +157,9 @@ test_that("imputations- scOU - fixed root", {
   
   expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "expectations"),
                res_heavy$alpha_max$m_Y_estim$'4')
+  
+  expect_equal(sum(residuals(res_heavy, K=4)^2),
+               res_heavy$alpha_max$results_summary$least_squares_raw[5])
   
   expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "variances"),
                res_heavy$alpha_max$Yvar$'4')

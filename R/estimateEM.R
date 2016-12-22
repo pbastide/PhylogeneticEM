@@ -1963,12 +1963,12 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
 
   ## Select max solution for each K
   X <- merge_max_grid_alpha(X, alpha, light_result)
-  if ("BGHlsq" %in% method.selection){
-    X <- merge_min_grid_alpha(X, light_result) 
-  }
-  if ("BGHlsqraw" %in% method.selection){
-    X <- merge_min_grid_alpha(X, light_result, raw = TRUE) 
-  }
+  # if ("BGHlsq" %in% method.selection){
+  X <- merge_min_grid_alpha(X, light_result) 
+  # }
+  # if ("BGHlsqraw" %in% method.selection){
+  X <- merge_min_grid_alpha(X, light_result, raw = TRUE) 
+  # }
   return(X)
 }
 
