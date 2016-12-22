@@ -19,9 +19,4 @@ Vector of size (ntaxa + nNodes) of the regimes of each node and tip.
 of shifts) to each node, corresponding to its regime : all nodes below shift 
 i are numbered by i.
 }
-\details{
-This function uses function \code{recursionDown} for recursion on the tree, 
-with \code{init.allocate_regimes_from_shifts} for the initialization of the
-vector, and \code{update.allocate_regimes_from_shifts} for its actualization.
-}
 

@@ -33,4 +33,5 @@ This penalty should be calibrated using the slope heuristic.
 \code{\link{penalty_BaraudGiraudHuet_likelihood}},
 \code{\link{penalty_BirgeMassart_shape2}}
 }
+\keyword{internal}
 

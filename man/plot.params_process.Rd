@@ -16,7 +16,7 @@
   margin_plot = c(0, 0, 0, 0), gray_scale = FALSE, ...)
 }
 \arguments{
-\item{x}{an object of class \code{simul_process}, result of function}
+\item{x}{an object of class \code{params_process}.}
 
 \item{phylo}{a phylogenetic tree.}
 
@@ -109,10 +109,11 @@ Default to FALSE.}
 \item{...}{further arguments to be passed to \code{\link{plot.phylo}}.}
 }
 \description{
-This function takes an object of class \code{simul_process}, result of function
-\code{\link{simul_process}}, and plots the simulated traits.
+This function takes an object of class \code{params_process}, and plots them along
+with some data at the tips of the tree.
 }
 \seealso{
-\code{\link{simul_process}}, \code{\link{plot.PhyloEM}}
+\code{\link{simul_process}}, \code{\link{plot.PhyloEM}},
+\code{\link{params_BM}}, \code{\link{params_OU}}
 }
 

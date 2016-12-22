@@ -13,13 +13,10 @@ allocate_shifts_from_regimes(phylo, regimes)
 and tip.}
 }
 \value{
-vector of edges numbers where the shifts are.
+Vector of edges numbers where the shifts are.
 }
 \description{
 \code{allocate_shifts_from_regimes} returns the position of the shifts induced
 by the allocation of the regimes. Only works in an "infinite site" model.
-}
-\details{
-This function uses function fun on each row of matrix of edges.
 }
 
