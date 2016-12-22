@@ -38,8 +38,25 @@
 <div class="page-header"><h1 class="hasAnchor"><a href="#phylogeneticem" class="anchor"> </a>PhylogeneticEM</h1></div>
 
 <p>Implementation of the EM algorithm for the detection of shifts in a phylogeny.</p>
-<p>Stable version to be released soon.</p>
-<p>Reference: Bastide, P., Mariadassou, M. and Robin, S. (2016), Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree. <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em>, <a href="doi:10.1111/rssb.12206" class="uri">doi:10.1111/rssb.12206</a></p>
+<div id="installation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installation" class="anchor"> </a>Installation</h2>
+<p>Stable version to be released on the CRAN soon.</p>
+<p>To get the latest (and possibly unstable) version, you can use the <a href="https://github.com/hadley/devtools"><code>devtools</code></a> package:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">"devtools"</span>)
+devtools::<span class="kw">install_github</span>(<span class="dt">repo =</span> <span class="st">"pbastide/PhylogeneticEM"</span>, <span class="dt">ref =</span> <span class="st">"develop"</span>, <span class="dt">build_vignettes =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+<div id="documentation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#documentation" class="anchor"> </a>Documentation</h2>
+<p>See package documentation (references and vignettes) here: <a href="http://pbastide.github.io/PhylogeneticEM/" class="uri">http://pbastide.github.io/PhylogeneticEM/</a></p>
+<p>(Built with <a href="https://github.com/hadley/pkgdown"><code>pkgdown</code></a>).</p>
+</div>
+<div id="reference" class="section level2">
+<h2 class="hasAnchor">
+<a href="#reference" class="anchor"> </a>Reference:</h2>
+<p>Bastide, P., Mariadassou, M. and Robin, S. (2016), Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree. <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em>, <a href="http://onlinelibrary.wiley.com/doi/10.1111/rssb.12206/abstract">doi:10.1111/rssb.12206</a></p>
+</div>
 </div>
   </div>
 
@@ -53,7 +70,9 @@
 </ul><html><body><h2>Dev status</h2><ul class="list-unstyled"><li><a href="https://travis-ci.org/pbastide/PhylogeneticEM">
   <img src="https://travis-ci.org/pbastide/PhylogeneticEM.svg?branch=develop" alt="Travis-CI Build Status"></a></li>
 <li><a href="http://pbastide.github.io/PhylogeneticEM/">
-  <img src="https://img.shields.io/badge/docs-latest-blue.svg" alt=""></a></li>
+  <img src="https://img.shields.io/badge/docs-vignettes-blue.svg" alt=""></a></li>
+<li><a href="https://cran.r-project.org/package=PhylogeticEM">
+  <img src="https://img.shields.io/badge/CRAN-not_published-red.svg" alt="CRAN_Status_Badge"></a></li>
 </ul></body></html></div>
 </div>
 

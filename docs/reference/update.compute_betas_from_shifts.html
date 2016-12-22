@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Initialisation for the computation of the optimal values — init.compute_betas • PhylogeneticEM</title>
+<title>Update function ofr optimal value computation — update.compute_betas_from_shifts • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -74,33 +74,34 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Initialisation for the computation of the optimal values</h1>
+    <h1>Update function ofr optimal value computation</h1>
     </div>
 
     
-    <p><code>init.compute_betas</code> initialize the vector of optimal values at nodes and
-tips, with the value at the root.</p>
+    <p><code>update.compute_betas_from_shifts</code> computes the optimal value at a daughter node, 
+knowing the optimal value at the parent node and the vector of shifts.</p>
     
 
-    <pre><span class='fu'>init.compute_betas</span>(<span class='no'>phy</span>, <span class='no'>optimal.value</span>, <span class='no'>...</span>)</pre>
+    <pre><span class='fu'>update.compute_betas_from_shifts</span>(<span class='no'>edgeNbr</span>, <span class='no'>ancestral</span>, <span class='no'>shifts</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
-      <dt>phy</dt>
-      <dd>Input tree.</dd>
-      <dt>optimal.value</dt>
-      <dd>the optimal value at the root of the tree</dd>
+      <dt>edgeNbr</dt>
+      <dd>: Number of the edge considered</dd>
+      <dt>ancestral</dt>
+      <dd>: Computed vector for the parental node</dd>
+      <dt>shifts</dt>
+      <dd>position and values of the shifts</dd>
     </dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
- at the root.</p>
+    <p>Updated matrix of size (nNodes + ntaxa)x1.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This function is used in function <code>compute_betas</code> and is designed to 
-furnish function <code>update.compute_betas</code> with the right structure of data.</p>
+    <p>This function is used in function <code>compute_betas_from_shifts</code> and is designed to 
+furnish function <code>recursionDown</code> with the right structure of data.</p>
     
 
   </div>

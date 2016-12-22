@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check wether an allocation of the shifts is parsimonious, 
- — check_parsimony_ism • PhylogeneticEM</title>
+<title>Check Parsimony, assuming no homoplasy — check_parsimony • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -75,16 +74,17 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check wether an allocation of the shifts is parsimonious, 
-</h1>
+    <h1>Check Parsimony, assuming no homoplasy</h1>
     </div>
 
     
-    <p><code>check_parsimony</code> take a vector of shifts edges, and check wether the number of 
-groups of the tips induced by this allocation is exactly the number of shifts plus one.</p>
+    <p><code>check_parsimony</code> take a vector of shifts edges, and check whether the
+number of groups of the tips induced by this allocation is exactly the number of
+shifts plus one. This is equivalent to parsimony when there is no homplasy (i.e. no 
+convergent regimes).</p>
     
 
-    <pre><span class='fu'>check_parsimony_ism</span>(<span class='no'>tree</span>, <span class='no'>edges</span>, <span class='no'>...</span>)</pre>
+    <pre><span class='fu'>check_parsimony</span>(<span class='no'>tree</span>, <span class='no'>edges</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
@@ -103,9 +103,10 @@ groups of the tips induced by this allocation is exactly the number of shifts pl
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>This function computes explicitely the clustering of the tips, using 
-function <code>check_parsimony</code>.
-By default, this function uses <code>enumerate_tips_under_edges</code> to compute 
-the list of tips under each edge, but a list can be provided (if many tests are done).</p>
+function <code><a href='clusters_from_shifts.html'>clusters_from_shifts</a></code>.
+By default, this function uses <code><a href='enumerate_tips_under_edges.html'>enumerate_tips_under_edges</a></code> to compute 
+the list of tips under each edge, but a list can be provided (to avoid extra
+computation, if many tests on the same tree are done).</p>
     
 
   </div>

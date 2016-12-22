@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Clusters of the tips corresponding to a list of shifts, in an &quot;infinite site model&quot;. — clusters_from_shifts_ism • PhylogeneticEM</title>
+<title>Initialisation for the computation of the optimal values — init.compute_betas_from_shifts • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -74,35 +74,33 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Clusters of the tips corresponding to a list of shifts, in an &quot;infinite site model&quot;.</h1>
+    <h1>Initialisation for the computation of the optimal values</h1>
     </div>
 
     
-    <p><code>clusters_from_shifts</code> take a vector of shifts edges, and gives the
-clustering of the tips induced by them.</p>
+    <p><code>init.compute_betas_from_shifts</code> initialize the vector of optimal values at nodes and
+tips, with the value at the root.</p>
     
 
-    <pre><span class='fu'>clusters_from_shifts_ism</span>(<span class='no'>tree</span>, <span class='no'>edges</span>,
-  <span class='kw'>part.list</span> <span class='kw'>=</span> <span class='fu'><a href='enumerate_tips_under_edges.html'>enumerate_tips_under_edges</a></span>(<span class='no'>tree</span>))</pre>
+    <pre><span class='fu'>init.compute_betas_from_shifts</span>(<span class='no'>phy</span>, <span class='no'>optimal.value</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
-      <dt>tree</dt>
-      <dd>phylogenetic tree</dd>
-      <dt>edges</dt>
-      <dd>a vector of edges of the tree, where the shifts are</dd>
-      <dt>part.list</dt>
-      <dd>a list giving the descendant tips of each edge</dd>
+      <dt>phy</dt>
+      <dd>Input tree.</dd>
+      <dt>optimal.value</dt>
+      <dd>the optimal value at the root of the tree</dd>
     </dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list of size n+m-1, entry i is the vector of tips bellow edge i.</p>
+    <p>Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
+ at the root.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>By default, this function uses <code>enumerate_tips_under_edges</code> to compute 
-the list of tips under each edge.</p>
+    <p>This function is used in function <code>compute_betas_from_shifts_from_shifts</code> and is designed to 
+furnish function <code>update.compute_betas_from_shifts</code> with the right structure of data.</p>
     
 
   </div>

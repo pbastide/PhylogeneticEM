@@ -4,3 +4,88 @@ navbar:
     href: articles/tutorial.html
   - text: Reference
     href: reference/index.html
+
+reference:
+  - title: "PhyloEM"
+    desc: "Functions for the inference of shifts."
+    contents: 
+      - PhyloEM
+      - find_grid_alpha
+      - estimateEM
+  - title: "PhyloEM Handling Functions"
+    desc: "Functions to handle objects of class `PhyloEM`."
+    contents: 
+      - plot.PhyloEM
+      - params_process.PhyloEM
+      - imputed_traits
+      - imputed_traits.PhyloEM
+      - model_selection.PhyloEM
+      - residuals.PhyloEM
+      - enlight
+      - enlight.PhyloEM
+      - log_likelihood.PhyloEM 
+  - title: "Parameters and Simulations"
+    desc: >
+      Functions to simulate various processes on the tree, and deal with their parameters.
+    contents: 
+      - simul_process
+      - simul_process.params_process
+      - simul_process.PhyloEM
+      - params_BM
+      - params_OU
+      - params_process
+      - params_process.character
+      - plot.params_process
+      - extract.simul_process
+      - log_likelihood
+      - log_likelihood.params_process
+  - title: "Identifiability"
+    desc: >
+      Functions to deal with the non-identifiability of shifts allocations.
+    contents: 
+      - equivalent_shifts
+      - extract.equivalent_shifts
+      - plot.equivalent_shifts
+  - title: "Parsimony and Enumeration"
+    desc: >
+      Functions to compute parsimony scores, and enumerate all equivalent solutions
+      to a given clustering of the tips.
+    contents: 
+      - enumerate_parsimony
+      - extract.enumerate_parsimony
+      - plot.enumerate_parsimony
+      - partitionsNumber
+      - extract.partitionsNumber
+      - parsimonyNumber
+      - extract.parsimonyNumber
+      - parsimonyCost
+      - extract.parsimonyCost
+  - title: "Shifts vs Regimes"
+    desc: >
+      Functions to switch between representations using shifts positions, and
+      representations using regimes allocations.
+    contents: 
+      - shifts_to_simmap
+      - allocate_regimes_from_shifts
+      - allocate_shifts_from_regimes
+      - check_parsimony
+      - clusters_from_shifts
+      - compute_betas_from_shifts
+      - compute_shifts_from_betas
+      - correspondenceEdges
+      - enumerate_tips_under_edges
+  - title: "Tree Matrices"
+    desc: "Functions for computing several matrices associated with a tree."
+    contents:
+      - compute_dist_phy
+      - compute_times_ca
+      - incidence.matrix
+      - incidence.matrix.full
+      - shifts.list_to_matrix
+      - shifts.matrix_to_list
+  - title: "OU Helper Functions"
+    desc: "Miscellaneous functions to deal with the OU process"
+    contents:
+      - compute_stationary_variance
+      - transform_branch_length
+      - extract
