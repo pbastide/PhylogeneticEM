@@ -781,8 +781,8 @@ estimateEM <- function(phylo,
   rm(tmpsim)
   
   ########## Number of equivalent solutions ###################################
-  clusters <- clusters_from_shifts_ism(phylo, params$shifts$edges,
-                                       part.list = subtree.list)
+  clusters <- clusters_from_shifts(phylo, params$shifts$edges,
+                                   part.list = subtree.list)
   Neq <- extract.parsimonyNumber(parsimonyNumber(phylo, clusters))
   if (Neq > 1 && warning_several_solutions) message("There are some equivalent solutions to the solution found.")
   attr(params_scOU, "Neq") <- Neq

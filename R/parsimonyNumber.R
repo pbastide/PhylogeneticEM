@@ -498,14 +498,15 @@ enumerate_tips_under_edges <- function (tree) {
 }
 
 ##
-#' @title Clusters of the tips corresponding to a list of shifts, in an "infinite site model".
+#' @title Clustering associated to a shift allocation, assuming no homoplasy.
 #'
 #' @description
 #' \code{clusters_from_shifts} take a vector of shifts edges, and gives the
-#' clustering of the tips induced by them.
+#' clustering of the tips induced by them, in a "no homoplasy" model (i.e. no
+#' convergence is allowed).
 #'
 #' @details
-#' By default, this function uses \code{enumerate_tips_under_edges} to compute 
+#' By default, this function uses \code{\link{enumerate_tips_under_edges}} to compute 
 #' the list of tips under each edge.
 #'
 #' @param tree phylogenetic tree
@@ -517,8 +518,8 @@ enumerate_tips_under_edges <- function (tree) {
 #' @export
 #'
 ##
-clusters_from_shifts_ism <- function (tree, edges,
-                                      part.list = enumerate_tips_under_edges(tree)) {
+clusters_from_shifts <- function (tree, edges,
+                                  part.list = enumerate_tips_under_edges(tree)) {
   ntaxa <- length(tree$tip.label)
   part <- rep(0, ntaxa)
   if (length(edges) > 0 ){
@@ -559,18 +560,20 @@ clusters_from_shifts_expectations <- function (tree,
 }
 
 ##
-#' @title Check wether an allocation of the shifts is parsimonious, 
-#' in the "infinite site model".
+#' @title Check Parsimony, assuming no homoplasy
 #'
 #' @description
-#' \code{check_parsimony} take a vector of shifts edges, and check wether the number of 
-#' groups of the tips induced by this allocation is exactly the number of shifts plus one.
+#' \code{check_parsimony} take a vector of shifts edges, and check whether the
+#' number of groups of the tips induced by this allocation is exactly the number of
+#' shifts plus one. This is equivalent to parsimony when there is no homplasy (i.e. no 
+#' convergent regimes).
 #'
 #' @details
 #' This function computes explicitely the clustering of the tips, using 
-#' function \code{check_parsimony}.
-#' By default, this function uses \code{enumerate_tips_under_edges} to compute 
-#' the list of tips under each edge, but a list can be provided (if many tests are done).
+#' function \code{\link{clusters_from_shifts}}.
+#' By default, this function uses \code{\link{enumerate_tips_under_edges}} to compute 
+#' the list of tips under each edge, but a list can be provided (to avoid extra
+#' computation, if many tests on the same tree are done).
 #'
 #' @param tree phylogenetic tree
 #' @param edges a vector of edges of the tree, where the shifts are
@@ -581,8 +584,8 @@ clusters_from_shifts_expectations <- function (tree,
 #' @export
 #'
 ##
-check_parsimony_ism <- function(tree, edges, ...){
-  clusters <- clusters_from_shifts_ism(tree, edges, ...)
+check_parsimony <- function(tree, edges, ...){
+  clusters <- clusters_from_shifts(tree, edges, ...)
   nclus <- length(unique(clusters))
   nshifts <- length(edges)
   return((nclus - 1) == nshifts)
@@ -605,7 +608,7 @@ check_parsimony_ism <- function(tree, edges, ...){
 #'
 #' @param tree phylogenetic tree.
 #' @param clusters a vector of clusters of the tips of the tree (result of
-#' function \code{\link{clusters_from_shifts_ism}}).
+#' function \code{\link{clusters_from_shifts}}).
 #' 
 #' @return boolean : TRUE if the allocation is parsimonious.
 #' 
@@ -1318,7 +1321,7 @@ plot.equivalent_shifts <- function(x,
 #' @details
 #' This function is uses functions \code{\link{enumerate_parsimony}} for the
 #' actual computation of equivalent regimes,
-#' \code{\link{clusters_from_shifts_ism}} for the clustering of the tips induced
+#' \code{\link{clusters_from_shifts}} for the clustering of the tips induced
 #' by the original set of shifts given, and
 #' \code{\link{allocate_shifts_from_regimes}} to convert back a parametrization
 #' in term of regimes to a parametrization in term of shifts.
@@ -1338,8 +1341,8 @@ plot.equivalent_shifts <- function(x,
 equivalent_shifts_edges <- function(phylo,
                                     shifts_edges,
                                     part.list = enumerate_tips_under_edges(phylo)){
-  clusters <- clusters_from_shifts_ism(phylo, shifts_edges,
-                                       part.list = part.list) + 1
+  clusters <- clusters_from_shifts(phylo, shifts_edges,
+                                   part.list = part.list) + 1
   if(!check_parsimony_clusters(phylo, shifts_edges, clusters))
     stop("The edges entered are not parsimonious.")
   regime_allocs <- extract.enumerate_parsimony(enumerate_parsimony(phylo, clusters))

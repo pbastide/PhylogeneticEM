@@ -1139,7 +1139,7 @@ residuals.PhyloEM <- function(object, ...){
   
   m_Y <- imputed_traits(object, trait = 1:object$p,
                         where = c("tips"),
-                        what = c("expectations"))
+                        what = c("expectations"), ...)
   
   return(object$Y_data - m_Y)
 }

@@ -84,9 +84,9 @@ estimations_l1ou <- function(X){
   # total time
   res$total_time <- time_l1ou
   # number of equivalent solutions
-  clusters <- PhylogeneticEM::clusters_from_shifts_ism(trees[[paste0(X$ntaxa)]],
-                                                       shifts$edges,
-                                                       part.list = subtree.list[[paste0(X$ntaxa)]])
+  clusters <- PhylogeneticEM::clusters_from_shifts(trees[[paste0(X$ntaxa)]],
+                                                   shifts$edges,
+                                                   part.list = subtree.list[[paste0(X$ntaxa)]])
   Neq <- PhylogeneticEM:::extract.parsimonyNumber(PhylogeneticEM::parsimonyNumber(trees[[paste0(X$ntaxa)]],
                                                                                   clusters))
   # Summary

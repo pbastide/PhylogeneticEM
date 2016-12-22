@@ -7,7 +7,7 @@
 shifts_to_simmap(tree, shifts_edges)
 }
 \arguments{
-\item{tree}{imput tree in "\code{phylo}" format}
+\item{tree}{imput tree in \code{\link[ape]{phylo}} format}
 
 \item{shifts_edges}{shifts positions on the edges}
 }
@@ -15,8 +15,8 @@ shifts_to_simmap(tree, shifts_edges)
 tree a simmap object
 }
 \description{
-\code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a simmap
-formated tree, mapped with corresponding regimes.
+\code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a
+simmap formated tree, mapped with corresponding regimes.
 }
 \details{
 Ancestral state is always 0, and other states are consecutive integers.

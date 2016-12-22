@@ -179,7 +179,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_3"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_3"]]$edges)))
 
 # ## 128 - 7
 # shifts_grid[["128_7"]] <- list(edges = c(8, 72, 193,
@@ -209,7 +209,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism
 #                          bg_shifts = "azure2",
 #                          bg_beta_0 = "azure2")
 # # Equivalent solutions ?
-# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_7"]]$edges)))
+# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_7"]]$edges)))
 # 
 # ## 128 - 11
 # shifts_grid[["128_11"]] <- list(edges = c(8, 72, 193,
@@ -244,7 +244,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism
 #                          bg_shifts = "azure2",
 #                          bg_beta_0 = "azure2")
 # # Equivalent solutions ?
-# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_11"]]$edges)))
+# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_11"]]$edges)))
 # 
 # ## 128 -  15
 # shifts_grid[["128_15"]] <- list(edges = c(8, 72, 193,
@@ -284,7 +284,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism
 #                          bg_shifts = "azure2",
 #                          bg_beta_0 = "azure2")
 # # Equivalent solutions ?
-# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts_ism(trees[["128"]], shifts_grid[["128_15"]]$edges)))
+# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_15"]]$edges)))
 
 ## 32 -  3
 plot(trees[["32"]], show.tip.label = FALSE); edgelabels(); tiplabels()
@@ -310,7 +310,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["32"]], clusters_from_shifts_ism(trees[["32"]], shifts_grid[["32_3"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["32"]], clusters_from_shifts(trees[["32"]], shifts_grid[["32_3"]]$edges)))
 
 ## 64 -  3
 plot(trees[["64"]], show.tip.label = FALSE); edgelabels(); tiplabels()
@@ -336,7 +336,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["64"]], clusters_from_shifts_ism(trees[["64"]], shifts_grid[["64_3"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["64"]], clusters_from_shifts(trees[["64"]], shifts_grid[["64_3"]]$edges)))
 
 ## 96 -  3
 plot(trees[["96"]], show.tip.label = FALSE); edgelabels(); tiplabels()
@@ -362,7 +362,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["96"]], clusters_from_shifts_ism(trees[["96"]], shifts_grid[["96_3"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["96"]], clusters_from_shifts(trees[["96"]], shifts_grid[["96_3"]]$edges)))
 
 ## 160 -  3
 plot(trees[["160"]], show.tip.label = FALSE); edgelabels(); tiplabels()
@@ -388,7 +388,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism(trees[["160"]], shifts_grid[["160_3"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_3"]]$edges)))
 
 ## 160 - 7
 shifts_grid[["160_7"]] <- list(edges = c(107, 62, 255,
@@ -418,7 +418,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism(trees[["160"]], shifts_grid[["160_7"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_7"]]$edges)))
 
 ## 160 - 11
 shifts_grid[["160_11"]] <- list(edges = c(107, 62, 255,
@@ -453,7 +453,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism(trees[["160"]], shifts_grid[["160_11"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_11"]]$edges)))
 
 ## 160 -  15
 shifts_grid[["160_15"]] <- list(edges = c(107, 62, 255,
@@ -493,7 +493,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts_ism(trees[["160"]], shifts_grid[["160_15"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_15"]]$edges)))
 
 ## 192 -  3
 plot(trees[["192"]], show.tip.label = FALSE); edgelabels(); tiplabels()
@@ -519,7 +519,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["192"]], clusters_from_shifts_ism(trees[["192"]], shifts_grid[["192_3"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["192"]], clusters_from_shifts(trees[["192"]], shifts_grid[["192_3"]]$edges)))
 
 ## 215 -  3
 plot(trees[["215"]], show.tip.label = FALSE); edgelabels(); tiplabels()
@@ -545,7 +545,7 @@ plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          bg_shifts = "azure2",
                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["215"]], clusters_from_shifts_ism(trees[["215"]], shifts_grid[["215_3"]]$edges)))
+extract.parsimonyNumber(parsimonyNumber(trees[["215"]], clusters_from_shifts(trees[["215"]], shifts_grid[["215_3"]]$edges)))
 
 ## Clean up
 rm(W, vec_Y, X1.tips.exp.mat, Delta)
