@@ -11,7 +11,9 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
   # Right number of solutions
   expect_that(Nbr, equals(3))
   # Right solutions
-  right_allocs <- rbind(c(3.21,26,5.3,5.3,5.3,5.3,3.21), c(3.21,26,5.3,5.3,5.3,5.3,26), c(3.21,26,5.3,5.3,5.3,5.3,5.3))
+  right_allocs <- rbind(c(3.21,26,5.3,5.3,5.3,5.3,3.21),
+                        c(3.21,26,5.3,5.3,5.3,5.3,26),
+                        c(3.21,26,5.3,5.3,5.3,5.3,5.3))
   expect_that(Allocs, equals(right_allocs))
   
   ## Second exemple
@@ -41,18 +43,28 @@ test_that("Equivalent Shift - BM", {
   ## Fixed Root
   params <- params_BM(p = 4, 
                       edges = c(4, 17, 22),
-                      values = cbind(c(1, 2, 3, 4), c(-1, -2, -3, -4), c(1, 1, 1, 1)))
+                      values = cbind(c(1, 2, 3, 4),
+                                     c(-1, -2, -3, -4),
+                                     c(1, 1, 1, 1)))
   ed_shifts <- equivalent_shifts(phylo, params)
   # plot(ed_shifts)
   ## Random Root
   params_rand <- params_BM(p = 4, 
                            edges = c(4, 17, 22), 
-                           values = cbind(c(1, 2, 3, 4), c(-1, -2, -3, -4), c(1, 1, 1, 1)),
+                           values = cbind(c(1, 2, 3, 4),
+                                          c(-1, -2, -3, -4),
+                                          c(1, 1, 1, 1)),
                            random = TRUE,
                            exp.root = rep(0, 4))
   ed_shifts_rand <- equivalent_shifts(phylo, params_rand)
   
   expect_equal(ed_shifts, ed_shifts_rand)
+  
+  ## Check with enumerate parsimony
+  clusters <- allocate_regimes_from_shifts(phylo, params$shifts$edges)
+  Allocs <- extract(enumerate_parsimony(phylo, clusters))
+  eq_shifts_bis <- apply(Allocs, 1, function(z) allocate_shifts_from_regimes(phylo, z))
+  expect_equal(ed_shifts$eq_shifts_edges, eq_shifts_bis)
 })
 
 test_that("Equivalent Shift - OU", {
@@ -74,6 +86,12 @@ test_that("Equivalent Shift - OU", {
   ed_shifts_rand <- equivalent_shifts(phylo, params_rand)
   
   expect_equal(ed_shifts, ed_shifts_rand)
+  
+  ## Check with enumerate parsimony
+  clusters <- allocate_regimes_from_shifts(phylo, params$shifts$edges)
+  Allocs <- extract(enumerate_parsimony(phylo, clusters))
+  eq_shifts_bis <- apply(Allocs, 1, function(z) allocate_shifts_from_regimes(phylo, z))
+  expect_equal(ed_shifts$eq_shifts_edges, eq_shifts_bis)
 })
 
 # test_that("parsimonyNumber and enumerate_parsimony on random exemples", {
