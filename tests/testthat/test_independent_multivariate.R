@@ -304,20 +304,20 @@ test_that("Independent OU - uni/multi", {
   attr(par_uni, "log_likelihood") <- NULL
   attr(par_uni, "Neq") <- NULL
   
-  expect_equal(par_multi, par_uni, tolerance = 10^(-4))
+  expect_equal(par_multi, par_uni, tolerance = 10^(-3))
   
   ## Test imputed states
   tmp <- imputed_traits(res, K = 0, what = "expectations", trait = 1)
   tmp_uni <- imputed_traits(res_uni, K = 0, what = "expectations")
-  expect_equal(tmp, tmp_uni, tolerance = 10^(-4))
+  expect_equal(tmp, tmp_uni, tolerance = 10^(-3))
   
   tmp <- imputed_traits(res, K = 0, what = "variances", trait = 1)
   tmp_uni <- imputed_traits(res_uni, K = 0, what = "variances")
-  expect_equal(tmp, tmp_uni, tolerance = 10^(-4))
+  expect_equal(tmp, tmp_uni, tolerance = 10^(-3))
   
   tmp <- imputed_traits(res, K = 0, what = "imputed", trait = 1)
   tmp_uni <- imputed_traits(res_uni, K = 0, what = "imputed")
-  expect_equal(tmp, tmp_uni, tolerance = 10^(-4))
+  expect_equal(tmp, tmp_uni, tolerance = 10^(-3))
   
   ## Simple test of grid univariate case
   traits[1, c(10, 15, 16)] <- NA
