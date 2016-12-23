@@ -1559,6 +1559,8 @@ init.EM.lasso <- function(phylo,
           # Regressor
           Tr <- lapply(Tr, function(z) return(cbind(z, rep(1, dim(z)[1]))))
           Xp <- bdiag(Tr)
+          # Normalize predictor
+          Xp <- Vp %*% Xp
           # Reorder matrices
           corrdata <- as.vector(sapply(1:ntaxa,
                                        function(z) ((0:(p-1)) * ntaxa + z)))
@@ -1585,11 +1587,11 @@ init.EM.lasso <- function(phylo,
           Tr <- cbind(Tr, rep(1, nrow(Tr)))
           Xp <- kronecker(Tr, diag(rep(1, p)))
           Xp <- Xp[masque_data[1:(p*ntaxa)], ]
+          # Normalize predictor
+          Xp <- Vp %*% Xp
           # Root
           root <- ncol(Tr)
         }
-      # Normalize predictor
-      Xp <- Vp %*% Xp
       # Fit
       group <- rep(1:root, each = p)
       fit <- try(lasso_regression_K_fixed.gglasso(Yvec = as.vector(Yp),

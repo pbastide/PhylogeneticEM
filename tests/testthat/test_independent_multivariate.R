@@ -255,7 +255,7 @@ test_that("Independent OU - uni/multi", {
                                 stationary.root = TRUE,
                                 independent = TRUE,
                                 save_step = FALSE,
-                                Nbr_It_Max = 100,
+                                Nbr_It_Max = 5,
                                 method.variance = "upward_downward",
                                 method.init = "lasso",
                                 use_previous = FALSE,
@@ -273,7 +273,7 @@ test_that("Independent OU - uni/multi", {
                                     stationary.root = TRUE,
                                     alpha_grid = FALSE,
                                     save_step = FALSE,
-                                    Nbr_It_Max = 100,
+                                    Nbr_It_Max = 5,
                                     method.variance = "upward_downward",
                                     method.init = "lasso",
                                     use_previous = FALSE,
@@ -299,25 +299,25 @@ test_that("Independent OU - uni/multi", {
   expect_equal(par_uni_bis, par_uni)
   
   ## Test parameters K=0
-  par_multi <- split_params_independent(res$alpha_max$params_init_estim$`0`)[[1]]
-  par_uni <- res_uni$alpha_max$params_init_estim$`0`
+  par_multi <- split_params_independent(res$alpha_max$params_estim$`0`)[[1]]
+  par_uni <- res_uni$alpha_max$params_estim$`0`
   attr(par_uni, "log_likelihood") <- NULL
   attr(par_uni, "Neq") <- NULL
   
-  # expect_equal(par_multi, par_uni, tolerance = 10^(-3))
+  expect_equal(par_multi, par_uni)
   
   ## Test imputed states
   tmp <- imputed_traits(res, K = 0, what = "expectations", trait = 1)
   tmp_uni <- imputed_traits(res_uni, K = 0, what = "expectations")
-  expect_equal(tmp, tmp_uni, tolerance = 10^(-3))
+  expect_equal(tmp, tmp_uni)
   
   tmp <- imputed_traits(res, K = 0, what = "variances", trait = 1)
   tmp_uni <- imputed_traits(res_uni, K = 0, what = "variances")
-  expect_equal(tmp, tmp_uni, tolerance = 10^(-3))
+  expect_equal(tmp, tmp_uni)
   
   tmp <- imputed_traits(res, K = 0, what = "imputed", trait = 1)
   tmp_uni <- imputed_traits(res_uni, K = 0, what = "imputed")
-  expect_equal(tmp, tmp_uni, tolerance = 10^(-3))
+  expect_equal(tmp, tmp_uni)
   
   ## Simple test of grid univariate case
   traits[1, c(10, 15, 16)] <- NA
