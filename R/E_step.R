@@ -863,37 +863,37 @@ compute_log_likelihood.simple.nomissing.BM <- function(phylo, Y_data, sim,
   return(-LL/2)
 }
 
-compute_log_det.simple <- function(phylo, Y_data_vec, sim,
-                                   Sigma, Sigma_YY_chol_inv,
-                                   miss, masque_data){
-  ntaxa <- length(phylo$tip.label)
-  Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
-  logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
-  return( - (ntaxa * log(2*pi) + logdetSigma_YY) / 2)
-}
+# compute_log_det.simple <- function(phylo, Y_data_vec, sim,
+#                                    Sigma, Sigma_YY_chol_inv,
+#                                    miss, masque_data){
+#   ntaxa <- length(phylo$tip.label)
+#   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
+#   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
+#   return( - (ntaxa * log(2*pi) + logdetSigma_YY) / 2)
+# }
 
-compute_log_maha.simple <- function(phylo, Y_data_vec, sim,
-                                    Sigma, Sigma_YY_chol_inv,
-                                    miss, masque_data){
-  ntaxa <- length(phylo$tip.label)
-  m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
-  m_Y_vec <- as.vector(m_Y)[!miss]
-  LL <- tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
-  return(-LL/2)
-}
+# compute_log_maha.simple <- function(phylo, Y_data_vec, sim,
+#                                     Sigma, Sigma_YY_chol_inv,
+#                                     miss, masque_data){
+#   ntaxa <- length(phylo$tip.label)
+#   m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
+#   m_Y_vec <- as.vector(m_Y)[!miss]
+#   LL <- tcrossprod(t(Y_data_vec - m_Y_vec) %*% Sigma_YY_chol_inv)
+#   return(-LL/2)
+# }
 
-compute_entropy.simple <- function(Sigma, Sigma_YY_inv){
-  Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ")
-  Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ")
-  conditional_variance_covariance <- Sigma_ZZ - Sigma_YZ%*%Sigma_YY_inv%*%t(Sigma_YZ)
-  N <- dim(Sigma_ZZ)[1]
-  logdet_conditional_variance_covariance <- determinant(conditional_variance_covariance, logarithm = TRUE)$modulus
-  return(N/2*log(2*pi*exp(1)) + 1/2*logdet_conditional_variance_covariance)
-}
+# compute_entropy.simple <- function(Sigma, Sigma_YY_inv){
+#   Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ")
+#   Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ")
+#   conditional_variance_covariance <- Sigma_ZZ - Sigma_YZ%*%Sigma_YY_inv%*%t(Sigma_YZ)
+#   N <- dim(Sigma_ZZ)[1]
+#   logdet_conditional_variance_covariance <- determinant(conditional_variance_covariance, logarithm = TRUE)$modulus
+#   return(N/2*log(2*pi*exp(1)) + 1/2*logdet_conditional_variance_covariance)
+# }
 
-compute_log_likelihood_with_entropy.simple <- function(CLL, H){
-  return(CLL + H)
-}
+# compute_log_likelihood_with_entropy.simple <- function(CLL, H){
+#   return(CLL + H)
+# }
 
 # ## Likelihood and Mahalanobis computation for independent traits
 # lik_maha_ind <- function(phylo,

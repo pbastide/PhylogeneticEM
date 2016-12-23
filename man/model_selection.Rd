@@ -8,8 +8,8 @@
 model_selection(x, ...)
 
 \method{model_selection}{PhyloEM}(x, method.selection = c("LINselect", "DDSE",
-  "Djump"), C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1, independent = FALSE,
-  ...)
+  "Djump"), C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
+  independent = FALSE, ...)
 }
 \arguments{
 \item{x}{a fitted \code{\link{PhyloEM}} object}
@@ -28,7 +28,7 @@ Need to be positive. Default to 0.1.}
 \item{C.BM2}{Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.}
 
-\item{C.BGH}{Multiplying constant to be used for the LINselect method. Need to be
+\item{C.LINselect}{Multiplying constant to be used for the LINselect method. Need to be
 greater than 1. Default to 1.1.}
 
 \item{independent}{Are the trait assumed to be independent from one another?

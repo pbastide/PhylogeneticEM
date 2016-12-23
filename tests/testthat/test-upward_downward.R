@@ -379,7 +379,8 @@ test_that("Upward Downward - PhyloEM - BM", {
   expect_equal(res_new, res_old, tolerance = .Machine$double.eps ^ 0.3)
   
   expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
-  expect_equal(log_likelihood(res_new, K = 5, alpha = 0), res_new$alpha_0$results_summary$log_likelihood[6])
+  expect_warning(ll <- log_likelihood(res_new, K = 5, alpha = 0))
+  expect_equal(ll, res_new$alpha_0$results_summary$log_likelihood[6])
 })
 
 
@@ -1007,8 +1008,10 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
   
   expect_that(res_new, equals(res_old))
   
-  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
-  expect_equal(log_likelihood(res_new, K = 5, alpha = "max"), res_new$alpha_max$results_summary$log_likelihood[6])
+  expect_equal(log_likelihood(res_new),
+               res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  ll <- log_likelihood(res_new, K = 5, alpha = "max")
+  expect_equal(ll, res_new$alpha_max$results_summary$log_likelihood[6])
 })
 
 # test_that("Upward Downward - full OU - random root", {

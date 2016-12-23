@@ -75,11 +75,7 @@ correspondenceEdges <- function(edges, from, to){
   return(newEdges)
 }
 
-correspondanceEdges <- function(edges, from, to){
-  mm <- match(from$edge[, 2], to$edge[, 2])
-  newEdges <- mm[edges]
-  return(newEdges)
-}
+correspondanceEdges <- correspondenceEdges
 
 ##
 # compute_times_ca (phy)
@@ -814,29 +810,31 @@ split_params_independent <- function(params){
 merge_params_independent <- function(params_split){
   p <- length(params_split)
   params <- params_split[[1]]
-  params$variance <- diag(sapply(params_split, function(z) return(as.vector(z$variance))))
-  if (!is.null(params$selection.strength)){
-    params$selection.strength <- diag(sapply(params_split, function(z) return(z$selection.strength)))
-  }
-  if (length(params$shifts$edges) > 1){
-    params$shifts$values <- t(sapply(params_split, function(z) return(z$shifts$values)))
-  } else if (length(params$shifts$edges) == 1) {
-    params$shifts$values <- sapply(params_split, function(z) return(z$shifts$values))
-    dim(params$shifts$values) <- c(p,1)
-  } else {
-    params$shifts$values <- matrix(0, p, 0)
-  }
-  if (!is.na(params$root.state$value.root)){
-    params$root.state$value.root <- sapply(params_split, function(z) return(z$root.state$value.root))
-  }
-  if (!is.na(params$root.state$exp.root)){
-    params$root.state$exp.root <- sapply(params_split, function(z) return(z$root.state$exp.root))
-  }
-  if (!is.na(as.vector(params$root.state$var.root))){
-    params$root.state$var.root <- diag(sapply(params_split, function(z) return(as.vector(z$root.state$var.root))))
-  }
-  if (!is.null(params$optimal.value)){
-    params$optimal.value <- sapply(params_split, function(z) return(z$optimal.value))
+  if (p > 1){
+    params$variance <- diag(sapply(params_split, function(z) return(as.vector(z$variance))))
+    if (!is.null(params$selection.strength)){
+      params$selection.strength <- diag(sapply(params_split, function(z) return(z$selection.strength)))
+    }
+    if (length(params$shifts$edges) > 1){
+      params$shifts$values <- t(sapply(params_split, function(z) return(z$shifts$values)))
+    } else if (length(params$shifts$edges) == 1) {
+      params$shifts$values <- sapply(params_split, function(z) return(z$shifts$values))
+      dim(params$shifts$values) <- c(p,1)
+    } else {
+      params$shifts$values <- matrix(0, p, 0)
+    }
+    if (!is.na(params$root.state$value.root)){
+      params$root.state$value.root <- sapply(params_split, function(z) return(z$root.state$value.root))
+    }
+    if (!is.na(params$root.state$exp.root)){
+      params$root.state$exp.root <- sapply(params_split, function(z) return(z$root.state$exp.root))
+    }
+    if (!is.na(as.vector(params$root.state$var.root))){
+      params$root.state$var.root <- diag(sapply(params_split, function(z) return(as.vector(z$root.state$var.root))))
+    }
+    if (!is.null(params$optimal.value)){
+      params$optimal.value <- sapply(params_split, function(z) return(z$optimal.value))
+    }
   }
   params <- check_dimensions(p,
                              params$root.state,

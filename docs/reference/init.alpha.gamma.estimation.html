@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check wether parameters are in ranges. — is.in.ranges • PhylogeneticEM</title>
+<title>Initialisation the selection strength alpha using robust estimation — init.alpha.gamma.estimation • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -74,76 +74,44 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check wether parameters are in ranges.</h1>
+    <h1>Initialisation the selection strength alpha using robust estimation</h1>
     </div>
 
     
-    <p><code>is.in.ranges.params</code> checks whether calculated parameters in the EM are
-in the defined ranges.</p>
+    <p><code>init.alpha.estimation</code> fits (Y_i-Y_j)^2 ~ gamma^2(1-exp(-alpha*d_ij))
+for all couples of tips (i,j) that have the same mean, i.e than are not
+separated by a shift. Shifts are initialized thanks to a lasso
+(function <code>init.EM.lasso</code>).</p>
     
 
-    <pre><span class='fu'>is.in.ranges</span>(<span class='no'>p</span>, <span class='no'>min</span>, <span class='no'>max</span>)</pre>
+    <pre><span class='fu'>init.alpha.gamma.estimation</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='no'>nbr_of_shifts</span>, <span class='no'>times_shared</span>,
+  <span class='no'>distances_phylo</span>, <span class='no'>T_tree</span>, <span class='no'>subtree.list</span>, <span class='no'>max_triplet_number</span>, <span class='no'>alpha_known</span>,
+  <span class='no'>method.init.alpha.estimation</span>, <span class='no'>tol</span>, <span class='no'>h_tree</span>, <span class='no'>miss</span>, <span class='no'>masque_data</span>, <span class='no'>independent</span>,
+  <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
-      <dt>min</dt>
-      <dd>list of minimum values for the parameters</dd>
-      <dt>max</dt>
-      <dd>list of maximum values for the parameters</dd>
-      <dt>params</dt>
-      <dd>list of parameters with the correct structure</dd>
+      <dt>phylo</dt>
+      <dd>a phylogenetic tree, class <code><a href='http://www.rdocumentation.org/packages/ape/topics/read.tree'>phylo</a></code>.</dd>
+      <dt>Y_data</dt>
+      <dd>data at the tips.</dd>
+      <dt>nbr_of_shifts</dt>
+      <dd>: number of shifts wanted</dd>
+      <dt>distances_phylo</dt>
+      <dd>(matrix) : phylogenetics distance, result of function 
+<code>compute_dist_phy</code></dd>
+      <dt>nbr_of_shifts</dt>
+      <dd>number of shifts used in the EM algorithm</dd>
     </dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>boolean</p>
+    <p>params_init the list of initial parameters to be used, in the right
+ format.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>######################################################
-## Finite parameters ?
-######################################################</p>
-    <p>is.finite.params.BM &lt;- function(params) 
-  if (params$root.state$random) 
-    return(is.finite.params.BM.randroot(params))
-   else 
-    return(is.finite.params.BM.fixedroot(params))</p>
-    <p>is.finite.params.BM.randroot &lt;- function(params) 
-  if (is.finite(params$variance) &amp;&amp;
-        is.finite(params$root.state$exp.root) &amp;&amp;
-        is.finite(params$root.state$var.root) ) 
-    return(TRUE)
-   else 
-    return(FALSE)</p>
-    <p>is.finite.params.BM.fixedroot &lt;- function(params) 
-  if ( is.finite(params$variance) &amp;&amp;
-         is.finite(params$root.state$value.root) ) 
-    return(TRUE)
-   else 
-    return(FALSE)</p>
-    <p>is.finite.params.OU &lt;- function(stationary.root, shifts_at_nodes, alpha_known)
-  if (stationary.root &amp;&amp; shifts_at_nodes &amp;&amp; alpha_known) 
-    return(is.finite.params.OU.specialCase)
-   else if (stationary.root &amp;&amp; shifts_at_nodes) 
-    return(is.finite.params.OU.stationary.root_AND_shifts_at_nodes)
-   else 
-    stop(&quot;The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !&quot;)</p>
-    <p>is.finite.params.OU.specialCase &lt;- function(params) 
-  if (is.finite(params$variance) &amp;&amp;
-        is.finite(params$root.state$exp.root) &amp;&amp;
-        is.finite(params$root.state$var.root) ) 
-    return(TRUE)
-   else 
-    return(FALSE)</p>
-    <p>is.finite.params.OU.stationary.root_AND_shifts_at_nodes &lt;- function(params) 
-  if (is.finite(params$variance) &amp;&amp;
-        is.finite(params$root.state$exp.root) &amp;&amp;
-        is.finite(params$root.state$var.root) &amp;&amp;
-        is.finite(params$selection.strength)) 
-    return(TRUE)
-   else 
-    return(FALSE)</p>
-    <p>This function is used to test the convergence of the algorithm.</p>
+    <p>Function <code>robustbase::nlrob</code> is used for the robust fit.</p>
     
 
   </div>

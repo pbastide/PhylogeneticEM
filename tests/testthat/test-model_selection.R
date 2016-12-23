@@ -1,3 +1,5 @@
+context("Model Selection")
+
 test_that("Model Selection", {
   testthat::skip_on_cran()
   set.seed(17920902)

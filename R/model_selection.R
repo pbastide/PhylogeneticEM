@@ -84,15 +84,15 @@ model_selection_capushe <- function(res, pen_shape, name){
   return(res)
 }
 
-assign_selected_model_capushe <- function(res, cap_res){
-  res$results_summary$K_select <- as.numeric(cap_res@DDSE@model)
-  if (cap_res@DDSE@model != cap_res@Djump@model){
-    res$results_summary$K_select_DDSE <- as.numeric(cap_res@DDSE@model)
-    res$results_summary$K_select_Djump <- as.numeric(cap_res@Djump@model) 
-  }
-  res$results_summary$pen_shape
-  return(res)
-}
+# assign_selected_model_capushe <- function(res, cap_res){
+#   res$results_summary$K_select <- as.numeric(cap_res@DDSE@model)
+#   if (cap_res@DDSE@model != cap_res@Djump@model){
+#     res$results_summary$K_select_DDSE <- as.numeric(cap_res@DDSE@model)
+#     res$results_summary$K_select_Djump <- as.numeric(cap_res@Djump@model) 
+#   }
+#   res$results_summary$pen_shape
+#   return(res)
+# }
 
 ##
 #' @title Penalty function type Birgé-Massart 2
@@ -182,17 +182,18 @@ penalty_BaraudGiraudHuet_likelihood <- function(K, model_complexity, ntaxa,
   return(ntaxa * log(1 + res/(ntaxa - K - 1)))
 }
 
-model_selection_BGH <- function(res, ntaxa, C.BGH, ...){
+model_selection_BGH <- function(res, ntaxa, C.LINselect, ...){
+  res <- res$alpha_max
   p <- nrow(res$params_estim$`0`$variance)
   ## Penalty
   pen <- 1/2 * penalty_BaraudGiraudHuet_likelihood(res$results_summary$K_try,
                                                    res$results_summary$complexity,
                                                    ntaxa,
-                                                   C.BGH)
+                                                   C.LINselect)
   ## Criterion
   crit <- - res$results_summary$log_likelihood + pen
   ## Assign results
-  res <- assign_results_model_selection(res, pen, crit, "BGH")
+  res <- assign_results_model_selection(res, pen, crit, "BGHuni")
   return(res)
 }
 
@@ -205,16 +206,16 @@ penalty_BaraudGiraudHuet_leastsquares <- function(K, model_complexity, ntaxa,
   return(res / (ntaxa - K - 1))
 }
 
-model_selection_BGH_leastsquares <- function(res, ntaxa, C.BGH, ...){
+model_selection_BGH_leastsquares <- function(res, ntaxa, C.LINselect, ...){
   # res <- add_lsq(res)
-  res <- merge_min_grid_alpha(res)
+  # res <- merge_min_grid_alpha(res)
   res <- res$alpha_min
   p <- nrow(res$params_estim$`0`$variance)
   ## Penalty
   pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
                                                res$results_summary$complexity,
                                                ntaxa,
-                                               C.BGH)
+                                               C.LINselect)
   ## least squares
   # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
   lsq <- res$results_summary$least_squares
@@ -224,7 +225,7 @@ model_selection_BGH_leastsquares <- function(res, ntaxa, C.BGH, ...){
   return(res)
 }
 
-model_selection_BGH_ml <- function(res, ntaxa, C.BGH, ...){
+model_selection_BGH_ml <- function(res, ntaxa, C.LINselect, ...){
   # res <- add_lsq(res)
   # res <- merge_min_grid_alpha(res)
   res <- res$alpha_max
@@ -233,7 +234,7 @@ model_selection_BGH_ml <- function(res, ntaxa, C.BGH, ...){
   pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
                                                res$results_summary$complexity,
                                                ntaxa,
-                                               C.BGH)
+                                               C.LINselect)
   ## least squares
   # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
   lsq <- res$results_summary$least_squares
@@ -243,7 +244,7 @@ model_selection_BGH_ml <- function(res, ntaxa, C.BGH, ...){
   return(res)
 }
 
-model_selection_BGH_mlraw <- function(res, ntaxa, C.BGH, ...){
+model_selection_BGH_mlraw <- function(res, ntaxa, C.LINselect, ...){
   # res <- add_lsq(res)
   # res <- merge_min_grid_alpha(res)
   res <- res$alpha_max
@@ -252,7 +253,7 @@ model_selection_BGH_mlraw <- function(res, ntaxa, C.BGH, ...){
   pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
                                                res$results_summary$complexity,
                                                ntaxa,
-                                               C.BGH)
+                                               C.LINselect)
   ## least squares
   # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
   lsq <- res$results_summary$least_squares_raw
@@ -262,7 +263,7 @@ model_selection_BGH_mlraw <- function(res, ntaxa, C.BGH, ...){
   return(res)
 }
 
-model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.BGH, ...){
+model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.LINselect, ...){
   # res <- add_lsq(res)
   # res <- merge_min_grid_alpha(res)
   res <- res$alpha_min_raw
@@ -271,7 +272,7 @@ model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.BGH, ...){
   pen <- penalty_BaraudGiraudHuet_leastsquares(res$results_summary$K_try,
                                                res$results_summary$complexity,
                                                ntaxa,
-                                               C.BGH)
+                                               C.LINselect)
   ## least squares
   # lsq <- sapply(res$params_estim, function(z) sum(diag(z$variance)))
   lsq <- res$results_summary$least_squares_raw
@@ -542,12 +543,13 @@ model_selection <- function(x, ...) UseMethod("model_selection")
 ##
 model_selection.PhyloEM <- function(x,
                                     method.selection = c("LINselect", "DDSE", "Djump"),
-                                    C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                                    C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
                                     independent = FALSE, ...){
   mod_sel_unit <- function(one.method.selection){
     mod_sel  <- switch(one.method.selection, 
                        BirgeMassart1 = model_selection_BM1,
                        BirgeMassart2 = model_selection_BM2,
+                       BGHuni = model_selection_BGH,
                        BGHlsq = model_selection_BGH_leastsquares,
                        BGHml = model_selection_BGH_ml,
                        BGHmlraw = model_selection_BGH_mlraw,
@@ -555,7 +557,7 @@ model_selection.PhyloEM <- function(x,
                        pBIC = model_selection_pBIC,
                        pBIC_l1ou = model_selection_pBIC_l1ou)
     selection <- try(mod_sel(x, ntaxa = ncol(x$Y_data),
-                             C.BM1 = C.BM1, C.BM2 = C.BM2, C.BGH = C.BGH,
+                             C.BM1 = C.BM1, C.BM2 = C.BM2, C.LINselect = C.LINselect,
                              tree = x$phylo, independent = independent,
                              T_tree = x$T_tree, times_shared = x$times_shared, 
                              distances_phylo = x$distances_phylo,
@@ -574,14 +576,26 @@ model_selection.PhyloEM <- function(x,
   method.selection  <- match.arg(method.selection,
                                  choices = c("LINselect", "DDSE", "Djump",
                                              "BirgeMassart1", "BirgeMassart2",
-                                             "BGH", "BGHlsq", "BGHml",
+                                             "BGH", "BGHuni", "BGHlsq", "BGHml",
                                              "BGHlsqraw", "BGHmlraw",
                                              "pBIC", "pBIC_l1ou"),
                                  several.ok = TRUE)
   method.selection <- expand_method_selection(method.selection)
-  if (x$p > 1 && "BGH" %in% method.selection){
-    method.selection <- method.selection[-which(method.selection == "BGH")]
+  if (x$p > 1){
+    method.selection <- method.selection[method.selection != "BGH"]
+    method.selection <- method.selection[method.selection != "BGHuni"]
+    # warning("BGH is not implemented for multivariate data.")
   }
+  if (x$p == 1){
+    if ("BGH" %in% method.selection){
+      method.selection[method.selection == "BGH"] <- "BGHuni"
+    }
+    method.selection <- method.selection[method.selection != "BGHlsq"]
+    method.selection <- method.selection[method.selection != "BGHml"]
+    method.selection <- method.selection[method.selection != "BGHlsqraw"]
+    method.selection <- method.selection[method.selection != "BGHmlraw"]
+  }
+  if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevent warnings).")
   for (meth.sel in method.selection){
     x <- mod_sel_unit(meth.sel)
   }

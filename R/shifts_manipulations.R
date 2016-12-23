@@ -351,7 +351,7 @@ incidence_matrix_actualization_factors <- function(tree,
                                                    selection.strength, 
                                                    relativeTimes_tree = 0,
                                                    times_shared = compute_times_ca(tree)){
-  if (selection.strength == 0) return(1)
+  if (sum(abs(selection.strength)) == 0) return(1)
   ntaxa <- length(tree$tip.label)
   nedges <- dim(tree$edge)[1]
   # Vector of exp(-alpha*t_i) at tips

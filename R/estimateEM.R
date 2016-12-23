@@ -314,9 +314,9 @@ estimateEM <- function(phylo,
   has_converged  <- switch(convergence_mode[1], 
                            relative = has_converged_relative,
                            absolute = has_converged_absolute)
-  is.finite.params  <- switch(process, 
-                              BM = is.finite.params.BM,
-                              OU = is.finite.params.OU(stationary.root, shifts_at_nodes, alpha_known))
+  # is.finite.params  <- switch(process, 
+  #                             BM = is.finite.params.BM,
+  #                             OU = is.finite.params.OU(stationary.root, shifts_at_nodes, alpha_known))
   is.in.ranges.params  <- switch(process, 
                                  BM = is.in.ranges.params.BM,
                                  OU = is.in.ranges.params.OU(stationary.root, shifts_at_nodes, alpha_known))
@@ -333,9 +333,9 @@ estimateEM <- function(phylo,
     method.init.alpha <- "default"
     warning("The estimation initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
   }
-  init.alpha<- switch(process, 
-                      BM = init.alpha.BM,
-                      OU = init.alpha.OU)
+  # init.alpha <- switch(process, 
+  #                      BM = init.alpha.BM,
+  #                      OU = init.alpha.OU)
   init.alpha.gamma<- switch(process, 
                             BM = init.alpha.gamma.BM,
                             OU = init.alpha.gamma.OU)
@@ -429,7 +429,7 @@ estimateEM <- function(phylo,
   known.selection.strength <-  known.selection.strength / factor_rescale
   init.selection.strength <- init.selection.strength / factor_rescale
   variance.init <- variance.init / factor_rescale
-  
+
   ########## Initialization of alpha and Variance #############################
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
@@ -473,7 +473,7 @@ estimateEM <- function(phylo,
     }
   }
   if (process == "BM"){
-    init.selection.strength <- 0
+    init.selection.strength <- rep(0, p)
   }
   
   ## Init of Rate matrix for BM
@@ -646,7 +646,7 @@ estimateEM <- function(phylo,
                         params_old = params_old)
     # If independent, go back to merged parameters.
     if (independent){
-      params <- merge_params_independent(params)
+      if (p > 1) params <- merge_params_independent(params)
       params_old <- params_history[[paste(Nbr_It - 1, sep="")]]
     }
     attr(params, "ntaxa")  <- ntaxa
@@ -743,12 +743,19 @@ estimateEM <- function(phylo,
     conditional_law_X$expectations <- do.call(rbind, condlaw[, "expectations"])
     conditional_law_X$optimal.values <- do.call(rbind, condlaw[, "optimal.values"])
     conditional_law_X$variances <- do.call(rbind, condlaw[, "variances"])
-    conditional_law_X$variances <- plyr::aaply(conditional_law_X$variances, 2,
-                                               diag)
-    conditional_law_X$variances <- aperm(conditional_law_X$variances, c(2, 3, 1))
     conditional_law_X$covariances <- do.call(rbind, condlaw[, "covariances"])
-    conditional_law_X$covariances <- plyr::aaply(conditional_law_X$covariances, 2, diag)
-    conditional_law_X$covariances <- aperm(conditional_law_X$covariances, c(2, 3, 1))
+    if (p > 1){
+      conditional_law_X$variances <- plyr::aaply(conditional_law_X$variances, 2,
+                                                 diag)
+      conditional_law_X$variances <- aperm(conditional_law_X$variances, c(2, 3, 1))
+      conditional_law_X$covariances <- plyr::aaply(conditional_law_X$covariances, 2, diag)
+      conditional_law_X$covariances <- aperm(conditional_law_X$covariances, c(2, 3, 1))
+    } else {
+      conditional_law_X$variances <- array(conditional_law_X$variances,
+                                           c(1, 1, ncol(conditional_law_X$variances)))
+      conditional_law_X$covariances <- array(conditional_law_X$covariances,
+                                             c(1, 1, ncol(conditional_law_X$covariances)))
+    }
     rm(condlaw)
     ## Mean at tips with estimated parameters
     # m_Y_estim <- extract_simulate_internal(tmpsim, where="tips", what="expectations")
@@ -800,10 +807,10 @@ estimateEM <- function(phylo,
   conditional_law_X$expectations <- matrix(conditional_law_X$expectations, nrow = p)
   result <- list(params = params_scOU, # Return untransformed parameters as default
                  params_raw = params,
-                 ReconstructedNodesStates = conditional_law_X$expectations[ , (ntaxa+1):ncol(conditional_law_X$expectations)],
-                 ReconstructedTipsStates = conditional_law_X$expectations[ , 1:ntaxa],
-                 ReconstructedNodesVariances = conditional_law_X$variances[ , , (ntaxa+1):ncol(conditional_law_X$expectations)],
-                 ReconstructedTipsVariances = conditional_law_X$variances[ , , 1:ntaxa],
+                 ReconstructedNodesStates = conditional_law_X$expectations[ , (ntaxa+1):ncol(conditional_law_X$expectations), drop = FALSE],
+                 ReconstructedTipsStates = conditional_law_X$expectations[ , 1:ntaxa, drop = FALSE],
+                 ReconstructedNodesVariances = conditional_law_X$variances[ , , (ntaxa+1):ncol(conditional_law_X$expectations), drop = FALSE],
+                 ReconstructedTipsVariances = conditional_law_X$variances[ , , 1:ntaxa, drop = FALSE],
                  m_Y_estim = m_Y_estim,
                  params_old = params_old, 
                  params_init = params_init,
@@ -881,7 +888,7 @@ estimateEM <- function(phylo,
 #' Need to be positive. Default to 0.1.
 #' @param C.BM2 Multiplying constant to be used for the BigeMassart2 method.
 #' Default to 2.5.
-#' @param C.BGH Multiplying constant to be used for the LINselect method. Need to be
+#' @param C.LINselect Multiplying constant to be used for the LINselect method. Need to be
 #' greater than 1. Default to 1.1.
 #' @param method.variance Algorithm to be used for the moments computations at the
 #' E step. One of "simple" for the naive method; of "upward_downward" for the 
@@ -982,7 +989,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     use_previous = FALSE,
                     order = TRUE,
                     method.selection = c("LINselect", "DDSE", "Djump"),
-                    C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                    C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
                     method.variance = c("upward_downward", "simple"),
                     method.init = "lasso",
                     method.init.alpha = "estimation",
@@ -1020,22 +1027,43 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     phylo_original_order <- phylo
     phylo <- reorder(phylo, "postorder") 
   }
-  ## Check that the vector of data is in the correct order and dimensions ################
+  ## Check that the vector of data is in the correct order and dimensions #####
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
+  ## Independent traits #######################################################
+  if (independent && missing(alpha_grid)) alpha_grid <- FALSE
+  ## Adaptations to the BM ####################################################
+  if (process == "BM"){
+    if (independent){
+      warning("The independent option is not available for the BM. The traits are supposed to be correlated.")
+      independent <- FALSE
+    }
+    alpha_grid <- TRUE
+    alpha <- 0
+  }
   ## Model Selection
   method.selection  <- match.arg(method.selection,
                                  choices = c("LINselect", "DDSE", "Djump",
                                              "BirgeMassart1", "BirgeMassart2",
-                                             "BGH", "BGHlsq", "BGHml",
+                                             "BGH", "BGHuni", "BGHlsq", "BGHml",
                                              "BGHlsqraw", "BGHmlraw",
                                              "pBIC", "pBIC_l1ou"),
                                  several.ok = TRUE)
   method.selection <- expand_method_selection(method.selection)
-  if (p > 1 && "BGH" %in% method.selection){
-    method.selection <- method.selection[-which(method.selection == "BGH")]
+  if (p > 1){
+    method.selection <- method.selection[method.selection != "BGH"]
+    method.selection <- method.selection[method.selection != "BGHuni"]
     # warning("BGH is not implemented for multivariate data.")
+  }
+  if (p == 1){
+    if ("BGH" %in% method.selection){
+      method.selection[method.selection == "BGH"] <- "BGHuni"
+    }
+    method.selection <- method.selection[method.selection != "BGHlsq"]
+    method.selection <- method.selection[method.selection != "BGHml"]
+    method.selection <- method.selection[method.selection != "BGHlsqraw"]
+    method.selection <- method.selection[method.selection != "BGHmlraw"]
   }
   if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2"){
     if (K_max < 10){
@@ -1044,6 +1072,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
       method.selection <- method.selection[method.selection != "BirgeMassart2"]
     }
     # library(capushe) 
+  }
+  if (!alpha_grid){
+    method.selection <- method.selection[method.selection != "BGHlsq"]
+    method.selection <- method.selection[method.selection != "BGHlsqraw"]
   }
   if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevent warnings). Please fix before carying on.")
   
@@ -1062,7 +1094,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             method.selection = method.selection, 
                             C.BM1 = C.BM1, 
                             C.BM2 = C.BM2, 
-                            C.BGH = C.BGH, 
+                            C.LINselect = C.LINselect, 
                             method.variance = method.variance, 
                             method.init = method.init, 
                             method.init.alpha = "default", 
@@ -1086,7 +1118,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             light_result = light_result,
                             ...)
   } else { # For an in-loop estimation of alpha (independent = TRUE)
-    if (!independent){
+    if ((p > 1) && !independent){
       stop("Estimation of alpha outside of a grid is only implemented for independent traits. Please consider either use a grid for alpha values (parameter alpha_grid = TRUE), or independent traits (parameter independent = TRUE). See documentation.")
     }
     X <- PhyloEM_alpha_estim(phylo = phylo,
@@ -1099,7 +1131,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              method.selection = method.selection, 
                              C.BM1 = C.BM1, 
                              C.BM2 = C.BM2, 
-                             C.BGH = C.BGH, 
+                             C.LINselect = C.LINselect, 
                              method.variance = method.variance, 
                              method.init = method.init, 
                              method.init.alpha = method.init.alpha, 
@@ -1143,6 +1175,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     mod_sel  <- switch(one.method.selection, 
                        BirgeMassart1 = model_selection_BM1,
                        BirgeMassart2 = model_selection_BM2,
+                       BGHuni = model_selection_BGH,
                        BGHlsq = model_selection_BGH_leastsquares,
                        BGHml = model_selection_BGH_ml,
                        BGHmlraw = model_selection_BGH_mlraw,
@@ -1150,7 +1183,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                        pBIC = model_selection_pBIC,
                        pBIC_l1ou = model_selection_pBIC_l1ou)
     selection <- try(mod_sel(X, ntaxa = ncol(Y_data),
-                             C.BM1 = C.BM1, C.BM2 = C.BM2, C.BGH = C.BGH,
+                             C.BM1 = C.BM1, C.BM2 = C.BM2, C.LINselect = C.LINselect,
                              tree = phylo_given, independent = independent,
                              T_tree = X$T_tree, times_shared = X$times_shared, 
                              distances_phylo = X$distances_phylo,
@@ -1189,8 +1222,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #'
 #' @param x an object of class \code{\link{PhyloEM}}
 #' @param method.selection (optional) the method selection to be used.
-#' One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and "DDSE" for
-#' multivariate.
+#' One of "LINselect", "DDSE", "Djump". Default to "LINselect".
 #' @param K (optional) an integer giving the number of shifts for which to retrieve
 #' the parameters. Default to NULL (automatically selected number of shifts, see
 #' \code{method.selection} argument).
@@ -1249,7 +1281,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
   ## Take the selected parameters (default)
     if (is.null(method.selection)){
       if (x$p == 1){
-        method.selection <- "BGH"
+        method.selection <- "BGHuni"
       } else {
         for (method in c("BGHml", "BGHlsq", "DDSE_BM1", "Djump_BM1",
                          "BGHmlraw", "pBIC")){
@@ -1269,8 +1301,12 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       }
     } else {
       method.selection <- match.arg(method.selection,
-                                    choices = c("BGH", "DDSE", "Djump", "pBIC",
-                                                "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw")) 
+                                    choices = c("LINselect", "DDSE", "Djump", "pBIC",
+                                                "BGHlsq", "BGHml",
+                                                "BGHlsqraw", "BGHmlraw",
+                                                "BGH", "BGHuni")) 
+      if (method.selection == "BGH") method.selection <- "BGHuni"
+      if (method.selection == "LINselect") method.selection <- "BGHml"
     }
     if (method.selection %in% c("DDSE", "DDSE_BM1")){
       res <- extract_params(x, "DDSE_BM1", "alpha_max")
@@ -1281,8 +1317,8 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
     if (method.selection == "pBIC"){
       res <- extract_params(x, "pBIC", "alpha_max")
     } 
-    if (method.selection == "BGH"){
-      res <- extract_params(x, "BGH", "alpha_max")
+    if (method.selection == "BGHuni"){
+      res <- extract_params(x, "BGHuni", "alpha_max")
     } 
     if (method.selection == "BGHml"){
       res <- extract_params(x, "BGHml", "alpha_max")
@@ -1364,8 +1400,7 @@ extract_params <- function(x, method, alpha_str){
 #' @param what the quantity to retrieve. Either the imputed traits (default), their
 #' conditional variances, or the simple expectations under the selected process.
 #' @param method.selection (optional) the method selection to be used.
-#' One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and DDSE for
-#' multivariate.
+#' One of "LINselect", "DDSE", "Djump". Default to "LINselect".
 #' @param reconstructed_states if the reconstructed states have already been
 #' computed (by a previous call of the function, with \code{save_all=TRUE}),
 #' they can be passed on here (avoids multiple computaions of the E step).
@@ -1515,10 +1550,10 @@ compute_ancestral_traits <- function(x,
       warning(paste0("For K = ", length(params$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
       # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
     }
-    res$Zhat <- temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations)]
-    res$Yhat <- temp$conditional_law_X$expectations[ , 1:ntaxa]
-    res$Zvar <- temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations)]
-    res$Yvar <- temp$conditional_law_X$variances[ , , 1:ntaxa]
+    res$Zhat <- temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations), drop = FALSE]
+    res$Yhat <- temp$conditional_law_X$expectations[ , 1:ntaxa, drop = FALSE]
+    res$Zvar <- temp$conditional_law_X$variances[ , , (ntaxa+1):ncol(temp$conditional_law_X$expectations), drop = FALSE]
+    res$Yvar <- temp$conditional_law_X$variances[ , , 1:ntaxa, drop = FALSE]
   }
   
   ## Result
@@ -1599,8 +1634,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                independent = FALSE,
                                K_max, use_previous = TRUE,
                                order = TRUE,
-                               method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
-                               C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                               method.selection = c("BirgeMassart1", "BirgeMassart2", "BGHuni", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
+                               C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
                                method.variance = "simple",
                                method.init = "default",
                                method.init.alpha = "default",
@@ -1655,6 +1690,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     alpha <- 0
   } else {
     alpha <- find_grid_alpha(phylo, alpha, ...)
+    if (stationary.root) alpha <- alpha[alpha != 0]
   }
   ## Loop on alpha
   estimate_alpha_several_K <- function(alp, 
@@ -1980,8 +2016,8 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                                 independent = TRUE,
                                 K_max, use_previous = TRUE,
                                 order = TRUE,
-                                method.selection = c("BirgeMassart1", "BirgeMassart2", "BGH", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
-                                C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+                                method.selection = c("BirgeMassart1", "BirgeMassart2", "BGHuni", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
+                                C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
                                 method.variance = c("simple", "upward_downward"),
                                 method.init = "default",
                                 method.init.alpha = "default",
@@ -2182,47 +2218,49 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
   # update progress bar
   if(progress.bar) setTxtProgressBar(pb, 1); counter <- 2;
   ## Iterations
-  for (K_t in (next_it(K_first)):(K_last)){
-    XX[[paste0(K_t)]] <- estimateEM_wrapper(use_previous)(phylo = phylo,
-                                                          Y_data = Y_data,
-                                                          Y_data_imp = Y_data_imp,
-                                                          process = process,
-                                                          independent = independent,
-                                                          K_t = K_t,
-                                                          prev = XX[[paste0(prev_it(K_t))]],
-                                                          method.variance = method.variance,
-                                                          random.root = random.root,
-                                                          stationary.root = stationary.root,
-                                                          alpha_known = alpha_known,
-                                                          alpha = alp,
-                                                          method.init = method.init,
-                                                          method.init.alpha = method.init.alpha,
-                                                          methods.segmentation = methods.segmentation,
-                                                          times_shared = times_shared, 
-                                                          distances_phylo = distances_phylo,
-                                                          subtree.list = subtree.list,
-                                                          T_tree = T_tree, 
-                                                          U_tree = U_tree,
-                                                          h_tree = h_tree,
-                                                          F_moments = F_moments,
-                                                          warning_several_solutions = FALSE,
-                                                          sBM_variance = sBM_variance,
-                                                          method.OUsun = method.OUsun,
-                                                          impute_init_Rphylopars = impute_init_Rphylopars,
-                                                          K_lag_init = K_lag_init,
-                                                          ...)
-    pp <- check_dimensions(p,
-                           XX[[paste0(K_t)]]$params$root.state,
-                           XX[[paste0(K_t)]]$params$shifts,
-                           XX[[paste0(K_t)]]$params$variance,
-                           XX[[paste0(K_t)]]$params$selection.strength,
-                           XX[[paste0(K_t)]]$params$optimal.value)
-    XX[[paste0(K_t)]]$params$root.state <- pp$root.state
-    XX[[paste0(K_t)]]$params$shifts <- pp$shifts
-    XX[[paste0(K_t)]]$params$variance <- pp$variance
-    XX[[paste0(K_t)]]$params$selection.strength <- pp$selection.strength
-    XX[[paste0(K_t)]]$params$optimal.value <- pp$optimal.value
-    if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
+  if (K_first != K_last){
+    for (K_t in (next_it(K_first)):(K_last)){
+      XX[[paste0(K_t)]] <- estimateEM_wrapper(use_previous)(phylo = phylo,
+                                                            Y_data = Y_data,
+                                                            Y_data_imp = Y_data_imp,
+                                                            process = process,
+                                                            independent = independent,
+                                                            K_t = K_t,
+                                                            prev = XX[[paste0(prev_it(K_t))]],
+                                                            method.variance = method.variance,
+                                                            random.root = random.root,
+                                                            stationary.root = stationary.root,
+                                                            alpha_known = alpha_known,
+                                                            alpha = alp,
+                                                            method.init = method.init,
+                                                            method.init.alpha = method.init.alpha,
+                                                            methods.segmentation = methods.segmentation,
+                                                            times_shared = times_shared, 
+                                                            distances_phylo = distances_phylo,
+                                                            subtree.list = subtree.list,
+                                                            T_tree = T_tree, 
+                                                            U_tree = U_tree,
+                                                            h_tree = h_tree,
+                                                            F_moments = F_moments,
+                                                            warning_several_solutions = FALSE,
+                                                            sBM_variance = sBM_variance,
+                                                            method.OUsun = method.OUsun,
+                                                            impute_init_Rphylopars = impute_init_Rphylopars,
+                                                            K_lag_init = K_lag_init,
+                                                            ...)
+      pp <- check_dimensions(p,
+                             XX[[paste0(K_t)]]$params$root.state,
+                             XX[[paste0(K_t)]]$params$shifts,
+                             XX[[paste0(K_t)]]$params$variance,
+                             XX[[paste0(K_t)]]$params$selection.strength,
+                             XX[[paste0(K_t)]]$params$optimal.value)
+      XX[[paste0(K_t)]]$params$root.state <- pp$root.state
+      XX[[paste0(K_t)]]$params$shifts <- pp$shifts
+      XX[[paste0(K_t)]]$params$variance <- pp$variance
+      XX[[paste0(K_t)]]$params$selection.strength <- pp$selection.strength
+      XX[[paste0(K_t)]]$params$optimal.value <- pp$optimal.value
+      if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
+    }
   }
   ## Format results and return
   res <- format_output_several_K_single(XX, light_result)
@@ -2767,8 +2805,23 @@ format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
     res$Zvar <- dd[, "Zvar"]
     res$Yvar <- dd[, "Yvar"]
     res$m_Y_estim <- dd[, "m_Y_estim"]
+    if (length(res$params_estim) == 1){
+      nn <- paste0(length(res$params_estim[[1]]$shifts$edges))
+      names(res$Zhat) <- nn
+      names(res$Yhat) <- nn
+      names(res$Zvar) <- nn
+      names(res$Yvar) <- nn
+      names(res$m_Y_estim) <- nn
+    }
   }
   res$edge.quality <- dd[, "edge.quality"]
+  if (length(res$params_estim) == 1){
+    nn <- paste0(length(res$params_estim[[1]]$shifts$edges))
+    names(res$params_estim) <- nn
+    names(res$params_init_estim) <- nn
+    if (length(res$alpha_0) > 0) names(res$alpha_0) <- nn
+    names(res$edge.quality) <- nn
+  }
   return(res)
 }
 
@@ -2807,7 +2860,7 @@ expand_method_selection <- function(method.selection){
     method.selection <- method.selection[method.selection != "DDSE"]
   }
   if ("LINselect" %in% method.selection){
-    for (meth in c("BGH", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw")){
+    for (meth in c("BGHuni", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw")){
       method.selection <- add_method_selection(meth, method.selection)
     }
     method.selection <- method.selection[method.selection != "LINselect"]

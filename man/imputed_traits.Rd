@@ -31,8 +31,7 @@ data imputation.}
 conditional variances, or the simple expectations under the selected process.}
 
 \item{method.selection}{(optional) the method selection to be used.
-One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and DDSE for
-multivariate.}
+One of "LINselect", "DDSE", "Djump". Default to "LINselect".}
 
 \item{reconstructed_states}{if the reconstructed states have already been
 computed (by a previous call of the function, with \code{save_all=TRUE}),

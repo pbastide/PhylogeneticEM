@@ -11,8 +11,7 @@
 \item{x}{an object of class \code{\link{PhyloEM}}}
 
 \item{method.selection}{(optional) the method selection to be used.
-One of "BGH", "DDSE", "Djump". Default to "BGH" for univariate, and "DDSE" for
-multivariate.}
+One of "LINselect", "DDSE", "Djump". Default to "LINselect".}
 
 \item{K}{(optional) an integer giving the number of shifts for which to retrieve
 the parameters. Default to NULL (automatically selected number of shifts, see
