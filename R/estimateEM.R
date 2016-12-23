@@ -314,9 +314,9 @@ estimateEM <- function(phylo,
   has_converged  <- switch(convergence_mode[1], 
                            relative = has_converged_relative,
                            absolute = has_converged_absolute)
-  is.finite.params  <- switch(process, 
-                              BM = is.finite.params.BM,
-                              OU = is.finite.params.OU(stationary.root, shifts_at_nodes, alpha_known))
+  # is.finite.params  <- switch(process, 
+  #                             BM = is.finite.params.BM,
+  #                             OU = is.finite.params.OU(stationary.root, shifts_at_nodes, alpha_known))
   is.in.ranges.params  <- switch(process, 
                                  BM = is.in.ranges.params.BM,
                                  OU = is.in.ranges.params.OU(stationary.root, shifts_at_nodes, alpha_known))
@@ -333,9 +333,9 @@ estimateEM <- function(phylo,
     method.init.alpha <- "default"
     warning("The estimation initialization of alpha does only work when the root is stationary. The initialization is set to the default one.")
   }
-  init.alpha<- switch(process, 
-                      BM = init.alpha.BM,
-                      OU = init.alpha.OU)
+  # init.alpha <- switch(process, 
+  #                      BM = init.alpha.BM,
+  #                      OU = init.alpha.OU)
   init.alpha.gamma<- switch(process, 
                             BM = init.alpha.gamma.BM,
                             OU = init.alpha.gamma.OU)
@@ -429,7 +429,7 @@ estimateEM <- function(phylo,
   known.selection.strength <-  known.selection.strength / factor_rescale
   init.selection.strength <- init.selection.strength / factor_rescale
   variance.init <- variance.init / factor_rescale
-  
+
   ########## Initialization of alpha and Variance #############################
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,

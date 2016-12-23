@@ -1713,15 +1713,15 @@ compute_actualization_factors <- function(selection.strength,
 ## Robust initialisation of alpha (and gamma)
 ###############################################
 
-init.alpha.BM <- function(method.init.alpha){
-  return(function(...) return(0))
-}
-
-init.alpha.OU <- function(method.init.alpha){
-  return(switch(method.init.alpha, 
-                default = init.alpha.default,
-                estimation = init.alpha.estimation))
-}
+# init.alpha.BM <- function(method.init.alpha){
+#   return(function(...) return(0))
+# }
+# 
+# init.alpha.OU <- function(method.init.alpha){
+#   return(switch(method.init.alpha, 
+#                 default = init.alpha.default,
+#                 estimation = init.alpha.estimation))
+# }
 
 init.alpha.gamma.BM <- function(method.init.alpha){
   fun <- function(random.root, init.var.root, ...){
@@ -1750,6 +1750,116 @@ init.alpha.default <- function(init.selection.strength, known.selection.strength
   }
 }
 
+
+# init.alpha.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, ...){
+#   ## Initialize a vector with the group of each tip
+#   tips_groups <- rep(0, length(phylo$tip.label))
+#   names(tips_groups) <- phylo$tip.label
+#   ## Initialize shifts by a lasso without sigma
+#   if (nbr_of_shifts > 0) {
+#     lasso <- init.EM.lasso(phylo=phylo, Y_data=Y_data, process="OU", nbr_of_shifts=nbr_of_shifts, use_sigma=FALSE)
+#     ## Roeorder phylo and trace edges
+#     phy <- reorder(phylo, order = "cladewise")
+#     edges_shifts <- correspondanceEdges(edges=lasso$shifts$edges,from=phylo,to=phy)
+#     ## Set groups of tips (one group = all the tips under a given shift)
+#     Tr <- incidence.matrix(phy)
+#     for (ed in order(edges_shifts)) { # Do it in order so that edges with higher numbers erase groups (edges closer from the tips)
+#       ed_sh <- edges_shifts[ed]
+#       tips_groups[phy$tip.label[Tr[,ed_sh]]] <- ed
+#     }
+#   } else {
+#     edges_shifts <- NULL
+#   }
+#   ## For each group, take all the triplets of tips to estimate the covariance sigma_ij
+#   cor_hat <- NULL # estimations from trilpets of pairs corelations
+#   square_diff <- NULL # (Y_i-Y_j)^2
+#   dists <- NULL # corresponding phylogenetic distances between pairs
+#   hat_gam <- rep(0, length(edges_shifts)+1)
+#   for (grp in 0:length(edges_shifts)) {
+#     tips <- which(tips_groups==grp)
+#     hat_gam[grp+1] <- var(Y_data[tips])
+#     #     if (length(tips) > 2){
+#     # #       ## Genrate all combinations
+#     # #       Combinations <- combn(x=tips, m=3)
+#     # #       Ncomb <- ncol(Combinations)
+#     # #       ## If too many of them, sample from them
+#     # #       if (Ncomb > max_triplet_number) {
+#     # #         Combinations <- Combinations[,sample(Ncomb, max_triplet_number)]
+#     # #       }
+#     #       Ncomb <- choose(length(tips), 3)
+#     #       ## If too many of them, sample from them (with replacement)
+#     #       if (Ncomb > max_triplet_number) {
+#     #         Combinations <- replicate(max_triplet_number, sample(tips, 3))
+#     #       } else {
+#     #         Combinations <- combn(x=tips, m=3)
+#     #       }
+#     #       temp_cor <- apply(X=Combinations, MARGIN=2, FUN=estimate_covariance_from_triplet, Y_data=Y_data, distances_phylo=distances_phylo)
+#     #       temp_dist <- apply(X=Combinations, MARGIN=2, FUN=compute_dist_triplet, distances_phylo=distances_phylo)
+#     #       temp_cor <- as.vector(temp_cor); temp_dist <- as.vector(temp_dist)
+#     #       cor_hat <- c(cor_hat, temp_cor)
+#     #       dists <- c(dists, temp_dist)
+#     #     }
+#     #   }
+#     if (length(tips) > 1){
+#       Z <- outer(Y_data[tips], Y_data[tips], function(x,y){x-y} )
+#       square_diff <- c(square_diff, (Z[upper.tri(Z)])^2)
+#       Z <- distances_phylo[tips,tips]
+#       dists <- c(dists, Z[upper.tri(Z)])
+#     }
+#   }
+#   #     ## Empirical mean of estimators for corelations estimated several times
+#   #     un_dists <- unique(dists)
+#   #     un_cor_hat <- rep(NA, length(un_dists))
+#   #   }
+#   #   for (dd in 1:length(un_dists)){
+#   #     un_cor_hat[dd] <- mean(cor_hat[dists==un_dists[dd]])
+#   #   }
+#   #   pos_cor_hat <- cor_hat[cor_hat>=0]
+#   #   dists_pos <- dists[cor_hat>=0]
+#   ## Fit sigma_ij against gamma*exp(-alpha*d_ij)
+#   #  fit <- nls(pos_cor_hat ~ gam*exp(-alpha*dists_pos), start=list(gam=mean(hat_gam), alpha=1))
+#   #  fit <- nls(square_diff ~ gam*(1-exp(-alpha*dists)), start=list(gam=mean(hat_gam), alpha=1))
+#   df <- data.frame(square_diff=square_diff, dists=dists)
+#   fit.rob <- try(robustbase::nlrob(square_diff ~ gam*(1-exp(-alpha*dists)),
+#                                    data = df,
+#                                    start = list(gam = mean(hat_gam, na.rm=TRUE),
+#                                                 alpha = 1)))
+#   if (inherits(fit.rob, "try-error")) {
+#     warning("Robust estimation of alpha failed")
+#     return(init.alpha.default(...))
+#   } else { 
+#     return(unname(coef(fit.rob)["alpha"]))
+#   }
+# }
+
+# compute_dist_triplet <- function(distances_phylo,v) {
+#   phylo_dist <- c(distances_phylo[v[1],v[2]], distances_phylo[v[2],v[3]], distances_phylo[v[1],v[3]])
+#   return(phylo_dist)
+# }
+
+# estimate_covariance_from_triplet <- function(Y_data, distances_phylo, v){
+#   Y_i <- Y_data[v[1]]; Y_j <- Y_data[v[2]]; Y_k <- Y_data[v[3]];
+#   hat_gamma <- var(Y_data[v])
+#   cor <- hat_gamma - (1/9) * ((Y_i + Y_j + Y_k)^2 + (Y_i - Y_j)^2 + (Y_j - Y_k)^2 + (Y_i - Y_k)^2)
+#   hat_sigmas <- c(Y_i*Y_j, Y_j*Y_k, Y_i*Y_k) + cor
+#   return(hat_sigmas)
+# }
+
+
+init.alpha.gamma.default <- function(init.selection.strength, known.selection.strength,
+                                     alpha_known, init.var.root, ...){
+  if (!is.vector(init.var.root)){
+    gamma_0 <- diag(init.var.root) 
+  } else {
+    gamma_0 <- init.var.root
+  }
+  gamma_0 <- matrix(gamma_0, 1, length(gamma_0))
+  return(list(alpha_0 = init.alpha.default(init.selection.strength,
+                                           known.selection.strength,
+                                           alpha_known),
+              gamma_0 = gamma_0))
+}
+
 ##
 #' @title Initialisation the selection strength alpha using robust estimation
 #'
@@ -1776,114 +1886,6 @@ init.alpha.default <- function(init.selection.strength, known.selection.strength
 #'
 #10/07/14 - Initial release
 ##
-
-init.alpha.estimation <- function(phylo, Y_data, nbr_of_shifts, distances_phylo, max_triplet_number, ...){
-  ## Initialize a vector with the group of each tip
-  tips_groups <- rep(0, length(phylo$tip.label))
-  names(tips_groups) <- phylo$tip.label
-  ## Initialize shifts by a lasso without sigma
-  if (nbr_of_shifts > 0) {
-    lasso <- init.EM.lasso(phylo=phylo, Y_data=Y_data, process="OU", nbr_of_shifts=nbr_of_shifts, use_sigma=FALSE)
-    ## Roeorder phylo and trace edges
-    phy <- reorder(phylo, order = "cladewise")
-    edges_shifts <- correspondanceEdges(edges=lasso$shifts$edges,from=phylo,to=phy)
-    ## Set groups of tips (one group = all the tips under a given shift)
-    Tr <- incidence.matrix(phy)
-    for (ed in order(edges_shifts)) { # Do it in order so that edges with higher numbers erase groups (edges closer from the tips)
-      ed_sh <- edges_shifts[ed]
-      tips_groups[phy$tip.label[Tr[,ed_sh]]] <- ed
-    }
-  } else {
-    edges_shifts <- NULL
-  }
-  ## For each group, take all the triplets of tips to estimate the covariance sigma_ij
-  cor_hat <- NULL # estimations from trilpets of pairs corelations
-  square_diff <- NULL # (Y_i-Y_j)^2
-  dists <- NULL # corresponding phylogenetic distances between pairs
-  hat_gam <- rep(0, length(edges_shifts)+1)
-  for (grp in 0:length(edges_shifts)) {
-    tips <- which(tips_groups==grp)
-    hat_gam[grp+1] <- var(Y_data[tips])
-    #     if (length(tips) > 2){
-    # #       ## Genrate all combinations
-    # #       Combinations <- combn(x=tips, m=3)
-    # #       Ncomb <- ncol(Combinations)
-    # #       ## If too many of them, sample from them
-    # #       if (Ncomb > max_triplet_number) {
-    # #         Combinations <- Combinations[,sample(Ncomb, max_triplet_number)]
-    # #       }
-    #       Ncomb <- choose(length(tips), 3)
-    #       ## If too many of them, sample from them (with replacement)
-    #       if (Ncomb > max_triplet_number) {
-    #         Combinations <- replicate(max_triplet_number, sample(tips, 3))
-    #       } else {
-    #         Combinations <- combn(x=tips, m=3)
-    #       }
-    #       temp_cor <- apply(X=Combinations, MARGIN=2, FUN=estimate_covariance_from_triplet, Y_data=Y_data, distances_phylo=distances_phylo)
-    #       temp_dist <- apply(X=Combinations, MARGIN=2, FUN=compute_dist_triplet, distances_phylo=distances_phylo)
-    #       temp_cor <- as.vector(temp_cor); temp_dist <- as.vector(temp_dist)
-    #       cor_hat <- c(cor_hat, temp_cor)
-    #       dists <- c(dists, temp_dist)
-    #     }
-    #   }
-    if (length(tips) > 1){
-      Z <- outer(Y_data[tips], Y_data[tips], function(x,y){x-y} )
-      square_diff <- c(square_diff, (Z[upper.tri(Z)])^2)
-      Z <- distances_phylo[tips,tips]
-      dists <- c(dists, Z[upper.tri(Z)])
-    }
-  }
-  #     ## Empirical mean of estimators for corelations estimated several times
-  #     un_dists <- unique(dists)
-  #     un_cor_hat <- rep(NA, length(un_dists))
-  #   }
-  #   for (dd in 1:length(un_dists)){
-  #     un_cor_hat[dd] <- mean(cor_hat[dists==un_dists[dd]])
-  #   }
-  #   pos_cor_hat <- cor_hat[cor_hat>=0]
-  #   dists_pos <- dists[cor_hat>=0]
-  ## Fit sigma_ij against gamma*exp(-alpha*d_ij)
-  #  fit <- nls(pos_cor_hat ~ gam*exp(-alpha*dists_pos), start=list(gam=mean(hat_gam), alpha=1))
-  #  fit <- nls(square_diff ~ gam*(1-exp(-alpha*dists)), start=list(gam=mean(hat_gam), alpha=1))
-  df <- data.frame(square_diff=square_diff, dists=dists)
-  fit.rob <- try(robustbase::nlrob(square_diff ~ gam*(1-exp(-alpha*dists)),
-                                   data = df,
-                                   start = list(gam = mean(hat_gam, na.rm=TRUE),
-                                                alpha = 1)))
-  if (inherits(fit.rob, "try-error")) {
-    warning("Robust estimation of alpha failed")
-    return(init.alpha.default(...))
-  } else { 
-    return(unname(coef(fit.rob)["alpha"]))
-  }
-}
-
-compute_dist_triplet <- function(distances_phylo,v) {
-  phylo_dist <- c(distances_phylo[v[1],v[2]], distances_phylo[v[2],v[3]], distances_phylo[v[1],v[3]])
-  return(phylo_dist)
-}
-
-estimate_covariance_from_triplet <- function(Y_data, distances_phylo, v){
-  Y_i <- Y_data[v[1]]; Y_j <- Y_data[v[2]]; Y_k <- Y_data[v[3]];
-  hat_gamma <- var(Y_data[v])
-  cor <- hat_gamma - (1/9) * ((Y_i + Y_j + Y_k)^2 + (Y_i - Y_j)^2 + (Y_j - Y_k)^2 + (Y_i - Y_k)^2)
-  hat_sigmas <- c(Y_i*Y_j, Y_j*Y_k, Y_i*Y_k) + cor
-  return(hat_sigmas)
-}
-
-init.alpha.gamma.default <- function(init.selection.strength, known.selection.strength, alpha_known, init.var.root, ...){
-  if (!is.vector(init.var.root)){
-    gamma_0 <- diag(init.var.root) 
-  } else {
-    gamma_0 <- init.var.root
-  }
-  gamma_0 <- matrix(gamma_0, 1, length(gamma_0))
-  return(list(alpha_0 = init.alpha.default(init.selection.strength,
-                                           known.selection.strength,
-                                           alpha_known),
-              gamma_0 = gamma_0))
-}
-
 init.alpha.gamma.estimation <- function(phylo, 
                                         Y_data, 
                                         nbr_of_shifts, 

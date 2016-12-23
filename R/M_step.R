@@ -694,113 +694,113 @@ conditional_expectation_log_likelihood.OU <- function(stationary.root, shifts_at
   }
 }
 
-##
-#' @title Expectation conditional to the tips of the completed log-likelihood.
-#' This is an old version.
-#'
-#' @description
-#' \code{conditional_expectation_log_likelihood.OU} computes the expectation
-#'  conditional to the tips of the completed log-likelihood, given the 
-#'  first and second order moments of the nodes, and the parameters of the 
-#'  OU process.
-#'
-#' @details
-#' This function uses functions \code{compute_var_diff.OU} 
-#' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationary, and shifts at nodes.
-#'
-#' @param phylo Input tree.
-#' @param conditional_law_X result of function \code{compute_E.OU}, containing
-#' first and second moments.
-#' @param sigma2 variance of the OU.
-#' @param mu mean of the root.
-#' @param alpha selection strength of the OU.
-#' 
-#' @return double : value of the function
-#' 
-#' @keywords internal
-#'
-#09/07/14 - Initial release
-##
-conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law_X, sigma2, mu, alpha){
-  ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
-  ## Constante
-  cst <- -1/2 * ((nNodes + ntaxa) * log(2*pi))
-  LogLik <- cst
-  ## Terms in log
-  ee <- exp(- alpha * phylo$edge.length )
-  LogLik <- LogLik - (nNodes + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
-  ## Terms with the variance
-  K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
-  var_diff <- compute_var_diff.OU(phylo=phylo, 
-                                  conditional_law_X=conditional_law_X, 
-                                  selection.strength=alpha)
-  LogLik <- LogLik - (alpha / sigma2) * (K_1 + sum((1 - ee^2)^(-1) * var_diff))
-  ## Terms with the expectation
-  diff_exp <- compute_diff_exp.OU(phylo=phylo, 
-                                  conditional_law_X=conditional_law_X, 
-                                  selection.strength=alpha)
-  daughters <- phylo$edge[,2]
-  betas <- conditional_law_X$optimal.values[daughters]
-  LogLik <- LogLik - (alpha / sigma2) * sum((1 - ee^2)^(-1) * (diff_exp - betas * (1-ee))^2)
-  return(LogLik)
-}
+# #' ##@title Expectation conditional to the tips of the completed log-likelihood.
+# #' This is an old version.
+# #' 
+# #' @description
+# #' \code{conditional_expectation_log_likelihood.OU} computes the expectation
+# #'  conditional to the tips of the completed log-likelihood, given the
+# #'  first and second order moments of the nodes, and the parameters of the
+# #'  OU process.
+# #' 
+# #' @details
+# #' This function uses functions \code{compute_var_diff.OU}
+# #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+# #' root is stationary, and shifts at nodes.
+# #' 
+# #' @param phylo Input tree.
+# #' @param conditional_law_X result of function \code{compute_E.OU}, containing
+# #' first and second moments.
+# #' @param sigma2 variance of the OU.
+# #' @param mu mean of the root.
+# #' @param alpha selection strength of the OU.
+# #' 
+# #' @return double : value of the function
+# #' 
+# #' @keywords internal
+# #' 
+# #' #09/07/14 - Initial releas
+# ##
+# conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law_X, sigma2, mu, alpha){
+#   ntaxa <- length(phylo$tip.label)
+#   nNodes <- phylo$Nnode
+#   ## Constante
+#   cst <- -1/2 * ((nNodes + ntaxa) * log(2*pi))
+#   LogLik <- cst
+#   ## Terms in log
+#   ee <- exp(- alpha * phylo$edge.length )
+#   LogLik <- LogLik - (nNodes + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
+#   ## Terms with the variance
+#   K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
+#   var_diff <- compute_var_diff.OU(phylo=phylo,
+#                                   conditional_law_X=conditional_law_X,
+#                                   selection.strength=alpha)
+#   LogLik <- LogLik - (alpha / sigma2) * (K_1 + sum((1 - ee^2)^(-1) * var_diff))
+#   ## Terms with the expectation
+#   diff_exp <- compute_diff_exp.OU(phylo=phylo,
+#                                   conditional_law_X=conditional_law_X,
+#                                   selection.strength=alpha)
+#   daughters <- phylo$edge[,2]
+#   betas <- conditional_law_X$optimal.values[daughters]
+#   LogLik <- LogLik - (alpha / sigma2) * sum((1 - ee^2)^(-1) * (diff_exp - betas * (1-ee))^2)
+#   return(LogLik)
+# }
 
+###
+## @title Expectation conditional to the tips of the completed log-likelihood.
 ##
-#' @title Expectation conditional to the tips of the completed log-likelihood.
-#'
-#' @description
-#' \code{conditional_expectation_log_likelihood.OU} computes the expectation
-#'  conditional to the tips of the completed log-likelihood, given the 
-#'  first and second order moments of the nodes, and the parameters of the 
-#'  OU process.
-#'
-#' @details
-#' This function uses functions \code{compute_var_diff.OU} 
-#' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
-#' root is stationary, and shifts at nodes.
-#'
-#' @param phylo Input tree.
-#' @param conditional_law_X result of function \code{compute_E.OU}, containing
-#' first and second moments.
-#' @param sigma2 variance of the OU.
-#' @param mu mean of the root.
-#' @param alpha selection strength of the OU.
-#' 
-#' @return double : value of the function
-#' 
-#' @keywords internal
-#'
-#09/07/14 - Initial release
-#02/10/14 - take new shifts in consideration
+## @description
+## \code{conditional_expectation_log_likelihood.OU} computes the expectation
+##  conditional to the tips of the completed log-likelihood, given the 
+##  first and second order moments of the nodes, and the parameters of the 
+##  OU process.
 ##
-conditional_expectation_log_likelihood.OU.stationary_root_shifts_at_nodes <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha){
-  ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
-  ## Constante
-  cst <- -1/2 * ((nNodes + ntaxa) * log(2*pi))
-  LogLik <- cst
-  ## Terms in log
-  ee <- exp(- alpha * phylo$edge.length )
-  LogLik <- LogLik - (nNodes + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
-  ## Terms with the variance
-  K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
-  var_diff <- compute_var_diff.OU(phylo=phylo, 
-                                  conditional_law_X=conditional_law_X, 
-                                  selection.strength=alpha)
-  LogLik <- LogLik - (alpha / sigma2) * (K_1 + sum((1 - ee^2)^(-1) * var_diff))
-  ## Terms with the expectation
-  diff_exp <- compute_diff_exp.OU(phylo=phylo, 
-                                  conditional_law_X=conditional_law_X, 
-                                  selection.strength=alpha)
-  parents <- phylo$edge[,1]
-  daughters <- phylo$edge[,2]
-  betas <- conditional_law_X$optimal.values[parents]
-  delta <- shifts.list_to_vector(phylo, shifts) # vector of shifts (branches)
-  LogLik <- LogLik - (alpha / sigma2) * sum((1 - ee^2)^(-1) * (diff_exp - (betas + delta) * (1-ee))^2)
-  return(LogLik)
-}
+## @details
+## This function uses functions \code{compute_var_diff.OU} 
+## and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+## root is stationary, and shifts at nodes.
+##
+## @param phylo Input tree.
+## @param conditional_law_X result of function \code{compute_E.OU}, containing
+## first and second moments.
+## @param sigma2 variance of the OU.
+## @param mu mean of the root.
+## @param alpha selection strength of the OU.
+## 
+## @return double : value of the function
+## 
+## @keywords internal
+##
+##09/07/14 - Initial release
+##02/10/14 - take new shifts in consideration
+###
+# 
+# # conditional_expectation_log_likelihood.OU.stationary_root_shifts_at_nodes <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha){
+# #   ntaxa <- length(phylo$tip.label)
+# #   nNodes <- phylo$Nnode
+# #   ## Constante
+# #   cst <- -1/2 * ((nNodes + ntaxa) * log(2*pi))
+# #   LogLik <- cst
+# #   ## Terms in log
+# #   ee <- exp(- alpha * phylo$edge.length )
+# #   LogLik <- LogLik - (nNodes + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
+# #   ## Terms with the variance
+# #   K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
+# #   var_diff <- compute_var_diff.OU(phylo=phylo, 
+# #                                   conditional_law_X=conditional_law_X, 
+# #                                   selection.strength=alpha)
+# #   LogLik <- LogLik - (alpha / sigma2) * (K_1 + sum((1 - ee^2)^(-1) * var_diff))
+# #   ## Terms with the expectation
+# #   diff_exp <- compute_diff_exp.OU(phylo=phylo, 
+# #                                   conditional_law_X=conditional_law_X, 
+# #                                   selection.strength=alpha)
+# #   parents <- phylo$edge[,1]
+# #   daughters <- phylo$edge[,2]
+# #   betas <- conditional_law_X$optimal.values[parents]
+# #   delta <- shifts.list_to_vector(phylo, shifts) # vector of shifts (branches)
+# #   LogLik <- LogLik - (alpha / sigma2) * sum((1 - ee^2)^(-1) * (diff_exp - (betas + delta) * (1-ee))^2)
+# #   return(LogLik)
+# # }
 
 conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha){
   betas <- compute_betas_from_shifts(phylo = phylo, optimal.value = mu, shifts = shifts)

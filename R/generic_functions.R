@@ -75,11 +75,7 @@ correspondenceEdges <- function(edges, from, to){
   return(newEdges)
 }
 
-correspondanceEdges <- function(edges, from, to){
-  mm <- match(from$edge[, 2], to$edge[, 2])
-  newEdges <- mm[edges]
-  return(newEdges)
-}
+correspondanceEdges <- correspondenceEdges
 
 ##
 # compute_times_ca (phy)

@@ -84,15 +84,15 @@ model_selection_capushe <- function(res, pen_shape, name){
   return(res)
 }
 
-assign_selected_model_capushe <- function(res, cap_res){
-  res$results_summary$K_select <- as.numeric(cap_res@DDSE@model)
-  if (cap_res@DDSE@model != cap_res@Djump@model){
-    res$results_summary$K_select_DDSE <- as.numeric(cap_res@DDSE@model)
-    res$results_summary$K_select_Djump <- as.numeric(cap_res@Djump@model) 
-  }
-  res$results_summary$pen_shape
-  return(res)
-}
+# assign_selected_model_capushe <- function(res, cap_res){
+#   res$results_summary$K_select <- as.numeric(cap_res@DDSE@model)
+#   if (cap_res@DDSE@model != cap_res@Djump@model){
+#     res$results_summary$K_select_DDSE <- as.numeric(cap_res@DDSE@model)
+#     res$results_summary$K_select_Djump <- as.numeric(cap_res@Djump@model) 
+#   }
+#   res$results_summary$pen_shape
+#   return(res)
+# }
 
 ##
 #' @title Penalty function type Birgé-Massart 2
