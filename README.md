@@ -12,7 +12,7 @@ Stable version to be released on the CRAN soon.
 To get the latest (and possibly unstable) version, you can use the [`devtools`](https://github.com/hadley/devtools) package:
 ```R
 install.packages("devtools")
-devtools::install_github(repo = "pbastide/PhylogeneticEM", ref = "develop", build_vignettes = TRUE)
+devtools::install_github(repo = "pbastide/PhylogeneticEM", build_vignettes = TRUE)
 ```
 
 ## Documentation
