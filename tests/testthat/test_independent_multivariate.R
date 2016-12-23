@@ -141,7 +141,7 @@ test_that("split/merge independent parameters ", {
 })
 
 test_that("compute_mean_variance.simple", {
-  # testthat::skip_on_cran()
+  testthat::skip_on_cran()
   # Dimension p - OU- stationary root
   set.seed(586)
   ntaxa <- 20
@@ -212,7 +212,7 @@ test_that("compute_mean_variance.simple", {
 })
 
 test_that("Independent OU - uni/multi", {
-  # testthat::skip_on_cran()
+  testthat::skip_on_cran()
   set.seed(586)
   ntaxa <- 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
@@ -345,7 +345,7 @@ test_that("Independent OU - uni/multi", {
 })
 
 test_that("Independent BM - uni/multi", {
-  # testthat::skip_on_cran()
+  testthat::skip_on_cran()
   set.seed(586)
   ntaxa <- 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
