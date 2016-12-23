@@ -1560,17 +1560,24 @@ init.EM.lasso <- function(phylo,
           Tr <- lapply(Tr, function(z) return(cbind(z, rep(1, dim(z)[1]))))
           Xp <- bdiag(Tr)
           # Normalize predictor
+          row_names_X <- 1:nrow(Xp)
+          Xp <- Xp[!miss, ]
           Xp <- Vp %*% Xp
           # Reorder matrices
           corrdata <- as.vector(sapply(1:ntaxa,
                                        function(z) ((0:(p-1)) * ntaxa + z)))
-          corrdata <- corrdata[!miss]
+          # corrdata <- corrdata[!miss]
+          row_names_X <- row_names_X[!miss]
+          corrdata <- as.vector(na.exclude(match(corrdata, row_names_X)))
           corrreg <- as.vector(sapply(1:((nrow(phylo$edge) + 1)),
                                       function(z) ((0:(p-1)) * (nrow(phylo$edge) + 1) + z)))
           Xp <- Xp[corrdata, corrreg]
           # Data
           Ytemp <- rep(NA, ntaxa * p)
           Ytemp[!missbis] <- as.vector(Yp)
+          corrdata <- as.vector(sapply(1:ntaxa,
+                                       function(z) ((0:(p-1)) * ntaxa + z)))
+          corrdata <- corrdata[!miss]
           Yp <- Ytemp[corrdata]
           # root
           root <- ncol(Tr[[1]])
