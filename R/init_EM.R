@@ -1568,7 +1568,7 @@ init.EM.lasso <- function(phylo,
                                        function(z) ((0:(p-1)) * ntaxa + z)))
           # corrdata <- corrdata[!miss]
           row_names_X <- row_names_X[!miss]
-          corrdata <- as.vector(na.exclude(match(corrdata, row_names_X)))
+          corrdata <- as.vector(stats::na.exclude(match(corrdata, row_names_X)))
           corrreg <- as.vector(sapply(1:((nrow(phylo$edge) + 1)),
                                       function(z) ((0:(p-1)) * (nrow(phylo$edge) + 1) + z)))
           Xp <- Xp[corrdata, corrreg]
