@@ -1,6 +1,6 @@
 PhylogeneticEM
 ===============
-[![Travis-CI Build Status](https://travis-ci.org/pbastide/PhylogeneticEM.svg?branch=master)](https://travis-ci.org/pbastide/PhylogeneticEM)
+[![Travis-CI Build Status](https://travis-ci.org/pbastide/PhylogeneticEM.svg?branch=develop)](https://travis-ci.org/pbastide/PhylogeneticEM)
 [![](https://img.shields.io/badge/docs-vignettes-blue.svg)](http://pbastide.github.io/PhylogeneticEM/)
 [![CRAN_Status_Badge](https://img.shields.io/badge/CRAN-not_published-red.svg)](https://cran.r-project.org/package=PhylogeticEM)
 
