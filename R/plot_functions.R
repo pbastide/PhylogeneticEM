@@ -194,8 +194,8 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param params (optional) sume user-specifed parameters.
 #' Must be of class \code{\link{params_process}}. If left blank, there are extracted
 #' using the \code{method.selection} argument (see below).
-#' @param method.selection select the parameters to plot. One of "BGH", "DDSE",
-#' "Djump". Default to "BGH" for univariate, and "DDSE" for multivariate. See
+#' @param method.selection select the parameters to plot. One of "LINselect", "DDSE",
+#' "Djump". Default to "LINselect". See
 #' \code{\link{params_process.PhyloEM}}.
 #' @param automatic_colors whether to color the edges automatically according to
 #' their regimes. Default to TRUE. If FALSE, colors can be mannually precised through

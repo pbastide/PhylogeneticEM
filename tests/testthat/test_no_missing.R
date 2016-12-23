@@ -1,7 +1,7 @@
 context("E step no missing data")
 
 test_that("Likelihood missing/no missing methods", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(586)
   ntaxa <- 200
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, 

@@ -8,7 +8,7 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   check_postorder = TRUE, independent = FALSE,
   K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
   use_previous = FALSE, order = TRUE, method.selection = c("LINselect",
-  "DDSE", "Djump"), C.BM1 = 0.1, C.BM2 = 2.5, C.BGH = 1.1,
+  "DDSE", "Djump"), C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
   method.variance = c("upward_downward", "simple"), method.init = "lasso",
   method.init.alpha = "estimation",
   method.init.alpha.estimation = c("regression", "regression.MM", "median"),
@@ -59,7 +59,7 @@ Need to be positive. Default to 0.1.}
 \item{C.BM2}{Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.}
 
-\item{C.BGH}{Multiplying constant to be used for the LINselect method. Need to be
+\item{C.LINselect}{Multiplying constant to be used for the LINselect method. Need to be
 greater than 1. Default to 1.1.}
 
 \item{method.variance}{Algorithm to be used for the moments computations at the

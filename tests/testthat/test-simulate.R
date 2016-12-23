@@ -244,7 +244,7 @@ test_that("OU - fixed root", {
 })
 
 test_that("Multivariate Scalar (scOU)", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(586)
   ntaxa <- 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, 
@@ -302,7 +302,7 @@ test_that("Multivariate Scalar (scOU)", {
 })
 
 test_that("Multivariate Scalar (scOU) - Fixed Root", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(586)
   ntaxa <- 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, 

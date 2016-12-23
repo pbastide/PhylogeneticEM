@@ -26,8 +26,8 @@ Default to 1:p (all the traits).}
 Must be of class \code{\link{params_process}}. If left blank, there are extracted
 using the \code{method.selection} argument (see below).}
 
-\item{method.selection}{select the parameters to plot. One of "BGH", "DDSE",
-"Djump". Default to "BGH" for univariate, and "DDSE" for multivariate. See
+\item{method.selection}{select the parameters to plot. One of "LINselect", "DDSE",
+"Djump". Default to "LINselect". See
 \code{\link{params_process.PhyloEM}}.}
 
 \item{automatic_colors}{whether to color the edges automatically according to

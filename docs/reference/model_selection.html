@@ -86,8 +86,8 @@ object, and returns the same fitted object.</p>
 
 <span class='co'># S3 method for PhyloEM</span>
 <span class='fu'>model_selection</span>(<span class='no'>x</span>, <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"LINselect"</span>, <span class='st'>"DDSE"</span>,
-  <span class='st'>"Djump"</span>), <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>, <span class='kw'>C.BGH</span> <span class='kw'>=</span> <span class='fl'>1.1</span>, <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='no'>...</span>)</pre>
+  <span class='st'>"Djump"</span>), <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>, <span class='kw'>C.LINselect</span> <span class='kw'>=</span> <span class='fl'>1.1</span>,
+  <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
@@ -107,7 +107,7 @@ Need to be positive. Default to 0.1.</dd>
       <dt>C.BM2</dt>
       <dd>Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.</dd>
-      <dt>C.BGH</dt>
+      <dt>C.LINselect</dt>
       <dd>Multiplying constant to be used for the LINselect method. Need to be
 greater than 1. Default to 1.1.</dd>
       <dt>independent</dt>

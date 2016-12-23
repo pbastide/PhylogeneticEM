@@ -1,5 +1,7 @@
+context("Trait Imputations")
+
 test_that("imputations- scOU - random root", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -99,7 +101,7 @@ test_that("imputations- scOU - random root", {
 })
 
 test_that("imputations- scOU - fixed root", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -153,7 +155,8 @@ test_that("imputations- scOU - fixed root", {
                        impute_init_Rphylopars = FALSE,
                        progress.bar = FALSE,
                        K_lag_init = 2,
-                       light_result = FALSE)
+                       light_result = FALSE,
+                       check.tips.names = FALSE)
   
   expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "expectations"),
                res_heavy$alpha_max$m_Y_estim$'4')

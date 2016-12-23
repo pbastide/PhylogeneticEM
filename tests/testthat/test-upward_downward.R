@@ -1,7 +1,7 @@
 context("E step upward-downward")
 
 test_that("Upward Downward - BM", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
@@ -214,7 +214,7 @@ test_that("Upward Downward - BM - no missing", {
 })
 
 test_that("Upward Downward - estimateEM - BM", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
@@ -281,7 +281,7 @@ test_that("Upward Downward - estimateEM - BM", {
 })
 
 test_that("Upward Downward - PhyloEM - BM", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 50
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
@@ -379,13 +379,14 @@ test_that("Upward Downward - PhyloEM - BM", {
   expect_equal(res_new, res_old, tolerance = .Machine$double.eps ^ 0.3)
   
   expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
-  expect_equal(log_likelihood(res_new, K = 5, alpha = 0), res_new$alpha_0$results_summary$log_likelihood[6])
+  expect_warning(ll <- log_likelihood(res_new, K = 5, alpha = 0))
+  expect_equal(ll, res_new$alpha_0$results_summary$log_likelihood[6])
 })
 
 
 
 test_that("Upward Downward - scOU - fixed root", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -486,7 +487,7 @@ test_that("Upward Downward - scOU - fixed root", {
 })
 
 test_that("Upward Downward - scOU - random root", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -587,7 +588,7 @@ test_that("Upward Downward - scOU - random root", {
 })
 
 test_that("Upward Downward - PhyloEM - scOU - fixed root", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -691,7 +692,7 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
 })
 
 test_that("Upward Downward - PhyloEM - scOU - random root", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -795,7 +796,7 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
 })
 
 test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
@@ -915,7 +916,7 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
 })
 
 test_that("Upward Downward - PhyloEM - OU - independent", {
-  testthat::skip_on_cran()
+  # testthat::skip_on_cran()
   ntaxa = 50
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                           age = 1, mrca = TRUE)[[1]]
@@ -1007,8 +1008,10 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
   
   expect_that(res_new, equals(res_old))
   
-  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
-  expect_equal(log_likelihood(res_new, K = 5, alpha = "max"), res_new$alpha_max$results_summary$log_likelihood[6])
+  expect_equal(log_likelihood(res_new),
+               res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  ll <- log_likelihood(res_new, K = 5, alpha = "max")
+  expect_equal(ll, res_new$alpha_max$results_summary$log_likelihood[6])
 })
 
 # test_that("Upward Downward - full OU - random root", {

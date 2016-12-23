@@ -1966,7 +1966,7 @@ init.alpha.gamma.estimation <- function(phylo,
   too_far <- (dists > h_tree)
   dists <- dists[!too_far]
   square_diff <- do.call(rbind, square_diff)
-  square_diff <- square_diff[, !too_far]
+  square_diff <- square_diff[, !too_far, drop = FALSE]
   if (alpha_known) {
     return(list(alpha_0 = init.alpha.gamma.default(alpha_known, ...)$alpha_0,
                 gamma_0 = gamma_0[c("var", "mad")]))
