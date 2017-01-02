@@ -38,7 +38,7 @@
       <h1>An Introduction to the PhylogeneticEM Package</h1>
                         <h4 class="author">Paul Bastide</h4>
             
-            <h4 class="date">2016-12-23</h4>
+            <h4 class="date">2017-01-02</h4>
           </div>
 
     
@@ -156,7 +156,8 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
 <p>where we extracted the parameters with the method <code>params_process</code>. Here, the results are the same.</p>
 <p>We can also extract the solution for a given number of shifts and/or a given value of alpha. For instance, we can see that in this simple case, the infered position of the shifts is robust to the value of the selection strength:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> <span class="dv">1</span>))</code></pre></div>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-6-1.png" width="672"> The infered shifts values however are quite different:</p>
+<p><img src="tutorial_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
+<p>The infered shifts values however are quite different:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> <span class="dv">1</span>)$shifts</code></pre></div>
 <pre><code>## $edges
 ## [1] 127  89  29
@@ -188,7 +189,8 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
 ## solutions for this shift position.</code></pre>
 <p>And we can plot all the equivalent shifts allocations:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw"><a href="../reference/equivalent_shifts.html">equivalent_shifts</a></span>(tree, params_8))</code></pre></div>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-9-1.png" width="768"> the default only shows the shifts values for the first trait.</p>
+<p><img src="tutorial_files/figure-html/unnamed-chunk-9-1.png" width="768"></p>
+<p>the default only shows the shifts values for the first trait.</p>
 <!-- Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format: -->
 <!-- - Never uses retina figures -->
 <!-- - Has a smaller default figure size -->
