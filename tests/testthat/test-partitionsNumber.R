@@ -56,3 +56,15 @@ test_that("break point in binary case", {
   
   expect_that(val, equals(bb))
 })
+
+test_that("partitionsNumber in General Case", {
+  K <- 5
+  tree <- read.tree(text = "(A,(A,A,A));")
+  xx <- partitionsNumber(tree, K)
+  # Not Marqued
+  NN <- extract.partitionsNumber(xx, npart = 1:K)
+  expect_equal(NN, c(1, 4, 6, 1, 0))
+  # Marked
+  MM <- extract.partitionsNumber(xx, npart = 1:K, marqued = TRUE)
+  expect_equal(MM, c(1, 5, 9, 4, 0))
+})

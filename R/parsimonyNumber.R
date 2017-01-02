@@ -536,28 +536,28 @@ clusters_from_shifts <- function (tree, edges,
   return(part)
 }
 
-clusters_from_shifts_primary_opt <- function (tree, shifts, T_tree = incidence.matrix(tree)) {
-  delta <- shifts.list_to_vector(tree, shifts)
-  O_Y <- T_tree %*% delta
-#   clus <- as.factor(O_Y)
-#   levels(O_Y) <- 1:length(levels(O_Y))
-  return(O_Y)
-}
+# clusters_from_shifts_primary_opt <- function (tree, shifts, T_tree = incidence.matrix(tree)) {
+#   delta <- shifts.list_to_vector(tree, shifts)
+#   O_Y <- T_tree %*% delta
+# #   clus <- as.factor(O_Y)
+# #   levels(O_Y) <- 1:length(levels(O_Y))
+#   return(O_Y)
+# }
 
-clusters_from_shifts_expectations <- function (tree, 
-                                               shifts, 
-                                               T_tree = incidence.matrix(tree),
-                                               ac = TRUE, ...) {
-  if (ac){
-    ac_tree <- incidence_matrix_actualization_factors(tree = tree, ...)
-    T_tree <- T_tree * ac_tree
-  }
-  delta <- shifts.list_to_vector(tree, shifts)
-  O_Y <- T_tree %*% delta
-  #   clus <- as.factor(O_Y)
-  #   levels(O_Y) <- 1:length(levels(O_Y))
-  return(O_Y)
-}
+# clusters_from_shifts_expectations <- function (tree, 
+#                                                shifts, 
+#                                                T_tree = incidence.matrix(tree),
+#                                                ac = TRUE, ...) {
+#   if (ac){
+#     ac_tree <- incidence_matrix_actualization_factors(tree = tree, ...)
+#     T_tree <- T_tree * ac_tree
+#   }
+#   delta <- shifts.list_to_vector(tree, shifts)
+#   O_Y <- T_tree %*% delta
+#   #   clus <- as.factor(O_Y)
+#   #   levels(O_Y) <- 1:length(levels(O_Y))
+#   return(O_Y)
+# }
 
 ##
 #' @title Check Parsimony, assuming no homoplasy
@@ -1165,7 +1165,7 @@ print.equivalent_shifts <- function(x, ...){
 #' @param ... unused.
 #'
 #' @return A matrix with the values of the shifts (\code{what = "shifts_values"}) or
-#' the root (\code{what = "root_values"})for the trait for each equivalent
+#' the root (\code{what = "root_values"}) for the trait for each equivalent
 #' configuration. Each column is one configuration.
 #' 
 #' @seealso \code{\link{equivalent_shifts}}, \code{\link{plot.equivalent_shifts}},

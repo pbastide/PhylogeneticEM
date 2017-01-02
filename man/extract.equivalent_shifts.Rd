@@ -19,7 +19,7 @@ function \code{\link{equivalent_shifts}}}
 }
 \value{
 A matrix with the values of the shifts (\code{what = "shifts_values"}) or
-the root (\code{what = "root_values"})for the trait for each equivalent
+the root (\code{what = "root_values"}) for the trait for each equivalent
 configuration. Each column is one configuration.
 }
 \description{

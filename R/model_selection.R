@@ -306,7 +306,8 @@ model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.LINselect, ...){
 #'
 ##
 
-penalty_pBIC <- function(all_params, model_complexity, independent, tree, times_shared, distances_phylo, T_tree, p, K, ntaxa, process){
+penalty_pBIC <- function(all_params, model_complexity, independent, tree, times_shared,
+                         distances_phylo, T_tree, p, K, ntaxa, process){ # nocov start
   if (independent){
     penalty_pBIC_unit <- penalty_pBIC_independent
   } else {
@@ -329,9 +330,10 @@ penalty_pBIC <- function(all_params, model_complexity, independent, tree, times_
     pen <- pen + log(ntaxa) 
   }
   return(pen)
-}
+} # nocov end
 
-penalty_pBIC_scalarOU <- function(params, tree, times_shared, distances_phylo, T_tree, process){
+penalty_pBIC_scalarOU <- function(params, tree, times_shared,
+                                  distances_phylo, T_tree, process){ # nocov start
   if (length(as.vector(params$selection.strength)) > 1){
     stop("pBIC only works for scalar OU.")
   }
@@ -364,9 +366,11 @@ penalty_pBIC_scalarOU <- function(params, tree, times_shared, distances_phylo, T
   pen <- p * determinant(t(Tr) %*% C_inv %*% Tr, logarithm = TRUE)$modulus
   pen <- as.vector(pen)
   return(pen)
-}
+} # nocov end
 
-penalty_pBIC_independent <- function(params, model_complexity, tree, times_shared, distances_phylo, T_tree, process){
+penalty_pBIC_independent <- function(params, model_complexity, tree,
+                                     times_shared, distances_phylo,
+                                     T_tree, process){ # nocov start
   ntaxa <- length(tree$tip.label)
   K <- length(params$shifts$edges)
   p <- ncol(params$variance)
@@ -398,9 +402,11 @@ penalty_pBIC_independent <- function(params, model_complexity, tree, times_share
     pen <- as.vector(pen)
   }
   return(pen)
-}
+} # nocov end
 
-model_selection_pBIC <- function(res, independent, tree, times_shared, distances_phylo, T_tree, ntaxa, process, ...){
+model_selection_pBIC <- function(res, independent, tree, times_shared, 
+                                 distances_phylo, T_tree, 
+                                 ntaxa, process, ...){ # nocov start
   res <- res$alpha_max
   p <- nrow(res$params_estim$`0`$variance)
   ## Penalty
@@ -414,22 +420,25 @@ model_selection_pBIC <- function(res, independent, tree, times_shared, distances
   ## Assign results
   res <- assign_results_model_selection(res, pen, crit, "pBIC")
   return(res)
-}
+} # nocov end
 
 #############################################
 ## l1ou
 #############################################
-penalty_pBIC_l1ou <- function(all_params, model_complexity, independent, tree, times_shared, distances_phylo, T_tree, p, K, ntaxa, process, Y_data){
+penalty_pBIC_l1ou <- function(all_params, model_complexity,
+                              independent, tree, times_shared,
+                              distances_phylo, T_tree, p, K, ntaxa,
+                              process, Y_data){ # nocov start
   ## Computations
   pen <- sapply(all_params, penalty_pBIC_l1ou_unit,
                 tree, times_shared, distances_phylo, T_tree, process, Y_data)
   ## Model Complexity term
   pen <- pen + 2 * log(model_complexity)
   return(pen)
-}
+} # nocov end
 
 penalty_pBIC_l1ou_unit <- function(params, tree, times_shared, distances_phylo,
-                                   T_tree, process, Y_data){
+                                   T_tree, process, Y_data){ # nocov start
   ntaxa <- length(tree$tip.label)
   K <- length(params$shifts$edges)
   p <- ncol(params$variance)
@@ -464,9 +473,11 @@ penalty_pBIC_l1ou_unit <- function(params, tree, times_shared, distances_phylo,
   # sigma and alpha
   pen <- pen + 2 * log(ntaxa)
   return(pen)
-}
+} # nocov end
 
-model_selection_pBIC_l1ou <- function(res, independent, tree, times_shared, distances_phylo, T_tree, ntaxa, process, Y_data, ...){
+model_selection_pBIC_l1ou <- function(res, independent, tree,
+                                      times_shared, distances_phylo,
+                                      T_tree, ntaxa, process, Y_data, ...){ # nocov start
   res <- res$alpha_max
   p <- nrow(res$params_estim$`0`$variance)
   ## Penalty
@@ -481,7 +492,7 @@ model_selection_pBIC_l1ou <- function(res, independent, tree, times_shared, dist
   ## Assign results
   res <- assign_results_model_selection(res, pen, crit, "pBIC_l1ou")
   return(res)
-}
+} # nocov end
 
 #############################################
 ## Format results

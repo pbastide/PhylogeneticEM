@@ -238,11 +238,11 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
   ## Choose method(s) for segmentation
   segmentation.OU.specialCase <- function(method.segmentation){
     segmentation <- switch(method.segmentation, 
-                           max_costs_0 = segmentation.OU.specialCase.max_costs_0,
+                           #max_costs_0 = segmentation.OU.specialCase.max_costs_0,
                            lasso = segmentation.OU.specialCase.lasso,
-                           lasso_one_move = segmentation.OU.specialCase.lasso_one_move,
+                           #lasso_one_move = segmentation.OU.specialCase.lasso_one_move,
                            same_shifts = segmentation.OU.specialCase.same_shifts,
-                           same_shifts_same_values = segmentation.OU.specialCase.same_shifts_same_values,
+                           #same_shifts_same_values = segmentation.OU.specialCase.same_shifts_same_values,
                            best_single_move = segmentation.OU.specialCase.best_single_move)
     return(segmentation(phylo = phylo, 
                         nbr_of_shifts = nbr_of_shifts, 
@@ -635,8 +635,8 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #' @title Function to estimate alpha
 #'
 #' @description
-#' \code{optimize} to maximize function
-#' \code{conditional_expectation_log_likelihood.OU} in alpha. The interval is
+#' \code{optimize} to maximize the
+#' conditional expectation log likelihood in alpha. The interval is
 #' set to [alpha_old/2, 2*alpha_old], supposing that the previous guess of 
 #' alpha_old is not far from reality.
 #'
@@ -688,13 +688,13 @@ estimate.alpha <- function(phylo,
 ## Objective function computation
 #########################################################
 
-conditional_expectation_log_likelihood.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
-  if (stationary.root && shifts_at_nodes) {
-    return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes)
-  } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
-  }
-}
+# conditional_expectation_log_likelihood.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
+#   if (stationary.root && shifts_at_nodes) {
+#     return(conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes)
+#   } else {
+#     stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
+#   }
+# }
 
 # #' ##@title Expectation conditional to the tips of the completed log-likelihood.
 # #' This is an old version.
@@ -878,64 +878,66 @@ segmentation.BM <- function(nbr_of_shifts, costs0, diff_exp){
   }
 }
 
-##
-#' @title Segmentation in the OU special case, algo 1
-#'
-#' @description
-#' \code{segmentation.OU.specialCase.max_costs_0} performs the first segmentation 
-#' algorithm described.
-#'
-#' @details
-#'  This function takes the largest values of costs0, and make them null,
-#'  thanks to delta and tau.
-#'
-#' @param phylo a phylogenetic tree
-#' @param nbr_of_shifts Number of shifts on the phylogeny allowed
-#' @param conditional_law_X moments of the conditional law of X given Y, result
-#' of function \code{compute_M.OU.specialCase}
-#' @param selection.strength the selection strength
-#' 
-#' @return List containing : beta_0 : the optimal value at the root
-#'                           shifts : list containing the computed tau and delta
-#'                           costs : vector of costs
-#'
-#' @keywords internal
-#10/06/14 - Initial release
-#06/10/14 - Change name to include other algorithms
-##
-segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, conditional_law_X, selection.strength, ...){
-  ntaxa <- length(phylo$tip.label)
-  ## Computation of mu=beta0
-  beta_0 <- conditional_law_X$expectations[ntaxa+1]
-  ## Computation of costs
-  diff_exp <- compute_diff_exp.OU(phylo = phylo, 
-                                  conditional_law_X = conditional_law_X, 
-                                  selection.strength = selection.strength)
-  parents <- phylo$edge[,1]
-  betas <- conditional_law_X$optimal.values
-  ee <- exp(- selection.strength * phylo$edge.length )
-  costs0 <- (1 - ee^2)^(-1) * (diff_exp - betas[parents] * (1-ee))^2
-  ## Segmentation per se
-  if (nbr_of_shifts > 0) {
-    # Max of costs
-    edges_max <- order(-costs0)[1:nbr_of_shifts]
-    edges <- edges_max
-    # Put them to 0
-    ee <- exp(- selection.strength * phylo$edge.length )
-    parents <- phylo$edge[edges_max,1]
-    values <- (1 - ee[edges_max])^(-1) * diff_exp[edges_max] - betas[parents]
-    relativeTimes <- rep(0,length(edges_max))
-    # Define shifts
-    shifts <- list(edges = edges, values = values, relativeTimes = relativeTimes)
-    # Compute new costs
-    costs <- costs0
-    costs[edges] <- 0
-    return(list(beta_0 = beta_0, edges_max = edges_max, shifts = shifts, costs = costs))
-  } else {
-    edges_max <- length(costs0) + 1
-    return(list(beta_0 = beta_0, edges_max = edges_max, shifts = NULL, costs = costs0))
-  }
-}
+# ##
+# #' @title Segmentation in the OU special case, algo 1
+# #'
+# #' @description
+# #' \code{segmentation.OU.specialCase.max_costs_0} performs the first segmentation 
+# #' algorithm described.
+# #'
+# #' @details
+# #'  This function takes the largest values of costs0, and make them null,
+# #'  thanks to delta and tau.
+# #'
+# #' @param phylo a phylogenetic tree
+# #' @param nbr_of_shifts Number of shifts on the phylogeny allowed
+# #' @param conditional_law_X moments of the conditional law of X given Y, result
+# #' of function \code{compute_M.OU.specialCase}
+# #' @param selection.strength the selection strength
+# #' 
+# #' @return List containing : beta_0 : the optimal value at the root
+# #'                           shifts : list containing the computed tau and delta
+# #'                           costs : vector of costs
+# #'
+# #' @keywords internal
+# #10/06/14 - Initial release
+# #06/10/14 - Change name to include other algorithms
+# ##
+# segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts,
+#                                                     conditional_law_X,
+#                                                     selection.strength, ...){
+#   ntaxa <- length(phylo$tip.label)
+#   ## Computation of mu=beta0
+#   beta_0 <- conditional_law_X$expectations[ntaxa + 1]
+#   ## Computation of costs
+#   diff_exp <- compute_diff_exp.OU(phylo = phylo, 
+#                                   conditional_law_X = conditional_law_X, 
+#                                   selection.strength = selection.strength)
+#   parents <- phylo$edge[, 1]
+#   betas <- conditional_law_X$optimal.values
+#   ee <- exp(- selection.strength * phylo$edge.length )
+#   costs0 <- (1 - ee^2)^(-1) * (diff_exp - betas[parents] * (1-ee))^2
+#   ## Segmentation per se
+#   if (nbr_of_shifts > 0) {
+#     # Max of costs
+#     edges_max <- order(-costs0)[1:nbr_of_shifts]
+#     edges <- edges_max
+#     # Put them to 0
+#     ee <- exp(- selection.strength * phylo$edge.length )
+#     parents <- phylo$edge[edges_max,1]
+#     values <- (1 - ee[edges_max])^(-1) * diff_exp[edges_max] - betas[parents]
+#     relativeTimes <- rep(0,length(edges_max))
+#     # Define shifts
+#     shifts <- list(edges = edges, values = values, relativeTimes = relativeTimes)
+#     # Compute new costs
+#     costs <- costs0
+#     costs[edges] <- 0
+#     return(list(beta_0 = beta_0, edges_max = edges_max, shifts = shifts, costs = costs))
+#   } else {
+#     edges_max <- length(costs0) + 1
+#     return(list(beta_0 = beta_0, edges_max = edges_max, shifts = NULL, costs = costs0))
+#   }
+# }
 
 ##
 #' @title Segmentation in the OU special case, using lasso regression
@@ -963,7 +965,8 @@ segmentation.OU.specialCase.max_costs_0 <- function(phylo, nbr_of_shifts, condit
 #' @keywords internal                           
 #06/10/14 - Initial release
 ##
-segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, penscale = rep(1, (nrow(phylo$edge) + 1)), ...){
+segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, 
+                                              penscale = rep(1, (nrow(phylo$edge) + 1)), ...){
   ntaxa <- length(phylo$tip.label)
   nNodes <- phylo$Nnode
   ## Computation of answer matrix D : already done by now.
@@ -1055,75 +1058,76 @@ compute_regression_matrices <- function(phylo, conditional_law_X, selection.stre
   return(list(D = D, Xp = Xp))
 }
 
-segmentation.OU.specialCase.lasso_one_move <- function(phylo, shifts_old, nbr_of_shifts, D, Xp, ...){
-  ## If no shifts, there is no such thing as a "single move"
-  if (is.null(shifts_old$edges)){
-    return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
-  }
-  ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
-  ## do not penalise K-1 shifts
-  pens <- rep(1, ncol(Xp))
-  penscales <- matrix(1, nrow = nbr_of_shifts, ncol = ncol(Xp))
-  for (i in 1:nbr_of_shifts){
-    shs <- shifts_old$edges[-i]
-    penscales[i, shs] <- 0
-  }
-  ## Computation of answer matrix D : already done by now.
-  ## Segmentation per se
-  # Lasso regressions
-  fun <- function(penscale){
-    segmentation.OU.specialCase.lasso(phylo = phylo, 
-                                      nbr_of_shifts = nbr_of_shifts,
-                                      D = D,
-                                      Xp = Xp,
-                                      penscale = penscale)
-  }
-  segs <- apply(penscales, 1, fun)
-  costs <- sapply(segs, function(z) return(sum(z$cost)))
-  return(segs[[which.min(costs)]])
-}
+# segmentation.OU.specialCase.lasso_one_move <- function(phylo, shifts_old, nbr_of_shifts, D, Xp, ...){
+#   ## If no shifts, there is no such thing as a "single move"
+#   if (is.null(shifts_old$edges)){
+#     return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
+#   }
+#   ntaxa <- length(phylo$tip.label)
+#   nNodes <- phylo$Nnode
+#   ## do not penalise K-1 shifts
+#   pens <- rep(1, ncol(Xp))
+#   penscales <- matrix(1, nrow = nbr_of_shifts, ncol = ncol(Xp))
+#   for (i in 1:nbr_of_shifts){
+#     shs <- shifts_old$edges[-i]
+#     penscales[i, shs] <- 0
+#   }
+#   ## Computation of answer matrix D : already done by now.
+#   ## Segmentation per se
+#   # Lasso regressions
+#   fun <- function(penscale){
+#     segmentation.OU.specialCase.lasso(phylo = phylo, 
+#                                       nbr_of_shifts = nbr_of_shifts,
+#                                       D = D,
+#                                       Xp = Xp,
+#                                       penscale = penscale)
+#   }
+#   segs <- apply(penscales, 1, fun)
+#   costs <- sapply(segs, function(z) return(sum(z$cost)))
+#   return(segs[[which.min(costs)]])
+# }
 
-##
-#' @title Segmentation in the OU special case, conserving the same shifts.
-#'
-#' @description
-#' \code{segmentation.OU.specialCase.same_shifts_same_values} keeps the same
-#' parameters and compute the quantities needed. It is here to ensure that we do
-#' at least better than the previous step.
-#'
-#' @details
-#'  This function takes the old shifts parameters, and compute costs with the new
-#'  moments.
-#'
-#' @param phylo a phylogenetic tree
-#' @param conditional_law_X moments of the conditional law of X given Y, result
-#' of function \code{compute_M.OU.specialCase}
-#' @param selection.strength the selection strength
-#' @param beta_0_old the previous (and concerved) value of beta_0
-#' @param shifts_old the previous (and concerved) list of shifts
-#' 
-#' @return List containing : beta_0 : the optimal value at the root
-#'                           shifts : list containing the computed tau and delta
-#'                           costs : vector of costs
-#'
-#' @keywords internal
-#' 
-#06/10/14 - Initial release
-##
-segmentation.OU.specialCase.same_shifts_same_values <- function(phylo, conditional_law_X, selection.strength, beta_0_old, shifts_old, ...){
-  ntaxa <- length(phylo$tip.label)
-  ## Computation of costs
-  diff_exp <- compute_diff_exp.OU(phylo = phylo, 
-                                  conditional_law_X = conditional_law_X, 
-                                  selection.strength = selection.strength)
-  betas <- compute_betas_from_shifts(phylo = phylo, optimal.value = beta_0_old, shifts = shifts_old)
-  daughters <- phylo$edge[,2]
-  ee <- exp(- selection.strength * phylo$edge.length )
-  costs <- (1 - ee^2)^(-1) * (diff_exp - betas[daughters] * (1-ee))^2
-  costs <- c((conditional_law_X$expectations[ntaxa+1] - beta_0_old)^2, costs)
-  return(list(beta_0 = beta_0_old, shifts = shifts_old, costs = costs))
-}
+# ##
+# #' @title Segmentation in the OU special case, conserving the same shifts.
+# #'
+# #' @description
+# #' \code{segmentation.OU.specialCase.same_shifts_same_values} keeps the same
+# #' parameters and compute the quantities needed. It is here to ensure that we do
+# #' at least better than the previous step.
+# #'
+# #' @details
+# #'  This function takes the old shifts parameters, and compute costs with the new
+# #'  moments.
+# #'
+# #' @param phylo a phylogenetic tree
+# #' @param conditional_law_X moments of the conditional law of X given Y, result
+# #' of function \code{compute_M.OU.specialCase}
+# #' @param selection.strength the selection strength
+# #' @param beta_0_old the previous (and concerved) value of beta_0
+# #' @param shifts_old the previous (and concerved) list of shifts
+# #' 
+# #' @return List containing : beta_0 : the optimal value at the root
+# #'                           shifts : list containing the computed tau and delta
+# #'                           costs : vector of costs
+# #'
+# #' @keywords internal
+# #' 
+# #06/10/14 - Initial release
+# ##
+# segmentation.OU.specialCase.same_shifts_same_values <- function(phylo, conditional_law_X, selection.strength, beta_0_old, shifts_old, ...){
+#   ntaxa <- length(phylo$tip.label)
+#   browser()
+#   ## Computation of costs
+#   diff_exp <- compute_diff_exp.OU(phylo = phylo, 
+#                                   conditional_law_X = conditional_law_X, 
+#                                   selection.strength = selection.strength)
+#   betas <- compute_betas_from_shifts(phylo = phylo, optimal.value = beta_0_old, shifts = shifts_old)
+#   daughters <- phylo$edge[,2]
+#   ee <- exp(- selection.strength * phylo$edge.length )
+#   costs <- (1 - ee^2)^(-1) * (diff_exp - betas[daughters] * (1-ee))^2
+#   costs <- c((conditional_law_X$expectations[ntaxa+1] - beta_0_old)^2, costs)
+#   return(list(beta_0 = beta_0_old, shifts = shifts_old, costs = costs))
+# }
 
 ##
 #' @title Segmentation in the OU special case, conserving the same shifts

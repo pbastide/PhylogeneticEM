@@ -212,12 +212,12 @@ estimateEM <- function(phylo,
                                        selection.strength = 10^(5)),
                        var.init.root = diag(1, nrow(Y_data)),
                        variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
-                       methods.segmentation = c("max_costs_0", 
+                       methods.segmentation = c(#"max_costs_0", 
                                                 "lasso", 
                                                 "same_shifts", 
-                                                "same_shifts_same_values",
-                                                "best_single_move", 
-                                                "lasso_one_move"),
+                                                #"same_shifts_same_values",
+                                                "best_single_move"),
+                                                #"lasso_one_move"),
                        check.tips.names = FALSE,
                        times_shared = NULL, # These can be specified to save time
                        distances_phylo = NULL, 
@@ -310,7 +310,8 @@ estimateEM <- function(phylo,
                        OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
-                        OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, alpha_known, tol_half_life))
+                        OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, 
+                                           alpha_known, tol_half_life))
   has_converged  <- switch(convergence_mode[1], 
                            relative = has_converged_relative,
                            absolute = has_converged_absolute)
@@ -371,18 +372,19 @@ estimateEM <- function(phylo,
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
-  if (independent){
-    tmp <- methods.segmentation %in% c("lasso_one_move")
-    if (any(tmp)){
-      warning("Lasso segmentation methods are not implemented for multivariate independent OU. Removing these methods from the list.")
-      methods.segmentation <- methods.segmentation[!tmp]
-      if (length(methods.segmentation) == 0) {
-        warning("The list of segmentations methods was empty. Adding the best single move method.")
-        methods.segmentation <- "best_single_move"
-      }
-    }
-  }
-  method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
+  # if (independent){
+  #   tmp <- methods.segmentation %in% c("lasso_one_move")
+  #   if (any(tmp)){
+  #     warning("Lasso segmentation methods are not implemented for multivariate independent OU. Removing these methods from the list.")
+  #     methods.segmentation <- methods.segmentation[!tmp]
+  #     if (length(methods.segmentation) == 0) {
+  #       warning("The list of segmentations methods was empty. Adding the best single move method.")
+  #       methods.segmentation <- "best_single_move"
+  #     }
+  #   }
+  # }
+  method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation,
+                                             several.ok = TRUE)
   
   ########## Fixed Quantities #################################################
   ntaxa <- length(phylo$tip.label)
@@ -1032,6 +1034,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Independent traits #######################################################
+  if (p == 1) {
+    method.OUsun = "raw"
+    independent = TRUE
+  }
   if (independent && missing(alpha_grid)) alpha_grid <- FALSE
   ## Adaptations to the BM ####################################################
   if (process == "BM"){

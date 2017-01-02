@@ -59,6 +59,8 @@ test_that("Equivalent Shift - BM", {
   ed_shifts_rand <- equivalent_shifts(phylo, params_rand)
   
   expect_equal(ed_shifts, ed_shifts_rand)
+  expect_equal(extract(ed_shifts), extract(ed_shifts_rand))
+  expect_equal(extract(ed_shifts, what = "root"), extract(ed_shifts_rand, what = "root"))
   
   ## Check with enumerate parsimony
   clusters <- allocate_regimes_from_shifts(phylo, params$shifts$edges)

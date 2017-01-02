@@ -329,7 +329,9 @@ prod.index <- function(X,Id){
 #05/06/14 - Initial release
 ##
 sum.simplex <- function (NN, K, p) {
-  return(sum(combinat::xsimplex(p, K, fun=prod.index, simplify=TRUE, X=NN)))
+  return(sum(combinat::xsimplex(p, K, fun = prod.index,
+                                simplify = TRUE,
+                                X = NN)))
 }
 
 ##
@@ -359,10 +361,10 @@ sum.simplex <- function (NN, K, p) {
 #05/06/14 - Initial release
 ##
 sum.prod.comb <- function(I, A, N, K, p){
-  KK <- K+length(I)-1
-  AN <- matrix(NA, nrow=p, ncol=K)
-  AN[I,] <- A[I,]
-  AN[-I,] <- N[-I,]
+  KK <- K + length(I) - 1
+  AN <- matrix(NA, nrow = p, ncol = K)
+  AN[I, ] <- A[I, ]
+  AN[-I, ] <- N[-I, ]
   return(sum.simplex(AN, KK, p))
 }
 
@@ -393,7 +395,10 @@ sum.prod.comb <- function(I, A, N, K, p){
 #05/06/14 - Initial release
 ##
 sum.partitions.cardFixed <- function(A, N, K, p, cardI){
-  return(sum(combn(p, cardI, fun=sum.prod.comb, simplify=TRUE, A=A, N=N, K=K, p=p)))
+  return(sum(combinat::combn(p, cardI,
+                             fun = sum.prod.comb,
+                             simplify = TRUE,
+                             A = A, N = N, K = K, p = p)))
 }
 
 ##
@@ -422,7 +427,7 @@ sum.partitions.cardFixed <- function(A, N, K, p, cardI){
 #05/06/14 - Initial release
 ##
 sum.partitions <- function(A, N, K, p, m) {
-  return(sum(sapply(m:p, function(x) sum.partitions.cardFixed(A,N,K,p,x))))
+  return(sum(sapply(m:p, function(x) sum.partitions.cardFixed(A, N, K, p, x))))
 }
 
 ###############################################################################
