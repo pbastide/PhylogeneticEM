@@ -1,5 +1,6 @@
 context("Function simulate with shifts")
 
+###############################################################################
 test_that("Mean of the BM", {
   set.seed(586)
   ntaxa <- 20
@@ -56,6 +57,7 @@ test_that("Mean of the BM", {
   expect_that(X1.tips.exp, equals(X2.tips.exp))
 })
 
+###############################################################################
 test_that("Mean of the BM - random root", {
   set.seed(586)
   ntaxa <- 20
@@ -125,6 +127,7 @@ test_that("Mean of the BM - random root", {
   expect_that(X1.tips.exp, equals(X2.tips.exp))
 })
 
+###############################################################################
 test_that("Mean of the OU", {
   set.seed(1899)
   ntaxa <- 32
@@ -184,6 +187,7 @@ test_that("Mean of the OU", {
   expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
 
+###############################################################################
 test_that("OU - fixed root", {
   set.seed(1899)
   ntaxa <- 32
@@ -243,6 +247,7 @@ test_that("OU - fixed root", {
   expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
 
+###############################################################################
 test_that("Multivariate Scalar (scOU)", {
   testthat::skip_on_cran()
   set.seed(586)
@@ -301,6 +306,7 @@ test_that("Multivariate Scalar (scOU)", {
   expect_that(Xnot[,,2:3], equals(Xsc2[,,2:3]))
 })
 
+###############################################################################
 test_that("Multivariate Scalar (scOU) - Fixed Root", {
   testthat::skip_on_cran()
   set.seed(586)
@@ -356,6 +362,76 @@ test_that("Multivariate Scalar (scOU) - Fixed Root", {
                             simulate_random = FALSE)
   
   expect_that(Xnot[,,2:3], equals(Xsc2[,,2:3]))
+})
+
+###############################################################################
+test_that("Interval vs simul", {
+  ntaxa <- 32
+  tree <- rcoal(ntaxa)
+  
+  ## Simulate Internal
+  p <- 3
+  variance <- matrix(0.2, p, p) + diag(0.3, p, p)
+  optimal.value <- c(-3, 5, 0)
+  selection.strength <- diag(3, p, p) + tcrossprod(c(0.1, 0.2, 0.3))
+  exp.stationary <- optimal.value
+  var.stationary  <- compute_stationary_variance(variance, selection.strength)
+  root.state <- list(random = TRUE,
+                     stationary.root = TRUE,
+                     value.root = NA,
+                     exp.root = exp.stationary,
+                     var.root = var.stationary)
+  shifts = list(edges = c(11, 35, 44),
+                values=cbind(c(4, -10, 3),
+                             c(-5, 5.4, 0),
+                             c(2, -8, 0.3)),
+                relativeTimes = 0)
+  
+  set.seed(1899)
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts)
+  
+  ## Simulate External
+  para <- params_process("OU", p = p, variance = variance,
+                         selection.strength = selection.strength,
+                         optimal.value = optimal.value, random = TRUE,
+                         stationary.root = TRUE, exp.root = exp.stationary,
+                         var.root = var.stationary, edges = shifts$edges,
+                         values = shifts$values)
+  
+  set.seed(1899)
+  X2 <- simul_process(para, phylo = tree)
+  
+  ## Comparisons and extractors
+  X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
+  X2.tips.exp <- extract(X2, where = "tips", what = "exp")
+  expect_equal(X1.tips.exp, unname(X2.tips.exp))
+  
+  X1.nodes.exp <- extract_simulate_internal(X1, where = "nodes", what = "exp")
+  X2.nodes.exp <- extract(X2, where = "nodes", what = "exp")
+  expect_equal(X1.nodes.exp, unname(X2.nodes.exp))
+  
+  X1.tips.states <- extract_simulate_internal(X1, where = "tips", what = "states")
+  X2.tips.states <- extract(X2, where = "tips", what = "states")
+  expect_equal(X1.tips.states, unname(X2.tips.states))
+  
+  X1.nodes.states <- extract_simulate_internal(X1, where = "nodes", what = "states")
+  X2.nodes.states <- extract(X2, where = "nodes", what = "states")
+  expect_equal(X1.nodes.states, unname(X2.nodes.states))
+  
+  X1.tips.optim <- extract_simulate_internal(X1, where = "tips", what = "optim")
+  X2.tips.optim <- extract(X2, where = "tips", what = "optim")
+  expect_equal(X1.tips.optim, unname(X2.tips.optim))
+  
+  X1.nodes.optim <- extract_simulate_internal(X1, where = "nodes", what = "optim")
+  X2.nodes.optim <- extract(X2, where = "nodes", what = "optim")
+  expect_equal(X1.nodes.optim, unname(X2.nodes.optim))
 })
 
 # test_that("Multivariate Independent (BM)", {
