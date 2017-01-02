@@ -212,12 +212,12 @@ estimateEM <- function(phylo,
                                        selection.strength = 10^(5)),
                        var.init.root = diag(1, nrow(Y_data)),
                        variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
-                       methods.segmentation = c("max_costs_0", 
+                       methods.segmentation = c(#"max_costs_0", 
                                                 "lasso", 
                                                 "same_shifts", 
-                                                "same_shifts_same_values",
-                                                "best_single_move", 
-                                                "lasso_one_move"),
+                                                #"same_shifts_same_values",
+                                                "best_single_move"),
+                                                #"lasso_one_move"),
                        check.tips.names = FALSE,
                        times_shared = NULL, # These can be specified to save time
                        distances_phylo = NULL, 
@@ -371,17 +371,17 @@ estimateEM <- function(phylo,
                      lasso = init.EM.lasso)
   method.init.alpha  <- match.arg(method.init.alpha)
   methods.segmentation <- match.arg(methods.segmentation, several.ok = TRUE)
-  if (independent){
-    tmp <- methods.segmentation %in% c("lasso_one_move")
-    if (any(tmp)){
-      warning("Lasso segmentation methods are not implemented for multivariate independent OU. Removing these methods from the list.")
-      methods.segmentation <- methods.segmentation[!tmp]
-      if (length(methods.segmentation) == 0) {
-        warning("The list of segmentations methods was empty. Adding the best single move method.")
-        methods.segmentation <- "best_single_move"
-      }
-    }
-  }
+  # if (independent){
+  #   tmp <- methods.segmentation %in% c("lasso_one_move")
+  #   if (any(tmp)){
+  #     warning("Lasso segmentation methods are not implemented for multivariate independent OU. Removing these methods from the list.")
+  #     methods.segmentation <- methods.segmentation[!tmp]
+  #     if (length(methods.segmentation) == 0) {
+  #       warning("The list of segmentations methods was empty. Adding the best single move method.")
+  #       methods.segmentation <- "best_single_move"
+  #     }
+  #   }
+  # }
   method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
   
   ########## Fixed Quantities #################################################

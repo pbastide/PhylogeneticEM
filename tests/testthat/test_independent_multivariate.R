@@ -263,7 +263,14 @@ test_that("Independent OU - uni/multi", {
                                 impute_init_Rphylopars = FALSE,
                                 progress.bar = FALSE,
                                 K_lag_init = 0,
-                                check.tips.names = FALSE))
+                                check.tips.names = FALSE,
+                                methods.segmentation = c(#"max_costs_0", 
+                                                         "lasso", 
+                                                         "same_shifts", 
+                                                         #"same_shifts_same_values",
+                                                         "best_single_move"
+                                                         #"lasso_one_move"
+                                                         )))
   
   expect_warning(res_uni <- PhyloEM(phylo = tree,
                                     Y_data = traits[1, ],

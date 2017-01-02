@@ -27,8 +27,8 @@ the user}
 double : estimation of alpha
 }
 \description{
-\code{optimize} to maximize function
-\code{conditional_expectation_log_likelihood.OU} in alpha. The interval is
+\code{optimize} to maximize the
+conditional expectation log likelihood in alpha. The interval is
 set to [alpha_old/2, 2*alpha_old], supposing that the previous guess of 
 alpha_old is not far from reality.
 }
