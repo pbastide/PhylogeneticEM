@@ -376,13 +376,15 @@ test_that("Upward Downward - PhyloEM - BM", {
   res_new$alpha_min_raw$results_summary$time <- 0
   res_old$alpha_min_raw$results_summary$time <- 0
   
+  ## Sames objects
   expect_equal(res_new, res_old, tolerance = .Machine$double.eps ^ 0.3)
   
-  expect_equal(log_likelihood(res_new), res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
+  ## Log Likelihood
+  expect_equal(log_likelihood(res_new),
+               res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
   expect_warning(ll <- log_likelihood(res_new, K = 5, alpha = 0))
   expect_equal(ll, res_new$alpha_0$results_summary$log_likelihood[6])
 })
-
 
 
 test_that("Upward Downward - scOU - fixed root", {
@@ -400,7 +402,7 @@ test_that("Upward Downward - scOU - fixed root", {
                      stationary.root = FALSE,
                      value.root = rep(1, p),
                      exp.root = NA,
-                     var.root = NA)#compute_stationary_variance(variance, selection.strength))
+                     var.root = NA) # compute_stationary_variance(variance, selection.strength))
   shifts <- list(edges = c(12, 26, 165),
                  values = cbind(c(4, -10, 3, 1),
                                 c(-5, 5, 0, 1),

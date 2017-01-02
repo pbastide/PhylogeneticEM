@@ -310,7 +310,8 @@ estimateEM <- function(phylo,
                        OU = compute_M.OU(stationary.root, shifts_at_nodes, alpha_known))
   shutoff.EM  <- switch(process, 
                         BM = shutoff.EM.BM,
-                        OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, alpha_known, tol_half_life))
+                        OU = shutoff.EM.OU(stationary.root, shifts_at_nodes, 
+                                           alpha_known, tol_half_life))
   has_converged  <- switch(convergence_mode[1], 
                            relative = has_converged_relative,
                            absolute = has_converged_absolute)
@@ -382,7 +383,8 @@ estimateEM <- function(phylo,
   #     }
   #   }
   # }
-  method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation, several.ok = TRUE)
+  method.init.alpha.estimation  <- match.arg(method.init.alpha.estimation,
+                                             several.ok = TRUE)
   
   ########## Fixed Quantities #################################################
   ntaxa <- length(phylo$tip.label)
@@ -1032,6 +1034,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Independent traits #######################################################
+  if (p == 1) {
+    method.OUsun = "raw"
+    independent = TRUE
+  }
   if (independent && missing(alpha_grid)) alpha_grid <- FALSE
   ## Adaptations to the BM ####################################################
   if (process == "BM"){

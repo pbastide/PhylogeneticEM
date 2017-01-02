@@ -334,7 +334,7 @@ test_that("Independent OU - uni/multi", {
                                     K_max = 1,
                                     random.root = TRUE,
                                     stationary.root = TRUE,
-                                    # independent = TRUE,
+                                    alpha_grid = TRUE,
                                     save_step = FALSE,
                                     Nbr_It_Max = 2,
                                     method.variance = "upward_downward",
