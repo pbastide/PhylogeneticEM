@@ -1042,7 +1042,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   ## Adaptations to the BM ####################################################
   if (process == "BM"){
     if (independent){
-      warning("The independent option is not available for the BM. The traits are supposed to be correlated.")
+      if (p > 1) warning("The independent option is not available for the BM. The traits are supposed to be correlated.")
       independent <- FALSE
     }
     alpha_grid <- TRUE
