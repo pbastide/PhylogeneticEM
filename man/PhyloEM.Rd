@@ -59,8 +59,8 @@ Need to be positive. Default to 0.1.}
 \item{C.BM2}{Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.}
 
-\item{C.LINselect}{Multiplying constant to be used for the LINselect method. Need to be
-greater than 1. Default to 1.1.}
+\item{C.LINselect}{Multiplying constant to be used for the LINselect method.
+Need to be greater than 1. Default to 1.1.}
 
 \item{method.variance}{Algorithm to be used for the moments computations at the
 E step. One of "simple" for the naive method; of "upward_downward" for the 

@@ -28,8 +28,8 @@ Need to be positive. Default to 0.1.}
 \item{C.BM2}{Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.}
 
-\item{C.LINselect}{Multiplying constant to be used for the LINselect method. Need to be
-greater than 1. Default to 1.1.}
+\item{C.LINselect}{Multiplying constant to be used for the LINselect method.
+Need to be greater than 1. Default to 1.1.}
 
 \item{independent}{Are the trait assumed to be independent from one another?
 Default to FALSE. OU in a multivariate setting only works if TRUE.}

@@ -4,7 +4,11 @@ Version: 0.0.0.9000
 Authors@R: c(
     person("Paul", "Bastide", email = "paul.bastide@agroparistech.fr", role = c("aut", "cre")),
     person("Mahendra", "Mariadassou", role = "ctb"))
-Description: What the package does (one paragraph).
+Description:
+    This package implements the automatic shift detection method for
+    Brownian Motion (BM) or  Ornstein Uhlenbeck (OU) models of trait evolution on
+    phylogenies. Some tools to handle equivalent shifts configurations are also
+    available.
 Depends:
     ape (>= 3.5),
     Matrix (>= 1.2.3),

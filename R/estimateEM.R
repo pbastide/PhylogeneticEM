@@ -102,14 +102,14 @@ NULL
 #' \item{normalized_half_life}{default to 10^(-2)}
 #' \item{log_likelihood}{default to 10^(-2)}
 #' }
-#' @param Nbr_It_Max the maximal number of iterations of the EM allowed. Default to 
+#' @param Nbr_It_Max the maximal number of iterations of the EM allowed. Default to
 #' 500 iterations.
 #' @param nbr_of_shifts the number of shifts allowed.
 #' @param alpha_known is the selection strength assumed to be known ?
 #' Default to FALSE.
 #' @param eps tolerance on the selection strength value before switching to a BM.
 #' Default to 10^(-3).
-#' @param known.selection.strength if \code{alpha_known=TRUE}, the value of the 
+#' @param known.selection.strength if \code{alpha_known=TRUE}, the value of the
 #' known selection strength.
 #' @param init.selection.strength (optional) a starting point for the selection
 #' strength value.
@@ -149,12 +149,12 @@ NULL
 #' function \code{\link{enumerate_tips_under_edges}}.
 #' @param T_tree (optional) matrix of incidence of the tree, result of function 
 #' \code{\link{incidence.matrix}}.
-#' @param U_tree (optional) full matrix of incidence of the tree, result of function 
+#' @param U_tree (optional) full matrix of incidence of the tree, result of function
 #' \code{\link{incidence.matrix.full}}.
 #' @param h_tree (optional) total height of the tree.
 #' @param F_moments (optional, internal)
-#' @param tol_half_life should the tolerance criterion be applied to the phylogenetic
-#' half life (TRUE, default) or to the raw selection strength ?
+#' @param tol_half_life should the tolerance criterion be applied to the
+#' phylogenetic half life (TRUE, default) or to the raw selection strength ?
 #' @param warning_several_solutions wether to issue a warning if several equivalent
 #' solutions are found (default to TRUE).
 #' @param convergence_mode one of "relative" (the default) or "absolute". Should the
@@ -890,8 +890,8 @@ estimateEM <- function(phylo,
 #' Need to be positive. Default to 0.1.
 #' @param C.BM2 Multiplying constant to be used for the BigeMassart2 method.
 #' Default to 2.5.
-#' @param C.LINselect Multiplying constant to be used for the LINselect method. Need to be
-#' greater than 1. Default to 1.1.
+#' @param C.LINselect Multiplying constant to be used for the LINselect method.
+#' Need to be greater than 1. Default to 1.1.
 #' @param method.variance Algorithm to be used for the moments computations at the
 #' E step. One of "simple" for the naive method; of "upward_downward" for the 
 #' Upward Downward method (usually faster). Default to "upward_downward".
