@@ -5,8 +5,8 @@ Authors@R: c(
     person("Paul", "Bastide", email = "paul.bastide@m4x.org", role = c("aut", "cre")),
     person("Mahendra", "Mariadassou", role = "ctb"))
 Description:
-    This package implements the automatic shift detection method for
-    Brownian Motion (BM) or Ornstein Uhlenbeck (OU) models of trait evolution on
+    Implementation of the automatic shift detection method for
+    Brownian Motion (BM) or Ornstein–Uhlenbeck (OU) models of trait evolution on
     phylogenies. Some tools to handle equivalent shifts configurations are also
     available.
 Depends:
@@ -25,7 +25,6 @@ Imports:
     methods (>= 3.2.1),
     plyr (>= 1.8.4),
     Rcpp (>= 0.12.6),
-    RcppArmadillo (>= 0.5.500.2.0),
     robustbase (>= 0.92.6),
     stats (>= 3.2.1),
     utils (>= 3.2.1)
