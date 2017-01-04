@@ -177,10 +177,12 @@ tolerance be applied to the raw parameters, or to the renormalized ones ?}
 \item{check_convergence_likelihood}{should the likelihood be taken into
 consideration for convergence assesment ? (default to TRUE).}
 
-\item{sBM_variance}{DEPRECATED. Used for BM equivalent computations. 
-Default to FALSE.}
+\item{sBM_variance}{Is the root of the BM supposed to be random and
+"stationnary"? Used for BM equivalent computations. Default to FALSE.}
 
-\item{method.OUsun}{DEPRECATED. Method to be used in univariate OU.}
+\item{method.OUsun}{Method to be used in univariate OU. One of "rescale" 
+(rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
+univariate processes).}
 
 \item{impute_init_Rphylopars}{Wether to use 
 \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 

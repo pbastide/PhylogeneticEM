@@ -15,9 +15,9 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   methods.segmentation = c("lasso", "best_single_move"), alpha_grid = TRUE,
   random.root = TRUE, stationary.root = TRUE, alpha = NULL,
   check.tips.names = TRUE, progress.bar = TRUE, estimates = NULL,
-  save_step = FALSE, sBM_variance = FALSE, method.OUsun = "rescale",
-  parallel_alpha = FALSE, Ncores = 3, impute_init_Rphylopars = FALSE,
-  K_lag_init = 5, light_result = TRUE, ...)
+  save_step = FALSE, parallel_alpha = FALSE, Ncores = 3,
+  impute_init_Rphylopars = FALSE, K_lag_init = 5, light_result = TRUE,
+  ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -112,16 +112,12 @@ Default to TRUE.}
 function can be re-run for other model election method. Default to NULL.}
 
 \item{save_step}{If alpha_grid=TRUE, wether to save the intermediate results
-for each value of alpha. Useful for long computations. Default to FALSE.}
-
-\item{sBM_variance}{DEPRECATED. Used for BM equivalent computations. 
+for each value of alpha (in a temporary file). Useful for long computations.
 Default to FALSE.}
 
-\item{method.OUsun}{DEPRECATED. Method to be used in univariate OU.}
-
-\item{parallel_alpha}{EXPERIMENTAL If alpha_grid=TRUE, wether to run the 
+\item{parallel_alpha}{If alpha_grid=TRUE, wether to run the 
 estimations with different values of alpha on separate cores. Default to 
-FALSE.}
+FALSE. If TRUE, the log is written as a temporary file.}
 
 \item{Ncores}{If parallel_alpha=TRUE, number of cores to be used.}
 

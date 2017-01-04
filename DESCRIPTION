@@ -2,11 +2,11 @@ Package: PhylogeneticEM
 Title: Automatic Shift Detection using a Phylogenetic EM
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Paul", "Bastide", email = "paul.bastide@agroparistech.fr", role = c("aut", "cre")),
+    person("Paul", "Bastide", email = "paul.bastide@m4x.org", role = c("aut", "cre")),
     person("Mahendra", "Mariadassou", role = "ctb"))
 Description:
     This package implements the automatic shift detection method for
-    Brownian Motion (BM) or  Ornstein Uhlenbeck (OU) models of trait evolution on
+    Brownian Motion (BM) or Ornstein Uhlenbeck (OU) models of trait evolution on
     phylogenies. Some tools to handle equivalent shifts configurations are also
     available.
 Depends:

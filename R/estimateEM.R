@@ -161,7 +161,11 @@ NULL
 #' tolerance be applied to the raw parameters, or to the renormalized ones ?
 #' @param check_convergence_likelihood should the likelihood be taken into
 #' consideration for convergence assesment ? (default to TRUE).
-#' 
+#' @param method.OUsun Method to be used in univariate OU. One of "rescale" 
+#' (rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
+#' univariate processes).
+#' @param sBM_variance Is the root of the BM supposed to be random and
+#' "stationnary"? Used for BM equivalent computations. Default to FALSE.
 #' 
 #' @return
 #' An object of class \code{EstimateEM}.
@@ -930,13 +934,14 @@ estimateEM <- function(phylo,
 #' @param estimates The result of a previous run of this same function. This
 #' function can be re-run for other model election method. Default to NULL.
 #' @param save_step If alpha_grid=TRUE, wether to save the intermediate results
-#' for each value of alpha. Useful for long computations. Default to FALSE.
-#' @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
+#' for each value of alpha (in a temporary file). Useful for long computations.
 #' Default to FALSE.
-#' @param method.OUsun DEPRECATED. Method to be used in univariate OU.
-#' @param parallel_alpha EXPERIMENTAL If alpha_grid=TRUE, wether to run the 
+# @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
+# Default to FALSE.
+# @param method.OUsun DEPRECATED. Method to be used in univariate OU.
+#' @param parallel_alpha If alpha_grid=TRUE, wether to run the 
 #' estimations with different values of alpha on separate cores. Default to 
-#' FALSE.
+#' FALSE. If TRUE, the log is written as a temporary file.
 #' @param Ncores If parallel_alpha=TRUE, number of cores to be used.
 # @param exportFunctions DEPRECATED. TO BE REMOVED.
 #' @param impute_init_Rphylopars Wether to use 
@@ -1005,8 +1010,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     progress.bar = TRUE,
                     estimates = NULL,
                     save_step = FALSE,
-                    sBM_variance = FALSE,
-                    method.OUsun = "rescale",
+                    # sBM_variance = FALSE,
+                    #method.OUsun = "rescale",
                     parallel_alpha = FALSE,
                     Ncores = 3,
                     # exportFunctions = ls(),
@@ -1034,6 +1039,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Independent traits #######################################################
+  method.OUsun = "rescale"
   if (p == 1) {
     method.OUsun = "raw"
     independent = TRUE
@@ -1114,7 +1120,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             progress.bar = progress.bar, 
                             estimates = estimates, 
                             save_step = save_step, 
-                            sBM_variance = sBM_variance, 
+                            # sBM_variance = sBM_variance, 
                             method.OUsun = method.OUsun, 
                             parallel_alpha = parallel_alpha, 
                             Ncores = Ncores, 
@@ -1915,7 +1921,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       stop("Package 'doParallel' is needed for parallel computation (option 'parallel_alpha = TRUE'). Please install this package, or set the option to 'FALSE'.",
            call. = FALSE)
     }
-    cl <- parallel::makeCluster(Ncores, outfile = "")
+    cl <- parallel::makeCluster(Ncores)
+                                # outfile = tempfile(pattern = "log_file_dopar_"))
     doParallel::registerDoParallel(cl)
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %dopar%
     {
@@ -2270,7 +2277,9 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
   }
   ## Format results and return
   res <- format_output_several_K_single(XX, light_result)
-  if (save_step) save(res, file = paste0("Tmp_", alp, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
+  if (save_step) save(res,
+                      file = tempfile(pattern = paste0("Alpha=", alp, "_"),
+                                      fileext = c(".RData")))
   return(res)
 }
 
@@ -2788,11 +2797,11 @@ format_output <- function(results_estim_EM, phylo, time = NA){
   return(X)
 }
 
-format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
-  alpha <- paste0("alpha_", alpha)
-  out[[alpha]] <- format_output_several_K_single(res_sev_K)
-  return(out)
-}
+# format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
+#   alpha <- paste0("alpha_", alpha)
+#   out[[alpha]] <- format_output_several_K_single(res_sev_K)
+#   return(out)
+# }
 
 format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
   dd <- do.call(rbind, res_sev_K)
@@ -2831,30 +2840,29 @@ format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
   return(res)
 }
 
-##
-#' @title Maximal number of shifts allowed
-#'
-#' @description
-#' \code{compute_K_max} computes the quantity 
-#' min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
-#' that is the maximal dimention allowed to get theoretical garenties during
-#' the selection model, when using the procedure defined by Baraud et al (2009)
-#'
-#' @details
-#' See Baraud et al (2009)
-#'
-#' @param ntaxa the number of tips
-#' @param kappa a real strictly bellow 1.
-#' 
-#' @return K_max the maximal number of shifts allowed.
-#' 
-#' @keywords internal
-#' 
-##
-compute_K_max <- function(ntaxa, kappa = 0.9){
-  if (kappa >= 1) stop("For K_max computation, one must have kappa < 1")
-  return(min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
-}
+# ##@title Maximal number of shifts allowed
+# 
+# @description
+# \code{compute_K_max} computes the quantity
+# min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+# that is the maximal dimention allowed to get theoretical garenties during
+# the selection model, when using the procedure defined by Baraud et al (2009)
+# 
+# @details
+# See Baraud et al (2009)
+# 
+# @param ntaxa the number of tips
+# @param kappa a real strictly bellow 1.
+# 
+# @return K_max the maximal number of shifts allowed.
+# 
+# @keywords internal
+# 
+# #
+# compute_K_max <- function(ntaxa, kappa = 0.9){
+#   if (kappa >= 1) stop("For K_max computation, one must have kappa < 1")
+#   return(min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+# }
 
 expand_method_selection <- function(method.selection){
   if ("Djump" %in% method.selection){
