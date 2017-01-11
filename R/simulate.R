@@ -206,7 +206,7 @@ plot.params_process <- function(x,
                                 label_offset = 0,
                                 axis_cex = 0.7,
                                 edge.width = 1,
-                                margin_plot = c(0,0,0,0),
+                                margin_plot = NULL,
                                 gray_scale = FALSE,
                                 ...){
   if (missing(traits)) traits <- 1:ncol(x$variance)
@@ -227,9 +227,9 @@ plot.params_process <- function(x,
     } 
   }
   
-  ## Save curent par
-  .pardefault <- par(no.readonly = T)
-  on.exit(par(.pardefault), add = TRUE)
+  # ## Save curent par
+  # .pardefault <- par(no.readonly = T)
+  # on.exit(par(.pardefault), add = TRUE)
   
   ## parameters
   params <- x

@@ -238,11 +238,11 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param alpha_border if \code{regime_boxes=TRUE}, the alpha parameter of
 #' the border of the box. Default to 70.
 #' @param show.tip.label whether to show the tip labels. Default to FALSE.
-#' @param label_cex if \code{show.tip.label=TRUE}, the size of the labels. default
+#' @param label_cex if \code{show.tip.label=TRUE}, the size of the labels. Default
 #' to 0.5.
 #' @param label_offset if \code{show.tip.label=TRUE}, the size of the offset between
 #' the tree and the labels. Default to 0.
-#' @param axis_cex cex for the label values of the plot. Default to 0.8.
+#' @param axis_cex cex for the label values of the plot. Default to 0.7.
 #' @param edge.width width of the edge. Default to 1.
 #' @param margin_plot vector giving the margin to around the plot.
 #' Default to \code{c(0, 0, 0, 0)}.
@@ -285,16 +285,16 @@ plot.PhyloEM <- function(x,
                          label_offset = 0,
                          axis_cex = 0.7,
                          edge.width = 1,
-                         margin_plot = c(0,0,0,0),
+                         margin_plot = NULL,
                          gray_scale = FALSE,
                          ...){
   ## Checking consistency
   if (plot_ancestral_states && length(traits) > 1) stop("Ancestral state plotting is only allowed for one single trait. Please select the trait you would like to plot with argument 'traits' (see documentation).")
   if (value_in_box && length(traits) > 1) stop("Showing the shifts values on the tree is only allowed for one single trait. Please select the trait you would like to plot with argument 'traits' (see documentation).")
   
-  ## Save curent par
-  .pardefault <- par(no.readonly = T)
-  on.exit(par(.pardefault), add = TRUE)
+  # ## Save curent par
+  # .pardefault <- par(no.readonly = T)
+  # on.exit(par(.pardefault), add = TRUE)
   
   ## parameters
   if (is.null(params)){
@@ -381,8 +381,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      alpha_border = 70,
                                      value_in_box = TRUE,
                                      shifts_cex = 1,
-                                     axis_cex = 0.8,
-                                     margin_plot = c(0,0,0,0),
+                                     axis_cex = 0.7,
+                                     margin_plot = NULL,
                                      color_shifts_regimes = FALSE,
                                      # shifts_regimes = NULL,
                                      plot_ancestral_states = FALSE,
@@ -397,9 +397,9 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      ancestral_as_shift = TRUE,
                                      gray_scale = FALSE,
                                      ...){
-  ## Save curent par
-  .pardefault <- par(no.readonly = T)
-  on.exit(par(.pardefault), add = TRUE)
+  # ## Save curent par
+  # .pardefault <- par(no.readonly = T)
+  # on.exit(par(.pardefault), add = TRUE)
   
   ntaxa <- length(phylo$tip.label)
   p_dim <- nrow(Y.state)
@@ -481,7 +481,11 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     }
   }
   ## Plot
-  if (!is.null(margin_plot)) par(mar = margin_plot, omi = margin_plot)
+  if (!is.null(margin_plot)){
+    opar <- par("mar", "omi")
+    par(mar = margin_plot, omi = margin_plot)
+    on.exit(par(opar))
+  }
   # Take care of the root
   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   # Plot tree
