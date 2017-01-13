@@ -921,6 +921,8 @@ estimateEM <- function(phylo,
 #' multivariate traits. OU with univariate traits can take both TRUE or FALSE. If
 #' TRUE, a grid based on the branch length of the tree is automatically computed,
 #' using function \code{\link{find_grid_alpha}}.
+#' @param nbr_alpha If \code{alpha_grid=TRUE}, the number of alpha values on the
+#' grid. Default to 10.
 #' @param random.root Wether the root is assumed to be random (TRUE) of fixed
 #' (FALSE). Default to TRUE
 #' @param stationary.root Wether the root is assumed to be in the stationnary 
@@ -965,6 +967,33 @@ estimateEM <- function(phylo,
 #' @seealso \code{\link{plot.PhyloEM}}, \code{\link{params_process.PhyloEM}},
 #' \code{\link{imputed_traits.PhyloEM}}
 #' 
+#' @examples
+#' \dontrun{
+#' ## Load Data
+#' data(monkeys)
+#' ## Run method
+#' # Note: use more alpha values for better results.
+#' res <- PhyloEM(Y_data = monkeys$dat,        ## data
+#'                phylo = monkeys$phy,         ## phylogeny
+#'                process = "scOU",            ## scalar OU
+#'                random.root = TRUE,          ## root is stationary
+#'                stationary.root = TRUE,
+#'                K_max = 10,                  ## maximal number of shifts
+#'                nbr_alpha = 4,               ## number of alpha values
+#'                parallel_alpha = TRUE,       ## parallelize on alpha values
+#'                Ncores = 2)
+#' ## Plot selected solution (LINselect)
+#' plot(res) # three shifts
+#' ## Plot selected solution (DDSE)
+#' plot(res, method.selection = "DDSE") # no shift
+#' ## Extract and solution with 5 shifts
+#' params_5 <- params_process(res, K = 5)
+#' plot(res, params = params_5)
+#' ## Show all equivalent solutions
+#' eq_sol <- equivalent_shifts(monkeys$phy, params_5)
+#' plot(eq_sol)
+#' }
+#' 
 #' @export
 #'
 ##
@@ -1003,6 +1032,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
                     methods.segmentation = c("lasso", "best_single_move"),
                     alpha_grid = TRUE,
+                    nbr_alpha = 10,
                     random.root = TRUE,
                     stationary.root = TRUE,
                     alpha = NULL,
@@ -1116,6 +1146,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             random.root = random.root, 
                             stationary.root = stationary.root, 
                             alpha = alpha, 
+                            nbr_alpha = nbr_alpha,
                             check.tips.names = check.tips.names, 
                             progress.bar = progress.bar, 
                             estimates = estimates, 
@@ -1646,17 +1677,23 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                independent = FALSE,
                                K_max, use_previous = TRUE,
                                order = TRUE,
-                               method.selection = c("BirgeMassart1", "BirgeMassart2", "BGHuni", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
+                               method.selection = c("BirgeMassart1", "BirgeMassart2",
+                                                    "BGHuni", "pBIC", "pBIC_l1ou",
+                                                    "BGHlsq", "BGHml",
+                                                    "BGHlsqraw", "BGHmlraw"),
                                C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
                                method.variance = "simple",
                                method.init = "default",
                                method.init.alpha = "default",
-                               method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
+                               method.init.alpha.estimation = c("regression",
+                                                                "regression.MM",
+                                                                "median"), 
                                methods.segmentation = c("lasso", "best_single_move"),
                                alpha_known = TRUE,
                                random.root = FALSE,
                                stationary.root = FALSE,
                                alpha = NULL,
+                               nbr_alpha = nbr_alpha,
                                check.tips.names = FALSE,
                                progress.bar = TRUE,
                                estimates = NULL,
@@ -1701,7 +1738,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   if (process == "BM") {
     alpha <- 0
   } else {
-    alpha <- find_grid_alpha(phylo, alpha, ...)
+    alpha <- find_grid_alpha(phylo, alpha, nbr_alpha = nbr_alpha, ...)
     if (stationary.root) alpha <- alpha[alpha != 0]
   }
   ## Loop on alpha
