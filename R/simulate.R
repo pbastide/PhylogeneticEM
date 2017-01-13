@@ -245,11 +245,11 @@ plot.params_process <- function(x,
   if (missing(imposed_scale)) imposed_scale <- Y_state
   
   ## Plotting
-  plot.data.process.actual(Y.state = Y_state,
+  plot.data.process.actual(Y.state = Y_state[traits, , drop = FALSE],
                            phylo = phylo,
                            params = params,
                            process = x$process,
-                           miss = is.na(Y_state[traits, ]),
+                           miss = is.na(Y_state[traits, , drop = FALSE]),
                            imposed_scale = imposed_scale,
                            root_adj = root_adj,
                            shifts_adj = shifts_adj,

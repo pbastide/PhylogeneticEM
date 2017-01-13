@@ -1921,7 +1921,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       stop("Package 'doParallel' is needed for parallel computation (option 'parallel_alpha = TRUE'). Please install this package, or set the option to 'FALSE'.",
            call. = FALSE)
     }
-    cl <- parallel::makeCluster(Ncores)
+    cl <- parallel::makeCluster(Ncores, outfile = "")
                                 # outfile = tempfile(pattern = "log_file_dopar_"))
     doParallel::registerDoParallel(cl)
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %dopar%
