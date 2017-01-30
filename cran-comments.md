@@ -5,7 +5,7 @@
 ## R CMD check results
 There were no ERRORs, WARNINGs.
 
-There was one NOTE on win-builder:
+There was one NOTE:
 
 * checking CRAN incoming feasibility ... NOTE
 Maintainer: 'Paul Bastide <paul.bastide@m4x.org>'
