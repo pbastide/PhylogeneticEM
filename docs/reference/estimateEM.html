@@ -142,7 +142,7 @@ items:
 </dl>
 </dd>
       <dt>Nbr_It_Max</dt>
-      <dd>the maximal number of iterations of the EM allowed. Default to 
+      <dd>the maximal number of iterations of the EM allowed. Default to
 500 iterations.</dd>
       <dt>method.variance</dt>
       <dd>Algorithm to be used for the moments computations at the
@@ -179,7 +179,7 @@ Default to FALSE.</dd>
       <dd>tolerance on the selection strength value before switching to a BM.
 Default to 10^(-3).</dd>
       <dt>known.selection.strength</dt>
-      <dd>if <code>alpha_known=TRUE</code>, the value of the 
+      <dd>if <code>alpha_known=TRUE</code>, the value of the
 known selection strength.</dd>
       <dt>init.selection.strength</dt>
       <dd>(optional) a starting point for the selection
@@ -242,15 +242,15 @@ function <code><a href='enumerate_tips_under_edges.html'>enumerate_tips_under_ed
       <dd>(optional) matrix of incidence of the tree, result of function 
 <code><a href='incidence.matrix.html'>incidence.matrix</a></code>.</dd>
       <dt>U_tree</dt>
-      <dd>(optional) full matrix of incidence of the tree, result of function 
+      <dd>(optional) full matrix of incidence of the tree, result of function
 <code><a href='incidence.matrix.full.html'>incidence.matrix.full</a></code>.</dd>
       <dt>h_tree</dt>
       <dd>(optional) total height of the tree.</dd>
       <dt>F_moments</dt>
       <dd>(optional, internal)</dd>
       <dt>tol_half_life</dt>
-      <dd>should the tolerance criterion be applied to the phylogenetic
-half life (TRUE, default) or to the raw selection strength ?</dd>
+      <dd>should the tolerance criterion be applied to the
+phylogenetic half life (TRUE, default) or to the raw selection strength ?</dd>
       <dt>warning_several_solutions</dt>
       <dd>wether to issue a warning if several equivalent
 solutions are found (default to TRUE).</dd>
@@ -261,10 +261,12 @@ tolerance be applied to the raw parameters, or to the renormalized ones ?</dd>
       <dd>should the likelihood be taken into
 consideration for convergence assesment ? (default to TRUE).</dd>
       <dt>sBM_variance</dt>
-      <dd>DEPRECATED. Used for BM equivalent computations. 
-Default to FALSE.</dd>
+      <dd>Is the root of the BM supposed to be random and
+&quot;stationnary&quot;? Used for BM equivalent computations. Default to FALSE.</dd>
       <dt>method.OUsun</dt>
-      <dd>DEPRECATED. Method to be used in univariate OU.</dd>
+      <dd>Method to be used in univariate OU. One of &quot;rescale&quot; 
+(rescale the tree to fit a BM) or &quot;raw&quot; (directly use an OU, only available for
+univariate processes).</dd>
       <dt>impute_init_Rphylopars</dt>
       <dd>Wether to use 
 <code><a href='http://www.rdocumentation.org/packages/Rphylopars/topics/Rphylopars-package'>Rphylopars-package</a></code> for initialization. 

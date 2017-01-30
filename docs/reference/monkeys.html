@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Find a reasonable grid for alpha — find_grid_alpha • PhylogeneticEM</title>
+<title>New World Monkeys dataset — monkeys • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -74,53 +74,42 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Find a reasonable grid for alpha</h1>
+    <h1>New World Monkeys dataset</h1>
     </div>
 
     
-    <p>Grid so that 
-ln(2)*quantile(d_ij)/factor_up_alpha &lt; t_1/2 &lt; factor_down_alpha * ln(2) * h_tree
-Ensures that for alpha_min, it is almost a BM, and for alpha_max,
-almost all the tips are decorrelated.</p>
+    <p>Morphometric dataset and phylogeny for brain shape variation of 50 species of
+New World monkeys (platyrrhine).</p>
     
 
-    <pre><span class='fu'>find_grid_alpha</span>(<span class='no'>phy</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>factor_up_alpha</span> <span class='kw'>=</span> <span class='fl'>2</span>,
-  <span class='kw'>factor_down_alpha</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>quantile_low_distance</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>,
-  <span class='kw'>log_transform</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>phy</dt>
-      <dd>phylogenetic tree of class &quot;<code>phylo</code>&quot;</dd>
-      <dt>alpha</dt>
-      <dd>fixed vector of alpha values if already known. Default to NULL.</dd>
-      <dt>nbr_alpha</dt>
-      <dd>the number of elements in the grid</dd>
-      <dt>factor_up_alpha</dt>
-      <dd>factor for up scalability</dd>
-      <dt>factor_down_alpha</dt>
-      <dd>factor for down scalability</dd>
-      <dt>quantile_low_distance</dt>
-      <dd>quantile for min distance</dd>
-      <dt>log_transform</dt>
-      <dd>whether to take a log scale for the spacing of alpha
-values. Default to TRUE.</dd>
-      <dt>...</dt>
-      <dd>not used.</dd>
-    </dl>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <pre><span class='no'>monkeys</span></pre>
+        
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>A grid of alpha values</p>
+    <p>A list containing two objects:
+<dl class='dl-horizontal'>
+  <dt>phy</dt><dd>The Phylogenetic tree for the platyrrhine species, pruned to match
+  the species in the morphometric dataset</dd>
+  <dt>dat</dt><dd>First two PC scores from a PCA of the species-averaged Procrustes
+  coordinates</dd>
+</dl></p>
+    
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Aristide, L., dos Reis, S. F., Machado, A. C., Lima, I., Lopes, R. T.
+&amp; Perez, S. I. (2016). Brain shape convergence in the adaptive radiation of New
+World monkeys. Proceedings of the National Academy of Sciences, 113(8), 2158–2163.
+http://doi.org/10.1073/pnas.1514473113</p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#value">Value</a></li>
+      <li><a href="#format">Format</a></li>
+
+      <li><a href="#references">References</a></li>
           </ul>
 
   </div>
