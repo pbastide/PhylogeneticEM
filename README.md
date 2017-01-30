@@ -3,7 +3,7 @@ PhylogeneticEM
 [![Travis-CI Build Status](https://travis-ci.org/pbastide/PhylogeneticEM.svg?branch=cran_1-0-0)](https://travis-ci.org/pbastide/PhylogeneticEM)
 [![](https://img.shields.io/badge/docs-vignettes-blue.svg)](http://pbastide.github.io/PhylogeneticEM/)
 [![codecov](https://codecov.io/gh/pbastide/PhylogeneticEM/branch/cran_1-0-0/graph/badge.svg)](https://codecov.io/gh/pbastide/PhylogeneticEM)
-[![CRAN_Status_Badge](https://img.shields.io/badge/CRAN-1.0.0-orange.svg)](https://cran.r-project.org/package=PhylogeticEM)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/PhylogeneticEM)](https://cran.r-project.org/package=PhylogeticEM)
 
 Implementation of the EM algorithm for the detection of shifts in a phylogeny.
 
