@@ -38,7 +38,7 @@ Function \code{\link{plot.enumerate_parsimony}} plots all the solutions found on
 the tree.
 }
 \examples{
-tree <- read.tree(text="(((0,1),2),2);")
+tree <- read.tree(text="(((A,B),C),D);")
 plot(tree)
 clusters <- c(0, 1, 2, 2)
 sols <- enumerate_parsimony(tree, clusters)

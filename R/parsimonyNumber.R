@@ -688,7 +688,7 @@ check_parsimony_clusters <- function(tree, edges, clusters){
 #' \code{\link{equivalent_shifts}}
 #'
 #' @examples
-#' tree <- read.tree(text="(((0,1),2),2);")
+#' tree <- read.tree(text="(((A,B),C),D);")
 #' plot(tree)
 #' clusters <- c(0, 1, 2, 2)
 #' sols <- enumerate_parsimony(tree, clusters)
@@ -833,8 +833,13 @@ plot.enumerate_parsimony <- function(x,
   scr <- split.screen(c(nbrLignes, nbr_col))
   for (sol in 1:nbrSol) {
     screen(scr[sol])
-    plot.phylo(phylo, ...)
+    col <- solutions[sol, ]
+    col <- as.factor(col)
+    levels(col) <- c("black", rainbow(length(levels(col)) - 1,
+                                      start = 0, v = 0.5))
+    plot.phylo(phylo, edge.color = col[phylo$edge[, 2]], ...)
     nodelabels(text = solutions[sol, (ntaxa+1):ncol(solutions)], ...)
+    tiplabels(text = solutions[sol, 1:ntaxa], ...)
     if(numbering){
       legend("topleft",
              legend = sol,
