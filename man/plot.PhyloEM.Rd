@@ -13,7 +13,7 @@
   shifts_adj = 0, root_adj = 1, color_shifts_regimes = FALSE,
   regime_boxes = FALSE, alpha_border = 70, show.tip.label = FALSE,
   label_cex = 0.5, label_offset = 0, axis_cex = 0.7, edge.width = 1,
-  margin_plot = c(0, 0, 0, 0), gray_scale = FALSE, ...)
+  margin_plot = NULL, gray_scale = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{PhyloEM}, result of function
@@ -89,13 +89,13 @@ the border of the box. Default to 70.}
 
 \item{show.tip.label}{whether to show the tip labels. Default to FALSE.}
 
-\item{label_cex}{if \code{show.tip.label=TRUE}, the size of the labels. default
+\item{label_cex}{if \code{show.tip.label=TRUE}, the size of the labels. Default
 to 0.5.}
 
 \item{label_offset}{if \code{show.tip.label=TRUE}, the size of the offset between
 the tree and the labels. Default to 0.}
 
-\item{axis_cex}{cex for the label values of the plot. Default to 0.8.}
+\item{axis_cex}{cex for the label values of the plot. Default to 0.7.}
 
 \item{edge.width}{width of the edge. Default to 1.}
 

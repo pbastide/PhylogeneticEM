@@ -126,7 +126,7 @@ the tree.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>tree</span> <span class='kw'>&lt;-</span> <span class='fu'>read.tree</span>(<span class='kw'>text</span><span class='kw'>=</span><span class='st'>"(((0,1),2),2);"</span>)
+    <pre class="examples"><div class='input'><span class='no'>tree</span> <span class='kw'>&lt;-</span> <span class='fu'>read.tree</span>(<span class='kw'>text</span><span class='kw'>=</span><span class='st'>"(((A,B),C),D);"</span>)
 <span class='fu'>plot</span>(<span class='no'>tree</span>)</div><img src='enumerate_parsimony-2.png' alt='' width='540' height='400' /><div class='input'><span class='no'>clusters</span> <span class='kw'>&lt;-</span> <span class='fu'>c</span>(<span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>2</span>)
 <span class='no'>sols</span> <span class='kw'>&lt;-</span> <span class='fu'>enumerate_parsimony</span>(<span class='no'>tree</span>, <span class='no'>clusters</span>)
 <span class='fu'>plot</span>(<span class='no'>sols</span>)</div><img src='enumerate_parsimony-4.png' alt='' width='540' height='400' /><div class='input'>

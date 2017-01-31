@@ -102,14 +102,14 @@ NULL
 #' \item{normalized_half_life}{default to 10^(-2)}
 #' \item{log_likelihood}{default to 10^(-2)}
 #' }
-#' @param Nbr_It_Max the maximal number of iterations of the EM allowed. Default to 
+#' @param Nbr_It_Max the maximal number of iterations of the EM allowed. Default to
 #' 500 iterations.
 #' @param nbr_of_shifts the number of shifts allowed.
 #' @param alpha_known is the selection strength assumed to be known ?
 #' Default to FALSE.
 #' @param eps tolerance on the selection strength value before switching to a BM.
 #' Default to 10^(-3).
-#' @param known.selection.strength if \code{alpha_known=TRUE}, the value of the 
+#' @param known.selection.strength if \code{alpha_known=TRUE}, the value of the
 #' known selection strength.
 #' @param init.selection.strength (optional) a starting point for the selection
 #' strength value.
@@ -149,19 +149,23 @@ NULL
 #' function \code{\link{enumerate_tips_under_edges}}.
 #' @param T_tree (optional) matrix of incidence of the tree, result of function 
 #' \code{\link{incidence.matrix}}.
-#' @param U_tree (optional) full matrix of incidence of the tree, result of function 
+#' @param U_tree (optional) full matrix of incidence of the tree, result of function
 #' \code{\link{incidence.matrix.full}}.
 #' @param h_tree (optional) total height of the tree.
 #' @param F_moments (optional, internal)
-#' @param tol_half_life should the tolerance criterion be applied to the phylogenetic
-#' half life (TRUE, default) or to the raw selection strength ?
+#' @param tol_half_life should the tolerance criterion be applied to the
+#' phylogenetic half life (TRUE, default) or to the raw selection strength ?
 #' @param warning_several_solutions wether to issue a warning if several equivalent
 #' solutions are found (default to TRUE).
 #' @param convergence_mode one of "relative" (the default) or "absolute". Should the
 #' tolerance be applied to the raw parameters, or to the renormalized ones ?
 #' @param check_convergence_likelihood should the likelihood be taken into
 #' consideration for convergence assesment ? (default to TRUE).
-#' 
+#' @param method.OUsun Method to be used in univariate OU. One of "rescale" 
+#' (rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
+#' univariate processes).
+#' @param sBM_variance Is the root of the BM supposed to be random and
+#' "stationnary"? Used for BM equivalent computations. Default to FALSE.
 #' 
 #' @return
 #' An object of class \code{EstimateEM}.
@@ -890,8 +894,8 @@ estimateEM <- function(phylo,
 #' Need to be positive. Default to 0.1.
 #' @param C.BM2 Multiplying constant to be used for the BigeMassart2 method.
 #' Default to 2.5.
-#' @param C.LINselect Multiplying constant to be used for the LINselect method. Need to be
-#' greater than 1. Default to 1.1.
+#' @param C.LINselect Multiplying constant to be used for the LINselect method.
+#' Need to be greater than 1. Default to 1.1.
 #' @param method.variance Algorithm to be used for the moments computations at the
 #' E step. One of "simple" for the naive method; of "upward_downward" for the 
 #' Upward Downward method (usually faster). Default to "upward_downward".
@@ -917,6 +921,8 @@ estimateEM <- function(phylo,
 #' multivariate traits. OU with univariate traits can take both TRUE or FALSE. If
 #' TRUE, a grid based on the branch length of the tree is automatically computed,
 #' using function \code{\link{find_grid_alpha}}.
+#' @param nbr_alpha If \code{alpha_grid=TRUE}, the number of alpha values on the
+#' grid. Default to 10.
 #' @param random.root Wether the root is assumed to be random (TRUE) of fixed
 #' (FALSE). Default to TRUE
 #' @param stationary.root Wether the root is assumed to be in the stationnary 
@@ -930,13 +936,14 @@ estimateEM <- function(phylo,
 #' @param estimates The result of a previous run of this same function. This
 #' function can be re-run for other model election method. Default to NULL.
 #' @param save_step If alpha_grid=TRUE, wether to save the intermediate results
-#' for each value of alpha. Useful for long computations. Default to FALSE.
-#' @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
+#' for each value of alpha (in a temporary file). Useful for long computations.
 #' Default to FALSE.
-#' @param method.OUsun DEPRECATED. Method to be used in univariate OU.
-#' @param parallel_alpha EXPERIMENTAL If alpha_grid=TRUE, wether to run the 
+# @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
+# Default to FALSE.
+# @param method.OUsun DEPRECATED. Method to be used in univariate OU.
+#' @param parallel_alpha If alpha_grid=TRUE, wether to run the 
 #' estimations with different values of alpha on separate cores. Default to 
-#' FALSE.
+#' FALSE. If TRUE, the log is written as a temporary file.
 #' @param Ncores If parallel_alpha=TRUE, number of cores to be used.
 # @param exportFunctions DEPRECATED. TO BE REMOVED.
 #' @param impute_init_Rphylopars Wether to use 
@@ -959,6 +966,33 @@ estimateEM <- function(phylo,
 #' 
 #' @seealso \code{\link{plot.PhyloEM}}, \code{\link{params_process.PhyloEM}},
 #' \code{\link{imputed_traits.PhyloEM}}
+#' 
+#' @examples
+#' \dontrun{
+#' ## Load Data
+#' data(monkeys)
+#' ## Run method
+#' # Note: use more alpha values for better results.
+#' res <- PhyloEM(Y_data = monkeys$dat,        ## data
+#'                phylo = monkeys$phy,         ## phylogeny
+#'                process = "scOU",            ## scalar OU
+#'                random.root = TRUE,          ## root is stationary
+#'                stationary.root = TRUE,
+#'                K_max = 10,                  ## maximal number of shifts
+#'                nbr_alpha = 4,               ## number of alpha values
+#'                parallel_alpha = TRUE,       ## parallelize on alpha values
+#'                Ncores = 2)
+#' ## Plot selected solution (LINselect)
+#' plot(res) # three shifts
+#' ## Plot selected solution (DDSE)
+#' plot(res, method.selection = "DDSE") # no shift
+#' ## Extract and solution with 5 shifts
+#' params_5 <- params_process(res, K = 5)
+#' plot(res, params = params_5)
+#' ## Show all equivalent solutions
+#' eq_sol <- equivalent_shifts(monkeys$phy, params_5)
+#' plot(eq_sol)
+#' }
 #' 
 #' @export
 #'
@@ -998,6 +1032,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
                     methods.segmentation = c("lasso", "best_single_move"),
                     alpha_grid = TRUE,
+                    nbr_alpha = 10,
                     random.root = TRUE,
                     stationary.root = TRUE,
                     alpha = NULL,
@@ -1005,8 +1040,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     progress.bar = TRUE,
                     estimates = NULL,
                     save_step = FALSE,
-                    sBM_variance = FALSE,
-                    method.OUsun = "rescale",
+                    # sBM_variance = FALSE,
+                    #method.OUsun = "rescale",
                     parallel_alpha = FALSE,
                     Ncores = 3,
                     # exportFunctions = ls(),
@@ -1034,6 +1069,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Independent traits #######################################################
+  method.OUsun = "rescale"
   if (p == 1) {
     method.OUsun = "raw"
     independent = TRUE
@@ -1042,7 +1078,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   ## Adaptations to the BM ####################################################
   if (process == "BM"){
     if (independent){
-      warning("The independent option is not available for the BM. The traits are supposed to be correlated.")
+      if (p > 1) warning("The independent option is not available for the BM. The traits are supposed to be correlated.")
       independent <- FALSE
     }
     alpha_grid <- TRUE
@@ -1110,11 +1146,12 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             random.root = random.root, 
                             stationary.root = stationary.root, 
                             alpha = alpha, 
+                            nbr_alpha = nbr_alpha,
                             check.tips.names = check.tips.names, 
                             progress.bar = progress.bar, 
                             estimates = estimates, 
                             save_step = save_step, 
-                            sBM_variance = sBM_variance, 
+                            # sBM_variance = sBM_variance, 
                             method.OUsun = method.OUsun, 
                             parallel_alpha = parallel_alpha, 
                             Ncores = Ncores, 
@@ -1640,17 +1677,23 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                independent = FALSE,
                                K_max, use_previous = TRUE,
                                order = TRUE,
-                               method.selection = c("BirgeMassart1", "BirgeMassart2", "BGHuni", "pBIC", "pBIC_l1ou", "BGHlsq", "BGHml", "BGHlsqraw", "BGHmlraw"),
+                               method.selection = c("BirgeMassart1", "BirgeMassart2",
+                                                    "BGHuni", "pBIC", "pBIC_l1ou",
+                                                    "BGHlsq", "BGHml",
+                                                    "BGHlsqraw", "BGHmlraw"),
                                C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
                                method.variance = "simple",
                                method.init = "default",
                                method.init.alpha = "default",
-                               method.init.alpha.estimation = c("regression", "regression.MM", "median"), 
+                               method.init.alpha.estimation = c("regression",
+                                                                "regression.MM",
+                                                                "median"), 
                                methods.segmentation = c("lasso", "best_single_move"),
                                alpha_known = TRUE,
                                random.root = FALSE,
                                stationary.root = FALSE,
                                alpha = NULL,
+                               nbr_alpha = nbr_alpha,
                                check.tips.names = FALSE,
                                progress.bar = TRUE,
                                estimates = NULL,
@@ -1695,7 +1738,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   if (process == "BM") {
     alpha <- 0
   } else {
-    alpha <- find_grid_alpha(phylo, alpha, ...)
+    alpha <- find_grid_alpha(phylo, alpha, nbr_alpha = nbr_alpha, ...)
     if (stationary.root) alpha <- alpha[alpha != 0]
   }
   ## Loop on alpha
@@ -1916,6 +1959,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
            call. = FALSE)
     }
     cl <- parallel::makeCluster(Ncores, outfile = "")
+                                # outfile = tempfile(pattern = "log_file_dopar_"))
     doParallel::registerDoParallel(cl)
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %dopar%
     {
@@ -2270,7 +2314,9 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
   }
   ## Format results and return
   res <- format_output_several_K_single(XX, light_result)
-  if (save_step) save(res, file = paste0("Tmp_", alp, "_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S")))
+  if (save_step) save(res,
+                      file = tempfile(pattern = paste0("Alpha=", alp, "_"),
+                                      fileext = c(".RData")))
   return(res)
 }
 
@@ -2788,11 +2834,11 @@ format_output <- function(results_estim_EM, phylo, time = NA){
   return(X)
 }
 
-format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
-  alpha <- paste0("alpha_", alpha)
-  out[[alpha]] <- format_output_several_K_single(res_sev_K)
-  return(out)
-}
+# format_output_several_K <- function(res_sev_K, out, alpha = "estimated"){
+#   alpha <- paste0("alpha_", alpha)
+#   out[[alpha]] <- format_output_several_K_single(res_sev_K)
+#   return(out)
+# }
 
 format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
   dd <- do.call(rbind, res_sev_K)
@@ -2831,30 +2877,29 @@ format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
   return(res)
 }
 
-##
-#' @title Maximal number of shifts allowed
-#'
-#' @description
-#' \code{compute_K_max} computes the quantity 
-#' min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
-#' that is the maximal dimention allowed to get theoretical garenties during
-#' the selection model, when using the procedure defined by Baraud et al (2009)
-#'
-#' @details
-#' See Baraud et al (2009)
-#'
-#' @param ntaxa the number of tips
-#' @param kappa a real strictly bellow 1.
-#' 
-#' @return K_max the maximal number of shifts allowed.
-#' 
-#' @keywords internal
-#' 
-##
-compute_K_max <- function(ntaxa, kappa = 0.9){
-  if (kappa >= 1) stop("For K_max computation, one must have kappa < 1")
-  return(min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
-}
+# ##@title Maximal number of shifts allowed
+# 
+# @description
+# \code{compute_K_max} computes the quantity
+# min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+# that is the maximal dimention allowed to get theoretical garenties during
+# the selection model, when using the procedure defined by Baraud et al (2009)
+# 
+# @details
+# See Baraud et al (2009)
+# 
+# @param ntaxa the number of tips
+# @param kappa a real strictly bellow 1.
+# 
+# @return K_max the maximal number of shifts allowed.
+# 
+# @keywords internal
+# 
+# #
+# compute_K_max <- function(ntaxa, kappa = 0.9){
+#   if (kappa >= 1) stop("For K_max computation, one must have kappa < 1")
+#   return(min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
+# }
 
 expand_method_selection <- function(method.selection){
   if ("Djump" %in% method.selection){

@@ -678,8 +678,9 @@ check_dimensions.shifts <- function(p, shifts){
 ##
 find_grid_alpha <- function(phy, alpha = NULL,
                             nbr_alpha = 10,
-                            factor_up_alpha = 2, factor_down_alpha = 3,
-                            quantile_low_distance = 0.05,
+                            factor_up_alpha = 2,
+                            factor_down_alpha = 3,
+                            quantile_low_distance = 0.0001,
                             log_transform = TRUE, ...){
   if (!is.null(alpha)) return(alpha)
   dtips <- cophenetic(phy)

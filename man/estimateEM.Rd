@@ -60,7 +60,7 @@ items:
 \item{log_likelihood}{default to 10^(-2)}
 }}
 
-\item{Nbr_It_Max}{the maximal number of iterations of the EM allowed. Default to 
+\item{Nbr_It_Max}{the maximal number of iterations of the EM allowed. Default to
 500 iterations.}
 
 \item{method.variance}{Algorithm to be used for the moments computations at the
@@ -97,7 +97,7 @@ Default to FALSE.}
 \item{eps}{tolerance on the selection strength value before switching to a BM.
 Default to 10^(-3).}
 
-\item{known.selection.strength}{if \code{alpha_known=TRUE}, the value of the 
+\item{known.selection.strength}{if \code{alpha_known=TRUE}, the value of the
 known selection strength.}
 
 \item{init.selection.strength}{(optional) a starting point for the selection
@@ -158,15 +158,15 @@ function \code{\link{enumerate_tips_under_edges}}.}
 \item{T_tree}{(optional) matrix of incidence of the tree, result of function 
 \code{\link{incidence.matrix}}.}
 
-\item{U_tree}{(optional) full matrix of incidence of the tree, result of function 
+\item{U_tree}{(optional) full matrix of incidence of the tree, result of function
 \code{\link{incidence.matrix.full}}.}
 
 \item{h_tree}{(optional) total height of the tree.}
 
 \item{F_moments}{(optional, internal)}
 
-\item{tol_half_life}{should the tolerance criterion be applied to the phylogenetic
-half life (TRUE, default) or to the raw selection strength ?}
+\item{tol_half_life}{should the tolerance criterion be applied to the
+phylogenetic half life (TRUE, default) or to the raw selection strength ?}
 
 \item{warning_several_solutions}{wether to issue a warning if several equivalent
 solutions are found (default to TRUE).}
@@ -177,10 +177,12 @@ tolerance be applied to the raw parameters, or to the renormalized ones ?}
 \item{check_convergence_likelihood}{should the likelihood be taken into
 consideration for convergence assesment ? (default to TRUE).}
 
-\item{sBM_variance}{DEPRECATED. Used for BM equivalent computations. 
-Default to FALSE.}
+\item{sBM_variance}{Is the root of the BM supposed to be random and
+"stationnary"? Used for BM equivalent computations. Default to FALSE.}
 
-\item{method.OUsun}{DEPRECATED. Method to be used in univariate OU.}
+\item{method.OUsun}{Method to be used in univariate OU. One of "rescale" 
+(rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
+univariate processes).}
 
 \item{impute_init_Rphylopars}{Wether to use 
 \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 

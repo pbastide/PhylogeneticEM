@@ -239,7 +239,7 @@ arma::vec prod_na(arma::mat const & S, arma::vec const & m, arma::uvec const & m
 void Upward::recursion(Model const & mod, arma::umat const & ed,
                        int p_d, int ntaxa) {
   int nEdges = ed.n_rows;
-  for (arma::uword i = 0; i < nEdges; i++){ // Loop on the edges (rows of ed)
+  for (int i = 0; i < nEdges; i++){ // Loop on the edges (rows of ed)
     int father = ed(i, 0) - 1;
     if (! arma::is_finite(csts(father))){// This node has not already been visited.
       // Find children of the node
@@ -419,8 +419,8 @@ Moments::Moments(arma::mat const & data, arma::umat const & ed){
   int ntaxa = data.n_cols;
   exps.head_cols(ntaxa) = data;
   // Zeros variances / covariance for known values
-  for (arma::uword i = 0; i < ntaxa; i++){
-    for (arma::uword l = 0; l < p_d; l++){
+  for (int i = 0; i < ntaxa; i++){
+    for (int l = 0; l < p_d; l++){
       if (! Rcpp::NumericVector::is_na(exps(l, i))){
         vars.subcube(0, l, i, p_d - 1, l, i).zeros(); // column var
         vars.subcube(l, 0, i, l, p_d - 1, i).zeros(); // line var

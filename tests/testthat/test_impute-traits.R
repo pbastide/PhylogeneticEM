@@ -58,46 +58,73 @@ test_that("imputations- scOU - random root", {
                        light_result = FALSE,
                        check.tips.names = FALSE)
   
-  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "expectations"),
+  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, 
+                              trait = 1:2, where = "tips", what = "expectations"),
                res_heavy$alpha_max$m_Y_estim$'4')
   
   expect_equal(sum(residuals(res_heavy, K=4)^2),
                res_heavy$alpha_max$results_summary$least_squares_raw[5])
   
-  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "variances"),
+  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "tips", what = "variances"),
                res_heavy$alpha_max$Yvar$'4')
-  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "imput"),
+  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "tips", what = "imput"),
                res_heavy$alpha_max$Yhat$'4')
   
-  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "nodes", what = "variances"),
+  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "nodes", what = "variances"),
                res_heavy$alpha_max$Zvar$'4')
-  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength, trait = 1:2, where = "nodes", what = "imput"),
+  expect_equal(imputed_traits(res_heavy, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "nodes", what = "imput"),
                res_heavy$alpha_max$Zhat$'4')
   
   ## Light
   res_light <- enlight(res_heavy)
-  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "expectations"),
+  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "tips", what = "expectations"),
                res_heavy$alpha_max$m_Y_estim$'4')
   
-  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "variances"),
+  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "tips", what = "variances"),
                res_heavy$alpha_max$Yvar$'4')
-  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength, trait = 1:2, where = "tips", what = "imput"),
+  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "tips", what = "imput"),
                res_heavy$alpha_max$Yhat$'4')
   
-  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength, trait = 1:2, where = "nodes", what = "variances"),
+  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "nodes", what = "variances"),
                res_heavy$alpha_max$Zvar$'4')
-  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength, trait = 1:2, where = "nodes", what = "imput"),
+  expect_equal(imputed_traits(res_light, K=4, alpha = selection.strength,
+                              trait = 1:2, where = "nodes", what = "imput"),
                res_heavy$alpha_max$Zhat$'4')
   
   ## Select
-  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsq"),
-               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsq"))
-  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHml"),
-               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHml"))
-  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsqraw"),
-               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHlsqraw"))
-  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHmlraw"),
-               imputed_traits(res_heavy, trait = 1:2, where = "tips", what = "expectations", model.selection = "BGHmlraw"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHlsq"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHlsq"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHml"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHml"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHlsqraw"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHlsqraw"))
+  expect_equal(imputed_traits(res_light, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHmlraw"),
+               imputed_traits(res_heavy, trait = 1:2, where = "tips",
+                              what = "expectations", model.selection = "BGHmlraw"))
+  
+  ## rBM
+  pp <- params_process(res_light, K = 3, alpha = 3, rBM = TRUE)
+  pp$selection.strength <- NULL
+  pp$process <- NULL
+  class(pp) <- NULL
+  rr <- compute_raw_parameters(res_light$phylo, 
+                               res_light$alpha_3$params_estim$`3`)
+  expect_equal(pp, rr)
 })
 
 test_that("imputations- scOU - fixed root", {

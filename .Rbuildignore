@@ -13,3 +13,6 @@
 ^\.travis\.yml$
 ^_pkgdown\.yml$
 ^docs$
+^data-raw$
+^README\.md$
+^cran-comments\.md$

@@ -13,11 +13,11 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   method.init.alpha = "estimation",
   method.init.alpha.estimation = c("regression", "regression.MM", "median"),
   methods.segmentation = c("lasso", "best_single_move"), alpha_grid = TRUE,
-  random.root = TRUE, stationary.root = TRUE, alpha = NULL,
-  check.tips.names = TRUE, progress.bar = TRUE, estimates = NULL,
-  save_step = FALSE, sBM_variance = FALSE, method.OUsun = "rescale",
-  parallel_alpha = FALSE, Ncores = 3, impute_init_Rphylopars = FALSE,
-  K_lag_init = 5, light_result = TRUE, ...)
+  nbr_alpha = 10, random.root = TRUE, stationary.root = TRUE,
+  alpha = NULL, check.tips.names = TRUE, progress.bar = TRUE,
+  estimates = NULL, save_step = FALSE, parallel_alpha = FALSE,
+  Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
+  light_result = TRUE, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -59,8 +59,8 @@ Need to be positive. Default to 0.1.}
 \item{C.BM2}{Multiplying constant to be used for the BigeMassart2 method.
 Default to 2.5.}
 
-\item{C.LINselect}{Multiplying constant to be used for the LINselect method. Need to be
-greater than 1. Default to 1.1.}
+\item{C.LINselect}{Multiplying constant to be used for the LINselect method.
+Need to be greater than 1. Default to 1.1.}
 
 \item{method.variance}{Algorithm to be used for the moments computations at the
 E step. One of "simple" for the naive method; of "upward_downward" for the 
@@ -93,6 +93,9 @@ multivariate traits. OU with univariate traits can take both TRUE or FALSE. If
 TRUE, a grid based on the branch length of the tree is automatically computed,
 using function \code{\link{find_grid_alpha}}.}
 
+\item{nbr_alpha}{If \code{alpha_grid=TRUE}, the number of alpha values on the
+grid. Default to 10.}
+
 \item{random.root}{Wether the root is assumed to be random (TRUE) of fixed
 (FALSE). Default to TRUE}
 
@@ -112,16 +115,12 @@ Default to TRUE.}
 function can be re-run for other model election method. Default to NULL.}
 
 \item{save_step}{If alpha_grid=TRUE, wether to save the intermediate results
-for each value of alpha. Useful for long computations. Default to FALSE.}
-
-\item{sBM_variance}{DEPRECATED. Used for BM equivalent computations. 
+for each value of alpha (in a temporary file). Useful for long computations.
 Default to FALSE.}
 
-\item{method.OUsun}{DEPRECATED. Method to be used in univariate OU.}
-
-\item{parallel_alpha}{EXPERIMENTAL If alpha_grid=TRUE, wether to run the 
+\item{parallel_alpha}{If alpha_grid=TRUE, wether to run the 
 estimations with different values of alpha on separate cores. Default to 
-FALSE.}
+FALSE. If TRUE, the log is written as a temporary file.}
 
 \item{Ncores}{If parallel_alpha=TRUE, number of cores to be used.}
 
@@ -164,6 +163,34 @@ For the OU in the multivariate setting, two assumptions can be made:
 strength matrix is assumed to be scalar, i.e. all the traits are supposed to
 go to their optimum values with the same speed.
 }
+}
+\examples{
+\dontrun{
+## Load Data
+data(monkeys)
+## Run method
+# Note: use more alpha values for better results.
+res <- PhyloEM(Y_data = monkeys$dat,        ## data
+               phylo = monkeys$phy,         ## phylogeny
+               process = "scOU",            ## scalar OU
+               random.root = TRUE,          ## root is stationary
+               stationary.root = TRUE,
+               K_max = 10,                  ## maximal number of shifts
+               nbr_alpha = 4,               ## number of alpha values
+               parallel_alpha = TRUE,       ## parallelize on alpha values
+               Ncores = 2)
+## Plot selected solution (LINselect)
+plot(res) # three shifts
+## Plot selected solution (DDSE)
+plot(res, method.selection = "DDSE") # no shift
+## Extract and solution with 5 shifts
+params_5 <- params_process(res, K = 5)
+plot(res, params = params_5)
+## Show all equivalent solutions
+eq_sol <- equivalent_shifts(monkeys$phy, params_5)
+plot(eq_sol)
+}
+
 }
 \seealso{
 \code{\link{plot.PhyloEM}}, \code{\link{params_process.PhyloEM}},
