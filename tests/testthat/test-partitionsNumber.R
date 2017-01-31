@@ -39,23 +39,23 @@ test_that("partitionsNumber in Binary Case", {
   expect_that(val_mark[n-1], equals(val_rand_mark))
 })
 
-test_that("break point in binary case", {
-  N <- 2:500
-  
-  ## Exact values
-  fun <- function(n){
-    kk <- 1:n
-    cc <- choose(2*n - 2 - kk, kk)
-    max <- which(cc == max(cc))
-    return(max[length(max)])
-  }
-  val <- sapply(N, fun)
-  
-  ## Break Points
-  bb <- sapply(N, complexity_break_point)
-  
-  expect_that(val, equals(bb))
-})
+# test_that("break point in binary case", {
+#   N <- 2:500
+#   
+#   ## Exact values
+#   fun <- function(n){
+#     kk <- 1:n
+#     cc <- choose(2*n - 2 - kk, kk)
+#     max <- which(cc == max(cc))
+#     return(max[length(max)])
+#   }
+#   val <- sapply(N, fun)
+#   
+#   ## Break Points
+#   bb <- sapply(N, complexity_break_point)
+#   
+#   expect_that(val, equals(bb))
+# })
 
 test_that("partitionsNumber in General Case", {
   K <- 5
