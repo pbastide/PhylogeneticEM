@@ -307,6 +307,7 @@ plot.PhyloEM <- function(x,
   }
   # If on trait, select relevent quantities
   if (length(traits) == 1){
+    if (length(as.vector(params$selection.strength)) == 0) params$selection.strength <- 0
     if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, x$p))
     params <- split_params_independent(params)
     params <- params[[traits]]
@@ -553,15 +554,15 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       #      "Unit", cex = lastPP$cex,
       #      pos = 2)
       # characters
-      segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][!miss],
-               pos_last_tip + eccart_g + Y.plot[!miss], lastPP$yy[1:ntaxa][!miss],
-               col = as.vector(color_characters)[!miss],
+      segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][!miss[t, ]],
+               pos_last_tip + eccart_g + Y.plot[!miss[t, ]], lastPP$yy[1:ntaxa][!miss[t, ]],
+               col = as.vector(color_characters)[!miss[t, ]],
                lwd = edge.width)
       # missing ones as dotted
       if (any(miss)){
-        segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss],
-                 pos_last_tip + eccart_g + Y.plot[miss], lastPP$yy[1:ntaxa][miss],
-                 col = as.vector(color_characters)[miss],
+        segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss[t, ]],
+                 pos_last_tip + eccart_g + Y.plot[miss[t, ]], lastPP$yy[1:ntaxa][miss[t, ]],
+                 col = as.vector(color_characters)[miss[t, ]],
                  lwd = edge.width,
                  lty = 3) 
       }

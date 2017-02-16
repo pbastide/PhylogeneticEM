@@ -697,7 +697,7 @@ find_grid_alpha <- function(phy, alpha = NULL,
   h_tree <- node.depth.edgelength(phy)[1]
   alpha_min <- 1 / (factor_down_alpha * h_tree)
   alpha_max <- factor_up_alpha / (2 * d_min)
-  alpha_max_machine <- log(.Machine$double.xmax)/(2*h_tree)
+  alpha_max_machine <- log(.Machine$double.xmax^0.98)/(2*h_tree)
   if (alpha_max > alpha_max_machine){
     warning("The chosen alpha_max was above the machine precision. Taking alpha_max as the largest possible on this machine.")
     alpha_max <- alpha_max_machine
