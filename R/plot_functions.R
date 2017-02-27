@@ -308,7 +308,13 @@ plot.PhyloEM <- function(x,
   # If on trait, select relevent quantities
   if (length(traits) == 1){
     if (length(as.vector(params$selection.strength)) == 0) params$selection.strength <- 0
-    if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, x$p))
+    if (length(as.vector(params$selection.strength)) == 1){
+      if (x$p == 1){
+        dim(params$selection.strength) <- c(1,1)
+      } else {
+        params$selection.strength <- diag(rep(params$selection.strength, x$p))
+      }
+    }
     params <- split_params_independent(params)
     params <- params[[traits]]
   }

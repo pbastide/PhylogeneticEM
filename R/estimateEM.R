@@ -1074,7 +1074,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     method.OUsun = "raw"
     independent = TRUE
   }
-  if (independent && missing(alpha_grid)) alpha_grid <- FALSE
+  if (independent && missing(alpha_grid) && missing(nbr_alpha)) alpha_grid <- FALSE
   ## Adaptations to the BM ####################################################
   if (process == "BM"){
     if (independent){
@@ -2546,7 +2546,7 @@ check_data <- function(phylo, Y_data, check.tips.names){
           stop("The names of the column data matrix do not match the tip labels.")
         }
         warning("The vector of data was not sorted in the correct order, when compared with the tips label. I am re-ordering the vector of data.")
-        Y_data <- Y_data[ , correspondances]
+        Y_data <- Y_data[ , correspondances, drop = FALSE]
       }
     }
   }
