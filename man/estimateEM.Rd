@@ -211,4 +211,3 @@ can be called from \code{PhyloEM}.
 \seealso{
 \code{\link{PhyloEM}}
 }
-

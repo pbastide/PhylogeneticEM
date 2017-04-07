@@ -20,4 +20,3 @@ vector of index of edges in the tree "to"
 \code{correspondenceEdges} takes edges numbers on an input tree, and gives back
 their corresponding numbers on the output tree.
 }
-

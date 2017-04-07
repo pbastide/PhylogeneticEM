@@ -22,4 +22,3 @@ of the tree.
 tree, given the value at the root and the list of shifts occuring in the tree.
 It assumes an OU model.
 }
-

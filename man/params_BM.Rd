@@ -63,4 +63,3 @@ default values.
 \seealso{
 \code{\link{params_process}}, \code{\link{params_OU}}
 }
-

@@ -82,4 +82,3 @@ extract(eq_shifts, trait = 4, what = "root_values")
 \code{\link{extract.equivalent_shifts}}, \code{\link{params_BM}}, 
 \code{\link{params_OU}}, \code{\link{enumerate_parsimony}}
 }
-

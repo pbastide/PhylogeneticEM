@@ -65,4 +65,3 @@ extract(sols, 7) # NAs: non-existing nodes in the sub-tree
 \code{\link{parsimonyNumber}}, \code{\link{partitionsNumber}},
 \code{\link{equivalent_shifts}}
 }
-

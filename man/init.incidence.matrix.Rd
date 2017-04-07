@@ -24,4 +24,3 @@ to a vector of zeros, with only entry i equal to one. (Branch ending at
 tip i is only in the i^th lineage)
 }
 \keyword{internal}
-

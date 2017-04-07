@@ -32,4 +32,3 @@ paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
 expected values at all the nodes. Assumes a stationary root.
 }
 \keyword{internal}
-

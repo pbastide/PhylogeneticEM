@@ -45,4 +45,3 @@ This function takes parameters sim, Sigma and Sigma_YY_inv from
  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 }
 \keyword{internal}
-

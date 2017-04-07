@@ -19,4 +19,3 @@ row vector of the same size as entry matrix.
 This function is used in function \code{merge_complementary_vectors}
 }
 \keyword{internal}
-

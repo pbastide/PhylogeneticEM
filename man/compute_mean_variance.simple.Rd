@@ -43,4 +43,3 @@ This function is used by functions \code{compute_E.simple} and
 \code{compute_log_likelihood.simple}.
 }
 \keyword{internal}
-

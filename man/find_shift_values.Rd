@@ -28,4 +28,3 @@ shifts postions and the mean values are compatible.
 This function uses \code{qr.solve} for rectangular linear system solving.
 }
 \keyword{internal}
-

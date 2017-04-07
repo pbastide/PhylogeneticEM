@@ -25,4 +25,3 @@ induced by the tree. It takes two cases in consideration: root fixed, or root in
 state.
 }
 \keyword{internal}
-

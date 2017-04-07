@@ -26,4 +26,3 @@ This function takes the largest values of costs0, and make them null,
  thanks to delta and tau.
 }
 \keyword{internal}
-

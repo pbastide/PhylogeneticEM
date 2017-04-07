@@ -45,4 +45,3 @@ below the maximal float allowed (equals to \code{.Machine$double.xmax}).
 \seealso{
 \code{\link{transform_branch_length}}, \code{\link{.Machine}}
 }
-

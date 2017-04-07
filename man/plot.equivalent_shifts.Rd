@@ -42,4 +42,3 @@ plotting of the trees.
 \seealso{
 \code{\link{equivalent_shifts}}, \code{\link[ape]{plot.phylo}}
 }
-

@@ -24,4 +24,3 @@ The vectors are selected from the entry matrix by comb. At each entry, the vecto
 are added using function \code{add_complementary}.
 }
 \keyword{internal}
-

@@ -25,4 +25,3 @@ the parent node is in state k.
 This function is used in functions \code{parsimonyNumber} and \code{enumerate_parsimony}.
 }
 \keyword{internal}
-

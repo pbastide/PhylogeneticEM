@@ -20,4 +20,3 @@ matrix of variance covariance for the OU
 covariance matrix of vec(X).
 }
 \keyword{internal}
-

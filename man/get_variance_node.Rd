@@ -20,4 +20,3 @@ sub-matrix of variance for the node.
 corariance of a node and its parent.
 }
 \keyword{internal}
-

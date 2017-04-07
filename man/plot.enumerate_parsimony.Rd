@@ -33,4 +33,3 @@ This function uses functions \code{\link[ape]{plot.phylo}} and
 \code{\link[ape]{plot.phylo}}, \code{\link{enumerate_parsimony}},
 \code{\link{plot.equivalent_shifts}}, \code{\link[ape]{nodelabels}}
 }
-

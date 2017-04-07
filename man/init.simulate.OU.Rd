@@ -26,4 +26,3 @@ expectations, and optimal values for all the traits.
 Function used in \code{\link{simulate}} for OU initialisation.
 }
 \keyword{internal}
-

@@ -22,4 +22,3 @@ to the vector of optimal values on nodes.
 \details{
 This function uses function fun on each row of matrix of edges.
 }
-

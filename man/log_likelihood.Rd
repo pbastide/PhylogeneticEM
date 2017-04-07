@@ -2,8 +2,8 @@
 % Please edit documentation in R/E_step.R
 \name{log_likelihood}
 \alias{log_likelihood}
-\alias{log_likelihood.PhyloEM}
 \alias{log_likelihood.params_process}
+\alias{log_likelihood.PhyloEM}
 \title{Log Likelihood of a fitted object}
 \usage{
 log_likelihood(x, ...)
@@ -38,7 +38,7 @@ The log likelihood of the data with the provided parameters on the tree.
 
 \item \code{PhyloEM}: \code{\link{PhyloEM}} object
 }}
+
 \seealso{
 \code{\link{params_process}}, \code{\link{PhyloEM}}
 }
-

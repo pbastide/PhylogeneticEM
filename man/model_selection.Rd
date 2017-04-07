@@ -46,8 +46,8 @@ object, and returns the same fitted object.
 \itemize{
 \item \code{PhyloEM}: \code{\link{PhyloEM}} object
 }}
+
 \seealso{
 \code{\link{PhyloEM}}, \code{\link{params_process.PhyloEM}},
 \code{\link{imputed_traits.PhyloEM}}
 }
-

@@ -21,4 +21,3 @@ ancestor of two tips i, j.
 Tis function relies on \code{ape} functions
 \code{\link[ape]{node.depth.edgelength}} and \code{\link[ape]{mrca}}.
 }
-

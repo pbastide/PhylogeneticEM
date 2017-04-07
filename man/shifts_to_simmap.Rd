@@ -21,4 +21,3 @@ simmap formated tree, mapped with corresponding regimes.
 \details{
 Ancestral state is always 0, and other states are consecutive integers.
 }
-

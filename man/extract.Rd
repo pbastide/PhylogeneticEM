@@ -23,4 +23,3 @@ An integer giving the number of equivalent parsimonious solutions.
 \code{\link{extract.enumerate_parsimony}},
 \code{\link{extract.partitionsNumber}}
 }
-

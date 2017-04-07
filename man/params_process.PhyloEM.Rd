@@ -40,4 +40,3 @@ infered parameters of the process.
 \seealso{
 \code{\link{PhyloEM}}, \code{\link{imputed_traits.PhyloEM}}
 }
-

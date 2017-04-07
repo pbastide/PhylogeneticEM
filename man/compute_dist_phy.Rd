@@ -21,4 +21,3 @@ tips i, j.
 Tis function relies on \code{ape} function
 \code{\link[ape]{dist.nodes}}.
 }
-

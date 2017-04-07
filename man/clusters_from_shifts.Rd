@@ -26,4 +26,3 @@ convergence is allowed).
 By default, this function uses \code{\link{enumerate_tips_under_edges}} to compute 
 the list of tips under each edge.
 }
-

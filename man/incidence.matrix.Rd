@@ -20,4 +20,3 @@ otherwise.
 \seealso{
 \code{\link{incidence.matrix.full}}
 }
-

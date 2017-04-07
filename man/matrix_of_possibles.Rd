@@ -22,4 +22,3 @@ This function select all possible combinations of rows from all the daughters, a
 merge then into one using function \code{merge_complementary_vectors}.
 }
 \keyword{internal}
-

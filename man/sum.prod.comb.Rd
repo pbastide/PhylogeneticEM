@@ -32,4 +32,3 @@ This function uses \code{sum.simplex} to perform the wanted sum on a ad-hoc
 matrix, combination of rows of A and N.
 }
 \keyword{internal}
-

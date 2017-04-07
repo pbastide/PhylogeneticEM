@@ -53,4 +53,3 @@ extract(parts_num, marqued = TRUE)
 \code{\link{extract.partitionsNumber}}, \code{\link{parsimonyNumber}},
 \code{\link{equivalent_shifts}}
 }
-

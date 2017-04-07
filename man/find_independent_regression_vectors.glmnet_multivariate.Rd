@@ -26,4 +26,3 @@ To do that, if a set of selected is not independent, we go back to the previous 
 variables, and forbid the moves that led to non-independance for the rest of the path.
 }
 \keyword{internal}
-

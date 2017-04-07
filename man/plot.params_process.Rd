@@ -116,4 +116,3 @@ with some data at the tips of the tree.
 \code{\link{simul_process}}, \code{\link{plot.PhyloEM}},
 \code{\link{params_BM}}, \code{\link{params_OU}}
 }
-

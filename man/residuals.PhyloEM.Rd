@@ -25,4 +25,3 @@ The log likelihood of the data with the provided parameters on the tree.
 \seealso{
 \code{\link{params_process}}, \code{\link{PhyloEM}}
 }
-

@@ -22,4 +22,3 @@ provided values of the paramerters.
 \seealso{
 \code{\link{params_BM}}, \code{\link{params_OU}}
 }
-

@@ -26,4 +26,3 @@ This function uses function \code{compute_state_filter} to find all the admissib
 states of the daughters, given a starting state for the parent.
 }
 \keyword{internal}
-

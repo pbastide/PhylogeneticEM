@@ -196,4 +196,3 @@ plot(eq_sol)
 \code{\link{plot.PhyloEM}}, \code{\link{params_process.PhyloEM}},
 \code{\link{imputed_traits.PhyloEM}}
 }
-

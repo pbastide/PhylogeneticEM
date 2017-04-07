@@ -23,4 +23,3 @@ In case where the tree is not ultrametric, its "height" is defined as the minimu
 tip height.
 }
 \keyword{internal}
-

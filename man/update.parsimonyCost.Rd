@@ -23,4 +23,3 @@ minimum number of shifts needed to get the given clustering of the trees bellow
 parental node.
 }
 \keyword{internal}
-

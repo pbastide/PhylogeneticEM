@@ -19,4 +19,3 @@ re-scaled parameters
 Used for process equivalencies on re-scaled trees.
 }
 \keyword{internal}
-

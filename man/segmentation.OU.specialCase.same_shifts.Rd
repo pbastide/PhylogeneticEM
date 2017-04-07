@@ -31,4 +31,3 @@ and optimize the sum of costs using function
 This is the best move if keeping the previous shifts positions.
 }
 \keyword{internal}
-

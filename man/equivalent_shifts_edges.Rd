@@ -35,4 +35,3 @@ in term of regimes to a parametrization in term of shifts.
 \code{\link{equivalent_shifts}}, \code{\link{enumerate_parsimony}}
 }
 \keyword{internal}
-

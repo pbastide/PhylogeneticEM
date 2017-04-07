@@ -25,4 +25,3 @@ This function takes parameters sim and Sigma_YY_inv from
 to extract the needed quantities from these objects.
 }
 \keyword{internal}
-

@@ -13,4 +13,3 @@ wrapper_E_step(phylo, times_shared, distances_phylo, process, params_old,
 recursivelly in case of independent parameters.
 }
 \keyword{internal}
-

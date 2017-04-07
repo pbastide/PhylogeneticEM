@@ -28,4 +28,3 @@ value of the penalty.
 \code{\link{penalty_BirgeMassart_shape2}}
 }
 \keyword{internal}
-

@@ -20,4 +20,3 @@ Re-scale the branch length of the tree so that a BM running
 on the new tree produces the same observations at the tips than an OU with
 parameter alpha.
 }
-

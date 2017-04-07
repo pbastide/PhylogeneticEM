@@ -23,4 +23,3 @@ the vector has the value of the shift occuring on that branch b.
 \code{\link{shifts.vector_to_list}}
 }
 \keyword{internal}
-

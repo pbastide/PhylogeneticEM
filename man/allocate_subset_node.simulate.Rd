@@ -21,4 +21,3 @@ array: array p x nNodes x 2 (BM), with slice corresponding to node filled with v
 To be used in function UpdateDown.
 }
 \keyword{internal}
-

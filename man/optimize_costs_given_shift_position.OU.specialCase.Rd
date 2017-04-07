@@ -34,4 +34,3 @@ betas (using a close formula). It then goes back to a shift expression of the
 problem using function \code{compute_shifts_from_betas}.
 }
 \keyword{internal}
-

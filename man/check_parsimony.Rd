@@ -29,4 +29,3 @@ By default, this function uses \code{\link{enumerate_tips_under_edges}} to compu
 the list of tips under each edge, but a list can be provided (to avoid extra
 computation, if many tests on the same tree are done).
 }
-
