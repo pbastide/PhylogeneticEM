@@ -248,6 +248,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' Default to \code{c(0, 0, 0, 0)}.
 #' @param gray_scale if TRUE, the colors are replaced by a gray scale.
 #' Default to FALSE.
+#' @param root.edge a logical indicating whether to draw the root edge (defaults to TRUE)
 #' @param ... further arguments to be passed to \code{\link{plot.phylo}}.
 #' 
 #' 
@@ -287,6 +288,7 @@ plot.PhyloEM <- function(x,
                          edge.width = 1,
                          margin_plot = NULL,
                          gray_scale = FALSE,
+                         root.edge = TRUE,
                          ...){
   ## Checking consistency
   if (plot_ancestral_states && length(traits) > 1) stop("Ancestral state plotting is only allowed for one single trait. Please select the trait you would like to plot with argument 'traits' (see documentation).")
@@ -307,7 +309,14 @@ plot.PhyloEM <- function(x,
   }
   # If on trait, select relevent quantities
   if (length(traits) == 1){
-    if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, x$p))
+    if (length(as.vector(params$selection.strength)) == 0) params$selection.strength <- 0
+    if (length(as.vector(params$selection.strength)) == 1){
+      if (x$p == 1){
+        dim(params$selection.strength) <- c(1,1)
+      } else {
+        params$selection.strength <- diag(rep(params$selection.strength, x$p))
+      }
+    }
     params <- split_params_independent(params)
     params <- params[[traits]]
   }
@@ -362,6 +371,7 @@ plot.PhyloEM <- function(x,
                            # label.offset = label.offset,
                            ancestral_as_shift = ancestral_as_shift,
                            gray_scale = gray_scale,
+                           root.edge = root.edge,
                            ...)
 }
 
@@ -396,6 +406,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      label.offset = 0,
                                      ancestral_as_shift = TRUE,
                                      gray_scale = FALSE,
+                                     root.edge = TRUE,
                                      ...){
   # ## Save curent par
   # .pardefault <- par(no.readonly = T)
@@ -490,7 +501,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
   # Plot tree
   if (is.null(Y.state)){
-    plot(phylo, show.tip.label = show.tip.label, root.edge = TRUE, 
+    plot(phylo, show.tip.label = show.tip.label, root.edge = root.edge, 
          edge.color = as.vector(color_edges),
          edge.width = edge.width, ...)
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
@@ -504,7 +515,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     x.lim.max <- h_p + p_dim * h_p / 3 + size_labels
     y.lim.min <- -ntaxa/10
     y.lim.max <- ntaxa + ntaxa/10
-    plot(phylo, show.tip.label = FALSE, root.edge = TRUE, 
+    plot(phylo, show.tip.label = FALSE, root.edge = root.edge, 
          x.lim = c(0, x.lim.max), 
          y.lim = c(y.lim.min, y.lim.max),
          edge.color = as.vector(color_edges),
@@ -553,15 +564,15 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       #      "Unit", cex = lastPP$cex,
       #      pos = 2)
       # characters
-      segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][!miss],
-               pos_last_tip + eccart_g + Y.plot[!miss], lastPP$yy[1:ntaxa][!miss],
-               col = as.vector(color_characters)[!miss],
+      segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][!miss[t, ]],
+               pos_last_tip + eccart_g + Y.plot[!miss[t, ]], lastPP$yy[1:ntaxa][!miss[t, ]],
+               col = as.vector(color_characters)[!miss[t, ]],
                lwd = edge.width)
       # missing ones as dotted
       if (any(miss)){
-        segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss],
-                 pos_last_tip + eccart_g + Y.plot[miss], lastPP$yy[1:ntaxa][miss],
-                 col = as.vector(color_characters)[miss],
+        segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss[t, ]],
+                 pos_last_tip + eccart_g + Y.plot[miss[t, ]], lastPP$yy[1:ntaxa][miss[t, ]],
+                 col = as.vector(color_characters)[miss[t, ]],
                  lwd = edge.width,
                  lty = 3) 
       }

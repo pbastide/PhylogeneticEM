@@ -19,4 +19,3 @@ Vector of size (ntaxa + nNodes) of the regimes of each node and tip.
 of shifts) to each node, corresponding to its regime : all nodes below shift 
 i are numbered by i.
 }
-

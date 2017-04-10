@@ -33,4 +33,3 @@ If not possible, either temporaly raise the number of shifts and then select
 only the shifts with the highest modulus, or if not possible, throw an error.
 }
 \keyword{internal}
-

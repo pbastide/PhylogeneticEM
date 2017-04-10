@@ -32,4 +32,3 @@ expectations or optimal values at the tips or the internal nodes.
 \seealso{
 \code{\link{simul_process}}
 }
-

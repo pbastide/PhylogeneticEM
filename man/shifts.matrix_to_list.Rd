@@ -19,4 +19,3 @@ to create the list description of the shifts.
 \seealso{
 \code{\link{shifts.list_to_matrix}}
 }
-

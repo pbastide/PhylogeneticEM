@@ -28,4 +28,3 @@ process is "BM", then nothing is done. If it is "OU", then the verification
 of the selection strength is done.
 }
 \keyword{internal}
-

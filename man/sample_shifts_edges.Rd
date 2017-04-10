@@ -25,4 +25,3 @@ of tips under each edge, and function \code{check_parsimony} to check for
 parsimony of a given solution, under the assumption of an "infinite site model".
 }
 \keyword{internal}
-

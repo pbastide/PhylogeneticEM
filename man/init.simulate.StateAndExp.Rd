@@ -26,4 +26,3 @@ expectarions for all the traits.
 Function used in \code{\link{simulate}} for BM/OU initialisations.
 }
 \keyword{internal}
-

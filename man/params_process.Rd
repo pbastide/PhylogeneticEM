@@ -47,4 +47,3 @@ multivariate); or "scOU" (for a "scalar OU" model).}
 \code{\link{params_BM}}, \code{\link{params_OU}}
 \code{\link{simul_process.params_process}}
 }
-

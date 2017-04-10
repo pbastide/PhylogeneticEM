@@ -87,4 +87,3 @@ is.finite.params.OU.stationary.root_AND_shifts_at_nodes <- function(params) {
 This function is used to test the convergence of the algorithm.
 }
 \keyword{internal}
-

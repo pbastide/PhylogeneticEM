@@ -1000,7 +1000,7 @@ compute_E.upward_downward <- function(phylo,
     
   } else if (process == "scOU"){
     Beta1 <- tcrossprod(Delta, U_tree) + params_old$optimal.value
-    Beta <- Beta1[, phylo$edge[, 2]] # re-order by edge
+    Beta <- Beta1[, phylo$edge[, 2], drop = F] # re-order by edge
     if (params_old$root.state$stationary.root){
       Stationary_Var <- as.matrix(params_old$root.state$var.root)
     } else {
@@ -1082,7 +1082,7 @@ log_likelihood.params_process <- function(x,
   } else if (x$process == "scOU"){
     U_tree <- incidence.matrix.full(phy)
     Beta1 <- tcrossprod(Delta, U_tree) + x$optimal.value
-    Beta <- Beta1[, phy$edge[, 2]] # re-order by edge
+    Beta <- Beta1[, phy$edge[, 2], drop = F] # re-order by edge
     if (x$root.state$stationary.root){
       Stationary_Var <- as.matrix(x$root.state$var.root)
     } else {

@@ -2,8 +2,8 @@
 % Please edit documentation in R/simulate.R
 \name{simul_process}
 \alias{simul_process}
-\alias{simul_process.PhyloEM}
 \alias{simul_process.params_process}
+\alias{simul_process.PhyloEM}
 \title{Simulate a Stochastic Process on a tree}
 \usage{
 simul_process(x, ...)
@@ -57,7 +57,7 @@ An S3 object of class \code{simul_process}. This contains:
 
 \item \code{PhyloEM}: \code{\link{PhyloEM}} object
 }}
+
 \seealso{
 \code{\link{params_process}}, \code{\link{PhyloEM}}
 }
-

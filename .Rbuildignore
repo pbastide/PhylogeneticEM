@@ -15,4 +15,5 @@
 ^docs$
 ^data-raw$
 ^README\.md$
+^NEWS\.md$
 ^cran-comments\.md$

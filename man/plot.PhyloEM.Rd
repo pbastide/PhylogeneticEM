@@ -13,7 +13,7 @@
   shifts_adj = 0, root_adj = 1, color_shifts_regimes = FALSE,
   regime_boxes = FALSE, alpha_border = 70, show.tip.label = FALSE,
   label_cex = 0.5, label_offset = 0, axis_cex = 0.7, edge.width = 1,
-  margin_plot = NULL, gray_scale = FALSE, ...)
+  margin_plot = NULL, gray_scale = FALSE, root.edge = TRUE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{PhyloEM}, result of function
@@ -105,6 +105,8 @@ Default to \code{c(0, 0, 0, 0)}.}
 \item{gray_scale}{if TRUE, the colors are replaced by a gray scale.
 Default to FALSE.}
 
+\item{root.edge}{a logical indicating whether to draw the root edge (defaults to TRUE)}
+
 \item{...}{further arguments to be passed to \code{\link{plot.phylo}}.}
 }
 \description{
@@ -114,4 +116,3 @@ This function takes an object of class \code{PhyloEM}, result of function
 \seealso{
 \code{\link{params_process.PhyloEM}}, \code{\link{imputed_traits.PhyloEM}}
 }
-

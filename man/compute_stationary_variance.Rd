@@ -19,4 +19,3 @@ A positive definite Matrix of class \code{\link[Matrix]{dpoMatrix-class}}.
 \code{compute_stationary_variance} computes the stationary variance matrix of
 an OU process.
 }
-

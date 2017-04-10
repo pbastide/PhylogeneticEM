@@ -31,4 +31,3 @@ possible regime allocations for the nodes of a given subtree.
 \seealso{
 \code{\link{enumerate_parsimony}}, \code{\link{plot.enumerate_parsimony}}
 }
-

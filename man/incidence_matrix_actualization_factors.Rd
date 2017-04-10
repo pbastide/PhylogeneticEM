@@ -25,4 +25,3 @@ Matrix of size ntaxa x nedges
 This matrix is to be multiplied to the incidence matrix with an outer product.
 }
 \keyword{internal}
-

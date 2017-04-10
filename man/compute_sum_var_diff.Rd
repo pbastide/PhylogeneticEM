@@ -18,4 +18,3 @@ matrix p x p
 \code{compute_sum_var_diff} computes sum_{e edge} ell_j * Var[X_j - X_pa(j) | Y]
 }
 \keyword{internal}
-

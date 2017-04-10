@@ -25,4 +25,3 @@ at the given node.
 \seealso{
 \code{\link{parsimonyCost}}
 }
-

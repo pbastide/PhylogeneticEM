@@ -44,4 +44,3 @@ extract(costs, 7)
 \code{\link{enumerate_parsimony}}, \code{\link{partitionsNumber}},
 \code{\link{equivalent_shifts}}
 }
-

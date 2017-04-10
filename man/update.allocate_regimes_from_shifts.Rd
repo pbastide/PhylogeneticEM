@@ -26,4 +26,3 @@ designed to furnish function \code{recursionDown} with the right structure of
  data.
 }
 \keyword{internal}
-

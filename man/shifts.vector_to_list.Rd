@@ -20,4 +20,3 @@ to create the list description of the shifts.
 \code{shifts.list_to_vector}
 }
 \keyword{internal}
-

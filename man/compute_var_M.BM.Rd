@@ -26,4 +26,3 @@ Given the variances, the costs0 and the edges where the shifts occurs, the
 computation of the maximum of likelihood in the variance is simple.
 }
 \keyword{internal}
-

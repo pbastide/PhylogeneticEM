@@ -33,4 +33,3 @@ This function re-write the sum of costs to be minimized as a least squares
  linear model.
 }
 \keyword{internal}
-

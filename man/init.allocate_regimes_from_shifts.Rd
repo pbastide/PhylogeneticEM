@@ -22,4 +22,3 @@ designed to furnish function \code{update.allocate_regimes_from_shifts} with
 the right structure of data.
 }
 \keyword{internal}
-

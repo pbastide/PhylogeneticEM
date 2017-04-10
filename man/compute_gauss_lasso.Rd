@@ -35,4 +35,3 @@ multiplication with a cholesky decomposition of the variance) is included, rathe
 than the intercept.
 }
 \keyword{internal}
-

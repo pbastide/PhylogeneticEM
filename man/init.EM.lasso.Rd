@@ -46,4 +46,3 @@ A cholesky decomposition of function Sigma_YY^(-1) is used.
 lambda is choosen so that delta has the right number of non zero components.
 }
 \keyword{internal}
-

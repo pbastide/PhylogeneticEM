@@ -18,4 +18,3 @@ process with p independent traits into p params objects.
 The reverse operation is done by \code{merge_params_independent}
 }
 \keyword{internal}
-

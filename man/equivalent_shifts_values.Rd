@@ -40,4 +40,3 @@ used to compute the actualization factor that multipies the shifts values at
 the tips. Carefull, only work for ULTRAMETRIC trees.
 }
 \keyword{internal}
-

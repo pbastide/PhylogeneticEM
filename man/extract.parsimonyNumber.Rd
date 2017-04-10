@@ -35,4 +35,3 @@ shifts.
 \seealso{
 \code{\link{parsimonyNumber}}
 }
-

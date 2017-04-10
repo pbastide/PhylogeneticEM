@@ -28,4 +28,3 @@ By default, this function uses \code{enumerate_tips_under_edges} to compute
 the list of tips under each edge, but a list can be provided (if many tests are done).
 }
 \keyword{internal}
-

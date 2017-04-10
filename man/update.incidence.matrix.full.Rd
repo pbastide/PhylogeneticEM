@@ -23,4 +23,3 @@ in \code{incidence.matrix.full}.
 A node belongs to all the lineages of its daughters.
 }
 \keyword{internal}
-

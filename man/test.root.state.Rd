@@ -26,4 +26,3 @@ To test coherence, the following priorities are applied:
  random > stationary.root > values.root = exp.root = var.root
 }
 \keyword{internal}
-

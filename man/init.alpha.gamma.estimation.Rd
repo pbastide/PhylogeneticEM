@@ -35,4 +35,3 @@ separated by a shift. Shifts are initialized thanks to a lasso
 Function \code{robustbase::nlrob} is used for the robust fit.
 }
 \keyword{internal}
-

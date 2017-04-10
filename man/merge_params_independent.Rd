@@ -18,4 +18,3 @@ objects into one param object of dimension p
 The reverse operation is done by \code{split_params_independent}
 }
 \keyword{internal}
-

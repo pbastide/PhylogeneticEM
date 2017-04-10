@@ -27,4 +27,3 @@ all combination of k_i such that k_1+...+k_p=K, k_i>0, using function
 \code{prod.index}. Then sum all the products.
 }
 \keyword{internal}
-

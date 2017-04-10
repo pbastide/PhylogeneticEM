@@ -21,4 +21,3 @@ Y_data a re-ordered matrix of data (if necessary)
 correctly ordered to match the tips names.
 }
 \keyword{internal}
-

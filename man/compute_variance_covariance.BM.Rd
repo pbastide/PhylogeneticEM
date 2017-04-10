@@ -20,4 +20,3 @@ matrix of variance covariance for the BM
 matrix of vec(X).
 }
 \keyword{internal}
-

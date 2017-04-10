@@ -21,4 +21,3 @@ be found (instead of returning a least square fitted value, which is the default
 of \code{qr.solve}).
 }
 \keyword{internal}
-

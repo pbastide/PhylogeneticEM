@@ -27,4 +27,3 @@ This function assume that there are no shifts on the tree. It is only a first ap
 for initialization purposes.
 }
 \keyword{internal}
-

@@ -62,4 +62,3 @@ WARNING : this code only work of OU with stationary root, on an ultrametric
 tree.
 }
 \keyword{internal}
-

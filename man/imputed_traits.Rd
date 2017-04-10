@@ -49,7 +49,7 @@ state reconstruction) or at the tips (data imputation)
 \itemize{
 \item \code{PhyloEM}: \code{\link{PhyloEM}} object
 }}
+
 \seealso{
 \code{\link{params_process.PhyloEM}}, \code{\link{PhyloEM}}
 }
-

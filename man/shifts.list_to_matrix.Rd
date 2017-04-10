@@ -24,4 +24,3 @@ the lth line has the value of the shift on character l occuring on that branch b
 \seealso{
 \code{\link{shifts.matrix_to_list}}
 }
-

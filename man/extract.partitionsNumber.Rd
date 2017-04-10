@@ -35,4 +35,3 @@ given sub-tree, either marked or non-marked.
 \seealso{
 \code{\link{partitionsNumber}}
 }
-

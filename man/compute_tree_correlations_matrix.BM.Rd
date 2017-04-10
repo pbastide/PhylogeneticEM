@@ -17,4 +17,3 @@ times_shared
 \code{compute_tree_correlations_matrix.BM} returns times_shared its provided argument.
 }
 \keyword{internal}
-

@@ -32,8 +32,8 @@ call of \code{\link{PhyloEM}}.
 \itemize{
 \item \code{PhyloEM}: \code{\link{PhyloEM}} object
 }}
+
 \seealso{
 \code{\link{PhyloEM}}, \code{\link{imputed_traits.PhyloEM}},
 \code{\link{plot.PhyloEM}}
 }
-

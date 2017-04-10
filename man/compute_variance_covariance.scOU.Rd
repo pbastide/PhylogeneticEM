@@ -23,4 +23,3 @@ matrix of variance covariance for the scOU
 matrix of vec(X).
 }
 \keyword{internal}
-

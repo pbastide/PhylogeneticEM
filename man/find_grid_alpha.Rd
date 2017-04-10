@@ -31,8 +31,17 @@ A grid of alpha values
 }
 \description{
 Grid so that 
-ln(2)*quantile(d_ij)/factor_up_alpha < t_{1/2} < factor_down_alpha * ln(2) * h_tree
+2*ln(2)*quantile(d_ij)/factor_up_alpha < t_{1/2} < factor_down_alpha * ln(2) * h_tree
 Ensures that for alpha_min, it is almost a BM, and for alpha_max,
 almost all the tips are decorrelated.
 }
-
+\details{
+If \code{quantile_low_distance=0}, then \code{quantile(d_ij)=min(d_ij)}, and, for any
+two tips i,j, the correlation between i anf j is bounded by exp(-factor_up_alpha/2).
+Those values of alpha will be used for the re-scaling of the tree, which has an 
+exponential term in exp(2*alpha*h). The function makes sure that this number is
+below the maximal float allowed (equals to \code{.Machine$double.xmax}).
+}
+\seealso{
+\code{\link{transform_branch_length}}, \code{\link{.Machine}}
+}

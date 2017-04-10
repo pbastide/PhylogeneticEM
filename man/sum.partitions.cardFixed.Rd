@@ -32,4 +32,3 @@ This function uses \code{combn} to enumarate all the subsets I of [1,p] of
 a given cardinal, and then performs the wanted sum on these subsets.
 }
 \keyword{internal}
-

@@ -31,4 +31,3 @@ and returns the shifts of root values for a given trait.
 \code{\link{equivalent_shifts}}, \code{\link{plot.equivalent_shifts}},
 \code{\link{equivalent_shifts_edges}}
 }
-

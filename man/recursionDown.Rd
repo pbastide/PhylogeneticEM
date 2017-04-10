@@ -28,4 +28,3 @@ update a quantity from the root to the tips of a tree. Note that the
 input tree must be in claddewise order.
 }
 \keyword{internal}
-

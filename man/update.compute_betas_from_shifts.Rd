@@ -25,4 +25,3 @@ This function is used in function \code{compute_betas_from_shifts} and is design
 furnish function \code{recursionDown} with the right structure of data.
 }
 \keyword{internal}
-

@@ -23,4 +23,3 @@ same structure with an OU with alpha = to. If from or to is 0, then the process 
 to be a BM.
 }
 \keyword{internal}
-

@@ -31,4 +31,3 @@ possible states of the children, and \code{matrix_of_possibles} to find the
 possible states.
 }
 \keyword{internal}
-

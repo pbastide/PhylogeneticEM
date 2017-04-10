@@ -71,4 +71,3 @@ paramSimu An array with dimentions p x nNodes x 2 (BM)
 \code{simulate_internal} simulate a stochastic process on a tree.
 }
 \keyword{internal}
-

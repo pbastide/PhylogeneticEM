@@ -24,4 +24,3 @@ states and root expectarions for all the traits.
 Function used in \code{\link{simulate}} for BM initialisation.
 }
 \keyword{internal}
-

@@ -19,4 +19,3 @@ Vector of edges numbers where the shifts are.
 \code{allocate_shifts_from_regimes} returns the position of the shifts induced
 by the allocation of the regimes. Only works in an "infinite site" model.
 }
-

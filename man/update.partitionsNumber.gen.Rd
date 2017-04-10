@@ -26,4 +26,3 @@ Uses functions \code{sum.partitions} and \code{sum.simplex} to compute
 the needed sums.
 }
 \keyword{internal}
-

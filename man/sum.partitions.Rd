@@ -31,4 +31,3 @@ This function applies \code{sum.partitions.cardFixed} to all integer between
 m and p, and sum the results.
 }
 \keyword{internal}
-
