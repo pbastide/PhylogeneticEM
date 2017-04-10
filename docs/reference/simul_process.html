@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -92,51 +94,64 @@
   <span class='kw'>U_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>x</dt>
-      <dd>an object of class <code><a href='params_process.html'>params_process</a></code> or <code><a href='PhyloEM.html'>PhyloEM</a></code>.</dd>
-      <dt>...</dt>
-      <dd>for a <code>PhyloEM</code> object, further arguments to be passed on to
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>an object of class <code><a href='params_process.html'>params_process</a></code> or <code><a href='PhyloEM.html'>PhyloEM</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>for a <code>PhyloEM</code> object, further arguments to be passed on to
 <code><a href='params_process.PhyloEM.html'>params_process.PhyloEM</a></code> (to choose which parameters to extract from
-the results, see documentation of this function).</dd>
-      <dt>phylo</dt>
-      <dd>a phylogenetic tree, class <code><a href='http://www.rdocumentation.org/packages/ape/topics/read.tree'>phylo</a></code>.</dd>
-      <dt>simulate_random</dt>
-      <dd>set to FALSE if only the expected values are needed
-(and not the random sample). Default to TRUE.</dd>
-      <dt>checks</dt>
-      <dd>whether to check the entry parameters for consistency. Default 
-to TRUE.</dd>
-      <dt>U_tree</dt>
-      <dd>optional, full incidence matrix of the tree, result of function
-<code><a href='incidence.matrix.full.html'>incidence.matrix.full</a></code>. Can be precised to avoid extra computations.</dd>
-      <dt>times_shared</dt>
-      <dd>optional, times of shared ancestry of all nodes and tips,
+the results, see documentation of this function).</p></td>
+    </tr>
+    <tr>
+      <th>phylo</th>
+      <td><p>a phylogenetic tree, class <code><a href='http://www.rdocumentation.org/packages/ape/topics/read.tree'>phylo</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>simulate_random</th>
+      <td><p>set to FALSE if only the expected values are needed
+(and not the random sample). Default to TRUE.</p></td>
+    </tr>
+    <tr>
+      <th>checks</th>
+      <td><p>whether to check the entry parameters for consistency. Default 
+to TRUE.</p></td>
+    </tr>
+    <tr>
+      <th>U_tree</th>
+      <td><p>optional, full incidence matrix of the tree, result of function
+<code><a href='incidence.matrix.full.html'>incidence.matrix.full</a></code>. Can be precised to avoid extra computations.</p></td>
+    </tr>
+    <tr>
+      <th>times_shared</th>
+      <td><p>optional, times of shared ancestry of all nodes and tips,
 result of function <code><a href='compute_times_ca.html'>compute_times_ca</a></code>. Can be precised to avoid extra
-computations.</dd>
-    </dl>
+computations.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An S3 object of class <code>simul_process</code>. This contains:
-<dl class='dl-horizontal'>
- <dt>sim_traits</dt><dd>an array with dimentions p x nNodes x 2 (BM)
+    <p>An S3 object of class <code>simul_process</code>. This contains:</p><dl class='dl-horizontal'>
+ <dt>sim_traits</dt><dd><p>an array with dimentions p x nNodes x 2 (BM)
  or p x nNodes x 3 (OU). For each trait t, 1 &lt;= t &lt;= p, sim_traits[t, , ] has
  tree columns, containing respectively the simulated state,
- expected value and optimal value for all the nodes.</dd>
- <dt>phylo</dt><dd>the phylogenetic tree used for the simulations (class <code>phylo</code>).</dd>
- <dt>params</dt><dd>the parameters used for the simulations
- (class <code>params_proces</code>).</dd>
- </dl></p>
+ expected value and optimal value for all the nodes.</p></dd>
+ <dt>phylo</dt><dd><p>the phylogenetic tree used for the simulations (class <code>phylo</code>).</p></dd>
+ <dt>params</dt><dd><p>the parameters used for the simulations
+ (class <code>params_proces</code>).</p></dd>
+ </dl>
+
     
     <h2 class="hasAnchor" id="methods-by-class-"><a class="anchor" href="#methods-by-class-"></a>Methods (by class)</h2>
 
-    <p><ul>
-<li> <code>params_process</code>: <code><a href='params_process.html'>params_process</a></code> object</p>
-    <p></li>
-<li> <code>PhyloEM</code>: <code><a href='PhyloEM.html'>PhyloEM</a></code> object
-</li>
-</ul></p>
+    <ul>
+<li><p><code>params_process</code>: <code><a href='params_process.html'>params_process</a></code> object</p></li>
+<li><p><code>PhyloEM</code>: <code><a href='PhyloEM.html'>PhyloEM</a></code> object</p></li>
+</ul>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 

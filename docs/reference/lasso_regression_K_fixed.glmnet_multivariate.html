@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -90,19 +92,26 @@ occuring on the branches. It does a gauss lasso regression using function
   <span class='kw'>penscale</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fu'>ncol</span>(<span class='no'>Xp</span>)), <span class='kw'>K_lag</span> <span class='kw'>=</span> <span class='fl'>0</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>Yp</dt>
-      <dd>(transformed) data</dd>
-      <dt>Xp</dt>
-      <dd>(transformed) matrix of regression</dd>
-      <dt>K</dt>
-      <dd>number of non-zero components allowed</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>Yp</th>
+      <td><p>(transformed) data</p></td>
+    </tr>
+    <tr>
+      <th>Xp</th>
+      <td><p>(transformed) matrix of regression</p></td>
+    </tr>
+    <tr>
+      <th>K</th>
+      <td><p>number of non-zero components allowed</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>E0.gauss the intercept (value at the root)</p>
-    <p>shifts.gauss the list of shifts found on the branches</p>
+<p>shifts.gauss the list of shifts found on the branches</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 

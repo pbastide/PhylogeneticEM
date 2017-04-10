@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -86,24 +88,29 @@ with a given clustering of the tips.</p>
     <pre><span class='fu'>parsimonyNumber</span>(<span class='no'>phylo</span>, <span class='kw'>clusters</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)))</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>phylo</dt>
-      <dd>phylogenetic tree, class <code><a href='http://www.rdocumentation.org/packages/ape/topics/read.tree'>phylo</a></code>.</dd>
-      <dt>clusters</dt>
-      <dd>the vector of the clusters of the tips. Default to all the tips
-in one single cluster.</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>phylo</th>
+      <td><p>phylogenetic tree, class <code><a href='http://www.rdocumentation.org/packages/ape/topics/read.tree'>phylo</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>clusters</th>
+      <td><p>the vector of the clusters of the tips. Default to all the tips
+in one single cluster.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>an object of S3 class &quot;<code>parsimonyNumber</code>&quot; with:
-<dl class='dl-horizontal'>
- <dt>nbrReconstructions</dt><dd>a (ntaxa + nNodes) x (nclus)
+    <p>an object of S3 class "<code>parsimonyNumber</code>" with:</p><dl class='dl-horizontal'>
+ <dt>nbrReconstructions</dt><dd><p>a (ntaxa + nNodes) x (nclus)
  matrix of loccaly parsimonious solutions starting from a cluster k at a
- given node</dd>
- <dt>costReconstructions</dt><dd>an object of class &quot;<code>parsimonyCost</code>&quot;,
- result of function <code><a href='parsimonyCost.html'>parsimonyCost</a></code>.</dd>
-</dl></p>
+ given node</p></dd>
+ <dt>costReconstructions</dt><dd><p>an object of class "<code>parsimonyCost</code>",
+ result of function <code><a href='parsimonyCost.html'>parsimonyCost</a></code>.</p></dd>
+</dl>
+
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 

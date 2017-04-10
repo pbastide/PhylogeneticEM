@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -85,15 +87,22 @@ the vectors of its daughters.</p>
     <pre><span class='fu'>update.parsimonyNumber</span>(<span class='no'>daughters</span>, <span class='no'>daughtersParams</span>, <span class='no'>cost</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>daughters</dt>
-      <dd>the identifiers of the daughters nodes.</dd>
-      <dt>daughtersParams</dt>
-      <dd>a ndaughters x (nclus) matrix with the line vectors of the number of
-solutions for the daughters nodes.</dd>
-      <dt>cost</dt>
-      <dd>the (ntaxa + nNode) x nclus matrix of costs (computed by <code>parsimonyCost</code>).</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>daughters</th>
+      <td><p>the identifiers of the daughters nodes.</p></td>
+    </tr>
+    <tr>
+      <th>daughtersParams</th>
+      <td><p>a ndaughters x (nclus) matrix with the line vectors of the number of
+solutions for the daughters nodes.</p></td>
+    </tr>
+    <tr>
+      <th>cost</th>
+      <td><p>the (ntaxa + nNode) x nclus matrix of costs (computed by <code>parsimonyCost</code>).</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

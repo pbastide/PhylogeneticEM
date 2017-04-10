@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -89,29 +91,40 @@ mean and variance matrix with parameters params_old.</p>
   <span class='no'>phylo</span>$<span class='no'>Nnode</span>)), <span class='kw'>sim</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>U_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>phylo</dt>
-      <dd>Input tree.</dd>
-      <dt>times_shared</dt>
-      <dd>(matrix) : times of shared ancestry, result of function 
-<code>compute_times_ca</code></dd>
-      <dt>distances_phylo</dt>
-      <dd>(matrix) : phylogenetics distance, result of function 
-<code>compute_dist_phy</code></dd>
-      <dt>process</dt>
-      <dd>a two letter string indicating the process to consider</dd>
-      <dt>params_old</dt>
-      <dd>a list of parameters to be used in the computations</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>phylo</th>
+      <td><p>Input tree.</p></td>
+    </tr>
+    <tr>
+      <th>times_shared</th>
+      <td><p>(matrix) : times of shared ancestry, result of function 
+<code>compute_times_ca</code></p></td>
+    </tr>
+    <tr>
+      <th>distances_phylo</th>
+      <td><p>(matrix) : phylogenetics distance, result of function 
+<code>compute_dist_phy</code></p></td>
+    </tr>
+    <tr>
+      <th>process</th>
+      <td><p>a two letter string indicating the process to consider</p></td>
+    </tr>
+    <tr>
+      <th>params_old</th>
+      <td><p>a list of parameters to be used in the computations</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>sim (list) : result of funtion <code>simulate</code> with the appropriate
  parameters</p>
-    <p>Sigma matrix of variance covariance, result of function 
+<p>Sigma matrix of variance covariance, result of function 
 <code>compute_variance_covariance</code>
 #@return Sigma_YY_inv inverse of vairance matrix of the data</p>
-    <p>Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
+<p>Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>

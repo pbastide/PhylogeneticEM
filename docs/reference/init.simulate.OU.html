@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -84,18 +86,25 @@
     <pre><span class='fu'>init.simulate.OU</span>(<span class='no'>phy</span>, <span class='no'>p</span>, <span class='no'>root.state</span>, <span class='no'>optimal.value</span>, <span class='no'>simulate_random</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>root.state</dt>
-      <dd>(list): state of the root, with:
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>root.state</th>
+      <td><p>(list): state of the root, with:
 random : random state (TRUE) or deterministic state (FALSE)
 value.root : if deterministic, value of the character at the root
 exp.root : if random, expectation of the character at the root
-var.root : if random, variance of the character at the root (pxp matrix)</dd>
-      <dt>phy:</dt>
-      <dd>Input tree.</dd>
-      <dt>p:</dt>
-      <dd>dimension of the trait simulated</dd>
-    </dl>
+var.root : if random, variance of the character at the root (pxp matrix)</p></td>
+    </tr>
+    <tr>
+      <th>phy:</th>
+      <td><p>Input tree.</p></td>
+    </tr>
+    <tr>
+      <th>p:</th>
+      <td><p>dimension of the trait simulated</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

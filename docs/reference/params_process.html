@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -85,41 +87,44 @@
     <pre><span class='fu'>params_process</span>(<span class='no'>x</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>x</dt>
-      <dd>an S3 object.</dd>
-      <dt>...</dt>
-      <dd>further arguments to be passed to the specific method.</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>an S3 object.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>further arguments to be passed to the specific method.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An S3 object of class <code>params_process</code>. This is essencially a list containing the following entries:
+    <p>An S3 object of class <code>params_process</code>. This is essencially a list containing the following entries:</p><dl class='dl-horizontal'>
+<dt>process</dt><dd><p>The model used. One of "BM" (for a full BM
+model, univariate or multivariate); "OU" (for a full OU model, univariate or
+multivariate); or "scOU" (for a "scalar OU" model).</p></dd>
+<dt>p</dt><dd><p>Dimention of the trait.</p></dd>
+<dt>root.state</dt><dd><p>List describing the state of the root, with:
 <dl class='dl-horizontal'>
-<dt>process</dt><dd>The model used. One of &quot;BM&quot; (for a full BM
-model, univariate or multivariate); &quot;OU&quot; (for a full OU model, univariate or
-multivariate); or &quot;scOU&quot; (for a &quot;scalar OU&quot; model).</dd>
-<dt>p</dt><dd>Dimention of the trait.</dd>
-<dt>root.state</dt><dd>List describing the state of the root, with:
+ <dt>random</dt><dd><p>random state (TRUE) or deterministic state (FALSE)</p></dd>
+ <dt>value.root</dt><dd><p>if deterministic, value of the character at the root</p></dd>
+ <dt>exp.root</dt><dd><p>if random, expectation of the character at the root</p></dd>
+ <dt>var.root</dt><dd><p>if random, variance of the character at the root (pxp matrix)</p></dd>
+ </dl></p></dd>
+<dt>shifts</dt><dd><p>List with position and values of the shifts:
 <dl class='dl-horizontal'>
- <dt>random</dt><dd>random state (TRUE) or deterministic state (FALSE)</dd>
- <dt>value.root</dt><dd>if deterministic, value of the character at the root</dd>
- <dt>exp.root</dt><dd>if random, expectation of the character at the root</dd>
- <dt>var.root</dt><dd>if random, variance of the character at the root (pxp matrix)</dd>
- </dl>
-</dd>
-<dt>shifts</dt><dd>List with position and values of the shifts:
-<dl class='dl-horizontal'>
- <dt>edges</dt><dd>vector of the K id of edges where the shifts are</dd>
- <dt>values</dt><dd>matrix p x K of values of the shifts on the edges
-  (one column = one shift)</dd>
- <dt>relativeTimes</dt><dd>vector of dimension K of relative time of the shift from the parentnode of edges</dd>
- </dl>
-</dd>
-<dt>variance</dt><dd>Variance-covariance matrix size p x p.</dd>
-<dt>selection.strength</dt><dd>Matrix of selection strength size p x p (OU).</dd>
-<dt>optimal.value</dt><dd>Vector of p optimal values at the root (OU).</dd>
-</dl></p>
+ <dt>edges</dt><dd><p>vector of the K id of edges where the shifts are</p></dd>
+ <dt>values</dt><dd><p>matrix p x K of values of the shifts on the edges
+  (one column = one shift)</p></dd>
+ <dt>relativeTimes</dt><dd><p>vector of dimension K of relative time of the shift from the parentnode of edges</p></dd>
+ </dl></p></dd>
+<dt>variance</dt><dd><p>Variance-covariance matrix size p x p.</p></dd>
+<dt>selection.strength</dt><dd><p>Matrix of selection strength size p x p (OU).</p></dd>
+<dt>optimal.value</dt><dd><p>Vector of p optimal values at the root (OU).</p></dd>
+</dl>
+
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 

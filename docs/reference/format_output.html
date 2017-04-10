@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -85,12 +87,17 @@ for all values of K between 0 and K_max.</p>
     <pre><span class='fu'>format_output</span>(<span class='no'>results_estim_EM</span>, <span class='no'>phylo</span>, <span class='kw'>time</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>results_estim_EM</dt>
-      <dd>output of function <code>estimateEM</code></dd>
-      <dt>time</dt>
-      <dd>to run the function</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>results_estim_EM</th>
+      <td><p>output of function <code>estimateEM</code></p></td>
+    </tr>
+    <tr>
+      <th>time</th>
+      <td><p>to run the function</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -113,13 +120,13 @@ the solution found.
    - K_try the number of shifts allowed.
    - complexity the complexity for K_try
    - time the CPU time needed.</p>
-    <p>params a list of infered parameters</p>
-    <p>params_init a list of initial paramters</p>
-    <p>alpha_0 initial values of alpha</p>
-    <p>gmma_0 initial values of gamma</p>
-    <p>Zhat reconstructed node states</p>
-    <p>m_Y_estim reconstructed tip states</p>
-    <p>edge.quality for each edge, relative number of iterations in which they
+<p>params a list of infered parameters</p>
+<p>params_init a list of initial paramters</p>
+<p>alpha_0 initial values of alpha</p>
+<p>gmma_0 initial values of gamma</p>
+<p>Zhat reconstructed node states</p>
+<p>m_Y_estim reconstructed tip states</p>
+<p>edge.quality for each edge, relative number of iterations in which they
  were present.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>

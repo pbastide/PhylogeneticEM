@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -87,30 +89,45 @@ infered parameters of the process.</p>
   <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>rBM</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>init</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>x</dt>
-      <dd>an object of class <code><a href='PhyloEM.html'>PhyloEM</a></code></dd>
-      <dt>method.selection</dt>
-      <dd>(optional) the method selection to be used.
-One of &quot;LINselect&quot;, &quot;DDSE&quot;, &quot;Djump&quot;. Default to &quot;LINselect&quot;.</dd>
-      <dt>K</dt>
-      <dd>(optional) an integer giving the number of shifts for which to retrieve
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>an object of class <code><a href='PhyloEM.html'>PhyloEM</a></code></p></td>
+    </tr>
+    <tr>
+      <th>method.selection</th>
+      <td><p>(optional) the method selection to be used.
+One of "LINselect", "DDSE", "Djump". Default to "LINselect".</p></td>
+    </tr>
+    <tr>
+      <th>K</th>
+      <td><p>(optional) an integer giving the number of shifts for which to retrieve
 the parameters. Default to NULL (automatically selected number of shifts, see
-<code>method.selection</code> argument).</dd>
-      <dt>alpha</dt>
-      <dd>(optional) a value of alpha for which to retrieve the parameters. Can
+<code>method.selection</code> argument).</p></td>
+    </tr>
+    <tr>
+      <th>alpha</th>
+      <td><p>(optional) a value of alpha for which to retrieve the parameters. Can
 be an (un-ambiguous) estimation of the true value. If
 precised, then <code>K</code> must be precised too. Default to NULL (automatically
-selected value, see <code>method.selection</code> argument).</dd>
-      <dt>rBM</dt>
-      <dd>(optional) if TRUE, and if the process is &quot;scOU&quot;, returns the raw
-parameters of the BM on the re-scaled tree. Default to FALSE.</dd>
-      <dt>init</dt>
-      <dd>(optional) if TRUE, gives the parameters from the initialization of
-the EM. Default to FALSE. This has no effect if <code>K</code> is not specified.</dd>
-      <dt>...</dt>
-      <dd>unused.</dd>
-    </dl>
+selected value, see <code>method.selection</code> argument).</p></td>
+    </tr>
+    <tr>
+      <th>rBM</th>
+      <td><p>(optional) if TRUE, and if the process is "scOU", returns the raw
+parameters of the BM on the re-scaled tree. Default to FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>init</th>
+      <td><p>(optional) if TRUE, gives the parameters from the initialization of
+the EM. Default to FALSE. This has no effect if <code>K</code> is not specified.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>unused.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

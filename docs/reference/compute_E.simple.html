@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -88,32 +90,43 @@
   <span class='fu'>attr</span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) * <span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)), <span class='no'>Y_data</span>, <span class='no'>U_tree</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>phylo</dt>
-      <dd>Input tree.</dd>
-      <dt>Y_data</dt>
-      <dd>: vector indicating the data at the tips</dd>
-      <dt>sim</dt>
-      <dd>(list) : result of function <code>simulate</code></dd>
-      <dt>Sigma</dt>
-      <dd>: variance-covariance matrix, result of function <code>compute_variance_covariance</code></dd>
-      <dt>Sigma_YY_inv</dt>
-      <dd>: invert of the variance-covariance matrix of the data</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>phylo</th>
+      <td><p>Input tree.</p></td>
+    </tr>
+    <tr>
+      <th>Y_data</th>
+      <td><p>: vector indicating the data at the tips</p></td>
+    </tr>
+    <tr>
+      <th>sim</th>
+      <td><p>(list) : result of function <code>simulate</code></p></td>
+    </tr>
+    <tr>
+      <th>Sigma</th>
+      <td><p>: variance-covariance matrix, result of function <code>compute_variance_covariance</code></p></td>
+    </tr>
+    <tr>
+      <th>Sigma_YY_inv</th>
+      <td><p>: invert of the variance-covariance matrix of the data</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>conditional_law_X (list) : list of conditionnal statistics :
-                  &quot;expectation&quot; : matrix of size p x (ntaxa+nNodes), with ntaxa
+                  "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
 fisrt columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
 of the nodes conditionned to the tips E[Z_j|Y]
-                  &quot;variances&quot; : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                  "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
 matrices of zeros (tips) and conditional variance of the nodes conditionned to the tips 
 Var[Z_j|Y]
-                 &quot;covariances&quot; : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                 "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
 matrices of zeros (tips) and conditional covariance of the nodes and their parents
 conditionned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
-                  &quot;optimal.values&quot; : matrix of size p x ntaxa+nNodes of optimal
+                  "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
 values beta(t_j)</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>

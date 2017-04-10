@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -86,28 +88,41 @@ If wrong, throw an error.</p>
   <span class='kw'>optimal.value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>p</dt>
-      <dd>dimention of the trait simulated</dd>
-      <dt>root.state</dt>
-      <dd>(list) state of the root, with:
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>p</th>
+      <td><p>dimention of the trait simulated</p></td>
+    </tr>
+    <tr>
+      <th>root.state</th>
+      <td><p>(list) state of the root, with:
 random : random state (TRUE) or deterministic state (FALSE)
 value.root : if deterministic, value of the character at the root
 exp.root : if random, expectation of the character at the root
-var.root : if random, variance of the character at the root</dd>
-      <dt>shifts</dt>
-      <dd>(list) position and values of the shifts :
+var.root : if random, variance of the character at the root</p></td>
+    </tr>
+    <tr>
+      <th>shifts</th>
+      <td><p>(list) position and values of the shifts :
 edges : vector of the K id of edges where the shifts are
 values : matrix p x K of values of the shifts on the edges (one column = one shift)
 relativeTimes : vector of dimension K of relative time of the shift from the
-parentnode of edges</dd>
-      <dt>variance</dt>
-      <dd>variance-covariance matrix size p x p</dd>
-      <dt>optimal.value</dt>
-      <dd>vector of p optimal values at the root (OU)</dd>
-      <dt>selection.strenght</dt>
-      <dd>matrix of selection strength size p x p (OU)</dd>
-    </dl>
+parentnode of edges</p></td>
+    </tr>
+    <tr>
+      <th>variance</th>
+      <td><p>variance-covariance matrix size p x p</p></td>
+    </tr>
+    <tr>
+      <th>optimal.value</th>
+      <td><p>vector of p optimal values at the root (OU)</p></td>
+    </tr>
+    <tr>
+      <th>selection.strenght</th>
+      <td><p>matrix of selection strength size p x p (OU)</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

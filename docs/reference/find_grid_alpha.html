@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -79,7 +81,7 @@
 
     
     <p>Grid so that 
-ln(2)*quantile(d_ij)/factor_up_alpha &lt; t_1/2 &lt; factor_down_alpha * ln(2) * h_tree
+2*ln(2)*quantile(d_ij)/factor_up_alpha &lt; t_1/2 &lt; factor_down_alpha * ln(2) * h_tree
 Ensures that for alpha_min, it is almost a BM, and for alpha_max,
 almost all the tips are decorrelated.</p>
     
@@ -89,29 +91,58 @@ almost all the tips are decorrelated.</p>
   <span class='kw'>log_transform</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>phy</dt>
-      <dd>phylogenetic tree of class &quot;<code>phylo</code>&quot;</dd>
-      <dt>alpha</dt>
-      <dd>fixed vector of alpha values if already known. Default to NULL.</dd>
-      <dt>nbr_alpha</dt>
-      <dd>the number of elements in the grid</dd>
-      <dt>factor_up_alpha</dt>
-      <dd>factor for up scalability</dd>
-      <dt>factor_down_alpha</dt>
-      <dd>factor for down scalability</dd>
-      <dt>quantile_low_distance</dt>
-      <dd>quantile for min distance</dd>
-      <dt>log_transform</dt>
-      <dd>whether to take a log scale for the spacing of alpha
-values. Default to TRUE.</dd>
-      <dt>...</dt>
-      <dd>not used.</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>phy</th>
+      <td><p>phylogenetic tree of class "<code>phylo</code>"</p></td>
+    </tr>
+    <tr>
+      <th>alpha</th>
+      <td><p>fixed vector of alpha values if already known. Default to NULL.</p></td>
+    </tr>
+    <tr>
+      <th>nbr_alpha</th>
+      <td><p>the number of elements in the grid</p></td>
+    </tr>
+    <tr>
+      <th>factor_up_alpha</th>
+      <td><p>factor for up scalability</p></td>
+    </tr>
+    <tr>
+      <th>factor_down_alpha</th>
+      <td><p>factor for down scalability</p></td>
+    </tr>
+    <tr>
+      <th>quantile_low_distance</th>
+      <td><p>quantile for min distance</p></td>
+    </tr>
+    <tr>
+      <th>log_transform</th>
+      <td><p>whether to take a log scale for the spacing of alpha
+values. Default to TRUE.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>not used.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A grid of alpha values</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>If <code>quantile_low_distance=0</code>, then <code>quantile(d_ij)=min(d_ij)</code>, and, for any
+two tips i,j, the correlation between i anf j is bounded by exp(-factor_up_alpha/2).
+Those values of alpha will be used for the re-scaling of the tree, which has an 
+exponential term in exp(2*alpha*h). The function makes sure that this number is
+below the maximal float allowed (equals to <code>.Machine$double.xmax</code>).</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='transform_branch_length.html'>transform_branch_length</a></code>, <code>.Machine</code></p>
     
 
   </div>
@@ -121,6 +152,10 @@ values. Default to TRUE.</dd>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

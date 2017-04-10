@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -87,18 +89,25 @@
   <span class='fu'>rep</span>(<span class='fl'>FALSE</span>, (<span class='fu'>dim</span>(<span class='no'>struct</span>)[<span class='fl'>1</span>] - <span class='fu'>attr</span>(<span class='no'>struct</span>, <span class='st'>"ntaxa"</span>)) * <span class='fu'>attr</span>(<span class='no'>struct</span>, <span class='st'>"p_dim"</span>))))</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>struct</dt>
-      <dd>structural matrix of size (ntaxa+nNode)*p, result 
-of function <code>compute_variance_covariance</code></dd>
-      <dt>what:</dt>
-      <dd>sub-matrix to be extracted:
-&quot;YY&quot; : sub-matrix of tips (p*ntaxa first lines and columns)
-&quot;YZ&quot; : sub matrix tips x nodes (p*nNodes last rows and p*ntaxa first columns)
-&quot;ZZ&quot; : sub matrix of nodes (p*nNodes last rows and columns)</dd>
-      <dt>miss;</dt>
-      <dd>missing values of Y_data</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>struct</th>
+      <td><p>structural matrix of size (ntaxa+nNode)*p, result 
+of function <code>compute_variance_covariance</code></p></td>
+    </tr>
+    <tr>
+      <th>what:</th>
+      <td><p>sub-matrix to be extracted:
+"YY" : sub-matrix of tips (p*ntaxa first lines and columns)
+"YZ" : sub matrix tips x nodes (p*nNodes last rows and p*ntaxa first columns)
+"ZZ" : sub matrix of nodes (p*nNodes last rows and columns)</p></td>
+    </tr>
+    <tr>
+      <th>miss;</th>
+      <td><p>missing values of Y_data</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

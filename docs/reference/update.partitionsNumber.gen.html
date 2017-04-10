@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -85,18 +87,21 @@ Nk and Ak of a node given its daughters.</p>
     <pre><span class='fu'>update.partitionsNumber.gen</span>(<span class='no'>daughtersParams</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>daughtersParams</dt>
-      <dd>: matrix with 2*npart columns. Each row contains
-the result of partitionsNumber for the children of a given node</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>daughtersParams</th>
+      <td><p>: matrix with 2*npart columns. Each row contains
+the result of partitionsNumber for the children of a given node</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>vector of size 2*npart. For k=1:npart it contains the number of
 partitions with k groups compatible with the sub tree starting at the
 current node ; and for k=(npart+1):2*npart, it contains the number of
-&quot;marqued&quot; partitions with (k-npart) groups compatible with the sub tree
+"marqued" partitions with (k-npart) groups compatible with the sub tree
 starting at the current node.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>

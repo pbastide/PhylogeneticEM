@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -86,15 +88,22 @@ of NN[i,k_i].</p>
 <span class='fu'>sum</span>(<span class='no'>NN</span>, <span class='no'>K</span>, <span class='no'>p</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>NN</dt>
-      <dd>a martix with p rows and K column. Each row contains the number of
-partition in 1&lt;=k&lt;=K groups for one of the p children of a given node</dd>
-      <dt>K</dt>
-      <dd>an integer. Tne number of groups wanted.</dd>
-      <dt>p</dt>
-      <dd>an integer. The number of daughters of a node.</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>NN</th>
+      <td><p>a martix with p rows and K column. Each row contains the number of
+partition in 1&lt;=k&lt;=K groups for one of the p children of a given node</p></td>
+    </tr>
+    <tr>
+      <th>K</th>
+      <td><p>an integer. Tne number of groups wanted.</p></td>
+    </tr>
+    <tr>
+      <th>p</th>
+      <td><p>an integer. The number of daughters of a node.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

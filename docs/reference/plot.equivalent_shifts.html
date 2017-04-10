@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -88,27 +90,42 @@ and a coloration of the branches in term of regimes.</p>
   <span class='kw'>colors_tips</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>nbr_col</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>gray_scale</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>x</dt>
-      <dd>an object of class <code>equivalent_shifts</code>, result of
-function <code><a href='equivalent_shifts.html'>equivalent_shifts</a></code></dd>
-      <dt>trait</dt>
-      <dd>(integer) the trait to be plotted, if multivariate. Default to 1.</dd>
-      <dt>numbering</dt>
-      <dd>wheter to number the solutions. Default to FALSE.</dd>
-      <dt>colors_tips</dt>
-      <dd>user-provided colors for the tips of the tree. A vector
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>an object of class <code>equivalent_shifts</code>, result of
+function <code><a href='equivalent_shifts.html'>equivalent_shifts</a></code></p></td>
+    </tr>
+    <tr>
+      <th>trait</th>
+      <td><p>(integer) the trait to be plotted, if multivariate. Default to 1.</p></td>
+    </tr>
+    <tr>
+      <th>numbering</th>
+      <td><p>wheter to number the solutions. Default to FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>colors_tips</th>
+      <td><p>user-provided colors for the tips of the tree. A vector
 vector with as many colors as there are tips. Will be automatically computed
-if not provided.</dd>
-      <dt>nbr_col</dt>
-      <dd>the number of columns on which to display the plot.
-Default to 3.</dd>
-      <dt>gray_scale</dt>
-      <dd>if TRUE, a gray scale is used instead of colors. Default to
-FALSE.</dd>
-      <dt>...</dt>
-      <dd>further arguments to be passed to <code><a href='http://www.rdocumentation.org/packages/ape/topics/plot.phylo'>plot.phylo</a></code>.</dd>
-    </dl>
+if not provided.</p></td>
+    </tr>
+    <tr>
+      <th>nbr_col</th>
+      <td><p>the number of columns on which to display the plot.
+Default to 3.</p></td>
+    </tr>
+    <tr>
+      <th>gray_scale</th>
+      <td><p>if TRUE, a gray scale is used instead of colors. Default to
+FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>further arguments to be passed to <code><a href='http://www.rdocumentation.org/packages/ape/topics/plot.phylo'>plot.phylo</a></code>.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

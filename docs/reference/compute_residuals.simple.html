@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -85,16 +87,25 @@ data in the simple case where the inverse of the variance matrix is given.</p>
     <pre><span class='fu'>compute_residuals.simple</span>(<span class='no'>phylo</span>, <span class='no'>Y_data_vec</span>, <span class='no'>sim</span>, <span class='no'>Sigma_YY_chol_inv</span>, <span class='no'>miss</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>phylo</dt>
-      <dd>Input tree.</dd>
-      <dt>sim</dt>
-      <dd>(list) : result of function <code>simulate</code>.</dd>
-      <dt>Y_data</dt>
-      <dd>: vector indicating the data at the tips.</dd>
-      <dt>Sigma_YY_inv</dt>
-      <dd>: invert of the variance-covariance matrix of the data.</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>phylo</th>
+      <td><p>Input tree.</p></td>
+    </tr>
+    <tr>
+      <th>sim</th>
+      <td><p>(list) : result of function <code>simulate</code>.</p></td>
+    </tr>
+    <tr>
+      <th>Y_data</th>
+      <td><p>: vector indicating the data at the tips.</p></td>
+    </tr>
+    <tr>
+      <th>Sigma_YY_inv</th>
+      <td><p>: invert of the variance-covariance matrix of the data.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Update function ofr optimal value computation — update.compute_betas_from_shifts • PhylogeneticEM</title>
+<title>All news • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -36,7 +36,7 @@
   </head>
 
   <body>
-    <div class="container template-reference-topic">
+    <div class="container template-news">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -74,57 +74,43 @@
       </header>
 
       <div class="row">
-  <div class="col-md-9 contents">
+
+  <div class="col-md-9">
     <div class="page-header">
-    <h1>Update function ofr optimal value computation</h1>
+      <h1>Change log <small>All releases</small></h1>
     </div>
 
-    
-    <p><code>update.compute_betas_from_shifts</code> computes the optimal value at a daughter node, 
-knowing the optimal value at the parent node and the vector of shifts.</p>
-    
-
-    <pre><span class='fu'>update.compute_betas_from_shifts</span>(<span class='no'>edgeNbr</span>, <span class='no'>ancestral</span>, <span class='no'>shifts</span>, <span class='no'>...</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>edgeNbr</th>
-      <td><p>: Number of the edge considered</p></td>
-    </tr>
-    <tr>
-      <th>ancestral</th>
-      <td><p>: Computed vector for the parental node</p></td>
-    </tr>
-    <tr>
-      <th>shifts</th>
-      <td><p>position and values of the shifts</p></td>
-    </tr>
-    </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>Updated matrix of size (nNodes + ntaxa)x1.</p>
-    
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>This function is used in function <code>compute_betas_from_shifts</code> and is designed to 
-furnish function <code>recursionDown</code> with the right structure of data.</p>
-    
-
+    <div class="contents">
+    <div id="phylogeneticem-1-0-0-900" class="section level1">
+<h1 class="hasAnchor">
+<a href="#phylogeneticem-1-0-0-900" class="anchor"></a>PhylogeneticEM 1.0.0.900</h1>
+<ul>
+<li>Minor Changes:</li>
+<li>Impose a maximum value for alpha in find_grid_alpha to respect machine max double.</li>
+<li>Bug fixes:</li>
+<li>Plotting missing values correctly in plot.PhyloEM.</li>
+<li>Bug fixes in plotting PhyloEM object when p = 1.</li>
+<li>When p=1 and nbr_alpha is not missing, do not switch to estimated mode for alpha.</li>
+</ul>
+</div>
+    <div id="phylogeneticem-1-0-0" class="section level1">
+<h1 class="hasAnchor">
+<a href="#phylogeneticem-1-0-0" class="anchor"></a>PhylogeneticEM 1.0.0</h1>
+<p>Initial Release.</p>
+</div>
+    </div>
   </div>
+
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-
-      <li><a href="#details">Details</a></li>
-          </ul>
-
+    <div id="tocnav">
+      <h2>Contents</h2>
+      <ul class="nav nav-pills nav-stacked">
+        <li><a href="#phylogeneticem-1-0-0-900">1.0.0.900</a></li>
+        <li><a href="#phylogeneticem-1-0-0">1.0.0</a></li>
+      </ul>
+    </div>
   </div>
+
 </div>
 
       <footer>

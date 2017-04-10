@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extract from object  — extract.partitionsNumber • PhylogeneticEM</title>
+<title>Extract from object <code>partitionsNumber</code> — extract.partitionsNumber • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -74,7 +76,7 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extract from object </h1>
+    <h1>Extract from object <code>partitionsNumber</code></h1>
     </div>
 
     
@@ -87,24 +89,35 @@ given sub-tree, either marked or non-marked.</p>
   <span class='kw'>npart</span> <span class='kw'>=</span> <span class='fu'>attr</span>(<span class='no'>x</span>, <span class='st'>"npart"</span>), <span class='kw'>marqued</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>x</dt>
-      <dd>an object of class <code>partitionsNumber</code>, result of function
-<code><a href='partitionsNumber.html'>partitionsNumber</a></code>.</dd>
-      <dt>node</dt>
-      <dd>the root node of the subtree where to get the result.
-Default to the root of the tree.</dd>
-      <dt>npart</dt>
-      <dd>the number of partitions (colors) allowed at the tips.
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>an object of class <code>partitionsNumber</code>, result of function
+<code><a href='partitionsNumber.html'>partitionsNumber</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>node</th>
+      <td><p>the root node of the subtree where to get the result.
+Default to the root of the tree.</p></td>
+    </tr>
+    <tr>
+      <th>npart</th>
+      <td><p>the number of partitions (colors) allowed at the tips.
 Default to the value used in the call of function
-<code><a href='partitionsNumber.html'>partitionsNumber</a></code> (the maximum).</dd>
-      <dt>marqued</dt>
-      <dd>whether to extract the marqued (TRUE) or un-marqued (FALSE)
+<code><a href='partitionsNumber.html'>partitionsNumber</a></code> (the maximum).</p></td>
+    </tr>
+    <tr>
+      <th>marqued</th>
+      <td><p>whether to extract the marqued (TRUE) or un-marqued (FALSE)
 partitions. The number of models is the number of un-marqued partitions.
-Default to FALSE.</dd>
-      <dt>...</dt>
-      <dd>unused.</dd>
-    </dl>
+Default to FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>unused.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
