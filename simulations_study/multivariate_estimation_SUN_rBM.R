@@ -84,7 +84,7 @@ estimations_several_K <- function(X, pPCA = FALSE){
                                 log_transform = TRUE)
   time_SUN <- system.time(
   res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
-                 Y_data = X$Y_data,
+                 Y_data = Y_data,
                  process = "scOU",
                  K_max = max(K_try[[paste0(X$ntaxa)]]) + 5,
                  random.root = TRUE,
