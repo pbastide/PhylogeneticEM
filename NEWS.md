@@ -5,6 +5,8 @@
   * Plotting missing values correctly in plot.PhyloEM.
   * Bug fixes in plotting PhyloEM object when p = 1.
   * When p=1 and nbr_alpha is not missing, do not switch to estimated mode for alpha.
+* Technical:
+  * registration of c++ code to comply with R 3.4 new standards.
 
 # PhylogeneticEM 1.0.0
 Initial Release.
