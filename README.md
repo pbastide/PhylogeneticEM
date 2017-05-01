@@ -8,7 +8,7 @@ PhylogeneticEM
 Implementation of the EM algorithm for the detection of shifts in a phylogeny.
 
 ## Installation
-Stable version to be released on the CRAN soon.
+Stable version on the CRAN.
 
 To get the latest (and possibly unstable) version, you can use the [`devtools`](https://github.com/hadley/devtools) package:
 ```R
