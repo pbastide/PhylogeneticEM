@@ -240,9 +240,11 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param show.tip.label whether to show the tip labels. Default to FALSE.
 #' @param label_cex if \code{show.tip.label=TRUE}, the size of the labels. Default
 #' to 0.5.
+#' @param label_font if \code{show.tip.label=TRUE}, the font of the labels (see \link{par}).
 #' @param label_offset if \code{show.tip.label=TRUE}, the size of the offset between
 #' the tree and the labels. Default to 0.
 #' @param axis_cex cex for the label values of the plot. Default to 0.7.
+#' @param axis_las las for the label values of the plot. Default to 0 (see \link{par}).
 #' @param edge.width width of the edge. Default to 1.
 #' @param margin_plot vector giving the margin to around the plot.
 #' Default to \code{c(0, 0, 0, 0)}.
@@ -283,8 +285,10 @@ plot.PhyloEM <- function(x,
                          alpha_border = 70,
                          show.tip.label = FALSE,
                          label_cex = 0.5,
+                         label_font = 1,
                          label_offset = 0,
                          axis_cex = 0.7,
+                         axis_las = 0,
                          edge.width = 1,
                          margin_plot = NULL,
                          gray_scale = FALSE,
@@ -357,6 +361,7 @@ plot.PhyloEM <- function(x,
                            value_in_box = value_in_box,
                            shifts_cex = shifts_cex,
                            axis_cex = axis_cex,
+                           axis_las = axis_las,
                            margin_plot = margin_plot,
                            color_shifts_regimes = color_shifts_regimes,
                            # shifts_regimes = shifts_regimes,
@@ -366,6 +371,7 @@ plot.PhyloEM <- function(x,
                            ancestral_cex = ancestral_cex,
                            ancestral_pch = ancestral_pch,
                            label_cex = label_cex,
+                           label_font = label_font,
                            show.tip.label = show.tip.label,
                            # underscore = underscore,
                            # label.offset = label.offset,
@@ -392,6 +398,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      value_in_box = TRUE,
                                      shifts_cex = 1,
                                      axis_cex = 0.7,
+                                     axis_las = 0,
                                      margin_plot = NULL,
                                      color_shifts_regimes = FALSE,
                                      # shifts_regimes = NULL,
@@ -401,6 +408,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      ancestral_cex = 2,
                                      ancestral_pch = 19,
                                      label_cex = 1,
+                                     label_font = 1,
                                      show.tip.label = FALSE,
                                      underscore = FALSE,
                                      label.offset = 0,
@@ -556,7 +564,9 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       axis(1, at = pos_last_tip + eccart_g + range(Y.plot, na.rm = TRUE),
            labels = round(range(Y.state[t, ], na.rm = TRUE), digits = 2),
            pos = y.lim.min + ntaxa/15, 
-           cex.axis = axis_cex, padj = -0.5)
+           cex.axis = axis_cex,
+           # padj = -0.5,
+           las = axis_las)
       # segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
       #          pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
       #          lwd = 2)
@@ -588,7 +598,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
       if (!exists("color_characters_regimes")) color_characters_regimes <- color_characters
       text(x.lim.max.data, lastPP$yy[1:ntaxa], phylo$tip.label, 
            cex = label_cex, pos = 4,
-           col = as.vector(color_characters_regimes))
+           col = as.vector(color_characters_regimes),
+           font = label_font)
     }
   }
   ## Ancestral states

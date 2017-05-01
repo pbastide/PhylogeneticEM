@@ -1,5 +1,5 @@
 ## Test environments
-* ubuntu 12.04 (on travis-ci), R 3.3.2
+* ubuntu 12.04 and 16.04 (on travis-ci and local), R 3.4.0
 * win-builder (devel and release)
 
 ## R CMD check results
@@ -9,8 +9,6 @@ There was one NOTE:
 
 * checking CRAN incoming feasibility ... NOTE
 Maintainer: 'Paul Bastide <paul.bastide@m4x.org>'
-
-New submission
 
 Possibly mis-spelled words in DESCRIPTION:
   OU (9:48)

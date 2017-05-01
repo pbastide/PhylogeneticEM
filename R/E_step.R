@@ -966,7 +966,7 @@ compute_log_likelihood.simple.nomissing.BM <- function(phylo, Y_data, sim,
 ## Upward_downward
 ###############################################################################
 
-#' @useDynLib PhylogeneticEM
+#' @useDynLib PhylogeneticEM, .registration=TRUE
 #' @importFrom Rcpp evalCpp
 # @import RcppArmadillo
 

@@ -65,7 +65,17 @@ nbrSim <- length(simlist)
 ######################
 ## Estimation Function
 ######################
-estimations_several_K <- function(X){
+estimations_several_K <- function(X, pPCA = FALSE){
+  if (pPCA){
+    Y_data <- t(X$Y_data)
+    if (anyNA(Y_data))   return(list(sim = X, res = NULL))
+    rownames(Y_data) <- trees[[paste0(X$ntaxa)]]$tip.label
+    ## Do a pPCA
+    Y_data_pPCA <- phytools::phyl.pca(trees[[paste0(X$ntaxa)]], Y_data)
+    Y_data <- t(Y_data_pPCA$S)
+  } else {
+    Y_data <- X$Y_data
+  }
   alpha_grid <- find_grid_alpha(trees[[paste0(X$ntaxa)]],
                                 nbr_alpha = 10,
                                 factor_up_alpha = 2,
@@ -74,7 +84,7 @@ estimations_several_K <- function(X){
                                 log_transform = TRUE)
   time_SUN <- system.time(
   res <- PhyloEM(phylo = trees[[paste0(X$ntaxa)]],
-                 Y_data = X$Y_data,
+                 Y_data = Y_data,
                  process = "scOU",
                  K_max = max(K_try[[paste0(X$ntaxa)]]) + 5,
                  random.root = TRUE,
@@ -193,7 +203,7 @@ registerDoParallel(cl)
 time_alpha_gird_fav <- system.time(
   simestimations_fav <- foreach(i = simlist[favorables], .packages = reqpckg) %dopar%
   {
-    estimations_several_K(i)
+    estimations_several_K(i, pPCA=TRUE)
   }
 )
 # Stop the cluster (parallel)
@@ -213,9 +223,9 @@ registerDoParallel(cl)
 
 ## Parallelized estimations
 time_alpha_gird_unfav <- system.time(
-  simestimations_unfav <- foreach(i = simlist[!favorables][1:3], .packages = reqpckg) %dopar%
+  simestimations_unfav <- foreach(i = simlist[!favorables], .packages = reqpckg) %dopar%
   {
-    estimations_several_K(i)
+    estimations_several_K(i, pPCA=TRUE)
   }
 )
 # Stop the cluster (parallel)
