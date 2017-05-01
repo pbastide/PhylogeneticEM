@@ -25,7 +25,7 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -86,7 +86,7 @@ phylogenetic tree, with automatic shift detection on the branches of the tree.
 This function can handle missing data.</p>
     
 
-    <pre><span class='fu'>PhyloEM</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>),
+    <pre class="usage"><span class='fu'>PhyloEM</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>),
   <span class='kw'>check_postorder</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>K_max</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='fu'>floor</span>(<span class='fu'>sqrt</span>(<span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>))), <span class='fl'>10</span>),
   <span class='kw'>use_previous</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"LINselect"</span>,
@@ -314,31 +314,31 @@ go to their optimum values with the same speed.</p></li>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'>## Not run: ------------------------------------</span>
-<span class='co'># ## Load Data</span>
-<span class='co'># data(monkeys)</span>
-<span class='co'># ## Run method</span>
-<span class='co'># # Note: use more alpha values for better results.</span>
-<span class='co'># res &lt;- PhyloEM(Y_data = monkeys$dat,        ## data</span>
-<span class='co'>#                phylo = monkeys$phy,         ## phylogeny</span>
-<span class='co'>#                process = "scOU",            ## scalar OU</span>
-<span class='co'>#                random.root = TRUE,          ## root is stationary</span>
-<span class='co'>#                stationary.root = TRUE,</span>
-<span class='co'>#                K_max = 10,                  ## maximal number of shifts</span>
-<span class='co'>#                nbr_alpha = 4,               ## number of alpha values</span>
-<span class='co'>#                parallel_alpha = TRUE,       ## parallelize on alpha values</span>
-<span class='co'>#                Ncores = 2)</span>
-<span class='co'># ## Plot selected solution (LINselect)</span>
-<span class='co'># plot(res) # three shifts</span>
-<span class='co'># ## Plot selected solution (DDSE)</span>
-<span class='co'># plot(res, method.selection = "DDSE") # no shift</span>
-<span class='co'># ## Extract and solution with 5 shifts</span>
-<span class='co'># params_5 &lt;- params_process(res, K = 5)</span>
-<span class='co'># plot(res, params = params_5)</span>
-<span class='co'># ## Show all equivalent solutions</span>
-<span class='co'># eq_sol &lt;- equivalent_shifts(monkeys$phy, params_5)</span>
-<span class='co'># plot(eq_sol)</span>
-<span class='co'>## ---------------------------------------------</span></div></pre>
+    <pre class="examples"><div class='input'><span class='fu'>not_run</span>({
+  <span class='co'>## Load Data</span>
+  <span class='fu'>data</span>(<span class='no'>monkeys</span>)
+  <span class='co'>## Run method</span>
+  <span class='co'># Note: use more alpha values for better results.</span>
+  <span class='no'>res</span> <span class='kw'>&lt;-</span> <span class='fu'>PhyloEM</span>(<span class='kw'>Y_data</span> <span class='kw'>=</span> <span class='no'>monkeys</span>$<span class='no'>dat</span>,        <span class='co'>## data</span>
+                 <span class='kw'>phylo</span> <span class='kw'>=</span> <span class='no'>monkeys</span>$<span class='no'>phy</span>,         <span class='co'>## phylogeny</span>
+                 <span class='kw'>process</span> <span class='kw'>=</span> <span class='st'>"scOU"</span>,            <span class='co'>## scalar OU</span>
+                 <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,          <span class='co'>## root is stationary</span>
+                 <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                 <span class='kw'>K_max</span> <span class='kw'>=</span> <span class='fl'>10</span>,                  <span class='co'>## maximal number of shifts</span>
+                 <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>4</span>,               <span class='co'>## number of alpha values</span>
+                 <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,       <span class='co'>## parallelize on alpha values</span>
+                 <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+  <span class='co'>## Plot selected solution (LINselect)</span>
+  <span class='fu'>plot</span>(<span class='no'>res</span>) <span class='co'># three shifts</span>
+  <span class='co'>## Plot selected solution (DDSE)</span>
+  <span class='fu'>plot</span>(<span class='no'>res</span>, <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='st'>"DDSE"</span>) <span class='co'># no shift</span>
+  <span class='co'>## Extract and solution with 5 shifts</span>
+  <span class='no'>params_5</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='params_process.html'>params_process</a></span>(<span class='no'>res</span>, <span class='kw'>K</span> <span class='kw'>=</span> <span class='fl'>5</span>)
+  <span class='fu'>plot</span>(<span class='no'>res</span>, <span class='kw'>params</span> <span class='kw'>=</span> <span class='no'>params_5</span>)
+  <span class='co'>## Show all equivalent solutions</span>
+  <span class='no'>eq_sol</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='equivalent_shifts.html'>equivalent_shifts</a></span>(<span class='no'>monkeys</span>$<span class='no'>phy</span>, <span class='no'>params_5</span>)
+  <span class='fu'>plot</span>(<span class='no'>eq_sol</span>)
+})</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

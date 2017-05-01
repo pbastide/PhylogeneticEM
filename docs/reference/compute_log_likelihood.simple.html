@@ -25,7 +25,7 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -84,7 +84,7 @@
 in the simple case where the inverse of the variance matrix is given.</p>
     
 
-    <pre><span class='fu'>compute_log_likelihood.simple</span>(<span class='no'>phylo</span>, <span class='no'>Y_data_vec</span>, <span class='no'>sim</span>, <span class='no'>Sigma</span>, <span class='no'>Sigma_YY_chol_inv</span>,
+    <pre class="usage"><span class='fu'>compute_log_likelihood.simple</span>(<span class='no'>phylo</span>, <span class='no'>Y_data_vec</span>, <span class='no'>sim</span>, <span class='no'>Sigma</span>, <span class='no'>Sigma_YY_chol_inv</span>,
   <span class='kw'>miss</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>FALSE</span>, <span class='fu'>dim</span>(<span class='no'>sim</span>)[<span class='fl'>1</span>] * <span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)),
   <span class='kw'>masque_data</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fu'>rep</span>(<span class='fl'>TRUE</span>, <span class='fu'>dim</span>(<span class='no'>sim</span>)[<span class='fl'>1</span>] * <span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)), <span class='fu'>rep</span>(<span class='fl'>FALSE</span>,
   <span class='fu'>dim</span>(<span class='no'>sim</span>)[<span class='fl'>1</span>] * <span class='no'>phylo</span>$<span class='no'>Nnode</span>)), <span class='no'>...</span>)</pre>

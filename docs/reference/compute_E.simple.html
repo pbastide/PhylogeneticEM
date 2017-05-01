@@ -25,7 +25,7 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -83,7 +83,7 @@
     <p><code>compute_E.simple</code> computes the E step in the simple case where the invert matrix Sigma_YY_inv is given</p>
     
 
-    <pre><span class='fu'>compute_E.simple</span>(<span class='no'>phylo</span>, <span class='no'>times_shared</span>, <span class='no'>distances_phylo</span>, <span class='no'>process</span>, <span class='no'>params_old</span>,
+    <pre class="usage"><span class='fu'>compute_E.simple</span>(<span class='no'>phylo</span>, <span class='no'>times_shared</span>, <span class='no'>distances_phylo</span>, <span class='no'>process</span>, <span class='no'>params_old</span>,
   <span class='kw'>masque_data</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fu'>rep</span>(<span class='fl'>TRUE</span>, <span class='fu'>attr</span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) *
   <span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)), <span class='fu'>rep</span>(<span class='fl'>FALSE</span>, <span class='fu'>attr</span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) *
   <span class='no'>phylo</span>$<span class='no'>Nnode</span>)), <span class='no'>F_moments</span>, <span class='no'>Y_data_vec_known</span>, <span class='kw'>miss</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>FALSE</span>,
