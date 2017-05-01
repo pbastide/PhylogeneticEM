@@ -1,4 +1,4 @@
-# PhylogeneticEM 1.0.0.900
+# PhylogeneticEM 1.0.1
 * Minor Changes:
   * Impose a maximum value for alpha in find_grid_alpha to respect machine max double.
 * New Features
