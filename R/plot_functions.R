@@ -611,7 +611,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                             digits = 2, prompt = FALSE,
                             lwd = 4, outline = TRUE,
                             x = 0,
-                            y = 0.8 * par()$usr[3])
+                            y = 0.8 * par()$usr[3],
+                            subtitle = "")
   }
   ## Plot beta_0
   if (value_in_box){ # Write value of shift in the box
