@@ -1211,15 +1211,15 @@ extract_root_values <- function(eq_shifts, trait){
 #' @param x an object of class \code{equivalent_shifts}, result of
 #' function \code{\link{equivalent_shifts}}
 #' @param trait (integer) the trait to be plotted, if multivariate. Default to 1.
+#' @param show_shifts_values whether to show the equivalent shifts values or not. 
+#' Default to FALSE.
 #' @param numbering wheter to number the solutions. Default to FALSE.
 #' @param colors_tips user-provided colors for the tips of the tree. A vector
 #' vector with as many colors as there are tips. Will be automatically computed
 #' if not provided.
 #' @param nbr_col the number of columns on which to display the plot.
 #' Default to 3.
-#' @param gray_scale if TRUE, a gray scale is used instead of colors. Default to
-#' FALSE.
-#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
+#' @inheritParams plot.PhyloEM
 #' 
 #' @return A plot of the equivalent shifts allocations.
 #' 
@@ -1230,10 +1230,14 @@ extract_root_values <- function(eq_shifts, trait){
 ##
 plot.equivalent_shifts <- function(x,
                                    trait = 1,
+                                   show_shifts_values = TRUE,
                                    numbering = FALSE,
                                    colors_tips = NULL,
                                    nbr_col = 3, 
-                                   gray_scale = FALSE, ...){
+                                   gray_scale = FALSE,
+                                   edge.width = 2,
+                                   shifts_cex = 1.2,
+                                   ...){
   phylo <- x$phylo
   ntaxa <- length(phylo$tip.label)
   nbrSol <- dim(x$eq_shifts_edges)[2]
@@ -1253,14 +1257,23 @@ plot.equivalent_shifts <- function(x,
     colors <- unique(colors_tips)
   }
   scr <- split.screen(c(nbrLignes, nbr_col))
-  shifts_values <- extract_shifts_values(x, trait)
-  root_values <- extract_root_values(x, trait)
+  if (show_shifts_values){
+    value_in_box <- TRUE
+    shifts_values <- extract_shifts_values(x, trait)
+    root_values <- extract_root_values(x, trait)
+  } else {
+    value_in_box <- FALSE
+    trait <- 1
+    shifts_values <- extract_shifts_values(x, trait)
+    root_values <- extract_root_values(x, trait)
+  }
   for (sol in 1:nbrSol) {
     ## Shifts and beta_0
-    params <- list(optimal.value = root_values[, sol],
-                   shifts = list(edges = x$eq_shifts_edges[, sol],
-                                 values = shifts_values[, sol],
-                                 relativeTimes = rep(0, nbrShifts)))
+    params <- params_OU(p = 1,
+                        optimal.value = root_values[, sol],
+                        edges = x$eq_shifts_edges[, sol],
+                        values = shifts_values[, sol],
+                        relativeTimes = rep(0, nbrShifts))
     ## Regimes
     regimes <- allocate_regimes_from_shifts(phylo,
                                             x$eq_shifts_edges[, sol])
@@ -1289,11 +1302,15 @@ plot.equivalent_shifts <- function(x,
     }
     ## Plot
     screen(scr[sol])
-    plot.process.actual(0, 0, phylo, params,
-                        shifts_bg = box_col_shifts,
-                        edge.color = as.vector(edges_regimes),
-                        root_bg = beta_0_col,
-                        edge.width = 2, quant.root = 0.7, ...)
+    par(mar = c(0, 0, 0, 0), mai = c(0, 0, 0, 0))
+    plot(params, phylo,
+         shifts_bg = box_col_shifts,
+         color_edges = as.vector(edges_regimes),
+         root_bg = beta_0_col,
+         edge.width = edge.width,
+         value_in_box = value_in_box,
+         traits = trait, 
+         shifts_cex = shifts_cex, ...)
     if(numbering){
       legend("topleft",
              legend = sol,

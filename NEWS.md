@@ -1,4 +1,6 @@
 # PhylogeneticEM 1.0.1.9000
+* Minor Changes:
+  * Added options to plot.equivalent_shifts.
 
 # PhylogeneticEM 1.0.1
 * Minor Changes:
