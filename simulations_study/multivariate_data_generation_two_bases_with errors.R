@@ -33,6 +33,7 @@ s_base <- 1 # non diagonal coefficient
 NA_base <- 0 # % of NAs
 ## Mispesifications
 e_base <- 0 # diagonal error base
+e_base_cor <- 0.5 # error when adding correlations
 er_base <- 0 # non-diagonal error base
 lambda_base <- Inf # coef gamma distribution(lam, 1/lam)
 
@@ -56,7 +57,7 @@ NA_grid <- c(0.05, 0.1, 0.2, 0.5)
 ntaxa_grid <- c(32, 64, 96, 128, 192, 256)
 
 ## replication depth (number of replicates per )
-nrep <- 1:100
+nrep <- 1:200
 
 ## errors diagonal
 e_grid <- c(0.1, 0.3, 0.5, 1, 1.5, 2, 3, 5)
@@ -119,33 +120,33 @@ simparams_ntaxa <- expand.grid(alpha_base, gamma_base, K_base,
 
 # error diagonal
 simparams_ediag <- expand.grid(alpha_base, gamma_base, K_base,
-                               r_base[1], r_base[1], s_base,
+                               r_base[2], r_base[1], s_base,
                                factor_shift_base, ntaxa_base, NA_base, nrep,
                                e_grid, er_base, lambda_base,
                                "ediag_var")
 
-# ntaxa
+# error correlations
 simparams_ecor <- expand.grid(alpha_base, gamma_base, K_base,
-                               r_base[1], r_base[1], s_base,
+                               r_base[2], r_base[1], s_base,
                                factor_shift_base, ntaxa_base, NA_base, nrep,
-                               e_base, er_grid, lambda_base,
+                              e_base_cor, er_grid, lambda_base,
                                "ecor_var")
 
-# ntaxa
+# error lengths
 simparams_length <- expand.grid(alpha_base, gamma_base, K_base,
-                               r_base[1], r_base[1], s_base,
+                               r_base[2], r_base[1], s_base,
                                factor_shift_base, ntaxa_base, NA_base, nrep,
                                e_base, er_base, lambda_grid,
                                "length_var")
 
 simparams <- rbind(simparams_base,
-                   simparams_alpha,
-                   simparams_K,
-                   simparams_r_drift,
-                   simparams_r_selection,
-                   simparams_s,
-                   simparams_NA,
-                   simparams_ntaxa,
+                   # simparams_alpha,
+                   # simparams_K,
+                   # simparams_r_drift,
+                   # simparams_r_selection,
+                   # simparams_s,
+                   # simparams_NA,
+                   # simparams_ntaxa,
                    simparams_ediag,
                    simparams_ecor,
                    simparams_length
@@ -191,7 +192,7 @@ for (nta in c(128, 32, 64, 96, 160, 192, 256)){
 ##############
 ## Generation of shifts
 ##############
-plot(trees[["128"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+# plot(trees[["128"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 
 shifts_grid <- vector(mode = "list")
 
@@ -204,21 +205,21 @@ shifts_grid[["128_3"]] <- list(edges = c(9, 72, 209),
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 128) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["128"]], 
-                         params = list(shifts = list(edges = shifts_grid[["128_3"]]$edges, values = shifts_grid[["128_3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["128"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["128_3"]]$edges, values = shifts_grid[["128_3"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_3"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_3"]]$edges)))
 
 # ## 128 - 7
 # shifts_grid[["128_7"]] <- list(edges = c(8, 72, 193,
@@ -234,7 +235,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 # 
 # # Means at the tips ?
 # Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_7"]])
-# W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+# W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
 # vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 # X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 # unique(X1.tips.exp.mat[1, ])
@@ -248,7 +249,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 #                          bg_shifts = "azure2",
 #                          bg_beta_0 = "azure2")
 # # Equivalent solutions ?
-# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_7"]]$edges)))
+# PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_7"]]$edges)))
 # 
 # ## 128 - 11
 # shifts_grid[["128_11"]] <- list(edges = c(8, 72, 193,
@@ -269,7 +270,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 # 
 # # Means at the tips ?
 # Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_11"]])
-# W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+# W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
 # vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 # X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 # unique(X1.tips.exp.mat[1, ])
@@ -283,7 +284,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 #                          bg_shifts = "azure2",
 #                          bg_beta_0 = "azure2")
 # # Equivalent solutions ?
-# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_11"]]$edges)))
+# PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_11"]]$edges)))
 # 
 # ## 128 -  15
 # shifts_grid[["128_15"]] <- list(edges = c(8, 72, 193,
@@ -309,7 +310,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 # 
 # # Means at the tips ?
 # Delta <- shifts.list_to_matrix(trees[["128"]], shifts_grid[["128_15"]])
-# W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
+# W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(1, p_base, p_base))
 # vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 # X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 # unique(X1.tips.exp.mat[1, ])
@@ -323,10 +324,10 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 #                          bg_shifts = "azure2",
 #                          bg_beta_0 = "azure2")
 # # Equivalent solutions ?
-# extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_15"]]$edges)))
+# PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(trees[["128"]], shifts_grid[["128_15"]]$edges)))
 
 ## 32 -  3
-plot(trees[["32"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+# plot(trees[["32"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["32_3"]] <- list(edges = c(6, 20, 48),
                               values = cbind(rep(2.1, p_base),
                                              rep(-2.0, p_base),
@@ -335,24 +336,24 @@ shifts_grid[["32_3"]] <- list(edges = c(6, 20, 48),
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["32"]], shifts_grid[["32_3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["32"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["32"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["32"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 32) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["32"]], 
-                         params = list(shifts = list(edges = shifts_grid[["32_3"]]$edges, values = shifts_grid[["32_3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["32"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["32_3"]]$edges, values = shifts_grid[["32_3"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["32"]], clusters_from_shifts(trees[["32"]], shifts_grid[["32_3"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["32"]], clusters_from_shifts(trees[["32"]], shifts_grid[["32_3"]]$edges)))
 
 ## 64 -  3
-plot(trees[["64"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+# plot(trees[["64"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["64_3"]] <- list(edges = c(3, 44, 92),
                               values = cbind(rep(1.8, p_base),
                                              rep(-1.9, p_base),
@@ -361,24 +362,24 @@ shifts_grid[["64_3"]] <- list(edges = c(3, 44, 92),
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["64"]], shifts_grid[["64_3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["64"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["64"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["64"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 64) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["64"]], 
-                         params = list(shifts = list(edges = shifts_grid[["64_3"]]$edges, values = shifts_grid[["64_3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["64"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["64_3"]]$edges, values = shifts_grid[["64_3"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["64"]], clusters_from_shifts(trees[["64"]], shifts_grid[["64_3"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["64"]], clusters_from_shifts(trees[["64"]], shifts_grid[["64_3"]]$edges)))
 
 ## 96 -  3
-plot(trees[["96"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+# plot(trees[["96"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["96_3"]] <- list(edges = c(48, 80, 116),
                               values = cbind(rep(1.7, p_base),
                                              rep(-1.8, p_base),
@@ -387,24 +388,24 @@ shifts_grid[["96_3"]] <- list(edges = c(48, 80, 116),
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["96"]], shifts_grid[["96_3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["96"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["96"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["96"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 96) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["96"]], 
-                         params = list(shifts = list(edges = shifts_grid[["96_3"]]$edges, values = shifts_grid[["96_3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["96"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["96_3"]]$edges, values = shifts_grid[["96_3"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["96"]], clusters_from_shifts(trees[["96"]], shifts_grid[["96_3"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["96"]], clusters_from_shifts(trees[["96"]], shifts_grid[["96_3"]]$edges)))
 
 ## 160 -  3
-plot(trees[["160"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+# plot(trees[["160"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["160_3"]] <- list(edges = c(107, 62, 255),
                                values = cbind(rep(1.7, p_base),
                                               rep(-1.7, p_base),
@@ -413,21 +414,21 @@ shifts_grid[["160_3"]] <- list(edges = c(107, 62, 255),
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["160"]], 
-                         params = list(shifts = list(edges = shifts_grid[["160_3"]]$edges, values = shifts_grid[["160_3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["160"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["160_3"]]$edges, values = shifts_grid[["160_3"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_3"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_3"]]$edges)))
 
 ## 160 - 7
 shifts_grid[["160_7"]] <- list(edges = c(107, 62, 255,
@@ -443,21 +444,21 @@ shifts_grid[["160_7"]] <- list(edges = c(107, 62, 255,
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_7"]])
-W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["160"]], 
-                         params = list(shifts = list(edges = shifts_grid[["160_7"]]$edges, values = shifts_grid[["160_7"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["160"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["160_7"]]$edges, values = shifts_grid[["160_7"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_7"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_7"]]$edges)))
 
 ## 160 - 11
 shifts_grid[["160_11"]] <- list(edges = c(107, 62, 255,
@@ -478,21 +479,21 @@ shifts_grid[["160_11"]] <- list(edges = c(107, 62, 255,
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_11"]])
-W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["160"]], 
-                         params = list(shifts = list(edges = shifts_grid[["160_11"]]$edges, values = shifts_grid[["160_11"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["160"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["160_11"]]$edges, values = shifts_grid[["160_11"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_11"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_11"]]$edges)))
 
 ## 160 -  15
 shifts_grid[["160_15"]] <- list(edges = c(107, 62, 255,
@@ -518,24 +519,24 @@ shifts_grid[["160_15"]] <- list(edges = c(107, 62, 255,
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["160"]], shifts_grid[["160_15"]])
-W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["160"]], 
-                         params = list(shifts = list(edges = shifts_grid[["160_15"]]$edges, values = shifts_grid[["160_15"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["160"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["160_15"]]$edges, values = shifts_grid[["160_15"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_15"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["160"]], clusters_from_shifts(trees[["160"]], shifts_grid[["160_15"]]$edges)))
 
 ## 192 -  3
-plot(trees[["192"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+# plot(trees[["192"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["192_3"]] <- list(edges = c(57, 160, 307),
                                values = cbind(rep(1.7, p_base),
                                               rep(-1.7, p_base),
@@ -544,24 +545,24 @@ shifts_grid[["192_3"]] <- list(edges = c(57, 160, 307),
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["192"]], shifts_grid[["192_3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["192"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["192"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["192"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 192) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["192"]], 
-                         params = list(shifts = list(edges = shifts_grid[["192_3"]]$edges, values = shifts_grid[["192_3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["192"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["192_3"]]$edges, values = shifts_grid[["192_3"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["192"]], clusters_from_shifts(trees[["192"]], shifts_grid[["192_3"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["192"]], clusters_from_shifts(trees[["192"]], shifts_grid[["192_3"]]$edges)))
 
 ## 256 -  3
-plot(trees[["256"]], show.tip.label = FALSE); edgelabels(); tiplabels()
+# plot(trees[["256"]], show.tip.label = FALSE); edgelabels(); tiplabels()
 shifts_grid[["256_3"]] <- list(edges = c(137, 240, 363),
                                values = cbind(rep(1.8, p_base),
                                               rep(-1.7, p_base),
@@ -570,21 +571,21 @@ shifts_grid[["256_3"]] <- list(edges = c(137, 240, 363),
 
 # Means at the tips ?
 Delta <- shifts.list_to_matrix(trees[["256"]], shifts_grid[["256_3"]])
-W <- compute_actualization_matrix_ultrametric(trees[["256"]], alpha_base * diag(1, p_base, p_base))
+W <- PhylogeneticEM:::compute_actualization_matrix_ultrametric(trees[["256"]], alpha_base * diag(1, p_base, p_base))
 vec_Y <- kronecker(T_tree[["256"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 256) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
-                         phylo = trees[["256"]], 
-                         params = list(shifts = list(edges = shifts_grid[["256_3"]]$edges, values = shifts_grid[["256_3"]]$values[1, ])),
-                         adj.root = 0,
-                         automatic_colors = TRUE,
-                         margin_plot = NULL,
-                         cex = 2,
-                         bg_shifts = "azure2",
-                         bg_beta_0 = "azure2")
+# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+#                          phylo = trees[["256"]], 
+#                          params = list(shifts = list(edges = shifts_grid[["256_3"]]$edges, values = shifts_grid[["256_3"]]$values[1, ])),
+#                          adj.root = 0,
+#                          automatic_colors = TRUE,
+#                          margin_plot = NULL,
+#                          cex = 2,
+#                          bg_shifts = "azure2",
+#                          bg_beta_0 = "azure2")
 # Equivalent solutions ?
-extract.parsimonyNumber(parsimonyNumber(trees[["256"]], clusters_from_shifts(trees[["256"]], shifts_grid[["256_3"]]$edges)))
+PhylogeneticEM:::extract.parsimonyNumber(parsimonyNumber(trees[["256"]], clusters_from_shifts(trees[["256"]], shifts_grid[["256_3"]]$edges)))
 
 ## Clean up
 rm(W, vec_Y, X1.tips.exp.mat, Delta)
@@ -674,7 +675,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
                   shifts = shifts,
                   selection.strength = alpha_mat, 
                   optimal.value = beta_0)
-  XX <- simulate_internal(phylo = tree,
+  XX <- PhylogeneticEM:::simulate_internal(phylo = tree,
                  process = process_temp,
                  p = p_base,
                  root.state = root.state, 
@@ -695,13 +696,13 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
               nrep = nrep,
               grp = grp,
               shifts = shifts,
-              Y_true = extract_simulate_internal(XX, what="states", where="tips"),
-              Z_true = extract_simulate_internal(XX, what = "states", where = "nodes"),
-              m_Y_true = extract_simulate_internal(XX, what="expectations", where="tips"))
+              Y_true = PhylogeneticEM:::extract_simulate_internal(XX, what="states", where="tips"),
+              Z_true = PhylogeneticEM:::extract_simulate_internal(XX, what = "states", where = "nodes"),
+              m_Y_true = PhylogeneticEM:::extract_simulate_internal(XX, what="expectations", where="tips"),
+              tree = tree)
   sim$Y_data <- sim$Y_true
-  ## Errors
-  error_mat <- diag(rep(e-er, p_base)) + matrix(er, p_base, p_base)
-  sim$Y_data <- sim$Y_data + t(mvrnorm(n = ntaxa, mu = 0, Sigma = error_mat))
+  error_mat <- e * (diag(rep(1-er, p_base)) + matrix(er, p_base, p_base))
+  sim$Y_data <- sim$Y_data + t(mvrnorm(n = ntaxa, mu = rep(0, p_base), Sigma = error_mat))
   ## NAs
   if (NA_per > 0){
     nMiss <- floor(ntaxa * p_base * NA_per)
@@ -721,10 +722,10 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   ## Compute true likelihood and difficulty of the problem
   attr(params, "p_dim") <- p_base
   sim$params_simu <- params
-  name_config <- paste(alpha, gamma, K, rd, rs, s, factor_shift,
+  name_config <- paste(alpha, gamma, K, rd, rs, s, factor_shift, e, er, l,
                        ntaxa, NA_per, sep = "_")
   if (is.null(moments_list[[name_config]]) || (NA_per > 0)){
-    moments_list[[name_config]] <<- compute_mean_variance.simple(phylo = tree,
+    moments_list[[name_config]] <<- PhylogeneticEM:::compute_mean_variance.simple(phylo = tree,
                                                                  times_shared = times_shared[[paste0(ntaxa)]],
                                                                  distances_phylo = distances_phylo[[paste0(ntaxa)]],
                                                                  process = process_temp,
@@ -734,7 +735,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   }
   moments <- moments_list[[name_config]]
   moments$sim <- XX
-  sim$log_likelihood.true <- compute_log_likelihood.simple(phylo = tree,
+  sim$log_likelihood.true <- PhylogeneticEM:::compute_log_likelihood.simple(phylo = tree,
                                                            Y_data_vec = Y_data_vec_known,
                                                            sim = moments$sim,
                                                            Sigma = moments$Sigma,
@@ -746,7 +747,7 @@ datasetsim <- function(alpha, gamma, K, rd, rs, s, factor_shift,
   mu_0 <- (sum(Sigma_YY_inv))^(-1) * sum(Sigma_YY_inv %*% Y_data_vec_known)
   sim$difficulty <- as.vector(t(Y_data_vec_known - mu_0) %*% Sigma_YY_inv %*% (Y_data_vec_known - mu_0))
   # sim$difficulty <- as.vector(t(as.vector(sim$m_Y_true - mu_0)) %*% Sigma_YY_inv %*% as.vector(sim$m_Y_true - mu_0))
-  sim$maha_data_mean <- compute_mahalanobis_distance.simple(phylo = tree,
+  sim$maha_data_mean <- PhylogeneticEM:::compute_mahalanobis_distance.simple(phylo = tree,
                                                             Y_data_vec = Y_data_vec_known,
                                                             sim = moments$sim,
                                                             Sigma_YY_chol_inv = moments$Sigma_YY_chol_inv,
