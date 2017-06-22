@@ -66,7 +66,7 @@ e_grid <- c(0.1, 0.3, 0.5, 1, 1.5, 2, 3, 5)
 er_grid <- c(0.2, 0.4, 0.6, 0.8)
 
 ## errors on the tree length
-lambda_grid <- c(2, 4, 6, 8, 10)
+lambda_grid <- 1/c(0.1, 0.25, 0.5, 0.75, 1)
 
 ## The combination of simulation parameters
 # Base
