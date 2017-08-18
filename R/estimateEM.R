@@ -955,6 +955,9 @@ estimateEM <- function(phylo,
 #' @param light_result if TRUE (the default), the object returned is enlighted,
 #' without easilly computatble quantities. If FALSE, the object can be very heavy, but
 #' its subsequent manipulations can be faster (especially for plotting).
+#' @param tol_tree tolerance to consider a branch length significantly greater than zero, or
+#' two lineages lengths to be different, when checking for ultrametry. 
+#' (Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
 #' tolerance parameters for stopping criterions, maximal number of iterations, etc.
 #' 
@@ -1048,6 +1051,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     impute_init_Rphylopars = FALSE,
                     K_lag_init = 5,
                     light_result = TRUE,
+                    tol_tree = .Machine$double.eps^0.5,
                     ...){
   ## Required packages
   # library(doParallel)
@@ -1055,8 +1059,12 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   # library(ape)
   # library(glmnet) # For Lasso initialization
   # library(robustbase) # For robust fitting of alpha
-  ## Check the tree
+  ## Check the tree  ##########################################################
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
+  if (any(abs(phylo$edge.length) < tol_tree)){
+    stop("The tree has zero-length branches.
+         Please use `ape::di2multi` function to transform the zero-length branches into ploytomies.")
+  }
   phylo_given <- phylo
   method.variance  <- match.arg(method.variance)
   if (method.variance == "simple") check_postorder <- FALSE
