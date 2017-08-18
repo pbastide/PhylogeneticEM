@@ -114,30 +114,30 @@
 #     dev.off()
 # }
 
-plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, shifts_bg = "chocolate4", root_bg = "chocolate4", quant.root = 0.25, ...){
-  ntaxa <- length(phylo$tip.label)
-  if (normalize){
-    norm <- mean(abs(Y.state))
-  } else {
-    norm <- 1
-  }
-  ## Plot
-  par(mar = c(0,0,0,0), omi = c(0,0,0,0))
-  # Take care of the root
-  phylo$root.edge <- quantile(phylo$edge.length, quant.root)
-  plot(phylo, show.tip.label = FALSE, root.edge = TRUE, ...)
-  tiplabels(pch = 19, cex = abs(Y.state)/norm, col = ifelse(Y.state >= 0, "orangered", "lightblue"))
-  nodelabels(pch = 19, cex = abs(Z.state)/norm, col = ifelse(Z.state >= 0, "orangered", "lightblue"))
-  my.labeller <- function(variable, value) {
-    value <- paste(variable, "==", as.character(value))
-    value <- lapply(value, function(x) parse(text = x))
-    return(value)
-  }
-  nodelabels(text = round(paramsEstimate$optimal.value, 2), node=ntaxa + 1, bg=root_bg, cex = 1, adj = adj)
-  if ( !is.null(paramsEstimate$shifts$edges) ) {
-    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg = shifts_bg, cex = 1)
-  }
-}
+# plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, shifts_bg = "chocolate4", root_bg = "chocolate4", quant.root = 0.25, ...){
+#   ntaxa <- length(phylo$tip.label)
+#   if (normalize){
+#     norm <- mean(abs(Y.state))
+#   } else {
+#     norm <- 1
+#   }
+#   ## Plot
+#   par(mar = c(0,0,0,0), omi = c(0,0,0,0))
+#   # Take care of the root
+#   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
+#   plot(phylo, show.tip.label = FALSE, root.edge = TRUE, ...)
+#   tiplabels(pch = 19, cex = abs(Y.state)/norm, col = ifelse(Y.state >= 0, "orangered", "lightblue"))
+#   nodelabels(pch = 19, cex = abs(Z.state)/norm, col = ifelse(Z.state >= 0, "orangered", "lightblue"))
+#   my.labeller <- function(variable, value) {
+#     value <- paste(variable, "==", as.character(value))
+#     value <- lapply(value, function(x) parse(text = x))
+#     return(value)
+#   }
+#   nodelabels(text = round(paramsEstimate$optimal.value, 2), node=ntaxa + 1, bg=root_bg, cex = 1, adj = adj)
+#   if ( !is.null(paramsEstimate$shifts$edges) ) {
+#     edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg = shifts_bg, cex = 1)
+#   }
+# }
 
 ## add a parameter frac to deplace the position of the label on the edge
 edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",

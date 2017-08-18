@@ -25,7 +25,7 @@ List containing : beta_0 : the optimal value at the root
 \description{
 \code{segmentation.OU.specialCase.same_shifts} keeps the same shifts position,
 and optimize the sum of costs using function 
-\code{optimize_costs_given_shift_position.OU.specialCase}.
+\code{best_scenario}
 }
 \details{
 This is the best move if keeping the previous shifts positions.
