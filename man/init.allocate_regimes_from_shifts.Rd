@@ -2,7 +2,7 @@
 % Please edit documentation in R/shifts_manipulations.R
 \name{init.allocate_regimes_from_shifts}
 \alias{init.allocate_regimes_from_shifts}
-\title{Initialisation for the allocation of shifts.}
+\title{Initialization for the allocation of shifts.}
 \usage{
 init.allocate_regimes_from_shifts(phy, ...)
 }

@@ -7,7 +7,7 @@
 \method{prod}{index}(X, Id)
 }
 \arguments{
-\item{X}{a martix with p rows and K column. Each row contains the number of
+\item{X}{a matrix with p rows and K column. Each row contains the number of
 partition in 1<=k<=K groups for one of the p children of a given node}
 
 \item{Id}{a vector of length p, result of the function \code{xsimplex}.}
@@ -16,7 +16,7 @@ partition in 1<=k<=K groups for one of the p children of a given node}
 double : the result of the product.
 }
 \description{
-\code{prod.index} return the procuct of choosen elements of a matrix.
+\code{prod.index} return the product of chosen elements of a matrix.
 }
 \details{
 This function is to be used in \code{sum.simplex} to be applied to all the

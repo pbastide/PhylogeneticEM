@@ -18,7 +18,7 @@ taken to be a BM.}
 }
 \description{
 \code{transform_shifts_values} takes the shifts generating a given expectation structure
-given an OU with alpha = from, and gives back the equivelent shifts values that produce the
+given an OU with alpha = from, and gives back the equivalent shifts values that produce the
 same structure with an OU with alpha = to. If from or to is 0, then the process is supposed
 to be a BM.
 }

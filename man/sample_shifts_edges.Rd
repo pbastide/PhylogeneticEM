@@ -7,7 +7,7 @@
 sample_shifts_edges(tree, K, part.list = enumerate_tips_under_edges(tree))
 }
 \arguments{
-\item{tree}{: imput tree}
+\item{tree}{: input tree}
 
 \item{K}{: number of edges to be sampled.}
 }

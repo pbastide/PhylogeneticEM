@@ -11,7 +11,7 @@
 \item{x}{an object of class "\code{enumerate_parsimony}",
 result of function \code{\link{enumerate_parsimony}}.}
 
-\item{node}{the node where to retrive the parsimony number. Default to the
+\item{node}{the node where to retrieve the parsimony number. Default to the
 root of the tree.}
 
 \item{what}{the quantity to retrieve. Either "solutions" for the full

@@ -18,7 +18,7 @@ var.root : if random, variance of the character at the root (pxp matrix)}
 edges : vector of the K id of edges where the shifts are
 values : matrix p x K of values of the shifts on the edges (one column = one shift)
 relativeTimes : vector of dimension K of relative time of the shift from the
-parentnode of edges}
+parent node of edges}
 
 \item{phylo:}{Input tree.}
 }

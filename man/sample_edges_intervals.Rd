@@ -2,12 +2,12 @@
 % Please edit documentation in R/shifts_manipulations.R
 \name{sample_edges_intervals}
 \alias{sample_edges_intervals}
-\title{Sample equally espaced edges.}
+\title{Sample equally spaced edges.}
 \usage{
 sample_edges_intervals(tree, K)
 }
 \arguments{
-\item{tree}{: imput tree}
+\item{tree}{: input tree}
 
 \item{K}{: number of edges to be sampled.}
 }
@@ -15,8 +15,8 @@ sample_edges_intervals(tree, K)
 vector of edges
 }
 \description{
-\code{sample_edges_intervals} samples K shifts, each in one of the K intervalles
-regularly espaced on the height of the tree.
+\code{sample_edges_intervals} samples K shifts, each in one of the K intervals
+regularly spaced on the height of the tree.
 }
 \details{
 In case where the tree is not ultrametric, its "height" is defined as the minimum

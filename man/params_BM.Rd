@@ -34,7 +34,7 @@ the number of shifts. Each column is the p values for one shift. Default to
 \code{matrix(0, p, length(edges))}.}
 
 \item{relativeTimes}{(unused) the relative position of the shift on the
-branch, between 0 (begining of the branch) and 1 (end of the branch). Default
+branch, between 0 (beginning of the branch) and 1 (end of the branch). Default
 to 0.}
 
 \item{nbr_of_shifts}{the number of shifts to use (randomly drawn). Use only
@@ -57,7 +57,7 @@ an object of class \code{params_process}.
 }
 \description{
 \code{params_BM} creates a coherent object params_process from user 
-provided values of the paramerters. Non specidied parameters are set to 
+provided values of the parameters. Non specified parameters are set to 
 default values.
 }
 \seealso{

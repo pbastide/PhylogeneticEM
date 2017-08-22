@@ -8,7 +8,7 @@ check_dimensions(p, root.state, shifts, variance, selection.strength = NULL,
   optimal.value = NULL)
 }
 \arguments{
-\item{p}{dimention of the trait simulated}
+\item{p}{dimension of the trait simulated}
 
 \item{root.state}{(list) state of the root, with:
 random : random state (TRUE) or deterministic state (FALSE)
@@ -20,13 +20,13 @@ var.root : if random, variance of the character at the root}
 edges : vector of the K id of edges where the shifts are
 values : matrix p x K of values of the shifts on the edges (one column = one shift)
 relativeTimes : vector of dimension K of relative time of the shift from the
-parentnode of edges}
+parent node of edges}
 
 \item{variance}{variance-covariance matrix size p x p}
 
-\item{optimal.value}{vector of p optimal values at the root (OU)}
+\item{selection.strength}{matrix of selection strength size p x p (OU)}
 
-\item{selection.strenght}{matrix of selection strength size p x p (OU)}
+\item{optimal.value}{vector of p optimal values at the root (OU)}
 }
 \value{
 Nothing

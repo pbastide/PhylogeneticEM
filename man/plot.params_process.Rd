@@ -28,7 +28,7 @@ function.}
 Default to 1:p (all the traits).}
 
 \item{automatic_colors}{whether to color the edges automatically according to
-their regimes. Default to TRUE. If FALSE, colors can be mannually precised through
+their regimes. Default to TRUE. If FALSE, colors can be manually specified through
 arguments \code{color_characters} and \code{colro_edges} (see below).}
 
 \item{color_characters}{if \code{automatic_colors=FALSE}, a vector of colors for
@@ -37,7 +37,7 @@ the tips of the tree.}
 \item{color_edges}{if \code{automatic_colors=FALSE}, a vector of colors for the
 edges of the tree.}
 
-\item{plot_ancestral_states}{whether to plot the ancestral traits inffered at the
+\item{plot_ancestral_states}{whether to plot the ancestral traits inferred at the
 internal nodes of the tree. Only available if only one trait is plotted. Default
 to FALSE.}
 
@@ -45,7 +45,7 @@ to FALSE.}
 must be specified. If these are simulated, use the
 \code{\link{extract.simul_process}} function.}
 
-\item{imposed_scale}{if \code{plot_ancestral_states=TRUE}, a vector precising the
+\item{imposed_scale}{if \code{plot_ancestral_states=TRUE}, a vector specifying the
 imposed scale for the ancestral states plotting. Useful to make comparisons.
 Default to the plotted trait.}
 
@@ -70,10 +70,10 @@ Default to 0.8.}
 \item{shifts_bg}{if \code{value_in_box=TRUE}, the background color of the boxes.}
 
 \item{root_bg}{if \code{value_in_box=TRUE} and \code{ancestral_as_shift=TRUE},
-the background color of the ancestral boxe.}
+the background color of the ancestral box.}
 
 \item{shifts_adj}{the adj parameter for the shifts position on the edges. Default
-to 0 (begining of the edge).}
+to 0 (beginning of the edge).}
 
 \item{root_adj}{if \code{ancestral_as_shift=TRUE}, the adj parameter for the
 ancestral value position on the root edge. Default to 1.}

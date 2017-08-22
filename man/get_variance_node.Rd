@@ -9,7 +9,7 @@ get_variance_node(node, vars)
 \arguments{
 \item{node}{for which to extract the matrix.}
 
-\item{vars}{matrix of size p x p*(ntaxa+nNodes) result of funtion \code{compute_E.simple},
+\item{vars}{matrix of size p x p*(ntaxa+nNodes) result of function \code{compute_E.simple},
 entry "variances" or "covariances".}
 }
 \value{
@@ -17,6 +17,6 @@ sub-matrix of variance for the node.
 }
 \description{
 \code{get_variance_node} returns the conditional variance of a node, or the conditional
-corariance of a node and its parent.
+covariance of a node and its parent.
 }
 \keyword{internal}

@@ -11,7 +11,7 @@ penalty_BirgeMassart_shape2(K, p, model_complexity, C = 2.5)
 
 \item{p}{the dimension of the data}
 
-\item{model_complexity}{the complexity of the set of models with dimention K.}
+\item{model_complexity}{the complexity of the set of models with dimension K.}
 
 \item{C}{a non-negative constant. Default is 2.5 
 (as suggested in Lebarbier 2005)}
@@ -25,8 +25,8 @@ pen_shape = C*K_try + log(model_complexity).
 It dominates the penalty defined by \code{penalty_BirgeMassart_shape1}.
 }
 \details{
-See Birge Massart (2001).
-Must be applied to least-square crierion.
+See Birgé Massart (2001).
+Must be applied to least-square criterion.
 This penalty should be calibrated using the slope heuristic.
 }
 \seealso{

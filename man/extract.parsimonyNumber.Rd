@@ -28,8 +28,8 @@ solution for any subtree starting from a given node.
 }
 \details{
 The parsimonious solutions are the one with the minimum number of shifts (that
-are given by matrice costReconstructions). This function sums the number of 
-solutions (given in matrice nbrReconstructions) that have the minimum number of 
+are given by matrix costReconstructions). This function sums the number of 
+solutions (given in matrix nbrReconstructions) that have the minimum number of 
 shifts.
 }
 \seealso{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/init_EM.R
 \name{init.EM.lasso}
 \alias{init.EM.lasso}
-\title{Initialisation of the shifts using Lasso.}
+\title{Initialization of the shifts using Lasso.}
 \usage{
 init.EM.lasso(phylo, Y_data, Y_data_imp = Y_data,
   Y_data_vec_known = as.vector(Y_data), process,
@@ -23,7 +23,7 @@ init.EM.lasso(phylo, Y_data, Y_data_imp = Y_data,
 \item{times_shared}{(matrix) : times of shared ancestry, result of function 
 \code{compute_times_ca}.}
 
-\item{distances_phylo}{(matrix) : phylogenetics distance, result of function 
+\item{distances_phylo}{(matrix) : phylogenetic distance, result of function 
 \code{compute_dist_phy}}
 
 \item{nbr_of_shifts}{number of shifts used in the EM algorithm}
@@ -36,13 +36,13 @@ params_init the list of initial parameters to be used, in the right
 \code{init.EM.lasso} does the following regression :
 ||Y_data-T.delta||_(Sigma_YY^(-1)) + lambda |delta|_1
 using the function \code{glmnet::glmnet} of package \code{glmnet},
-throught function \code{lasso_regression_K_fixed}. 
+through function \code{lasso_regression_K_fixed}. 
 T is the incidence matrix of the tree, and 
 delta the vectorial representation of the shifts (see functions 
 \code{incidence.matrix} and \code{shifts.list_to_vector} for further details).
 }
 \details{
-A cholesky decomposition of function Sigma_YY^(-1) is used.
-lambda is choosen so that delta has the right number of non zero components.
+A Cholesky decomposition of function Sigma_YY^(-1) is used.
+lambda is chosen so that delta has the right number of non zero components.
 }
 \keyword{internal}

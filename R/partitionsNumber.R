@@ -8,7 +8,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITheSS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along
@@ -40,7 +40,7 @@
 #' with (Nnodes + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
 #' for k=1:npart it contains the number of partitions with k groups compatible
 #' with the tree and the shift process; and for k=(npart+1):2*npart, it contains
-#' the number of "marqued" partitions with (k-npart) groups compatible with the
+#' the number of "marked" partitions with (k-npart) groups compatible with the
 #' tree and the shift process. The actual number can be extracted with function
 #' \code{\link{extract.partitionsNumber}} (see examples below).
 #' 
@@ -66,7 +66,7 @@
 #' 
 #' ## Number of possible colorings of the tips in npart colors
 #' ## with one marked color
-#' extract(parts_num, marqued = TRUE)
+#' extract(parts_num, marked = TRUE)
 #'
 # @references
 # Paul Bastide, Mahendra Mariadassou, Stéphane Robin:
@@ -134,13 +134,13 @@ print.partitionsNumber <- function(x, ...){
 #' @param npart the number of partitions (colors) allowed at the tips.
 #' Default to the value used in the call of function
 #' \code{\link{partitionsNumber}} (the maximum).
-#' @param marqued whether to extract the marqued (TRUE) or un-marqued (FALSE)
-#' partitions. The number of models is the number of un-marqued partitions.
+#' @param marked whether to extract the marked (TRUE) or un-marked (FALSE)
+#' partitions. The number of models is the number of un-marked partitions.
 #' Default to FALSE.
 #' @param ... unused.
 #'
 #' @return the number of partitions with npart colors, on the sub-tree starting
-#' at node, marqued or not.
+#' at node, marked or not.
 #' 
 #' @seealso \code{\link{partitionsNumber}}
 #'
@@ -150,8 +150,8 @@ print.partitionsNumber <- function(x, ...){
 extract.partitionsNumber <- function(x,
                                      node = attr(x, "ntaxa") + 1,
                                      npart = attr(x, "npart"),
-                                     marqued = FALSE, ...){
-  if (marqued) return(x[node, attr(x, "npart") + npart])
+                                     marked = FALSE, ...){
+  if (marked) return(x[node, attr(x, "npart") + npart])
   return(x[node,npart])
 }
 
@@ -160,7 +160,7 @@ extract.partitionsNumber <- function(x,
 # PARAMETERS:
 # @(phy,npart) see note above
 # RETURNS:
-# (matrix) matrix with Nnodes+ntaxa rows and 2*npart columns. All rows from 1 to ntaxa are set to 0, exept for columns 1 and npart+1, set to one. All rows from ntaxa to the end are set to NAs
+# (matrix) matrix with Nnodes+ntaxa rows and 2*npart columns. All rows from 1 to ntaxa are set to 0, except for columns 1 and npart+1, set to one. All rows from ntaxa to the end are set to NAs
 # DEPENDENCIES:
 # none
 # PURPOSE:
@@ -184,7 +184,7 @@ init.partitionsNumber <- function(phy,npart){
 # PARAMETERS:
 # @daughtersParams (matrix) matrix with 2*npart columns. Each row contains the result of partitionsNumber for the children of a given node
 # RETURNS:
-# (vector) vector of size 2*npart. For k=1:npart it contains the number of partitions with k groups compatible with the sub tree starting at the current node ; and for k=(npart+1):2*npart, it contains the number of "marqued" partitions with (k-npart) groups compatible with the sub tree starting at the current node.
+# (vector) vector of size 2*npart. For k=1:npart it contains the number of partitions with k groups compatible with the sub tree starting at the current node ; and for k=(npart+1):2*npart, it contains the number of "marked" partitions with (k-npart) groups compatible with the sub tree starting at the current node.
 # DEPENDENCIES:
 # none
 # PURPOSE:
@@ -216,7 +216,7 @@ update.partitionsNumber.bin <- function(daughtersParams, ...){
 #' @title Update formula in the general case
 #'
 #' @description
-#' \code{update.partitionsNumber.gen} apply the actualisation formula to get
+#' \code{update.partitionsNumber.gen} apply the actualization formula to get
 #' Nk and Ak of a node given its daughters.
 #'
 #' @details
@@ -229,7 +229,7 @@ update.partitionsNumber.bin <- function(daughtersParams, ...){
 #' @return vector of size 2*npart. For k=1:npart it contains the number of
 #' partitions with k groups compatible with the sub tree starting at the
 #' current node ; and for k=(npart+1):2*npart, it contains the number of
-#' "marqued" partitions with (k-npart) groups compatible with the sub tree
+#' "marked" partitions with (k-npart) groups compatible with the sub tree
 #' starting at the current node.
 #'
 #' @keywords internal
@@ -256,12 +256,12 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 }
 
 ##
-# extract.partitionsNumber (nbrCompatiblePartitions, node=attr(nbrCompatiblePartitions, "ntaxa")+1, npart=attr(nbrCompatiblePartitions, "npart"), marqued=FALSE)
+# extract.partitionsNumber (nbrCompatiblePartitions, node=attr(nbrCompatiblePartitions, "ntaxa")+1, npart=attr(nbrCompatiblePartitions, "npart"), marked=FALSE)
 # PARAMETERS:
 # @nbrCompatiblePartitions (matrix) return of the function partitionsNumber
 # @node (int) : node from which to start (default value : root)
 # @npart (int) : number of groups to be maximized (default value : npart from the previous partitionsNumber call)
-# @marqued (bool) if true, return the number of marqued partitions
+# @marked (bool) if true, return the number of marked partitions
 # RETURNS:
 # (int) Number of partitions with npart groups compatible with the tree and the shift process, for sub-tree starting at node node.
 # DEPENDENCIES:
@@ -272,7 +272,7 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 # none
 # REVISIONS:
 # 26/05/14 - Initial release
-# 27/05/14 - Add "marqued"
+# 27/05/14 - Add "marked"
 ##
 
 ##################################
@@ -282,7 +282,7 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 #' @title Product of elements of a matrix
 #'
 #' @description
-#' \code{prod.index} return the procuct of choosen elements of a matrix.
+#' \code{prod.index} return the product of chosen elements of a matrix.
 #'
 #' @details
 #' This function is to be used in \code{sum.simplex} to be applied to all the
@@ -290,7 +290,7 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 #' Performs the product : X[1,Id[1]]*X[2,Id[2]]*...*X[p,Id[p]] if all the
 #' elements of Id are positive. Otherwise, just return 0.
 #'
-#' @param X a martix with p rows and K column. Each row contains the number of
+#' @param X a matrix with p rows and K column. Each row contains the number of
 #' partition in 1<=k<=K groups for one of the p children of a given node
 #' @param Id a vector of length p, result of the function \code{xsimplex}.
 #'
@@ -317,9 +317,9 @@ prod.index <- function(X,Id){
 #' all combination of k_i such that k_1+...+k_p=K, k_i>0, using function
 #' \code{prod.index}. Then sum all the products.
 #'
-#' @param NN a martix with p rows and K column. Each row contains the number of
+#' @param NN a matrix with p rows and K column. Each row contains the number of
 #' partition in 1<=k<=K groups for one of the p children of a given node
-#' @param K an integer. Tne number of groups wanted.
+#' @param K an integer. The number of groups wanted.
 #' @param p an integer. The number of daughters of a node.
 #'
 #' @return double : the result of the sum.
@@ -346,12 +346,12 @@ sum.simplex <- function (NN, K, p) {
 #' matrix, combination of rows of A and N.
 #'
 #' @param I a vector of integers representing a subset of [1,p]
-#' @param A a martix with p rows and K column. Each row contains the number of
-#' marqued partition in 1<=k<=K groups for one of the p children of a
+#' @param A a matrix with p rows and K column. Each row contains the number of
+#' marked partition in 1<=k<=K groups for one of the p children of a
 #' given node.
-#' @param N a martix with p rows and K column. Each row contains the number of
+#' @param N a matrix with p rows and K column. Each row contains the number of
 #' partition in 1<=k<=K groups for one of the p children of a given node
-#' @param K an integer. Tne number of groups wanted.
+#' @param K an integer. The number of groups wanted.
 #' @param p an integer. The number of daughters of a node.
 #'
 #' @return double : the result of the sum.
@@ -376,15 +376,15 @@ sum.prod.comb <- function(I, A, N, K, p){
 #' fixed, of the sums computed by \code{sum.prod.comb}.
 #'
 #' @details
-#' This function uses \code{combn} to enumarate all the subsets I of [1,p] of
+#' This function uses \code{combn} to enumerate all the subsets I of [1,p] of
 #' a given cardinal, and then performs the wanted sum on these subsets.
 #'
-#' @param A a martix with p rows and K column. Each row contains the number of
-#' marqued partition in 1<=k<=K groups for one of the p children of a
+#' @param A a matrix with p rows and K column. Each row contains the number of
+#' marked partition in 1<=k<=K groups for one of the p children of a
 #' given node.
-#' @param N a martix with p rows and K column. Each row contains the number of
+#' @param N a matrix with p rows and K column. Each row contains the number of
 #' partition in 1<=k<=K groups for one of the p children of a given node
-#' @param K an integer. Tne number of groups wanted.
+#' @param K an integer. The number of groups wanted.
 #' @param p an integer. The number of daughters of a node.
 #' @param cardI an integer. The cardinal of the subset wanted.
 #'
@@ -411,14 +411,14 @@ sum.partitions.cardFixed <- function(A, N, K, p, cardI){
 #' This function applies \code{sum.partitions.cardFixed} to all integer between
 #' m and p, and sum the results.
 #'
-#' @param A a martix with p rows and K column. Each row contains the number of
-#' marqued partition in 1<=k<=K groups for one of the p children of a
+#' @param A a matrix with p rows and K column. Each row contains the number of
+#' marked partition in 1<=k<=K groups for one of the p children of a
 #' given node.
-#' @param N a martix with p rows and K column. Each row contains the number of
+#' @param N a matrix with p rows and K column. Each row contains the number of
 #' partition in 1<=k<=K groups for one of the p children of a given node
-#' @param K an integer. Tne number of groups wanted.
+#' @param K an integer. The number of groups wanted.
 #' @param p an integer. The number of daughters of a node.
-#' @param m an integer. The minimum cadinal of a subset allowed.
+#' @param m an integer. The minimum cardinal of a subset allowed.
 #'
 #' @return double : the result of the sum.
 #' 

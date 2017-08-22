@@ -17,7 +17,7 @@ an object of class \code{partitionsNumber}. This is made of a matrix
 with (Nnodes + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
 for k=1:npart it contains the number of partitions with k groups compatible
 with the tree and the shift process; and for k=(npart+1):2*npart, it contains
-the number of "marqued" partitions with (k-npart) groups compatible with the
+the number of "marked" partitions with (k-npart) groups compatible with the
 tree and the shift process. The actual number can be extracted with function
 \code{\link{extract.partitionsNumber}} (see examples below).
 }
@@ -45,7 +45,7 @@ extract(parts_num, node = 10)
 
 ## Number of possible colorings of the tips in npart colors
 ## with one marked color
-extract(parts_num, marqued = TRUE)
+extract(parts_num, marked = TRUE)
 
 
 }

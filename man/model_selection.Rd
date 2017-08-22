@@ -15,7 +15,7 @@ model_selection(x, ...)
 \item{x}{a fitted \code{\link{PhyloEM}} object}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
-tolerance parameters for stopping criterions, maximal number of iterations, etc.}
+tolerance parameters for stopping criteria, maximal number of iterations, etc.}
 
 \item{method.selection}{Method selection to be used. Several ones can be
 used at the same time. One of "LINselect" for the Baraud Giraud Huet LINselect 

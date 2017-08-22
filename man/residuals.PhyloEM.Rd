@@ -10,7 +10,7 @@
 \item{object}{an object of class \code{\link{params_process}} or \code{\link{PhyloEM}}.
 trait, and each column is a tip. The column names are checked against the
 tip names of the tree.
-\code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.}
+\code{\link{incidence.matrix.full}}. Can be specified to avoid extra computations.}
 
 \item{...}{for a \code{PhyloEM} object, further arguments to be passed on to
 \code{\link{params_process.PhyloEM}} (to choose which parameters to extract from

@@ -2,7 +2,7 @@
 % Please edit documentation in R/init_EM.R
 \name{init.alpha.gamma.estimation}
 \alias{init.alpha.gamma.estimation}
-\title{Initialisation the selection strength alpha using robust estimation}
+\title{Initialization the selection strength alpha using robust estimation}
 \usage{
 init.alpha.gamma.estimation(phylo, Y_data, nbr_of_shifts, times_shared,
   distances_phylo, T_tree, subtree.list, max_triplet_number, alpha_known,
@@ -16,7 +16,7 @@ init.alpha.gamma.estimation(phylo, Y_data, nbr_of_shifts, times_shared,
 
 \item{nbr_of_shifts}{: number of shifts wanted}
 
-\item{distances_phylo}{(matrix) : phylogenetics distance, result of function 
+\item{distances_phylo}{(matrix) : phylogenetic distance, result of function 
 \code{compute_dist_phy}}
 
 \item{nbr_of_shifts}{number of shifts used in the EM algorithm}

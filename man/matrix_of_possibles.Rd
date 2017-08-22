@@ -10,7 +10,7 @@ matrix_of_possibles(matrices)
 \item{matrices}{a list of matrices with ndaughters entries.}
 }
 \value{
-Matrix of all possible regimes fot the subtree bellow node parent.
+Matrix of all possible regimes for the subtree bellow node parent.
 }
 \description{
 \code{matrix_of_possibles} is used in function \code{update.enumerate_parsimony}

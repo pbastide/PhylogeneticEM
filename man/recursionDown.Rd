@@ -23,8 +23,8 @@ Matrix of parameters updated.
 daughters rows of matrix param.
 }
 \details{
-This functin is to be used in other more complex function that need to
+This function is to be used in other more complex function that need to
 update a quantity from the root to the tips of a tree. Note that the
-input tree must be in claddewise order.
+input tree must be in cladewise order.
 }
 \keyword{internal}

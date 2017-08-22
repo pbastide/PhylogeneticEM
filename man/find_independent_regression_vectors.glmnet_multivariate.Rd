@@ -2,7 +2,7 @@
 % Please edit documentation in R/init_EM.R
 \name{find_independent_regression_vectors.glmnet_multivariate}
 \alias{find_independent_regression_vectors.glmnet_multivariate}
-\title{Given a regularization path, find K selected independant variables.}
+\title{Given a regularization path, find K selected independent variables.}
 \usage{
 find_independent_regression_vectors.glmnet_multivariate(Xp, K, fit, root)
 }
@@ -19,10 +19,10 @@ delta a vector of regression with K non-zero coefficients.
 }
 \description{
 \code{find_independent_regression_vectors} tries to find a situation where K variables
-are selected, so that the selected columns of matrix Xp are independant.
+are selected, so that the selected columns of matrix Xp are independent.
 }
 \details{
 To do that, if a set of selected is not independent, we go back to the previous selected 
-variables, and forbid the moves that led to non-independance for the rest of the path.
+variables, and forbid the moves that led to non-independence for the rest of the path.
 }
 \keyword{internal}

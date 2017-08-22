@@ -16,7 +16,7 @@ in one single cluster.}
 an object of S3 class "\code{parsimonyNumber}" with:
 \describe{
  \item{nbrReconstructions}{a (ntaxa + nNodes) x (nclus)
- matrix of loccaly parsimonious solutions starting from a cluster k at a
+ matrix of locally parsimonious solutions starting from a cluster k at a
  given node}
  \item{costReconstructions}{an object of class "\code{parsimonyCost}",
  result of function \code{\link{parsimonyCost}}.}
@@ -29,7 +29,7 @@ with a given clustering of the tips.
 }
 \details{
 This function does a recursion up the tree.
-The function \code{\link{extract.parsimonyNumber}} gives the result seeked for
+The function \code{\link{extract.parsimonyNumber}} gives the result sought for
 any subtree.
 The matrix of costs of the states (number of shifts) is also required, it is
 computed by function \code{\link{parsimonyCost}}.

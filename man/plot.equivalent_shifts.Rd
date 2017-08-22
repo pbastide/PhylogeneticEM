@@ -17,7 +17,7 @@ function \code{\link{equivalent_shifts}}}
 \item{show_shifts_values}{whether to show the equivalent shifts values or not. 
 Default to FALSE.}
 
-\item{numbering}{wheter to number the solutions. Default to FALSE.}
+\item{numbering}{whether to number the solutions. Default to FALSE.}
 
 \item{colors_tips}{user-provided colors for the tips of the tree. A vector
 vector with as many colors as there are tips. Will be automatically computed

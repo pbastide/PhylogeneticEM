@@ -17,7 +17,7 @@ Vector of length nbranch.
 \description{
 \code{shifts.list_to_vector} takes the list description of the shifts 
 to give the vectorial representation of the shifts : the b th element of 
-the vector has the value of the shift occuring on that branch b.
+the vector has the value of the shift occurring on that branch b.
 }
 \seealso{
 \code{\link{shifts.vector_to_list}}

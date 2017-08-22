@@ -71,7 +71,7 @@ Upward Downward method (usually faster). Default to "upward_downward".}
 base initialization method; or "default" for user-specified initialization
 values. Default to "lasso".}
 
-\item{method.init.alpha}{For OU model, initialisation method for the selection
+\item{method.init.alpha}{For OU model, initialization method for the selection
 strength alpha. One of "estimation" for a cherry-based initialization, using
 \code{\link[robustbase]{nlrob}}; or "default" for user-specified 
 initialization values. Default to "estimation".}
@@ -85,10 +85,10 @@ Default to all of them.}
 
 \item{nbr_of_shifts}{the number of shifts allowed.}
 
-\item{random.root}{Wether the root is assumed to be random (TRUE) of fixed
+\item{random.root}{whether the root is assumed to be random (TRUE) of fixed
 (FALSE). Default to TRUE}
 
-\item{stationary.root}{Wether the root is assumed to be in the stationnary 
+\item{stationary.root}{whether the root is assumed to be in the stationary 
 state. Default to TRUE.}
 
 \item{alpha_known}{is the selection strength assumed to be known ?
@@ -143,13 +143,13 @@ candidate shifts positions. Choices among "lasso" for a LASSO-based algorithm;
 and "best_single_move" for a one-move at a time based heuristic. Default to 
 both of them. Using only "lasso" might speed up the function a lot.}
 
-\item{check.tips.names}{Wether to check the tips names of the tree against
+\item{check.tips.names}{whether to check the tips names of the tree against
 the column names of the data. Default to TRUE.}
 
 \item{times_shared}{(optional) times of shared ancestry of all nodes and tips,
 result of function \code{\link{compute_times_ca}}}
 
-\item{distances_phylo}{(optional) phylogenetics distances, result of function 
+\item{distances_phylo}{(optional) phylogenetic distances, result of function 
 \code{\link{compute_dist_phy}}.}
 
 \item{subtree.list}{(optional) tips descendants of all the edges, result of
@@ -168,23 +168,23 @@ function \code{\link{enumerate_tips_under_edges}}.}
 \item{tol_half_life}{should the tolerance criterion be applied to the
 phylogenetic half life (TRUE, default) or to the raw selection strength ?}
 
-\item{warning_several_solutions}{wether to issue a warning if several equivalent
+\item{warning_several_solutions}{whether to issue a warning if several equivalent
 solutions are found (default to TRUE).}
 
 \item{convergence_mode}{one of "relative" (the default) or "absolute". Should the
 tolerance be applied to the raw parameters, or to the renormalized ones ?}
 
 \item{check_convergence_likelihood}{should the likelihood be taken into
-consideration for convergence assesment ? (default to TRUE).}
+consideration for convergence assessment ? (default to TRUE).}
 
 \item{sBM_variance}{Is the root of the BM supposed to be random and
-"stationnary"? Used for BM equivalent computations. Default to FALSE.}
+"stationary"? Used for BM equivalent computations. Default to FALSE.}
 
 \item{method.OUsun}{Method to be used in univariate OU. One of "rescale" 
 (rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
 univariate processes).}
 
-\item{impute_init_Rphylopars}{Wether to use 
+\item{impute_init_Rphylopars}{whether to use 
 \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
 Default to FALSE.}
 
@@ -193,7 +193,7 @@ step. Increases the accuracy, but can make computations quite slow of taken
 too high. Default to 5.}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
-tolerance parameters for stopping criterions, maximal number of iterations, etc.}
+tolerance parameters for stopping criteria, maximal number of iterations, etc.}
 }
 \value{
 An object of class \code{EstimateEM}.

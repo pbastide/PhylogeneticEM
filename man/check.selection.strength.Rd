@@ -12,7 +12,7 @@ check.selection.strength(process, selection.strength = NA, eps = 10^(-6),
 
 \item{selection.strength}{the selection strength parameter (if OU)}
 
-\item{eps}{the tolerence for the selection strength}
+\item{eps}{the tolerance for the selection strength}
 }
 \value{
 character : "BM" or "OU"

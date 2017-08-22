@@ -2,7 +2,7 @@
 % Please edit documentation in R/shifts_manipulations.R
 \name{init.compute_betas_from_shifts}
 \alias{init.compute_betas_from_shifts}
-\title{Initialisation for the computation of the optimal values}
+\title{Initialization for the computation of the optimal values}
 \usage{
 init.compute_betas_from_shifts(phy, optimal.value, ...)
 }
@@ -12,7 +12,7 @@ init.compute_betas_from_shifts(phy, optimal.value, ...)
 \item{optimal.value}{the optimal value at the root of the tree}
 }
 \value{
-Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
+Matrix of size (nNodes + ntaxa)x1 of NAs, with the optimal value
  at the root.
 }
 \description{

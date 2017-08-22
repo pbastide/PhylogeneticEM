@@ -11,7 +11,7 @@ vignette: >
 
 ## Introduction
 
-The `PhylogeneticEM` package is designed to automatically detect shifts in quatitative traits.
+The `PhylogeneticEM` package is designed to automatically detect shifts in quantitative traits.
 
 Simply load the package with:
 ```{r, label="load", message=FALSE}
@@ -22,7 +22,7 @@ library(PhylogeneticEM)
 
 To show how the functions work, let's first simulate some traits with known parameters.
 
-We use function `sim.bd.taxa.age` from package `TreeSim` to simualte a phylogenetic tree.
+We use function `sim.bd.taxa.age` from package `TreeSim` to simulate a phylogenetic tree.
 
 ```{r, label="Simus_tree"}
 set.seed(17920902)
@@ -48,7 +48,7 @@ params <- params_process("OU",                             ## Process
 
 Note that here, we took the selection strength to a scalar matrix, but we could specify a full matrix. Also, we did not specified the ancestral values of the optimum states: these are took to be $0$ by default.
 
-The position of the shifts is specified through to the number of the edge where it occurs. These can be saw using a standart `plot` fromp package `ape`. Once the parameters are constructed, we can check the position of the shifts by plotting them:
+The position of the shifts is specified through to the number of the edge where it occurs. These can be saw using a standard `plot` from package `ape`. Once the parameters are constructed, we can check the position of the shifts by plotting them:
 
 ```{r, fig.show='hold', fig.height=3, fig.width=3.4}
 plot(params, phylo = tree, traits = 1, value_in_box = TRUE, shifts_bg = "white")
@@ -114,9 +114,9 @@ res <- PhyloEM(phylo = tree,
 res
 ```
 
-The fitted object contains the infered parameters for every values of $\alpha$ and $K$, as well as the parameters selected by the various model selection criteria.
+The fitted object contains the inferred parameters for every values of $\alpha$ and $K$, as well as the parameters selected by the various model selection criteria.
 
-Here, we can see that the original shifts were recovered by the model selection procedure. We can plot the obtained solution, as shown below. The infered states a the tips are shown in dotted lines. Notice that they are coherent with the positions of the shifts that we found.
+Here, we can see that the original shifts were recovered by the model selection procedure. We can plot the obtained solution, as shown below. The inferred states a the tips are shown in dotted lines. Notice that they are coherent with the positions of the shifts that we found.
 ```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
 plot(res)
 ```
@@ -128,12 +128,12 @@ plot(res, params = params_process(res, method.selection = "DDSE"))
 
 where we extracted the parameters with the method `params_process`. Here, the results are the same.
 
-We can also extract the solution for a given number of shifts and/or a given value of alpha. For instance, we can see that in this simple case, the infered position of the shifts is robust to the value of the selection strength:
+We can also extract the solution for a given number of shifts and/or a given value of alpha. For instance, we can see that in this simple case, the inferred position of the shifts is robust to the value of the selection strength:
 ```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
 plot(res, params = params_process(res, K = 3, alpha = 1))
 ```
 
-The infered shifts values however are quite different:
+The inferred shifts values however are quite different:
 ```{r}
 params_process(res, K = 3, alpha = 1)$shifts
 params_process(res, K = 3, alpha = 3)$shifts
@@ -141,7 +141,7 @@ params_process(res, K = 3, alpha = 3)$shifts
 
 ## Equivalent Solutions
 
-When there are too many shifts, the solutin might not be identifiable. For instance here, if we take the (degenerate) solution with $8$ shifts, we get this warning:
+When there are too many shifts, the solution might not be identifiable. For instance here, if we take the (degenerate) solution with $8$ shifts, we get this warning:
 ```{r}
 params_8 <- params_process(res, K = 8)
 ```

@@ -24,7 +24,7 @@
 ##
 # compute_M (phylo, process, Y_data, conditional_law_X, nbr_of_shifts)
 # PARAMETERS:
-#            @phylo (tree) imput tree
+#            @phylo (tree) input tree
 #            @process (string) Random process to simulate.
 #            @Y_data (vector) : vector indicating the data at the tips
 #            @conditional_law_X (list) result of compute_E (see note above)
@@ -642,7 +642,7 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #'
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
-#' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+#' and \code{compute_diff_exp.OU} in the process. Careful : only works if the
 #' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
@@ -707,7 +707,7 @@ estimate.alpha <- function(phylo,
 # #' 
 # #' @details
 # #' This function uses functions \code{compute_var_diff.OU}
-# #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+# #' and \code{compute_diff_exp.OU} in the process. Careful : only works if the
 # #' root is stationary, and shifts at nodes.
 # #' 
 # #' @param phylo Input tree.
@@ -759,7 +759,7 @@ estimate.alpha <- function(phylo,
 ##
 ## @details
 ## This function uses functions \code{compute_var_diff.OU} 
-## and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+## and \code{compute_diff_exp.OU} in the process. Careful : only works if the
 ## root is stationary, and shifts at nodes.
 ##
 ## @param phylo Input tree.

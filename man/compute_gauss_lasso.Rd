@@ -28,10 +28,10 @@ uses them to do a simple linear least square regression. Function used is
 transformed data (root = an integer).
 }
 \details{
-Depending on the value of root, the behaviour is different. If root is null, then
+Depending on the value of root, the behavior is different. If root is null, then
 we fit a linear regression with an intercept. If root is equal to an integer,
 then the "intercept" column of the matrix Xp (that has possibly been trough a 
-multiplication with a cholesky decomposition of the variance) is included, rather
+multiplication with a Cholesky decomposition of the variance) is included, rather
 than the intercept.
 }
 \keyword{internal}

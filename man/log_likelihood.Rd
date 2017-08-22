@@ -24,7 +24,7 @@ trait, and each column is a tip. The column names are checked against the
 tip names of the tree.}
 
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.
-\code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.}
+\code{\link{incidence.matrix.full}}. Can be specified to avoid extra computations.}
 }
 \value{
 The log likelihood of the data with the provided parameters on the tree.

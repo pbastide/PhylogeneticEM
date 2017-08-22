@@ -19,7 +19,7 @@ the parameters. Default to NULL (automatically selected number of shifts, see
 
 \item{alpha}{(optional) a value of alpha for which to retrieve the parameters. Can
 be an (un-ambiguous) estimation of the true value. If
-precised, then \code{K} must be precised too. Default to NULL (automatically
+specified, then \code{K} must be precised too. Default to NULL (automatically
 selected value, see \code{method.selection} argument).}
 
 \item{rBM}{(optional) if TRUE, and if the process is "scOU", returns the raw
@@ -35,7 +35,7 @@ An object of class \code{\link{params_process}}.
 }
 \description{
 \code{params} takes an object of class \code{\link{PhyloEM}}, and returns the 
-infered parameters of the process.
+inferred parameters of the process.
 }
 \seealso{
 \code{\link{PhyloEM}}, \code{\link{imputed_traits.PhyloEM}}

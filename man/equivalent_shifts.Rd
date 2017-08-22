@@ -11,7 +11,7 @@ equivalent_shifts(phylo, params, T_tree = incidence.matrix(phylo),
 \item{phylo}{a phylogenetic tree, of class \code{\link[ape]{phylo}}.}
 
 \item{params}{an object of class \code{params_process}, result inference by
-function \code{\link{PhyloEM}}, or constructed throught function
+function \code{\link{PhyloEM}}, or constructed through function
 \code{\link{params_process}}}
 
 \item{T_tree}{(optional) matrix of incidence of the tree, result of function 
@@ -26,12 +26,12 @@ function \code{\link{PhyloEM}}, or constructed throught function
 \item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
 }
 \value{
-object of class \code{equivalent_shifts}, whith entries:
+object of class \code{equivalent_shifts}, with entries:
 \describe{
 \item{eq_shifts_edges}{matrix of equivalent shifts}
 \item{shifts_and_betas}{matrix of corresponding shifts values}
 \item{phylo}{the entry phylogenetic tree}
-\item{p}{the dimention}
+\item{p}{the dimension}
 }
 }
 \description{

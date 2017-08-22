@@ -17,7 +17,7 @@ an object of class \code{params_process}.
 }
 \description{
 \code{params_process} creates a coherent object params_process from user 
-provided values of the paramerters.
+provided values of the parameters.
 }
 \seealso{
 \code{\link{params_BM}}, \code{\link{params_OU}}

@@ -13,7 +13,7 @@ equivalent_shifts_values(phylo, eq_shifts_edges, T_tree_ac, vect_Y, p)
 \code{\link{equivalent_shifts_edges}}.}
 
 \item{T_tree_ac}{matrix of incidence of the tree, result of function 
-\code{\link{incidence.matrix}}, actualized with coeficients computed by
+\code{\link{incidence.matrix}}, actualized with coefficients computed by
 function \code{\link{incidence_matrix_actualization_factors}}.}
 
 \item{shifts}{a list of positions and values of original shifts.}
@@ -27,16 +27,16 @@ vector of corresponding root optimal values.
 }
 \description{
 \code{equivalent_shifts_values} computes the values of the shifts given all
-thepossible allocations computed by function
+the possible allocations computed by function
 \code{\link{equivalent_shifts_edges}}.
 }
 \details{
 This function uses the linear representation of the problem. It fist compute
-the mean at the tips given by the orgininal shifts positions and values, and
+the mean at the tips given by the orginal shifts positions and values, and
 then uses function \code{\link{qr.solve}}
-to find back the values of the shifts, givent their various positions,
+to find back the values of the shifts, given their various positions,
 and the means at the tips. Function \code{compute_actualization_factors} is
-used to compute the actualization factor that multipies the shifts values at
-the tips. Carefull, only work for ULTRAMETRIC trees.
+used to compute the actualization factor that multiplies the shifts values at
+the tips. Careful, only works for ULTRAMETRIC trees.
 }
 \keyword{internal}

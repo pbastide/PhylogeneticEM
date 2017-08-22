@@ -80,7 +80,7 @@ correspondanceEdges <- correspondenceEdges
 ##
 # compute_times_ca (phy)
 # PARAMETERS:
-# @phy (tree) imput tree
+# @phy (tree) input tree
 # RETURNS:
 # (matrix) : entry (i,j) of the matrix is t_ij, the time of shared ancestry between nodes i and j
 # DEPENDENCIES:
@@ -93,10 +93,10 @@ correspondanceEdges <- correspondenceEdges
 # 22/05/14 - Initial release
 ##
 ##
-#' @title Comon Ancestors Times
+#' @title Common Ancestors Times
 #'
 #' @description
-#' \code{compute_times_ca} computes the times t_ij between the root and the comon
+#' \code{compute_times_ca} computes the times t_ij between the root and the common
 #' ancestor of two tips i, j.
 #' 
 #' @details
@@ -122,7 +122,7 @@ compute_times_ca <- function(phy) {
 ##
 # compute_dist_phy (phy)
 # PARAMETERS:
-# @phy (tree) imput tree
+# @phy (tree) input tree
 # RETURNS:
 # (matrix) : entry (i,j) of the matrix is d_ij, the phylogenetic distance between nodes i and j
 # DEPENDENCIES:
@@ -176,9 +176,9 @@ scale.tree <- function(phylo){
 #' \code{recursionDown} uses the function \code{updateDown} to compute
 #' daughters rows of matrix param.
 #' @details
-#' This functin is to be used in other more complex function that need to
+#' This function is to be used in other more complex function that need to
 #' update a quantity from the root to the tips of a tree. Note that the
-#' input tree must be in claddewise order.
+#' input tree must be in cladewise order.
 #'
 #' @param phy Input tree, in cladewise order.
 #' @param params Matrix of parameters to update by the recursion
@@ -347,7 +347,7 @@ rtree.comb <- function(n){
 #'
 #' @param process : "BM" or "OU"
 #' @param selection.strength the selection strength parameter (if OU)
-#' @param eps the tolerence for the selection strength
+#' @param eps the tolerance for the selection strength
 #'
 #' @return character : "BM" or "OU"
 #'
@@ -370,7 +370,7 @@ check.selection.strength <- function(process, selection.strength = NA,
 #' @title Test state of root.
 #'
 #' @description
-#' \code{test.root.state} test wether the parameters of root.state given
+#' \code{test.root.state} test whether the parameters of root.state given
 #' by the user are coherent. If not, it returns a new corrected list to
 #' define root.state.
 #'
@@ -566,7 +566,7 @@ kronecker_sum <- function(M, N){
 #' \code{check_dimensions} checks dimensions of the parameters. 
 #' If wrong, throw an error.
 #'
-#' @param p dimention of the trait simulated
+#' @param p dimension of the trait simulated
 #' @param root.state (list) state of the root, with:
 #'     random : random state (TRUE) or deterministic state (FALSE)
 #'     value.root : if deterministic, value of the character at the root
@@ -576,9 +576,9 @@ kronecker_sum <- function(M, N){
 #'     edges : vector of the K id of edges where the shifts are
 #'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
-#'     parentnode of edges
+#'     parent node of edges
 #' @param variance variance-covariance matrix size p x p 
-#' @param selection.strenght matrix of selection strength size p x p (OU)
+#' @param selection.strength matrix of selection strength size p x p (OU)
 #' @param optimal.value vector of p optimal values at the root (OU)
 #'     
 #' @return Nothing
@@ -663,7 +663,7 @@ check_dimensions.shifts <- function(p, shifts){
 #' 
 #' @details
 #' If \code{quantile_low_distance=0}, then \code{quantile(d_ij)=min(d_ij)}, and, for any
-#' two tips i,j, the correlation between i anf j is bounded by exp(-factor_up_alpha/2).
+#' two tips i,j, the correlation between i and j is bounded by exp(-factor_up_alpha/2).
 #' Those values of alpha will be used for the re-scaling of the tree, which has an 
 #' exponential term in exp(2*alpha*h). The function makes sure that this number is
 #' below the maximal float allowed (equals to \code{.Machine$double.xmax}).
@@ -744,9 +744,9 @@ transform_branch_length <- function(phylo, alp){
 }
 
 ##
-#' @title Scale variance and selection strenght from a linear transform
+#' @title Scale variance and selection strength from a linear transform
 #' 
-#' @description Used for process equivalencies on re-scaled trees.
+#' @description Used for process equivalancies on re-scaled trees.
 #'
 #' @param params Parameters list
 #' @param f Factor of the linear transform. If t' = f * t, the function takes

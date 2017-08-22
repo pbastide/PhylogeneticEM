@@ -9,9 +9,9 @@ penalty_BirgeMassart_shape1(K, p, model_complexity, B = 0.1)
 \arguments{
 \item{K}{the number of shifts}
 
-\item{p}{the dimention of the data}
+\item{p}{the dimension of the data}
 
-\item{model_complexity}{the complexity of the set of models with dimention K}
+\item{model_complexity}{the complexity of the set of models with dimension K}
 
 \item{B}{a non-negative constant. Default is 0.1 
 (as suggested in Cleymen Lebarbier 2015)}
@@ -25,8 +25,8 @@ pen_shape = (sqrt(K) + sqrt(2 * K * L_K))^2 with sum(exp(- K * L_K)) < infty :
 L_K = B + 1/K * log(model_complexity).
 }
 \details{
-See Birge Massart (2001).
-Must be applied to least-square crierion.
+See Birgé Massart (2001).
+Must be applied to least-square criterion.
 This penalty should be calibrated using the slope heuristic.
 }
 \seealso{

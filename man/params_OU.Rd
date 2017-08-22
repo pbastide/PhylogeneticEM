@@ -16,7 +16,7 @@ params_OU(p = 1, variance = diag(1, p, p), selection.strength = diag(1, p,
 \item{variance}{the variance (rate matrix) of the BM. Default to 
 \code{diag(1, p, p)}.}
 
-\item{selection.strength}{the selection strenght matrix. Default to 
+\item{selection.strength}{the selection strength matrix. Default to 
 \code{diag(1, p, p)}.}
 
 \item{optimal.value}{the vector of the optimal values at the root. Default
@@ -25,7 +25,7 @@ to \code{rep(0, p)}.}
 \item{random}{whether the root of the OU is random (TRUE) or fixed (FALSE).
 Default to TRUE.}
 
-\item{stationary.root}{wheter the root of the OU is stationary (TRUE) or not.
+\item{stationary.root}{whether the root of the OU is stationary (TRUE) or not.
 Default to TRUE.}
 
 \item{value.root}{if random=FALSE, the root value. Default to 0.}
@@ -47,7 +47,7 @@ the number of shifts. Each column is the p values for one shift. Default to
 \code{matrix(0, p, length(edges))}.}
 
 \item{relativeTimes}{(unused) the relative position of the shift on the
-branch, between 0 (begining of the branch) and 1 (end of the branch). Default
+branch, between 0 (beginning of the branch) and 1 (end of the branch). Default
 to 0.}
 
 \item{nbr_of_shifts}{the number of shifts to use (randomly drawn). Use only
@@ -64,7 +64,7 @@ an object of class \code{params_process}.
 }
 \description{
 \code{params_OU} creates a coherent object params_process from user 
-provided values of the paramerters. Non specidied parameters are set to 
+provided values of the parameters. Non specified parameters are set to 
 default values.
 }
 \seealso{
