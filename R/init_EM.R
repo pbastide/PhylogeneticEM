@@ -774,7 +774,6 @@ lasso_regression_K_fixed.grplasso <- function(Yvec, Xkro, K,
                                               group = 1:ncol(Xkro),
                                               p_dim,
                                               K_lag = 0) {
-  browser()
   ## Lag
   K_original <- K
   K <- K + K_lag
