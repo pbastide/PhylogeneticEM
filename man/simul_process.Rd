@@ -30,16 +30,16 @@ the results, see documentation of this function).}
 to TRUE.}
 
 \item{U_tree}{optional, full incidence matrix of the tree, result of function
-\code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.}
+\code{\link{incidence.matrix.full}}. Can be specified to avoid extra computations.}
 
 \item{times_shared}{optional, times of shared ancestry of all nodes and tips,
-result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+result of function \code{\link{compute_times_ca}}. Can be specified to avoid extra
 computations.}
 }
 \value{
 An S3 object of class \code{simul_process}. This contains:
 \describe{
- \item{sim_traits}{an array with dimentions p x nNodes x 2 (BM)
+ \item{sim_traits}{an array with dimensions p x nNodes x 2 (BM)
  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.}

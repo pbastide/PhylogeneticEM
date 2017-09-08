@@ -5,7 +5,7 @@
 \title{Extract from object \code{partitionsNumber}}
 \usage{
 \method{extract}{partitionsNumber}(x, node = attr(x, "ntaxa") + 1,
-  npart = attr(x, "npart"), marqued = FALSE, ...)
+  npart = attr(x, "npart"), marked = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{partitionsNumber}, result of function
@@ -18,15 +18,15 @@ Default to the root of the tree.}
 Default to the value used in the call of function
 \code{\link{partitionsNumber}} (the maximum).}
 
-\item{marqued}{whether to extract the marqued (TRUE) or un-marqued (FALSE)
-partitions. The number of models is the number of un-marqued partitions.
+\item{marked}{whether to extract the marked (TRUE) or un-marked (FALSE)
+partitions. The number of models is the number of un-marked partitions.
 Default to FALSE.}
 
 \item{...}{unused.}
 }
 \value{
 the number of partitions with npart colors, on the sub-tree starting
-at node, marqued or not.
+at node, marked or not.
 }
 \description{
 \code{extract.partitionsNumber} extracts the number of partitions for a 

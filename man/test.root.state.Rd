@@ -17,7 +17,7 @@ test.root.state(root.state, process = c("BM", "OU", "scOU"), ...)
 Coherent list root.state.
 }
 \description{
-\code{test.root.state} test wether the parameters of root.state given
+\code{test.root.state} test whether the parameters of root.state given
 by the user are coherent. If not, it returns a new corrected list to
 define root.state.
 }

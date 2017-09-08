@@ -33,9 +33,9 @@
 #' @param simulate_random set to FALSE if only the expected values are needed
 #' (and not the random sample). Default to TRUE.
 #' @param U_tree optional, full incidence matrix of the tree, result of function
-#' \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.
+#' \code{\link{incidence.matrix.full}}. Can be specified to avoid extra computations.
 #' @param times_shared optional, times of shared ancestry of all nodes and tips,
-#' result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+#' result of function \code{\link{compute_times_ca}}. Can be specified to avoid extra
 #' computations.
 # @param nsim Unused.
 # @param seed Unused.
@@ -45,7 +45,7 @@
 #'     
 #' @return An S3 object of class \code{simul_process}. This contains:
 #' \describe{
-#'  \item{sim_traits}{an array with dimentions p x nNodes x 2 (BM)
+#'  \item{sim_traits}{an array with dimensions p x nNodes x 2 (BM)
 #'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.}
@@ -134,7 +134,7 @@ simul_process.PhyloEM <- function(x,
 #' @param ... unused
 #' 
 #' @return A matrix giving the selected quantities at the selected nodes or tips. If
-#' the tips or nods are labelled, then the colnames of the matrix are set accordingly.
+#' the tips or nods are labeled, then the colnames of the matrix are set accordingly.
 #' 
 #' @seealso \code{\link{simul_process}}
 #' 
@@ -234,7 +234,7 @@ plot.params_process <- function(x,
   ## parameters
   params <- x
   
-  # If on trait, select relevent quantities
+  # If on trait, select relevant quantities
   if (length(traits) == 1){
     if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, ncol(x$variance)))
     params <- split_params_independent(params)
@@ -292,7 +292,7 @@ plot.params_process <- function(x,
 #' @param process The model used for the simulation. One of "BM" (for a full BM
 #' model, univariate or multivariate); "OU" (for a full OU model, univariate or
 #' multivariate); or "scOU" (for a "scalar OU" model).
-#' @param p Dimention of the simulated trait
+#' @param p Dimension of the simulated trait
 #' @param root.state List describing the state of the root, with:
 #' \describe{
 #'  \item{random}{random state (TRUE) or deterministic state (FALSE)}
@@ -305,7 +305,7 @@ plot.params_process <- function(x,
 #'  \item{edges}{vector of the K id of edges where the shifts are}
 #'  \item{values}{matrix p x K of values of the shifts on the edges
 #'   (one column = one shift)}
-#'  \item{relativeTimes}{vector of dimension K of relative time of the shift from the parentnode of edges}
+#'  \item{relativeTimes}{vector of dimension K of relative time of the shift from the parent node of edges}
 #'  }
 #' @param eps Tolerance for the value of the norm 1 of the selection strength matrix for OU
 #' @param variance Variance-covariance matrix size p x p 
@@ -316,14 +316,14 @@ plot.params_process <- function(x,
 #' @param simulate_random set to FALSE if only the expected values are needed
 #' (and not the random sample). Default to TRUE.
 #' @param df if the process is "StudentOU", the number of degree of freedom of
-#' the choosen student law. default to 1.
+#' the chosen student law. default to 1.
 #' @param U_tree optional, full incidence matrix of the tree, result of function
 #' \code{incidence.matrix.full}.
 #' @param times_shared optional, times of shared ancestry of all nodes and tips,
-#' result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+#' result of function \code{\link{compute_times_ca}}. Can be specified to avoid extra
 #' computations.
 #'     
-#' @return paramSimu An array with dimentions p x nNodes x 2 (BM)
+#' @return paramSimu An array with dimensions p x nNodes x 2 (BM)
 #'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.
@@ -464,7 +464,7 @@ simulate_internal <- function(phylo,
                                   selection.strength = selection.strength,
                                   optimal.value = optimal.value)
   }
-  ## Initialisation and setting root state
+  ## Initialization and setting root state
   paramSimu <- init(phy = phy,
                     p = p,
                     root.state = root.state,
@@ -503,7 +503,7 @@ simulate_internal <- function(phylo,
 # @where (string) : where to extract the values : at the "tips" or the internal "nodes" ?
 # @what (string) : which value to extract : the simulated "states" or the "expectations" ?
 # RETURNS:
-# (vector) values choosen for nodes/tips choosen
+# (vector) values chosen for nodes/tips chosen
 # DEPENDENCIES:
 # simulate
 # PURPOSE:
@@ -570,7 +570,7 @@ subset_node.simulate <- function(node, array){
 ##
 #' @title Initialize state and expectation matrices
 #'
-#' @description Function used in \code{\link{simulate}} for BM/OU initialisations.
+#' @description Function used in \code{\link{simulate}} for BM/OU initializations.
 #'
 #' @param phy: Input tree.
 #' @param p: dimension of the trait simulated
@@ -582,7 +582,7 @@ subset_node.simulate <- function(node, array){
 #'     
 #' @return paramSimu: array p x nNodes x 2 (BM), filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated states and root
-#' expectarions for all the traits.
+#' expectations for all the traits.
 #' 
 #' @keywords internal
 #'  
@@ -613,7 +613,7 @@ init.simulate.StateAndExp <- function(phy, p, root.state, simulate_random){
 ##
 #' @title Initialize BM
 #' 
-#' @description Function used in \code{\link{simulate}} for BM initialisation.
+#' @description Function used in \code{\link{simulate}} for BM initialization.
 #'
 #' @param phy Input tree.
 #' @param root.state (list) State of the root, with:
@@ -624,7 +624,7 @@ init.simulate.StateAndExp <- function(phy, p, root.state, simulate_random){
 #'     
 #' @return paramSimu Array p x nNodes x 2 (BM), filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated
-#' states and root expectarions for all the traits.
+#' states and root expectations for all the traits.
 #' 
 #' @keywords internal
 #'  
@@ -637,7 +637,7 @@ init.simulate.BM <- function(phy, p, root.state, simulate_random, ...){
 ##
 #' @title Initialize state and expectation matrices
 #' 
-#' @description Function used in \code{\link{simulate}} for OU initialisation.
+#' @description Function used in \code{\link{simulate}} for OU initialization.
 #'
 #' @param phy: Input tree.
 #' @param p: dimension of the trait simulated
@@ -703,7 +703,7 @@ update.simulate.BM <- function(edgeNbr, ancestral, length, shifts, variance,
 # update.simulate.OU (edgeNbr, ancestral, length, shifts, variance, selection.strength, eps=10^(-6), ...)
 # PARAMETERS:
 # @(edgeNbr, ancestral, length, shifts, variance, selection.strength) : see note above
-# @eps (double) : if the selection strenght is smaller than eps, simulate according to a BM instead of an OU
+# @eps (double) : if the selection strength is smaller than eps, simulate according to a BM instead of an OU
 # RETURNS:
 # (vector) simulated state, expected value, optimal value for the daughter node
 # DEPENDENCIES:
@@ -818,7 +818,7 @@ update.simulate.StudentOU <- function(edgeNbr, ancestral, length, shifts, varian
 #'     edges : vector of the K id of edges where the shifts are
 #'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
-#'     parentnode of edges
+#'     parent node of edges
 #'     
 #' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
 #'  paramSimu[t, , ] has two columns, both containing the expected values for
@@ -858,7 +858,7 @@ compute_expectations.BM <- function(phylo, root.state, shifts, U_tree = NULL){
 #'     edges : vector of the K id of edges where the shifts are
 #'     values : matrix p x K of values of the shifts on the edges (one column = one shift)
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
-#'     parentnode of edges
+#'     parent node of edges
 #'     
 #' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
 #'  paramSimu[t, , ] has two columns, both containing the expected values for

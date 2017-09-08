@@ -7,7 +7,7 @@
 shifts_to_simmap(tree, shifts_edges)
 }
 \arguments{
-\item{tree}{imput tree in \code{\link[ape]{phylo}} format}
+\item{tree}{input tree in \code{\link[ape]{phylo}} format}
 
 \item{shifts_edges}{shifts positions on the edges}
 }

@@ -19,9 +19,9 @@ A list of size nNode + ntaxa, as described above.
 and initialize the correct data structure.
 }
 \details{
-This function returns a list with nNodes + ntaxa entries. Entries correponding to
+This function returns a list with nNodes + ntaxa entries. Entries corresponding to
 the tips are initialized with a list of nclus matrices. For tip i of group k, all
-matrices are set to NULL, exept for the kth, set to a vector of size
+matrices are set to NULL, except for the kth, set to a vector of size
 nNodes + ntaxa, with entry i set to k, and all the others to NA.
 }
 \keyword{internal}

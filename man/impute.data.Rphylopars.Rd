@@ -13,7 +13,7 @@ impute.data.Rphylopars(phylo, Y_data, process, random.init)
 
 \item{process}{the stochastic process}
 
-\item{random.init}{wether root is random or fixed.}
+\item{random.init}{whether root is random or fixed.}
 }
 \value{
 Y_data_imp the imputed data using Rphylopars

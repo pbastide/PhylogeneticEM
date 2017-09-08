@@ -23,13 +23,13 @@ shifts.gauss the list of shifts found on the branches
 \code{lasso_regression_K_fixed} does the following regression :
 ||Yp-Xp.delta|| + lambda |delta|_1 using the function \code{glmnet::glmnet} of 
 package \code{glmnet}, where delta is a vector representing the shifts 
-occuring on the branches. It does a gauss lasso regression using function 
+occurring on the branches. It does a gauss lasso regression using function 
 \code{lm} on top of it. This function is used in functions 
 \code{init.EM.lasso}, \code{segmentation.OU.specialCase.lasso}, ...
 }
 \details{
-lambda is choosen so that delta has the right number of non zero components.
-If not possible, either temporaly raise the number of shifts and then select
+lambda is chosen so that delta has the right number of non zero components.
+If not possible, either temporarily raise the number of shifts and then select
 only the shifts with the highest modulus, or if not possible, throw an error.
 }
 \keyword{internal}

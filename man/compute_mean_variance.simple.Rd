@@ -16,7 +16,7 @@ compute_mean_variance.simple(phylo, times_shared, distances_phylo,
 \item{times_shared}{(matrix) : times of shared ancestry, result of function 
 \code{compute_times_ca}}
 
-\item{distances_phylo}{(matrix) : phylogenetics distance, result of function 
+\item{distances_phylo}{(matrix) : phylogenetic distance, result of function 
 \code{compute_dist_phy}}
 
 \item{process}{a two letter string indicating the process to consider}
@@ -24,14 +24,13 @@ compute_mean_variance.simple(phylo, times_shared, distances_phylo,
 \item{params_old}{a list of parameters to be used in the computations}
 }
 \value{
-sim (list) : result of funtion \code{simulate} with the appropriate
+sim (list) : result of function \code{simulate} with the appropriate
  parameters
 
 Sigma matrix of variance covariance, result of function 
 \code{compute_variance_covariance}
-#@return Sigma_YY_inv inverse of vairance matrix of the data
 
-Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
+Sigma_YY_chol_inv invert of Cholesky matrix of Sigma_YY:
  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)
 }
 \description{

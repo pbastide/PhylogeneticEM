@@ -124,7 +124,7 @@ shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_o
 #' ## Finite parameters ?
 #' ######################################################
 # ##
-# # @title Check wether parameters are finite.
+# # @title Check whether parameters are finite.
 # #
 # # @description
 # # \code{is.finite.params} checks whether calculated parameters in the EM are
@@ -204,7 +204,7 @@ shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_o
 ## Are parameters in ranges ?
 #################################################################
 ##
-#' @title Check wether parameters are in ranges.
+#' @title Check whether parameters are in ranges.
 #'
 #' @description
 #' \code{is.in.ranges.params} checks whether calculated parameters in the EM are

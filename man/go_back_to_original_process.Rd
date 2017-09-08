@@ -15,13 +15,13 @@ OU.}
 
 \item{sBM_variance:}{boolean. Is the root random ?}
 
-\item{params:}{the infered parameters of the BM on the re-scaled tree.}
+\item{params:}{the inferred parameters of the BM on the re-scaled tree.}
 }
 \value{
 params_scOU the equivalent parameters of the OU on the original tree.
 }
 \description{
-\code{go_back_to_original_process} takes the infered parameters with a BM
+\code{go_back_to_original_process} takes the inferred parameters with a BM
 on a rescaled tree, and gives back the equivalent parameters of the OU on 
 the original process.
 }

@@ -8,7 +8,7 @@ penalty_pBIC(all_params, model_complexity, independent, tree, times_shared,
   distances_phylo, T_tree, p, K, ntaxa, process)
 }
 \arguments{
-\item{model_complexity}{the complexity of the set of models with dimention K.}
+\item{model_complexity}{the complexity of the set of models with dimension K.}
 
 \item{K}{the dimension of the model.}
 

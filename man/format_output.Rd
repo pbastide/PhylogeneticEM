@@ -15,14 +15,14 @@ format_output(results_estim_EM, phylo, time = NA)
 summary a data frame with K_max lines, and columns:
    - alpha_estim the estimated selection strength
    - gamma_estim the estimated root variance
-   - beta_0_estim the estimated value of root optumum
+   - beta_0_estim the estimated value of root optimum
    - EM_steps number of iterations needed before convergence
    - DV_estim has the EM diverged ?
    - CV_estim has the EM converged ?
    - log_likelihood log likelihood of the data using the estimated parameters
-   - mahalanobis_distance_data_mean the mahalanobis distance between the data
+   - mahalanobis_distance_data_mean the Mahalanobis distance between the data
 and the estimated means at the tips
-   - least_squares the mahalanobis distance, renormalized by gamma^2: 
+   - least_squares the Mahalanobis distance, renormalized by gamma^2: 
 mahalanobis_distance_data_mean * gamma_estim.
    - mean_number_new_shifts the mean number of shifts that changed over the 
 iterations of the EM
@@ -32,13 +32,13 @@ the solution found.
    - complexity the complexity for K_try
    - time the CPU time needed.
 
-params a list of infered parameters
+params a list of inferred parameters
 
-params_init a list of initial paramters
+params_init a list of initial parameters
 
 alpha_0 initial values of alpha
 
-gmma_0 initial values of gamma
+gamma_0 initial values of gamma
 
 Zhat reconstructed node states
 
@@ -52,11 +52,11 @@ edge.quality for each edge, relative number of iterations in which they
 for all values of K between 0 and K_max.
 }
 \details{
-The EM is fisrt launched for K=0, with alpha and gamma estimated. The
-estimated values of alpha, gamma and beta_0 found by this fisrt EM are then
-used as initialisation parameters for all the other runs of the EM for other
+The EM is first launched for K=0, with alpha and gamma estimated. The
+estimated values of alpha, gamma and beta_0 found by this first EM are then
+used as initialization parameters for all the other runs of the EM for other
 K.
-The EMs are parralelized thanks to packages \code{foreach} and 
+The EMs are parallelized thanks to packages \code{foreach} and 
 \code{doParallel}.
 WARNING : this code only work of OU with stationary root, on an ultrametric
 tree.

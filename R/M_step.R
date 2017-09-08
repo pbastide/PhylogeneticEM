@@ -24,7 +24,7 @@
 ##
 # compute_M (phylo, process, Y_data, conditional_law_X, nbr_of_shifts)
 # PARAMETERS:
-#            @phylo (tree) imput tree
+#            @phylo (tree) input tree
 #            @process (string) Random process to simulate.
 #            @Y_data (vector) : vector indicating the data at the tips
 #            @conditional_law_X (list) result of compute_E (see note above)
@@ -642,7 +642,7 @@ compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.stren
 #'
 #' @details
 #' This function uses functions \code{compute_var_diff.OU} 
-#' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+#' and \code{compute_diff_exp.OU} in the process. Careful : only works if the
 #' root is stationary, and shifts at nodes.
 #'
 #' @param phylo Input tree.
@@ -707,7 +707,7 @@ estimate.alpha <- function(phylo,
 # #' 
 # #' @details
 # #' This function uses functions \code{compute_var_diff.OU}
-# #' and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+# #' and \code{compute_diff_exp.OU} in the process. Careful : only works if the
 # #' root is stationary, and shifts at nodes.
 # #' 
 # #' @param phylo Input tree.
@@ -759,7 +759,7 @@ estimate.alpha <- function(phylo,
 ##
 ## @details
 ## This function uses functions \code{compute_var_diff.OU} 
-## and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+## and \code{compute_diff_exp.OU} in the process. Careful : only works if the
 ## root is stationary, and shifts at nodes.
 ##
 ## @param phylo Input tree.
@@ -982,12 +982,12 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp,
     ## Segmentation per se
     group <- rep(1:(ntaxa + nNodes), each = length(D))
     # Lasso regression
-    fit <- try(lasso_regression_K_fixed.gglasso(Yvec = Dvec, Xkro = Xkro,
-                                                K = nbr_of_shifts,
-                                                root = ntaxa + nNodes,
-                                                penscale = penscale,
-                                                group = group,
-                                                p_dim = p))
+    fit <- try(lasso_regression_K_fixed.grplasso(Yvec = Dvec, Xkro = Xkro,
+                                                 K = nbr_of_shifts,
+                                                 root = ntaxa + nNodes,
+                                                 penscale = penscale,
+                                                 group = group,
+                                                 p_dim = p))
   } else { # Only one trait
     fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp,
                                                             K = nbr_of_shifts,
@@ -1136,7 +1136,8 @@ compute_regression_matrices <- function(phylo, conditional_law_X, selection.stre
 #' @description
 #' \code{segmentation.OU.specialCase.same_shifts} keeps the same shifts position,
 #' and optimize the sum of costs using function 
-#' \code{optimize_costs_given_shift_position.OU.specialCase}. 
+#' \code{best_scenario}
+# \code{optimize_costs_given_shift_position.OU.specialCase}. 
 #'
 #' @details
 #'  This is the best move if keeping the previous shifts positions.
@@ -1165,94 +1166,94 @@ segmentation.OU.specialCase.same_shifts <- function(phylo, shifts_old, D, Xp, ..
 #                                                             shifts_edges = shifts_old$edges))
 }
 
-segmentation.OU.specialCase.best_single_move.old <- function(phylo, conditional_law_X, selection.strength, shifts_old, ...){
-  # Construct vector of all allowed combinations of shifts (variation from a base scenario)
-  shifts_edges <- shifts_old$edges
-  K <- length(shifts_edges)
-  nEdges <- dim(phylo$edge)[1]
-  allowed_moves <- which(!(1:nEdges %in% shifts_edges))
-  scenarii <- t(matrix(shifts_edges, (nEdges - K) * K + 1, nrow = K))
-  for (i in 1:K) {
-    scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
-  }
-  # Function to be applyed to each row
-  fun <- function(sh_ed){
-    seg <- optimize_costs_given_shift_position.OU.specialCase(phylo = phylo,
-                                                              conditional_law_X = conditional_law_X,
-                                                              selection.strength = selection.strength,
-                                                              shifts_edges = sh_ed)
-    totalCost <- sum(seg$costs)
-    return(list(seg = seg, 
-                totalCost = totalCost))
-  }
-  # Apply to each row and take the minimal total cost
-  allSegs <- apply(scenarii, 1, fun)
-  dd <- do.call(rbind, allSegs)
-  min_conf <- which.min(dd[,"totalCost"])
-  return(dd[[min_conf]])
-}
+# segmentation.OU.specialCase.best_single_move.old <- function(phylo, conditional_law_X, selection.strength, shifts_old, ...){
+#   # Construct vector of all allowed combinations of shifts (variation from a base scenario)
+#   shifts_edges <- shifts_old$edges
+#   K <- length(shifts_edges)
+#   nEdges <- dim(phylo$edge)[1]
+#   allowed_moves <- which(!(1:nEdges %in% shifts_edges))
+#   scenarii <- t(matrix(shifts_edges, (nEdges - K) * K + 1, nrow = K))
+#   for (i in 1:K) {
+#     scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
+#   }
+#   # Function to be applyed to each row
+#   fun <- function(sh_ed){
+#     seg <- optimize_costs_given_shift_position.OU.specialCase(phylo = phylo,
+#                                                               conditional_law_X = conditional_law_X,
+#                                                               selection.strength = selection.strength,
+#                                                               shifts_edges = sh_ed)
+#     totalCost <- sum(seg$costs)
+#     return(list(seg = seg, 
+#                 totalCost = totalCost))
+#   }
+#   # Apply to each row and take the minimal total cost
+#   allSegs <- apply(scenarii, 1, fun)
+#   dd <- do.call(rbind, allSegs)
+#   min_conf <- which.min(dd[,"totalCost"])
+#   return(dd[[min_conf]])
+# }
 
 ##
-#' @title Minimization of the sum of costs, given the shift position.
-#'
-#' @description
-#' \code{optimize_costs_given_shift_position.OU.specialCase} minimize the sum of
-#' costs when the shift position is fixed.
-#'
-#' @details
-#' This function find the regimes of each node using function 
-#' \code{allocate_regimes_from_shifts} and optimize the sum of costs, computed 
-#' using function \code{compute_diff_exp.OU}, in the values of the optimal values
-#' betas (using a close formula). It then goes back to a shift expression of the
-#' problem using function \code{compute_shifts_from_betas}.
-#'
-#' @param phylo a phylogenetic tree
-#' @param conditional_law_X moments of the conditional law of X given Y, result
-#' of function \code{compute_M.OU.specialCase}
-#' @param selection.strength the selection strength
-#' @param shifts_edges the vector of the position of the shifts on the tree
-#' 
-#' @return List containing : beta_0 : the optimal value at the root
-#'                           shifts : list containing the computed tau and delta
-#'                           costs : vector of costs
-#'
-#' @keywords internal
-#' 
+# @title Minimization of the sum of costs, given the shift position.
+#
+# @description
+# \code{optimize_costs_given_shift_position.OU.specialCase} minimize the sum of
+# costs when the shift position is fixed.
+#
+# @details
+# This function find the regimes of each node using function 
+# \code{allocate_regimes_from_shifts} and optimize the sum of costs, computed 
+# using function \code{compute_diff_exp.OU}, in the values of the optimal values
+# betas (using a close formula). It then goes back to a shift expression of the
+# problem using function \code{compute_shifts_from_betas}.
+#
+# @param phylo a phylogenetic tree
+# @param conditional_law_X moments of the conditional law of X given Y, result
+# of function \code{compute_M.OU.specialCase}
+# @param selection.strength the selection strength
+# @param shifts_edges the vector of the position of the shifts on the tree
+# 
+# @return List containing : beta_0 : the optimal value at the root
+#                           shifts : list containing the computed tau and delta
+#                           costs : vector of costs
+#
+# @keywords internal
+# 
 #15/10/14 - Initial release
 ##
-optimize_costs_given_shift_position.OU.specialCase <- function(phylo, conditional_law_X, selection.strength, shifts_edges, ...){
-  ntaxa <- length(phylo$tip.label)
-  ## Computation values of betas
-  diff_exp <- compute_diff_exp.OU(phylo = phylo, 
-                                  conditional_law_X = conditional_law_X, 
-                                  selection.strength = selection.strength)
-  # Regimes of the branches from alod positions of shifts
-  regimes <- allocate_regimes_from_shifts(phylo, shifts_edges)
-  # Quantities needed
-  daughters <- phylo$edge[,2]
-  ee <- exp(- selection.strength * phylo$edge.length )
-  numerateur <- diff_exp / (1 + ee)
-  denominateur <- (1 - ee) / (1 + ee)
-  # Root branch
-  nEdges <- dim(phylo$edge)[1]
-  numerateur[nEdges + 1]  <- conditional_law_X$expectations[ntaxa+1]
-  denominateur[nEdges + 1]  <- 1
-  # Function to compute betas on the regimes
-  fun <- function(reg){
-    edg <- which(phylo$edge[,2] %in% which(regimes == reg))
-    if (reg == 0) edg <- c(edg, nEdges+1)
-    return((sum(numerateur[edg])) / (sum(denominateur[edg])))
-  }
-  regimes_values <- 0:(length(unique(regimes))-1)
-  beta_values <- sapply(regimes_values, fun)
-  ## Computation of corresponding shifts values
-  betas <- beta_values[regimes + 1]
-  shifts <- compute_shifts_from_betas(phylo, betas)
-  ## Computation of costs
-  costs <- (1 - ee^2)^(-1) * (diff_exp - betas[daughters] * (1-ee))^2
-  costs <- c((conditional_law_X$expectations[ntaxa+1] - beta_values[1])^2, costs)
-  return(list(beta_0 = beta_values[1], shifts = shifts, costs = costs))
-}
+# optimize_costs_given_shift_position.OU.specialCase <- function(phylo, conditional_law_X, selection.strength, shifts_edges, ...){
+#   ntaxa <- length(phylo$tip.label)
+#   ## Computation values of betas
+#   diff_exp <- compute_diff_exp.OU(phylo = phylo, 
+#                                   conditional_law_X = conditional_law_X, 
+#                                   selection.strength = selection.strength)
+#   # Regimes of the branches from alod positions of shifts
+#   regimes <- allocate_regimes_from_shifts(phylo, shifts_edges)
+#   # Quantities needed
+#   daughters <- phylo$edge[,2]
+#   ee <- exp(- selection.strength * phylo$edge.length )
+#   numerateur <- diff_exp / (1 + ee)
+#   denominateur <- (1 - ee) / (1 + ee)
+#   # Root branch
+#   nEdges <- dim(phylo$edge)[1]
+#   numerateur[nEdges + 1]  <- conditional_law_X$expectations[ntaxa+1]
+#   denominateur[nEdges + 1]  <- 1
+#   # Function to compute betas on the regimes
+#   fun <- function(reg){
+#     edg <- which(phylo$edge[,2] %in% which(regimes == reg))
+#     if (reg == 0) edg <- c(edg, nEdges+1)
+#     return((sum(numerateur[edg])) / (sum(denominateur[edg])))
+#   }
+#   regimes_values <- 0:(length(unique(regimes))-1)
+#   beta_values <- sapply(regimes_values, fun)
+#   ## Computation of corresponding shifts values
+#   betas <- beta_values[regimes + 1]
+#   shifts <- compute_shifts_from_betas(phylo, betas)
+#   ## Computation of costs
+#   costs <- (1 - ee^2)^(-1) * (diff_exp - betas[daughters] * (1-ee))^2
+#   costs <- c((conditional_law_X$expectations[ntaxa+1] - beta_values[1])^2, costs)
+#   return(list(beta_0 = beta_values[1], shifts = shifts, costs = costs))
+# }
 
 segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, Xp, params_old, ...){
   if (is.list(D)){ # case p > 1, independent

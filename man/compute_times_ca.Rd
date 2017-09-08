@@ -2,7 +2,7 @@
 % Please edit documentation in R/generic_functions.R
 \name{compute_times_ca}
 \alias{compute_times_ca}
-\title{Comon Ancestors Times}
+\title{Common Ancestors Times}
 \usage{
 compute_times_ca(phy)
 }
@@ -14,7 +14,7 @@ a matrix of times of shared evolutions, ordered as the tips of the
 tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
 }
 \description{
-\code{compute_times_ca} computes the times t_ij between the root and the comon
+\code{compute_times_ca} computes the times t_ij between the root and the common
 ancestor of two tips i, j.
 }
 \details{

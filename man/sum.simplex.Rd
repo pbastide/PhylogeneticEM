@@ -7,10 +7,10 @@
 \method{sum}{simplex}(NN, K, p)
 }
 \arguments{
-\item{NN}{a martix with p rows and K column. Each row contains the number of
+\item{NN}{a matrix with p rows and K column. Each row contains the number of
 partition in 1<=k<=K groups for one of the p children of a given node}
 
-\item{K}{an integer. Tne number of groups wanted.}
+\item{K}{an integer. The number of groups wanted.}
 
 \item{p}{an integer. The number of daughters of a node.}
 }

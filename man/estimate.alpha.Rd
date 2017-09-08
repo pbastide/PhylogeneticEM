@@ -34,7 +34,7 @@ alpha_old is not far from reality.
 }
 \details{
 This function uses functions \code{compute_var_diff.OU} 
-and \code{compute_diff_exp.OU} in the process. Carefull : only works if the
+and \code{compute_diff_exp.OU} in the process. Careful : only works if the
 root is stationary, and shifts at nodes.
 }
 \keyword{internal}

@@ -19,11 +19,11 @@ boolean : TRUE if the allocation is parsimonious.
 \description{
 \code{check_parsimony} take a vector of shifts edges, and check whether the
 number of groups of the tips induced by this allocation is exactly the number of
-shifts plus one. This is equivalent to parsimony when there is no homplasy (i.e. no 
+shifts plus one. This is equivalent to parsimony when there is no homoplasy (i.e. no 
 convergent regimes).
 }
 \details{
-This function computes explicitely the clustering of the tips, using 
+This function computes explicitly the clustering of the tips, using 
 function \code{\link{clusters_from_shifts}}.
 By default, this function uses \code{\link{enumerate_tips_under_edges}} to compute 
 the list of tips under each edge, but a list can be provided (to avoid extra

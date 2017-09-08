@@ -19,7 +19,7 @@ simulate_internal(phylo, process = c("BM", "OU", "scOU", "StudentOU"),
 model, univariate or multivariate); "OU" (for a full OU model, univariate or
 multivariate); or "scOU" (for a "scalar OU" model).}
 
-\item{p}{Dimention of the simulated trait}
+\item{p}{Dimension of the simulated trait}
 
 \item{root.state}{List describing the state of the root, with:
 \describe{
@@ -34,7 +34,7 @@ multivariate); or "scOU" (for a "scalar OU" model).}
  \item{edges}{vector of the K id of edges where the shifts are}
  \item{values}{matrix p x K of values of the shifts on the edges
   (one column = one shift)}
- \item{relativeTimes}{vector of dimension K of relative time of the shift from the parentnode of edges}
+ \item{relativeTimes}{vector of dimension K of relative time of the shift from the parent node of edges}
  }}
 
 \item{eps}{Tolerance for the value of the norm 1 of the selection strength matrix for OU}
@@ -55,14 +55,14 @@ to TRUE.}
 \code{incidence.matrix.full}.}
 
 \item{times_shared}{optional, times of shared ancestry of all nodes and tips,
-result of function \code{\link{compute_times_ca}}. Can be precised to avoid extra
+result of function \code{\link{compute_times_ca}}. Can be specified to avoid extra
 computations.}
 
 \item{df}{if the process is "StudentOU", the number of degree of freedom of
-the choosen student law. default to 1.}
+the chosen student law. default to 1.}
 }
 \value{
-paramSimu An array with dimentions p x nNodes x 2 (BM)
+paramSimu An array with dimensions p x nNodes x 2 (BM)
  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.

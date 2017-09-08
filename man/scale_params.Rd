@@ -2,7 +2,7 @@
 % Please edit documentation in R/generic_functions.R
 \name{scale_params}
 \alias{scale_params}
-\title{Scale variance and selection strenght from a linear transform}
+\title{Scale variance and selection strength from a linear transform}
 \usage{
 scale_params(params, f)
 }
@@ -16,6 +16,6 @@ parameters from phylo' back to phylo.}
 re-scaled parameters
 }
 \description{
-Used for process equivalencies on re-scaled trees.
+Used for process equivalancies on re-scaled trees.
 }
 \keyword{internal}

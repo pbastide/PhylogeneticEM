@@ -22,6 +22,8 @@ See package documentation (references and vignettes) here: http://pbastide.githu
 
 (Built with [`pkgdown`](https://github.com/hadley/pkgdown)).
 
-## Reference:
+## References:
 
-Bastide, P., Mariadassou, M. and Robin, S. (2016), Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree. *Journal of the Royal Statistical Society: Series B (Statistical Methodology)*, [doi:10.1111/rssb.12206](http://onlinelibrary.wiley.com/doi/10.1111/rssb.12206/abstract)
+Bastide, P., Mariadassou, M. and Robin, S. (2017), Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree. *Journal of the Royal Statistical Society: Series B (Statistical Methodology)*, 79(4):1067-1093, [doi:10.1111/rssb.12206](http://onlinelibrary.wiley.com/doi/10.1111/rssb.12206/abstract)
+
+Bastide, P., Ané, C., Robin, S. and Mariadassou, M. (2017), Inference of Adaptive Shifts for Multivariate Correlated Traits. *bioRxiv preprint*, [doi:10.1101/146191](http://www.biorxiv.org/content/early/2017/06/05/146191)

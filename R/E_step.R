@@ -38,16 +38,16 @@
 #' @param Sigma : variance-covariance matrix, result of function \code{compute_variance_covariance}
 #' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
 #' 
-#' @return conditional_law_X (list) : list of conditionnal statistics :
+#' @return conditional_law_X (list) : list of conditional statistics :
 #'                   "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
-#' fisrt columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
-#' of the nodes conditionned to the tips E[Z_j|Y]
+#' first columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
+#' of the nodes conditioned to the tips E[Z_j|Y]
 #'                   "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
-#' matrices of zeros (tips) and conditional variance of the nodes conditionned to the tips 
+#' matrices of zeros (tips) and conditional variance of the nodes conditioned to the tips 
 #' Var[Z_j|Y]
 #'                  "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
 #' matrices of zeros (tips) and conditional covariance of the nodes and their parents
-#' conditionned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
+#' conditioned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
 #'                   "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
 #' values beta(t_j)
 #' 
@@ -133,7 +133,7 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
   # Y_data_vec <- as.vector(Y_data)
   m_Y_vec <- as.vector(m_Y)[!miss]
   m_Z_vec <- c(as.vector(m_Y)[miss], as.vector(m_Z))
-  # Conditionnal expectation of unkonwn values
+  # Conditional expectation of unkonwn values
   exp_Z_vec <- m_Z_vec + temp %*% crossprod(Sigma_YY_chol_inv,
                                             (Y_data_vec - m_Y_vec))
   expcond <- rep(NA, (nNodes + ntaxa) * p)
@@ -247,7 +247,7 @@ compute_cond_law.simple.nomissing.BM <- function (phylo, Y_data, sim,
   ## Mean
   m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   m_Z <- extract_simulate_internal(sim, where="nodes", what="expectations")
-  # Conditionnal expectation of unkonwn values
+  # Conditional expectation of unkonwn values
   conditional_law_X$expectations <- m_Z + (Y_data- m_Y) %*% F_means
   conditional_law_X$expectations <- cbind(Y_data, conditional_law_X$expectations)
   conditional_law_X$expectations <- matrix(conditional_law_X$expectations, dim(conditional_law_X$expectations))
@@ -424,9 +424,9 @@ extract.variance_nodes <- function(phylo, struct){
 #'
 #' @description
 #' \code{get_variance_node} returns the conditional variance of a node, or the conditional
-#' corariance of a node and its parent.
+#' covariance of a node and its parent.
 #' 
-#' @param vars matrix of size p x p*(ntaxa+nNodes) result of funtion \code{compute_E.simple},
+#' @param vars matrix of size p x p*(ntaxa+nNodes) result of function \code{compute_E.simple},
 #' entry "variances" or "covariances".
 #' @param node for which to extract the matrix.
 #' 
@@ -508,7 +508,7 @@ compute_tree_correlations_matrix.BM <- function(times_shared, params_old, ...) {
 #'
 #' @param times_shared times of shared ancestry of all nodes and tips, result of function
 #'  \code{compute_times_ca}
-#' @param distances_phylo (matrix) : phylogenetics distance, result of function 
+#' @param distances_phylo (matrix) : phylogenetic distance, result of function 
 #' \code{compute_dist_phy}
 #' @param params_old (list) : old parameters to be used in the E step
 #' 
@@ -549,7 +549,7 @@ compute_variance_covariance.scOU <- function(times_shared, distances_phylo, para
 #'
 #' @param times_shared times of shared ancestry of all nodes and tips, result of function
 #'  \code{compute_times_ca}
-#' @param distances_phylo (matrix) : phylogenetics distance, result of function 
+#' @param distances_phylo (matrix) : phylogenetic distance, result of function 
 #' \code{compute_dist_phy}
 #' @param params_old (list) : old parameters to be used in the E step
 #' 
@@ -653,17 +653,17 @@ compute_variance_covariance.OU <- function(times_shared,
 #' @param phylo Input tree.
 #' @param times_shared (matrix) : times of shared ancestry, result of function 
 #' \code{compute_times_ca}
-#' @param distances_phylo (matrix) : phylogenetics distance, result of function 
+#' @param distances_phylo (matrix) : phylogenetic distance, result of function 
 #' \code{compute_dist_phy}
 #' @param process a two letter string indicating the process to consider
 #' @param params_old a list of parameters to be used in the computations
 #' 
-#' @return sim (list) : result of funtion \code{simulate} with the appropriate
+#' @return sim (list) : result of function \code{simulate} with the appropriate
 #'  parameters
 #' @return Sigma matrix of variance covariance, result of function 
 #' \code{compute_variance_covariance}
-#' #@return Sigma_YY_inv inverse of vairance matrix of the data
-#' @return Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
+# #@return Sigma_YY_inv inverse of variance matrix of the data
+#' @return Sigma_YY_chol_inv invert of Cholesky matrix of Sigma_YY:
 #'  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)
 #'  
 #' @keywords internal
@@ -768,7 +768,7 @@ compute_residuals.simple <- function(phylo, Y_data_vec, sim,
 #' @title Squared Mahalanobis Distance
 #'
 #' @description
-#' \code{compute_mahalanobis_distance.simple} computes the squared mahalanobis distance 
+#' \code{compute_mahalanobis_distance.simple} computes the squared Mahalanobis distance 
 #' between the data and mean at tips  of the data in the simple case where the inverse
 #' of the variance matrix is given.
 #'
@@ -1028,7 +1028,7 @@ compute_E.upward_downward <- function(phylo,
 #' tip names of the tree.
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 # @param U_tree (optional) full incidence matrix of the tree, result of function
-#' \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.
+#' \code{\link{incidence.matrix.full}}. Can be specified to avoid extra computations.
 #' @param ... for a \code{PhyloEM} object, further arguments to be passed on to
 #' \code{\link{params_process.PhyloEM}} (to choose which parameters to extract from
 #' the results, see documentation of this function).
@@ -1123,7 +1123,7 @@ log_likelihood.PhyloEM <- function(x, ...){
 #' tip names of the tree.
 # @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 # @param U_tree (optional) full incidence matrix of the tree, result of function
-#' \code{\link{incidence.matrix.full}}. Can be precised to avoid extra computations.
+#' \code{\link{incidence.matrix.full}}. Can be specified to avoid extra computations.
 #' @param ... for a \code{PhyloEM} object, further arguments to be passed on to
 #' \code{\link{params_process.PhyloEM}} (to choose which parameters to extract from
 #' the results, see documentation of this function).
@@ -1152,7 +1152,7 @@ residuals.PhyloEM <- function(object, ...){
 #'
 #' @description
 #' \code{wrapper_E_step} is used in the EM algorithm. It calls itself
-#' recursivelly in case of independent parameters.
+#' recursively in case of independent parameters.
 #' 
 #' @keywords internal
 ##

@@ -1,4 +1,4 @@
-# {Initialisations of the EM}
+# {model selection}
 # Copyright (C) {2014} {SR, MM, PB}
 #
 # This program is free software; you can redistribute it and/or modify
@@ -27,13 +27,13 @@
 #' L_K = B + 1/K * log(model_complexity).
 #'
 #' @details
-#' See Birge Massart (2001).
-#' Must be applied to least-square crierion.
+#' See Birgé Massart (2001).
+#' Must be applied to least-square criterion.
 #' This penalty should be calibrated using the slope heuristic.
 #'
 #' @param K the number of shifts
-#' @param p the dimention of the data
-#' @param model_complexity the complexity of the set of models with dimention K
+#' @param p the dimension of the data
+#' @param model_complexity the complexity of the set of models with dimension K
 #' @param B a non-negative constant. Default is 0.1 
 #' (as suggested in Cleymen Lebarbier 2015)
 #' 
@@ -103,13 +103,13 @@ model_selection_capushe <- function(res, pen_shape, name){
 #' It dominates the penalty defined by \code{penalty_BirgeMassart_shape1}.
 #'
 #' @details
-#' See Birge Massart (2001).
-#' Must be applied to least-square crierion.
+#' See Birgé Massart (2001).
+#' Must be applied to least-square criterion.
 #' This penalty should be calibrated using the slope heuristic.
 #'
 #' @param K the number of shifts
 #' @param p the dimension of the data
-#' @param model_complexity the complexity of the set of models with dimention K.
+#' @param model_complexity the complexity of the set of models with dimension K.
 #' @param C a non-negative constant. Default is 2.5 
 #' (as suggested in Lebarbier 2005)
 #' 
@@ -154,12 +154,12 @@ model_selection_BM2 <- function(res, C.BM2, ...){
 #'
 #' @details
 #' See Baraud Giraud Huet (2009, 2011).
-#' Must be applied to log-likelihood crierion.
+#' Must be applied to log-likelihood criterion.
 #' Function pen is computed using function \code{penalty} from package
 #' \code{LINselect}.
 #'
 #' @param K the dimension of the model.
-#' @param model_complexity the complexity of the set of models with dimention K.
+#' @param model_complexity the complexity of the set of models with dimension K.
 #' @param ntaxa the number of tips.
 #' @param C a constant, C > 1. Default is C = 1.1
 #' (as suggested in Baraud Giraud Huet (2009))
@@ -292,7 +292,7 @@ model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.LINselect, ...){
 #' \code{penalty_pBIC_scalarOU} is the pBIC.
 #'
 #' @param K the dimension of the model.
-#' @param model_complexity the complexity of the set of models with dimention K.
+#' @param model_complexity the complexity of the set of models with dimension K.
 #' @param ntaxa the number of tips.
 #' @param C a constant, C > 1. Default is C = 1.1
 #' (as suggested in Baraud Giraud Huet (2009))
@@ -606,7 +606,7 @@ model_selection.PhyloEM <- function(x,
     method.selection <- method.selection[method.selection != "BGHlsqraw"]
     method.selection <- method.selection[method.selection != "BGHmlraw"]
   }
-  if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevent warnings).")
+  if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevant warnings).")
   for (meth.sel in method.selection){
     x <- mod_sel_unit(meth.sel)
   }

@@ -224,7 +224,7 @@ update.incidence.matrix.full <- function(daughtersParams, parent, ...){
 #' @description
 #' \code{shifts.list_to_vector} takes the list description of the shifts 
 #' to give the vectorial representation of the shifts : the b th element of 
-#' the vector has the value of the shift occuring on that branch b.
+#' the vector has the value of the shift occurring on that branch b.
 #'
 #' @param phy Input tree.
 #' @param shifts : list description of the shifts : shifts$edges, shifts$values
@@ -248,8 +248,8 @@ shifts.list_to_vector <- function(phy, shifts){
 #'
 #' @description
 #' \code{shifts.list_to_matrix} takes the list description of the shifts 
-#' to give the matricial representation of the shifts : the b th element of 
-#' the lth line has the value of the shift on character l occuring on that branch b
+#' to give the matrix representation of the shifts : the b th element of 
+#' the lth line has the value of the shift on character l occurring on that branch b
 #'
 #'
 #' @param phy Input tree.
@@ -378,7 +378,7 @@ incidence_matrix_actualization_factors <- function(tree,
 #' matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
 #'
 #' @details
-#' Carreful: the root is not taken into account in this function.
+#' Careful: the root is not taken into account in this function.
 #'
 #' @param tree a phylogenetic tree.
 #' @param selection.strength the selection strength of the process.
@@ -412,7 +412,7 @@ compute_actualization_matrix_ultrametric <- function(tree,
 ##########################################
 
 ##
-#' @title Initialisation for the computation of the optimal values
+#' @title Initialization for the computation of the optimal values
 #'
 #' @description
 #' \code{init.compute_betas_from_shifts} initialize the vector of optimal values at nodes and
@@ -425,7 +425,7 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #' @param phy Input tree.
 #' @param optimal.value the optimal value at the root of the tree
 #' 
-#' @return Matrix of size (nNodes + ntaxa)x1 of NAs, with the optiaml value
+#' @return Matrix of size (nNodes + ntaxa)x1 of NAs, with the optimal value
 #'  at the root.
 #'  
 #' @keywords internal
@@ -440,7 +440,7 @@ init.compute_betas_from_shifts <- function(phy, optimal.value, ...){
 }
 
 ##
-#' @title Update function ofr optimal value computation
+#' @title Update function for optimal value computation
 #'
 #' @description
 #' \code{update.compute_betas_from_shifts} computes the optimal value at a daughter node, 
@@ -472,7 +472,7 @@ update.compute_betas_from_shifts <- function(edgeNbr, ancestral, shifts, ...){
 #'
 #' @description
 #' \code{compute_betas_from_shifts} computes the optimal values at the nodes and tips of the
-#' tree, given the value at the root and the list of shifts occuring in the tree.
+#' tree, given the value at the root and the list of shifts occurring in the tree.
 #' It assumes an OU model.
 #'
 # @details
@@ -484,7 +484,7 @@ update.compute_betas_from_shifts <- function(edgeNbr, ancestral, shifts, ...){
 #' @param optimal.value the optimal value at the root of the tree.
 #' @param shifts position and values of the shifts .
 #' 
-#' @return Vector of size (ntaxa + nNodes) of the ptimal values at the tips
+#' @return Vector of size (ntaxa + nNodes) of the optimal values at the tips
 #' of the tree.
 #' 
 #' @export
@@ -502,7 +502,7 @@ compute_betas_from_shifts <- function(phylo, optimal.value, shifts){
 }
 
 ##
-#' @title Initialisation for the allocation of shifts.
+#' @title Initialization for the allocation of shifts.
 #'
 #' @description
 #' \code{init.allocate_regimes_from_shifts} initialize the vector of regimes 
@@ -675,7 +675,7 @@ compute_shifts_from_betas <- function(phylo, betas){
 #' of tips under each edge, and function \code{check_parsimony} to check for
 #' parsimony of a given solution, under the assumption of an "infinite site model".
 #'
-#' @param tree : imput tree
+#' @param tree : input tree
 #' @param K : number of edges to be sampled.
 #' 
 #' @return vector of edges
@@ -706,17 +706,17 @@ sample_shifts_edges <- function(tree, K,
 }
 
 ##
-#' @title Sample equally espaced edges.
+#' @title Sample equally spaced edges.
 #'
 #' @description
-#' \code{sample_edges_intervals} samples K shifts, each in one of the K intervalles
-#' regularly espaced on the height of the tree.
+#' \code{sample_edges_intervals} samples K shifts, each in one of the K intervals
+#' regularly spaced on the height of the tree.
 #' 
 #' @details
 #' In case where the tree is not ultrametric, its "height" is defined as the minimum
 #' tip height.
 #'
-#' @param tree : imput tree
+#' @param tree : input tree
 #' @param K : number of edges to be sampled.
 #' 
 #' @return vector of edges
@@ -799,7 +799,7 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
 #' @details
 #' Ancestral state is always 0, and other states are consecutive integers.
 #'
-#' @param tree imput tree in \code{\link[ape]{phylo}} format
+#' @param tree input tree in \code{\link[ape]{phylo}} format
 #' @param shifts_edges shifts positions on the edges
 #' 
 #' @return tree a simmap object

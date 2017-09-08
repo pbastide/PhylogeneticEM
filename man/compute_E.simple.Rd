@@ -22,16 +22,16 @@ compute_E.simple(phylo, times_shared, distances_phylo, process, params_old,
 \item{Sigma_YY_inv}{: invert of the variance-covariance matrix of the data}
 }
 \value{
-conditional_law_X (list) : list of conditionnal statistics :
+conditional_law_X (list) : list of conditional statistics :
                   "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
-fisrt columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
-of the nodes conditionned to the tips E[Z_j|Y]
+first columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
+of the nodes conditioned to the tips E[Z_j|Y]
                   "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
-matrices of zeros (tips) and conditional variance of the nodes conditionned to the tips 
+matrices of zeros (tips) and conditional variance of the nodes conditioned to the tips 
 Var[Z_j|Y]
                  "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
 matrices of zeros (tips) and conditional covariance of the nodes and their parents
-conditionned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
+conditioned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
                   "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
 values beta(t_j)
 }

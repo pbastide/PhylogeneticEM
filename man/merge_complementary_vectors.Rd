@@ -9,7 +9,7 @@ merge_complementary_vectors(comb, mat)
 \arguments{
 \item{comb}{vector giving the rows to be kept.}
 
-\item{mat}{matrice containing the vectors as rows.}
+\item{mat}{matrix containing the vectors as rows.}
 }
 \value{
 row vector of the same size as entry matrix.

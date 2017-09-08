@@ -18,8 +18,8 @@ Matrix p x nEdges of length nbranch.
 }
 \description{
 \code{shifts.list_to_matrix} takes the list description of the shifts 
-to give the matricial representation of the shifts : the b th element of 
-the lth line has the value of the shift on character l occuring on that branch b
+to give the matrix representation of the shifts : the b th element of 
+the lth line has the value of the shift on character l occurring on that branch b
 }
 \seealso{
 \code{\link{shifts.matrix_to_list}}

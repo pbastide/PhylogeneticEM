@@ -37,7 +37,7 @@ almost all the tips are decorrelated.
 }
 \details{
 If \code{quantile_low_distance=0}, then \code{quantile(d_ij)=min(d_ij)}, and, for any
-two tips i,j, the correlation between i anf j is bounded by exp(-factor_up_alpha/2).
+two tips i,j, the correlation between i and j is bounded by exp(-factor_up_alpha/2).
 Those values of alpha will be used for the re-scaling of the tree, which has an 
 exponential term in exp(2*alpha*h). The function makes sure that this number is
 below the maximal float allowed (equals to \code{.Machine$double.xmax}).

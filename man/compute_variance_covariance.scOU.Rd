@@ -10,7 +10,7 @@ compute_variance_covariance.scOU(times_shared, distances_phylo, params_old, ...)
 \item{times_shared}{times of shared ancestry of all nodes and tips, result of function
 \code{compute_times_ca}}
 
-\item{distances_phylo}{(matrix) : phylogenetics distance, result of function 
+\item{distances_phylo}{(matrix) : phylogenetic distance, result of function 
 \code{compute_dist_phy}}
 
 \item{params_old}{(list) : old parameters to be used in the E step}

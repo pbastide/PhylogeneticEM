@@ -7,14 +7,14 @@
 \method{sum}{partitions.cardFixed}(A, N, K, p, cardI)
 }
 \arguments{
-\item{A}{a martix with p rows and K column. Each row contains the number of
-marqued partition in 1<=k<=K groups for one of the p children of a
+\item{A}{a matrix with p rows and K column. Each row contains the number of
+marked partition in 1<=k<=K groups for one of the p children of a
 given node.}
 
-\item{N}{a martix with p rows and K column. Each row contains the number of
+\item{N}{a matrix with p rows and K column. Each row contains the number of
 partition in 1<=k<=K groups for one of the p children of a given node}
 
-\item{K}{an integer. Tne number of groups wanted.}
+\item{K}{an integer. The number of groups wanted.}
 
 \item{p}{an integer. The number of daughters of a node.}
 
@@ -28,7 +28,7 @@ double : the result of the sum.
 fixed, of the sums computed by \code{sum.prod.comb}.
 }
 \details{
-This function uses \code{combn} to enumarate all the subsets I of [1,p] of
+This function uses \code{combn} to enumerate all the subsets I of [1,p] of
 a given cardinal, and then performs the wanted sum on these subsets.
 }
 \keyword{internal}

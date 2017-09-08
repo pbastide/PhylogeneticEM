@@ -19,7 +19,7 @@
 }
 \value{
 A matrix giving the selected quantities at the selected nodes or tips. If
-the tips or nods are labelled, then the colnames of the matrix are set accordingly.
+the tips or nods are labeled, then the colnames of the matrix are set accordingly.
 }
 \description{
 \code{extract.simul_process} takes an object of class "\code{simul_process}",

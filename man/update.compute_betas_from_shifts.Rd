@@ -2,7 +2,7 @@
 % Please edit documentation in R/shifts_manipulations.R
 \name{update.compute_betas_from_shifts}
 \alias{update.compute_betas_from_shifts}
-\title{Update function ofr optimal value computation}
+\title{Update function for optimal value computation}
 \usage{
 update.compute_betas_from_shifts(edgeNbr, ancestral, shifts, ...)
 }

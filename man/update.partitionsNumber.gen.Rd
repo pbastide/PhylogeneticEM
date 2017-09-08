@@ -14,11 +14,11 @@ the result of partitionsNumber for the children of a given node}
 vector of size 2*npart. For k=1:npart it contains the number of
 partitions with k groups compatible with the sub tree starting at the
 current node ; and for k=(npart+1):2*npart, it contains the number of
-"marqued" partitions with (k-npart) groups compatible with the sub tree
+"marked" partitions with (k-npart) groups compatible with the sub tree
 starting at the current node.
 }
 \description{
-\code{update.partitionsNumber.gen} apply the actualisation formula to get
+\code{update.partitionsNumber.gen} apply the actualization formula to get
 Nk and Ak of a node given its daughters.
 }
 \details{

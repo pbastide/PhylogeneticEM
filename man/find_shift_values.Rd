@@ -22,7 +22,7 @@ values of the shifts.
 \code{find_actualized_shift_values} computes the values of the shifts their
 positions, and the mean values at the tips.
 Warning : this function does not check for consistency. Please make sure that the
-shifts postions and the mean values are compatible.
+shifts positions and the mean values are compatible.
 }
 \details{
 This function uses \code{qr.solve} for rectangular linear system solving.

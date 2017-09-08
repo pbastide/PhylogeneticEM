@@ -21,7 +21,7 @@ imputed_traits(x, ...)
 \item{trait}{an integer giving the trait to extract. Default to 1.}
 
 \item{save_all}{if TRUE, arguments \code{where} and \code{what} are ignored, and
-all the moments are kept for further extraction with the same function, precising
+all the moments are kept for further extraction with the same function, specifying
 the argument \code{reconstructed_states}. Default to FALSE.}
 
 \item{where}{either "nodes" for ancestral state reconstruction, or "tips" for
@@ -35,7 +35,7 @@ One of "LINselect", "DDSE", "Djump". Default to "LINselect".}
 
 \item{reconstructed_states}{if the reconstructed states have already been
 computed (by a previous call of the function, with \code{save_all=TRUE}),
-they can be passed on here (avoids multiple computaions of the E step).}
+they can be passed on here (avoids multiple computations of the E step).}
 }
 \value{
 A matrix or array with the computed quantities.

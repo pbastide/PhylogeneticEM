@@ -17,7 +17,7 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   alpha = NULL, check.tips.names = TRUE, progress.bar = TRUE,
   estimates = NULL, save_step = FALSE, parallel_alpha = FALSE,
   Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
-  light_result = TRUE, ...)
+  light_result = TRUE, tol_tree = .Machine$double.eps^0.5, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -70,7 +70,7 @@ Upward Downward method (usually faster). Default to "upward_downward".}
 base initialization method; or "default" for user-specified initialization
 values. Default to "lasso".}
 
-\item{method.init.alpha}{For OU model, initialisation method for the selection
+\item{method.init.alpha}{For OU model, initialization method for the selection
 strength alpha. One of "estimation" for a cherry-based initialization, using
 \code{\link[robustbase]{nlrob}}; or "default" for user-specified 
 initialization values. Default to "estimation".}
@@ -87,7 +87,7 @@ candidate shifts positions. Choices among "lasso" for a LASSO-based algorithm;
 and "best_single_move" for a one-move at a time based heuristic. Default to 
 both of them. Using only "lasso" might speed up the function a lot.}
 
-\item{alpha_grid}{Wether to use a grid for alpha values. Default to TRUE. This
+\item{alpha_grid}{whether to use a grid for alpha values. Default to TRUE. This
 is the only available method for scOU. This method is not available for OU with
 multivariate traits. OU with univariate traits can take both TRUE or FALSE. If
 TRUE, a grid based on the branch length of the tree is automatically computed,
@@ -96,35 +96,35 @@ using function \code{\link{find_grid_alpha}}.}
 \item{nbr_alpha}{If \code{alpha_grid=TRUE}, the number of alpha values on the
 grid. Default to 10.}
 
-\item{random.root}{Wether the root is assumed to be random (TRUE) of fixed
+\item{random.root}{whether the root is assumed to be random (TRUE) of fixed
 (FALSE). Default to TRUE}
 
-\item{stationary.root}{Wether the root is assumed to be in the stationnary 
+\item{stationary.root}{whether the root is assumed to be in the stationary 
 state. Default to TRUE.}
 
 \item{alpha}{If the estimation is done with a fixed alpha (either known, or
 on a grid), the possible value for alpha. Default to NULL.}
 
-\item{check.tips.names}{Wether to check the tips names of the tree against
+\item{check.tips.names}{whether to check the tips names of the tree against
 the column names of the data. Default to TRUE.}
 
-\item{progress.bar}{Wether to display a progress bar of the computations.
+\item{progress.bar}{whether to display a progress bar of the computations.
 Default to TRUE.}
 
 \item{estimates}{The result of a previous run of this same function. This
 function can be re-run for other model election method. Default to NULL.}
 
-\item{save_step}{If alpha_grid=TRUE, wether to save the intermediate results
+\item{save_step}{If alpha_grid=TRUE, whether to save the intermediate results
 for each value of alpha (in a temporary file). Useful for long computations.
 Default to FALSE.}
 
-\item{parallel_alpha}{If alpha_grid=TRUE, wether to run the 
+\item{parallel_alpha}{If alpha_grid=TRUE, whether to run the 
 estimations with different values of alpha on separate cores. Default to 
 FALSE. If TRUE, the log is written as a temporary file.}
 
 \item{Ncores}{If parallel_alpha=TRUE, number of cores to be used.}
 
-\item{impute_init_Rphylopars}{Wether to use 
+\item{impute_init_Rphylopars}{whether to use 
 \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
 Default to FALSE.}
 
@@ -132,15 +132,19 @@ Default to FALSE.}
 step. Increases the accuracy, but can make computations quite slow of taken
 too high. Default to 5.}
 
-\item{light_result}{if TRUE (the default), the object returned is enlighted,
-without easilly computatble quantities. If FALSE, the object can be very heavy, but
+\item{light_result}{if TRUE (the default), the object returned is made light,
+without easily computable quantities. If FALSE, the object can be very heavy, but
 its subsequent manipulations can be faster (especially for plotting).}
 
+\item{tol_tree}{tolerance to consider a branch length significantly greater than zero, or
+two lineages lengths to be different, when checking for ultrametry. 
+(Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.}
+
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
-tolerance parameters for stopping criterions, maximal number of iterations, etc.}
+tolerance parameters for stopping criteria, maximal number of iterations, etc.}
 }
 \value{
-An object of class \code{PhyloEM}. Relevent quantities can be extracted from it 
+An object of class \code{PhyloEM}. Relevant quantities can be extracted from it 
 using helper functions \code{\link{params_process.PhyloEM}},
 \code{\link{imputed_traits.PhyloEM}}
 }
@@ -158,7 +162,7 @@ Several models can be used:
 }
 For the OU in the multivariate setting, two assumptions can be made:
 \itemize{
-\item Independent traits. This amounts to digonal rate and selection matrices.
+\item Independent traits. This amounts to diagonal rate and selection matrices.
 \item "Scalar OU" (scOU): the rate matrix can be full, but the selection 
 strength matrix is assumed to be scalar, i.e. all the traits are supposed to
 go to their optimum values with the same speed.

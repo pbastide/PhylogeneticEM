@@ -2,18 +2,18 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 upward_downward_BM <- function(data, ed, Delta, Variance, edge_length, root_state_list) {
-    .Call('PhylogeneticEM_upward_downward_BM', PACKAGE = 'PhylogeneticEM', data, ed, Delta, Variance, edge_length, root_state_list)
+    .Call(`_PhylogeneticEM_upward_downward_BM`, data, ed, Delta, Variance, edge_length, root_state_list)
 }
 
 upward_downward_OU <- function(data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list) {
-    .Call('PhylogeneticEM_upward_downward_OU', PACKAGE = 'PhylogeneticEM', data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list)
+    .Call(`_PhylogeneticEM_upward_downward_OU`, data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list)
 }
 
 log_likelihood_BM <- function(data, ed, Delta, Variance, edge_length, root_state_list) {
-    .Call('PhylogeneticEM_log_likelihood_BM', PACKAGE = 'PhylogeneticEM', data, ed, Delta, Variance, edge_length, root_state_list)
+    .Call(`_PhylogeneticEM_log_likelihood_BM`, data, ed, Delta, Variance, edge_length, root_state_list)
 }
 
 log_likelihood_OU <- function(data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list) {
-    .Call('PhylogeneticEM_log_likelihood_OU', PACKAGE = 'PhylogeneticEM', data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list)
+    .Call(`_PhylogeneticEM_log_likelihood_OU`, data, ed, Beta, Stationary_Var, edge_length, Alpha, root_state_list)
 }
 

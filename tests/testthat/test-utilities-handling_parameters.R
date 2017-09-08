@@ -286,3 +286,26 @@ test_that("check data",{
   expect_that(data_new, equals(Y_data[ , tree$tip.label]))
   expect_that(check_data(tree, Y_data, FALSE), equals(Y_data))
 })
+
+test_that("check tree",{
+  set.seed(1958)
+  ntaxa <- 20
+  tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
+                                   age = 1, mrca = TRUE)[[1]]
+  Y_data <- matrix(1, 2, ntaxa)
+  
+  ## Not ultrametric
+  tree$edge.length[2 * ntaxa - 2] <- tree$edge.length[2 * ntaxa - 2] * 3/2
+  expect_that(PhyloEM(phylo = tree, Y_data = Y_data), throws_error("The tree must be ultrametric."))
+  tree$edge.length[2 * ntaxa - 2] <- tree$edge.length[2 * ntaxa - 2] * 2/3
+  
+  ## Zero length branch
+  ll <- tree$edge.length[2]
+  tree$edge.length[2] <- 0
+  tmp <- extract.clade(tree, tree$edge[2, 2])
+  tips <- match(tmp$tip.label, tree$tip.label)
+  edges <- match(tips, tree$edge[, 2])
+  tree$edge.length[edges] <- tree$edge.length[edges] + ll
+
+  expect_that(PhyloEM(phylo = tree, Y_data = Y_data), throws_error("The tree has zero-length branches."))
+})

@@ -2,7 +2,7 @@
 % Please edit documentation in R/shutoff.R
 \name{is.in.ranges}
 \alias{is.in.ranges}
-\title{Check wether parameters are in ranges.}
+\title{Check whether parameters are in ranges.}
 \usage{
 is.in.ranges(p, min, max)
 }

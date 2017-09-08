@@ -14,11 +14,11 @@ compute_betas_from_shifts(phylo, optimal.value, shifts)
 \item{shifts}{position and values of the shifts .}
 }
 \value{
-Vector of size (ntaxa + nNodes) of the ptimal values at the tips
+Vector of size (ntaxa + nNodes) of the optimal values at the tips
 of the tree.
 }
 \description{
 \code{compute_betas_from_shifts} computes the optimal values at the nodes and tips of the
-tree, given the value at the root and the list of shifts occuring in the tree.
+tree, given the value at the root and the list of shifts occurring in the tree.
 It assumes an OU model.
 }

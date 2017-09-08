@@ -20,7 +20,7 @@ compute_mahalanobis_distance.simple(phylo, Y_data_vec, sim, Sigma_YY_chol_inv,
 squared Mahalanobis distance between data and mean at the tips.
 }
 \description{
-\code{compute_mahalanobis_distance.simple} computes the squared mahalanobis distance 
+\code{compute_mahalanobis_distance.simple} computes the squared Mahalanobis distance 
 between the data and mean at tips  of the data in the simple case where the inverse
 of the variance matrix is given.
 }

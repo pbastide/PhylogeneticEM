@@ -26,7 +26,7 @@
 # @process (string) : which process ?
 # @paramsSimu (list) : parameters used for th simulation
 # @paramsEstimate (list) : parameters found by an (optional) estimation from the data
-# @estimate (bool) : wether the data is issued from an estimation or a direct simulation
+# @estimate (bool) : whether the data is issued from an estimation or a direct simulation
 # @...
 # RETURNS:
 # (string) standardized name for the data
@@ -55,7 +55,7 @@
 #     ShiftsState <- paste("_shifts-edges=", paste(paramsSimu$shifts$edges,collapse="-"), "_shifts-val=", paste(paramsSimu$shifts$values, collapse="-"), "_shifts-T=", paste(paramsSimu$shifts$relativeTimes,collapse="-"), sep="")
 #   }
 #   ProcessParams <- catch.ProcessParams(paramsSimu)
-#   ## Parametrers of the EM if relevent
+#   ## Parametrers of the EM if relevant
 #   if (estimate) {
 #     TolParams <- "" # catch.TolParams(params_algo_EM)
 #     EstimParams <- paste(TolParams, "_process-used=", params_algo_EM$process, "_met-variance=", params_algo_EM$method.variance, "_met-init=", params_algo_EM$method.init, "_nbr-shifts=", params_algo_EM$nbr_of_shifts, sep="")
@@ -75,7 +75,7 @@
 # @process (string) : which process ?
 # @paramsSimu (list) : parameters used for th simulation
 # @paramsEstimate (list) : parameters found by an (optional) estimation from the data
-# @estimate (bool) : wether the data is issued from an estimation or a direct simulation
+# @estimate (bool) : whether the data is issued from an estimation or a direct simulation
 # @directory (string) : where to store the plot
 # @...
 # RETURNS:
@@ -114,30 +114,30 @@
 #     dev.off()
 # }
 
-plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, shifts_bg = "chocolate4", root_bg = "chocolate4", quant.root = 0.25, ...){
-  ntaxa <- length(phylo$tip.label)
-  if (normalize){
-    norm <- mean(abs(Y.state))
-  } else {
-    norm <- 1
-  }
-  ## Plot
-  par(mar = c(0,0,0,0), omi = c(0,0,0,0))
-  # Take care of the root
-  phylo$root.edge <- quantile(phylo$edge.length, quant.root)
-  plot(phylo, show.tip.label = FALSE, root.edge = TRUE, ...)
-  tiplabels(pch = 19, cex = abs(Y.state)/norm, col = ifelse(Y.state >= 0, "orangered", "lightblue"))
-  nodelabels(pch = 19, cex = abs(Z.state)/norm, col = ifelse(Z.state >= 0, "orangered", "lightblue"))
-  my.labeller <- function(variable, value) {
-    value <- paste(variable, "==", as.character(value))
-    value <- lapply(value, function(x) parse(text = x))
-    return(value)
-  }
-  nodelabels(text = round(paramsEstimate$optimal.value, 2), node=ntaxa + 1, bg=root_bg, cex = 1, adj = adj)
-  if ( !is.null(paramsEstimate$shifts$edges) ) {
-    edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg = shifts_bg, cex = 1)
-  }
-}
+# plot.process.actual <- function(Y.state, Z.state, phylo, paramsEstimate, normalize = TRUE, adj = 1, shifts_bg = "chocolate4", root_bg = "chocolate4", quant.root = 0.25, ...){
+#   ntaxa <- length(phylo$tip.label)
+#   if (normalize){
+#     norm <- mean(abs(Y.state))
+#   } else {
+#     norm <- 1
+#   }
+#   ## Plot
+#   par(mar = c(0,0,0,0), omi = c(0,0,0,0))
+#   # Take care of the root
+#   phylo$root.edge <- quantile(phylo$edge.length, quant.root)
+#   plot(phylo, show.tip.label = FALSE, root.edge = TRUE, ...)
+#   tiplabels(pch = 19, cex = abs(Y.state)/norm, col = ifelse(Y.state >= 0, "orangered", "lightblue"))
+#   nodelabels(pch = 19, cex = abs(Z.state)/norm, col = ifelse(Z.state >= 0, "orangered", "lightblue"))
+#   my.labeller <- function(variable, value) {
+#     value <- paste(variable, "==", as.character(value))
+#     value <- lapply(value, function(x) parse(text = x))
+#     return(value)
+#   }
+#   nodelabels(text = round(paramsEstimate$optimal.value, 2), node=ntaxa + 1, bg=root_bg, cex = 1, adj = adj)
+#   if ( !is.null(paramsEstimate$shifts$edges) ) {
+#     edgelabels(text=round(paramsEstimate$shifts$values,2), edge=paramsEstimate$shifts$edges, bg = shifts_bg, cex = 1)
+#   }
+# }
 
 ## add a parameter frac to deplace the position of the label on the edge
 edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
@@ -185,29 +185,29 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #'
 #' @description
 #' This function takes an object of class \code{PhyloEM}, result of function
-#' \code{\link{PhyloEM}}, and plots the result of the inferrence.
+#' \code{\link{PhyloEM}}, and plots the result of the inference.
 #'
 #' @param x an object of class \code{PhyloEM}, result of function
 #' \code{\link{PhyloEM}}.
 #' @param traits a vector of integers giving the numbers of the trait to be plotted.
 #' Default to 1:p (all the traits).
-#' @param params (optional) sume user-specifed parameters.
+#' @param params (optional) some user-specified parameters.
 #' Must be of class \code{\link{params_process}}. If left blank, there are extracted
 #' using the \code{method.selection} argument (see below).
 #' @param method.selection select the parameters to plot. One of "LINselect", "DDSE",
 #' "Djump". Default to "LINselect". See
 #' \code{\link{params_process.PhyloEM}}.
 #' @param automatic_colors whether to color the edges automatically according to
-#' their regimes. Default to TRUE. If FALSE, colors can be mannually precised through
+#' their regimes. Default to TRUE. If FALSE, colors can be manually specified through
 #' arguments \code{color_characters} and \code{colro_edges} (see below).
 #' @param color_characters if \code{automatic_colors=FALSE}, a vector of colors for
 #' the tips of the tree.
 #' @param color_edges if \code{automatic_colors=FALSE}, a vector of colors for the
 #' edges of the tree.
-#' @param plot_ancestral_states whether to plot the ancestral traits inffered at the
+#' @param plot_ancestral_states whether to plot the ancestral traits inferred at the
 #' internal nodes of the tree. Only available if only one trait is plotted. Default
 #' to FALSE.
-#' @param imposed_scale if \code{plot_ancestral_states=TRUE}, a vector precising the
+#' @param imposed_scale if \code{plot_ancestral_states=TRUE}, a vector specifying the
 #' imposed scale for the ancestral states plotting. Useful to make comparisons.
 #' Default to the plotted trait.
 #' @param ancestral_cex if \code{plot_ancestral_states=TRUE}, the size of the
@@ -225,9 +225,9 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' Default to 0.8.
 #' @param shifts_bg if \code{value_in_box=TRUE}, the background color of the boxes.
 #' @param root_bg if \code{value_in_box=TRUE} and \code{ancestral_as_shift=TRUE},
-#' the background color of the ancestral boxe.
+#' the background color of the ancestral box.
 #' @param shifts_adj the adj parameter for the shifts position on the edges. Default
-#' to 0 (begining of the edge).
+#' to 0 (beginning of the edge).
 #' @param root_adj if \code{ancestral_as_shift=TRUE}, the adj parameter for the
 #' ancestral value position on the root edge. Default to 1.
 #' @param color_shifts_regimes whether to color each shift according to its regime
@@ -311,7 +311,7 @@ plot.PhyloEM <- function(x,
       stop("The user specified parameters must be of class 'params_process'.")
     }
   }
-  # If on trait, select relevent quantities
+  # If on trait, select relevant quantities
   if (length(traits) == 1){
     if (length(as.vector(params$selection.strength)) == 0) params$selection.strength <- 0
     if (length(as.vector(params$selection.strength)) == 1){
@@ -611,7 +611,8 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                             digits = 2, prompt = FALSE,
                             lwd = 4, outline = TRUE,
                             x = 0,
-                            y = 0.8 * par()$usr[3])
+                            y = 0.8 * par()$usr[3],
+                            subtitle = "")
   }
   ## Plot beta_0
   if (value_in_box){ # Write value of shift in the box
@@ -796,7 +797,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
 # PARAMETERS:
 # @params_algo_EM (list) : parameters of the EM algorithm used
 # RETURNS:
-# (string) string containing all the informations on the parameters used for the tolerence of the parameters in the estimation
+# (string) string containing all the informations on the parameters used for the tolerance of the parameters in the estimation
 # DEPENDENCIES:
 # none
 # PURPOSE:

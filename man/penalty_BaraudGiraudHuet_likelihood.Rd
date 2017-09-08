@@ -9,7 +9,7 @@ penalty_BaraudGiraudHuet_likelihood(K, model_complexity, ntaxa, C = 1.1)
 \arguments{
 \item{K}{the dimension of the model.}
 
-\item{model_complexity}{the complexity of the set of models with dimention K.}
+\item{model_complexity}{the complexity of the set of models with dimension K.}
 
 \item{ntaxa}{the number of tips.}
 
@@ -28,7 +28,7 @@ such that sum(exp(-Delta_K)) < infty.
 }
 \details{
 See Baraud Giraud Huet (2009, 2011).
-Must be applied to log-likelihood crierion.
+Must be applied to log-likelihood criterion.
 Function pen is computed using function \code{penalty} from package
 \code{LINselect}.
 }

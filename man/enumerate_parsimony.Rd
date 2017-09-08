@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsimonyNumber.R
 \name{enumerate_parsimony}
 \alias{enumerate_parsimony}
-\title{Enumerate all the possible regime allocations, given a culstering 
+\title{Enumerate all the possible regime allocations, given a clustering 
 of the tips.}
 \usage{
 enumerate_parsimony(phylo, clusters = rep(1, length(phylo$tip.label)))

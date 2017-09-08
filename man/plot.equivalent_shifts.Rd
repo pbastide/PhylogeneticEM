@@ -4,8 +4,9 @@
 \alias{plot.equivalent_shifts}
 \title{Plot all the equivalent solutions.}
 \usage{
-\method{plot}{equivalent_shifts}(x, trait = 1, numbering = FALSE,
-  colors_tips = NULL, nbr_col = 3, gray_scale = FALSE, ...)
+\method{plot}{equivalent_shifts}(x, trait = 1, show_shifts_values = TRUE,
+  numbering = FALSE, colors_tips = NULL, nbr_col = 3,
+  gray_scale = FALSE, edge.width = 2, shifts_cex = 1.2, ...)
 }
 \arguments{
 \item{x}{an object of class \code{equivalent_shifts}, result of
@@ -13,7 +14,10 @@ function \code{\link{equivalent_shifts}}}
 
 \item{trait}{(integer) the trait to be plotted, if multivariate. Default to 1.}
 
-\item{numbering}{wheter to number the solutions. Default to FALSE.}
+\item{show_shifts_values}{whether to show the equivalent shifts values or not. 
+Default to FALSE.}
+
+\item{numbering}{whether to number the solutions. Default to FALSE.}
 
 \item{colors_tips}{user-provided colors for the tips of the tree. A vector
 vector with as many colors as there are tips. Will be automatically computed
@@ -22,10 +26,15 @@ if not provided.}
 \item{nbr_col}{the number of columns on which to display the plot.
 Default to 3.}
 
-\item{gray_scale}{if TRUE, a gray scale is used instead of colors. Default to
-FALSE.}
+\item{gray_scale}{if TRUE, the colors are replaced by a gray scale.
+Default to FALSE.}
 
-\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
+\item{edge.width}{width of the edge. Default to 1.}
+
+\item{shifts_cex}{if \code{value_in_box=TRUE}, the size of the text in the boxes.
+Default to 0.8.}
+
+\item{...}{further arguments to be passed to \code{\link{plot.phylo}}.}
 }
 \value{
 A plot of the equivalent shifts allocations.

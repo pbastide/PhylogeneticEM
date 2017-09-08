@@ -49,7 +49,7 @@ NULL
 ##
 # estimateEM (phylo, Y_data, process=c("BM","OU"), tol=10^(-5),  method.variance=c("simple"), method.init=c("default"), nbr_of_shifts=0, ...)
 # PARAMETERS:
-#            @phylo (tree) imput tree
+#            @phylo (tree) input tree
 #            @Y_data (vector) : vector indicating the data at the tips
 #            @process (string) Random process to simulate. Possible values :
 #                 "BM" : Brownian Motion
@@ -143,7 +143,7 @@ NULL
 #' @param variance.init optional initialization value for the variance.
 #' @param times_shared (optional) times of shared ancestry of all nodes and tips,
 #' result of function \code{\link{compute_times_ca}}
-#' @param distances_phylo (optional) phylogenetics distances, result of function 
+#' @param distances_phylo (optional) phylogenetic distances, result of function 
 #' \code{\link{compute_dist_phy}}.
 #' @param subtree.list (optional) tips descendants of all the edges, result of
 #' function \code{\link{enumerate_tips_under_edges}}.
@@ -155,17 +155,17 @@ NULL
 #' @param F_moments (optional, internal)
 #' @param tol_half_life should the tolerance criterion be applied to the
 #' phylogenetic half life (TRUE, default) or to the raw selection strength ?
-#' @param warning_several_solutions wether to issue a warning if several equivalent
+#' @param warning_several_solutions whether to issue a warning if several equivalent
 #' solutions are found (default to TRUE).
 #' @param convergence_mode one of "relative" (the default) or "absolute". Should the
 #' tolerance be applied to the raw parameters, or to the renormalized ones ?
 #' @param check_convergence_likelihood should the likelihood be taken into
-#' consideration for convergence assesment ? (default to TRUE).
+#' consideration for convergence assessment ? (default to TRUE).
 #' @param method.OUsun Method to be used in univariate OU. One of "rescale" 
 #' (rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
 #' univariate processes).
 #' @param sBM_variance Is the root of the BM supposed to be random and
-#' "stationnary"? Used for BM equivalent computations. Default to FALSE.
+#' "stationary"? Used for BM equivalent computations. Default to FALSE.
 #' 
 #' @return
 #' An object of class \code{EstimateEM}.
@@ -256,14 +256,14 @@ estimateEM <- function(phylo,
       alpha_known &&
       !missing(known.selection.strength) && 
       (length(known.selection.strength) != p)){
-    warning("The vector of known selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+    warning("The vector of known selection strength provided has not the correct dimension (should be of length p). It will be recycled.")
     known.selection.strength <- rep(known.selection.strength, p)[1:p]
   }
   if (independent && 
       # !missing(init.selection.strength) && 
       (length(init.selection.strength) != p)){
     if (!missing(init.selection.strength)) {
-      warning("The vector of init selection strength provided has not the correct dimention (should be of length p). It will be recycled.")
+      warning("The vector of init selection strength provided has not the correct dimension (should be of length p). It will be recycled.")
     }
     init.selection.strength <- rep(init.selection.strength, p)[1:p]
   }
@@ -548,7 +548,7 @@ estimateEM <- function(phylo,
   #   CLL_history <- NULL
   number_new_shifts <- NULL
   CV_log_lik <- FALSE
-  while ( Nbr_It == 0 || # Initialisation
+  while ( Nbr_It == 0 || # initialization
           K_lag_init > 0 || 
           ( !(CV_log_lik && # CV of log-Likelihood ?
               shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
@@ -859,7 +859,7 @@ estimateEM <- function(phylo,
 #' }
 #' For the OU in the multivariate setting, two assumptions can be made:
 #' \itemize{
-#' \item Independent traits. This amounts to digonal rate and selection matrices.
+#' \item Independent traits. This amounts to diagonal rate and selection matrices.
 #' \item "Scalar OU" (scOU): the rate matrix can be full, but the selection 
 #' strength matrix is assumed to be scalar, i.e. all the traits are supposed to
 #' go to their optimum values with the same speed.
@@ -902,7 +902,7 @@ estimateEM <- function(phylo,
 #' @param method.init The initialization method. One of "lasso" for the LASSO
 #' base initialization method; or "default" for user-specified initialization
 #' values. Default to "lasso".
-#' @param method.init.alpha For OU model, initialisation method for the selection
+#' @param method.init.alpha For OU model, initialization method for the selection
 #' strength alpha. One of "estimation" for a cherry-based initialization, using
 #' \code{\link[robustbase]{nlrob}}; or "default" for user-specified 
 #' initialization values. Default to "estimation".
@@ -916,51 +916,54 @@ estimateEM <- function(phylo,
 #' candidate shifts positions. Choices among "lasso" for a LASSO-based algorithm;
 #' and "best_single_move" for a one-move at a time based heuristic. Default to 
 #' both of them. Using only "lasso" might speed up the function a lot.
-#' @param alpha_grid Wether to use a grid for alpha values. Default to TRUE. This
+#' @param alpha_grid whether to use a grid for alpha values. Default to TRUE. This
 #' is the only available method for scOU. This method is not available for OU with
 #' multivariate traits. OU with univariate traits can take both TRUE or FALSE. If
 #' TRUE, a grid based on the branch length of the tree is automatically computed,
 #' using function \code{\link{find_grid_alpha}}.
 #' @param nbr_alpha If \code{alpha_grid=TRUE}, the number of alpha values on the
 #' grid. Default to 10.
-#' @param random.root Wether the root is assumed to be random (TRUE) of fixed
+#' @param random.root whether the root is assumed to be random (TRUE) of fixed
 #' (FALSE). Default to TRUE
-#' @param stationary.root Wether the root is assumed to be in the stationnary 
+#' @param stationary.root whether the root is assumed to be in the stationary 
 #' state. Default to TRUE.
 #' @param alpha If the estimation is done with a fixed alpha (either known, or
 #' on a grid), the possible value for alpha. Default to NULL.
-#' @param check.tips.names Wether to check the tips names of the tree against
+#' @param check.tips.names whether to check the tips names of the tree against
 #' the column names of the data. Default to TRUE.
-#' @param progress.bar Wether to display a progress bar of the computations.
+#' @param progress.bar whether to display a progress bar of the computations.
 #' Default to TRUE.
 #' @param estimates The result of a previous run of this same function. This
 #' function can be re-run for other model election method. Default to NULL.
-#' @param save_step If alpha_grid=TRUE, wether to save the intermediate results
+#' @param save_step If alpha_grid=TRUE, whether to save the intermediate results
 #' for each value of alpha (in a temporary file). Useful for long computations.
 #' Default to FALSE.
 # @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
 # Default to FALSE.
 # @param method.OUsun DEPRECATED. Method to be used in univariate OU.
-#' @param parallel_alpha If alpha_grid=TRUE, wether to run the 
+#' @param parallel_alpha If alpha_grid=TRUE, whether to run the 
 #' estimations with different values of alpha on separate cores. Default to 
 #' FALSE. If TRUE, the log is written as a temporary file.
 #' @param Ncores If parallel_alpha=TRUE, number of cores to be used.
 # @param exportFunctions DEPRECATED. TO BE REMOVED.
-#' @param impute_init_Rphylopars Wether to use 
+#' @param impute_init_Rphylopars whether to use 
 #' \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
 #' Default to FALSE.
 #' @param K_lag_init Number of extra shifts to be considered at the initialization
 #' step. Increases the accuracy, but can make computations quite slow of taken
 #' too high. Default to 5.
-#' @param light_result if TRUE (the default), the object returned is enlighted,
-#' without easilly computatble quantities. If FALSE, the object can be very heavy, but
+#' @param light_result if TRUE (the default), the object returned is made light,
+#' without easily computable quantities. If FALSE, the object can be very heavy, but
 #' its subsequent manipulations can be faster (especially for plotting).
+#' @param tol_tree tolerance to consider a branch length significantly greater than zero, or
+#' two lineages lengths to be different, when checking for ultrametry. 
+#' (Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
-#' tolerance parameters for stopping criterions, maximal number of iterations, etc.
+#' tolerance parameters for stopping criteria, maximal number of iterations, etc.
 #' 
 #' 
 #' @return
-#' An object of class \code{PhyloEM}. Relevent quantities can be extracted from it 
+#' An object of class \code{PhyloEM}. Relevant quantities can be extracted from it 
 #' using helper functions \code{\link{params_process.PhyloEM}},
 #' \code{\link{imputed_traits.PhyloEM}}
 #' 
@@ -1000,14 +1003,14 @@ estimateEM <- function(phylo,
 # @return summary a data frame with K_max lines, and columns:
 #    - alpha_estim the estimated selection strength
 #    - gamma_estim the estimated root variance
-#    - beta_0_estim the estimated value of root optumum
+#    - beta_0_estim the estimated value of root optimum
 #    - EM_steps number of iterations needed before convergence
 #    - DV_estim has the EM diverged ?
 #    - CV_estim has the EM converged ?
 #    - log_likelihood log likelihood of the data using the estimated parameters
-#    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+#    - mahalanobis_distance_data_mean the Mahalanobis distance between the data
 # and the estimated means at the tips
-#    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+#    - least_squares the Mahalanobis distance, renormalized by gamma^2: 
 # mahalanobis_distance_data_mean * gamma_estim.
 #    - mean_number_new_shifts the mean number of shifts that changed over the 
 # iterations of the EM
@@ -1016,7 +1019,7 @@ estimateEM <- function(phylo,
 #    - K_try the number of shifts allowed.
 #    - complexity the complexity for K_try
 #    - time the CPU time needed.
-# @return params a list of infered parameters for each EM.
+# @return params a list of inferred parameters for each EM.
 
 PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     check_postorder = TRUE,
@@ -1048,6 +1051,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     impute_init_Rphylopars = FALSE,
                     K_lag_init = 5,
                     light_result = TRUE,
+                    tol_tree = .Machine$double.eps^0.5,
                     ...){
   ## Required packages
   # library(doParallel)
@@ -1055,8 +1059,12 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   # library(ape)
   # library(glmnet) # For Lasso initialization
   # library(robustbase) # For robust fitting of alpha
-  ## Check the tree
+  ## Check the tree  ##########################################################
   if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
+  if (any(abs(phylo$edge.length) < tol_tree)){
+    stop("The tree has zero-length branches.
+         Please use `ape::di2multi` function to transform the zero-length branches into ploytomies.")
+  }
   phylo_given <- phylo
   method.variance  <- match.arg(method.variance)
   if (method.variance == "simple") check_postorder <- FALSE
@@ -1119,7 +1127,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     method.selection <- method.selection[method.selection != "BGHlsq"]
     method.selection <- method.selection[method.selection != "BGHlsqraw"]
   }
-  if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevent warnings). Please fix before carying on.")
+  if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevant warnings). Please fix before carying on.")
   
   ## Inference per se
   if (!is.null(estimates)){ # If the user already has the estimates
@@ -1261,7 +1269,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #'
 #' @description
 #' \code{params} takes an object of class \code{\link{PhyloEM}}, and returns the 
-#' infered parameters of the process.
+#' inferred parameters of the process.
 #'
 #' @param x an object of class \code{\link{PhyloEM}}
 #' @param method.selection (optional) the method selection to be used.
@@ -1271,7 +1279,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #' \code{method.selection} argument).
 #' @param alpha (optional) a value of alpha for which to retrieve the parameters. Can
 #' be an (un-ambiguous) estimation of the true value. If
-#' precised, then \code{K} must be precised too. Default to NULL (automatically
+#' specified, then \code{K} must be precised too. Default to NULL (automatically
 #' selected value, see \code{method.selection} argument).
 #' @param rBM (optional) if TRUE, and if the process is "scOU", returns the raw
 #' parameters of the BM on the re-scaled tree. Default to FALSE.
@@ -1389,7 +1397,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       res <- compute_raw_parameters(x$phylo, res) 
     }
   }
-  ## Check dimentions
+  ## Check dimensions
   tmp <- check_dimensions(x$p,
                           res$root.state,
                           res$shifts,
@@ -1436,7 +1444,7 @@ extract_params <- function(x, method, alpha_str){
 #' @param x an object of class \code{\link{PhyloEM}}.
 #' @param trait an integer giving the trait to extract. Default to 1.
 #' @param save_all if TRUE, arguments \code{where} and \code{what} are ignored, and
-#' all the moments are kept for further extraction with the same function, precising
+#' all the moments are kept for further extraction with the same function, specifying
 #' the argument \code{reconstructed_states}. Default to FALSE.
 #' @param where either "nodes" for ancestral state reconstruction, or "tips" for
 #' data imputation.
@@ -1446,7 +1454,7 @@ extract_params <- function(x, method, alpha_str){
 #' One of "LINselect", "DDSE", "Djump". Default to "LINselect".
 #' @param reconstructed_states if the reconstructed states have already been
 #' computed (by a previous call of the function, with \code{save_all=TRUE}),
-#' they can be passed on here (avoids multiple computaions of the E step).
+#' they can be passed on here (avoids multiple computations of the E step).
 #' @param ... further arguments to be passed on to
 #' \code{\link{params_process.PhyloEM}}
 #' 
@@ -1590,7 +1598,7 @@ compute_ancestral_traits <- function(x,
     if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
                           attr(params, "log_likelihood"),
                           tol = .Machine$double.eps ^ 0.2))){
-      warning(paste0("For K = ", length(params$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
+      warning(paste0("For K = ", length(params$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerance of ", .Machine$double.eps ^ 0.2, "."))
       # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
     }
     res$Zhat <- temp$conditional_law_X$expectations[ , (ntaxa+1):ncol(temp$conditional_law_X$expectations), drop = FALSE]
@@ -1821,7 +1829,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     }
     ## Impute data if needed
     # if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
-    #   warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be infered. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
+    #   warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be inferred. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
     #   impute_init_Rphylopars <- TRUE
     # }
     Y_data_imp <- Y_data
@@ -1918,7 +1926,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
           if (!isTRUE(all.equal(as.vector(temp$log_likelihood_old),
                                 attr(params_scOU, "log_likelihood"),
                                 tol = .Machine$double.eps ^ 0.2))){
-            warning(paste0("For K = ", length(params_scOU$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerence of ", .Machine$double.eps ^ 0.2, "."))
+            warning(paste0("For K = ", length(params_scOU$shifts$edges), ", the log_likelihood of the transformed parameters on the er-scaled tree is different from the log_likelihood of the parameters on the original tree, with a tolerance of ", .Machine$double.eps ^ 0.2, "."))
             # stop("Something went wrong: log likelihood of supposedly equivalent parameters are not equal.")
           }
           tmpsim <- simulate_internal(phylo = original_phy,
@@ -2645,7 +2653,7 @@ return_to_original_order <- function(X, phy_o, phy_r){
 #' @title Scale the parameters back to the original process
 #'
 #' @description
-#' \code{go_back_to_original_process} takes the infered parameters with a BM
+#' \code{go_back_to_original_process} takes the inferred parameters with a BM
 #' on a rescaled tree, and gives back the equivalent parameters of the OU on 
 #' the original process.
 #'
@@ -2653,7 +2661,7 @@ return_to_original_order <- function(X, phy_o, phy_r){
 #' @param known.selection.strength: the known selection strength of the original
 #' OU.
 #' @param sBM_variance: boolean. Is the root random ?
-#' @param params: the infered parameters of the BM on the re-scaled tree.
+#' @param params: the inferred parameters of the BM on the re-scaled tree.
 #' 
 #' 
 #' @return params_scOU the equivalent parameters of the OU on the original tree.
@@ -2711,11 +2719,11 @@ compute_raw_parameters <- function (phy_original,
 #' for all values of K between 0 and K_max.
 #'
 #' @details
-#' The EM is fisrt launched for K=0, with alpha and gamma estimated. The
-#' estimated values of alpha, gamma and beta_0 found by this fisrt EM are then
-#' used as initialisation parameters for all the other runs of the EM for other
+#' The EM is first launched for K=0, with alpha and gamma estimated. The
+#' estimated values of alpha, gamma and beta_0 found by this first EM are then
+#' used as initialization parameters for all the other runs of the EM for other
 #' K.
-#' The EMs are parralelized thanks to packages \code{foreach} and 
+#' The EMs are parallelized thanks to packages \code{foreach} and 
 #' \code{doParallel}.
 #' WARNING : this code only work of OU with stationary root, on an ultrametric
 #' tree.
@@ -2727,14 +2735,14 @@ compute_raw_parameters <- function (phy_original,
 #' @return summary a data frame with K_max lines, and columns:
 #'    - alpha_estim the estimated selection strength
 #'    - gamma_estim the estimated root variance
-#'    - beta_0_estim the estimated value of root optumum
+#'    - beta_0_estim the estimated value of root optimum
 #'    - EM_steps number of iterations needed before convergence
 #'    - DV_estim has the EM diverged ?
 #'    - CV_estim has the EM converged ?
 #'    - log_likelihood log likelihood of the data using the estimated parameters
-#'    - mahalanobis_distance_data_mean the mahalanobis distance between the data
+#'    - mahalanobis_distance_data_mean the Mahalanobis distance between the data
 #' and the estimated means at the tips
-#'    - least_squares the mahalanobis distance, renormalized by gamma^2: 
+#'    - least_squares the Mahalanobis distance, renormalized by gamma^2: 
 #' mahalanobis_distance_data_mean * gamma_estim.
 #'    - mean_number_new_shifts the mean number of shifts that changed over the 
 #' iterations of the EM
@@ -2743,10 +2751,10 @@ compute_raw_parameters <- function (phy_original,
 #'    - K_try the number of shifts allowed.
 #'    - complexity the complexity for K_try
 #'    - time the CPU time needed.
-#' @return params a list of infered parameters
-#' @return params_init a list of initial paramters
+#' @return params a list of inferred parameters
+#' @return params_init a list of initial parameters
 #' @return alpha_0 initial values of alpha
-#' @return gmma_0 initial values of gamma
+#' @return gamma_0 initial values of gamma
 #' @return Zhat reconstructed node states
 #' @return m_Y_estim reconstructed tip states
 #' @return edge.quality for each edge, relative number of iterations in which they
@@ -2882,7 +2890,7 @@ format_output_several_K_single <- function(res_sev_K, light_result = TRUE){
 # @description
 # \code{compute_K_max} computes the quantity
 # min(floor(kappa * ntaxa / (2 + log(2) + log(ntaxa))), ntaxa - 7))
-# that is the maximal dimention allowed to get theoretical garenties during
+# that is the maximal dimension allowed to get theoretical garenties during
 # the selection model, when using the procedure defined by Baraud et al (2009)
 # 
 # @details

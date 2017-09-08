@@ -18,9 +18,9 @@ var.root : if random, variance of the character at the root (pxp matrix)}
 \value{
 paramSimu Array p x nNodes x 2 (BM), filled with NAs.
 Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated
-states and root expectarions for all the traits.
+states and root expectations for all the traits.
 }
 \description{
-Function used in \code{\link{simulate}} for BM initialisation.
+Function used in \code{\link{simulate}} for BM initialization.
 }
 \keyword{internal}

@@ -12,12 +12,12 @@ params_process(x, ...)
 \item{...}{further arguments to be passed to the specific method.}
 }
 \value{
-An S3 object of class \code{params_process}. This is essencially a list containing the following entries:
+An S3 object of class \code{params_process}. This is essentially a list containing the following entries:
 \describe{
 \item{process}{The model used. One of "BM" (for a full BM
 model, univariate or multivariate); "OU" (for a full OU model, univariate or
 multivariate); or "scOU" (for a "scalar OU" model).}
-\item{p}{Dimention of the trait.}
+\item{p}{Dimension of the trait.}
 \item{root.state}{List describing the state of the root, with:
 \describe{
  \item{random}{random state (TRUE) or deterministic state (FALSE)}
@@ -30,7 +30,7 @@ multivariate); or "scOU" (for a "scalar OU" model).}
  \item{edges}{vector of the K id of edges where the shifts are}
  \item{values}{matrix p x K of values of the shifts on the edges
   (one column = one shift)}
- \item{relativeTimes}{vector of dimension K of relative time of the shift from the parentnode of edges}
+ \item{relativeTimes}{vector of dimension K of relative time of the shift from the parent node of edges}
  }}
 \item{variance}{Variance-covariance matrix size p x p.}
 \item{selection.strength}{Matrix of selection strength size p x p (OU).}
