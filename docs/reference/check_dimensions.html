@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -92,7 +93,7 @@ If wrong, throw an error.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>p</th>
-      <td><p>dimention of the trait simulated</p></td>
+      <td><p>dimension of the trait simulated</p></td>
     </tr>
     <tr>
       <th>root.state</th>
@@ -108,19 +109,19 @@ var.root : if random, variance of the character at the root</p></td>
 edges : vector of the K id of edges where the shifts are
 values : matrix p x K of values of the shifts on the edges (one column = one shift)
 relativeTimes : vector of dimension K of relative time of the shift from the
-parentnode of edges</p></td>
+parent node of edges</p></td>
     </tr>
     <tr>
       <th>variance</th>
       <td><p>variance-covariance matrix size p x p</p></td>
     </tr>
     <tr>
-      <th>optimal.value</th>
-      <td><p>vector of p optimal values at the root (OU)</p></td>
+      <th>selection.strength</th>
+      <td><p>matrix of selection strength size p x p (OU)</p></td>
     </tr>
     <tr>
-      <th>selection.strenght</th>
-      <td><p>matrix of selection strength size p x p (OU)</p></td>
+      <th>optimal.value</th>
+      <td><p>vector of p optimal values at the root (OU)</p></td>
     </tr>
     </table>
     

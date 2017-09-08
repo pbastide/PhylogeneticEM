@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -106,7 +107,7 @@ multivariate); or "scOU" (for a "scalar OU" model).</p></td>
     </tr>
     <tr>
       <th>p</th>
-      <td><p>Dimention of the simulated trait</p></td>
+      <td><p>Dimension of the simulated trait</p></td>
     </tr>
     <tr>
       <th>root.state</th>
@@ -123,7 +124,7 @@ multivariate); or "scOU" (for a "scalar OU" model).</p></td>
  <dt>edges</dt><dd><p>vector of the K id of edges where the shifts are</p></dd>
  <dt>values</dt><dd><p>matrix p x K of values of the shifts on the edges
   (one column = one shift)</p></dd>
- <dt>relativeTimes</dt><dd><p>vector of dimension K of relative time of the shift from the parentnode of edges</p></dd>
+ <dt>relativeTimes</dt><dd><p>vector of dimension K of relative time of the shift from the parent node of edges</p></dd>
  </dl></td>
     </tr>
     <tr>
@@ -160,19 +161,19 @@ to TRUE.</p></td>
     <tr>
       <th>times_shared</th>
       <td><p>optional, times of shared ancestry of all nodes and tips,
-result of function <code><a href='compute_times_ca.html'>compute_times_ca</a></code>. Can be precised to avoid extra
+result of function <code><a href='compute_times_ca.html'>compute_times_ca</a></code>. Can be specified to avoid extra
 computations.</p></td>
     </tr>
     <tr>
       <th>df</th>
       <td><p>if the process is "StudentOU", the number of degree of freedom of
-the choosen student law. default to 1.</p></td>
+the chosen student law. default to 1.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>paramSimu An array with dimentions p x nNodes x 2 (BM)
+    <p>paramSimu An array with dimensions p x nNodes x 2 (BM)
  or p x nNodes x 3 (OU). For each trait t, 1 &lt;= t &lt;= p, paramSimu[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.</p>

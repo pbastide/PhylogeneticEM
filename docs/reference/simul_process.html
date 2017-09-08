@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -123,12 +124,12 @@ to TRUE.</p></td>
     <tr>
       <th>U_tree</th>
       <td><p>optional, full incidence matrix of the tree, result of function
-<code><a href='incidence.matrix.full.html'>incidence.matrix.full</a></code>. Can be precised to avoid extra computations.</p></td>
+<code><a href='incidence.matrix.full.html'>incidence.matrix.full</a></code>. Can be specified to avoid extra computations.</p></td>
     </tr>
     <tr>
       <th>times_shared</th>
       <td><p>optional, times of shared ancestry of all nodes and tips,
-result of function <code><a href='compute_times_ca.html'>compute_times_ca</a></code>. Can be precised to avoid extra
+result of function <code><a href='compute_times_ca.html'>compute_times_ca</a></code>. Can be specified to avoid extra
 computations.</p></td>
     </tr>
     </table>
@@ -136,7 +137,7 @@ computations.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>An S3 object of class <code>simul_process</code>. This contains:</p><dl class='dl-horizontal'>
- <dt>sim_traits</dt><dd><p>an array with dimentions p x nNodes x 2 (BM)
+ <dt>sim_traits</dt><dd><p>an array with dimensions p x nNodes x 2 (BM)
  or p x nNodes x 3 (OU). For each trait t, 1 &lt;= t &lt;= p, sim_traits[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.</p></dd>

@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -99,7 +100,7 @@ This function can handle missing data.</p>
   <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>progress.bar</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>estimates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>save_step</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>impute_init_Rphylopars</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>5</span>,
-  <span class='kw'>light_result</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>light_result</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>tol_tree</span> <span class='kw'>=</span> <span class='no'>.Machine</span>$<span class='no'>double.eps</span>^<span class='fl'>0.5</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -184,7 +185,7 @@ values. Default to "lasso".</p></td>
     </tr>
     <tr>
       <th>method.init.alpha</th>
-      <td><p>For OU model, initialisation method for the selection
+      <td><p>For OU model, initialization method for the selection
 strength alpha. One of "estimation" for a cherry-based initialization, using
 <code><a href='http://www.rdocumentation.org/packages/robustbase/topics/nlrob'>nlrob</a></code>; or "default" for user-specified 
 initialization values. Default to "estimation".</p></td>
@@ -207,7 +208,7 @@ both of them. Using only "lasso" might speed up the function a lot.</p></td>
     </tr>
     <tr>
       <th>alpha_grid</th>
-      <td><p>Wether to use a grid for alpha values. Default to TRUE. This
+      <td><p>whether to use a grid for alpha values. Default to TRUE. This
 is the only available method for scOU. This method is not available for OU with
 multivariate traits. OU with univariate traits can take both TRUE or FALSE. If
 TRUE, a grid based on the branch length of the tree is automatically computed,
@@ -220,12 +221,12 @@ grid. Default to 10.</p></td>
     </tr>
     <tr>
       <th>random.root</th>
-      <td><p>Wether the root is assumed to be random (TRUE) of fixed
+      <td><p>whether the root is assumed to be random (TRUE) of fixed
 (FALSE). Default to TRUE</p></td>
     </tr>
     <tr>
       <th>stationary.root</th>
-      <td><p>Wether the root is assumed to be in the stationnary 
+      <td><p>whether the root is assumed to be in the stationary 
 state. Default to TRUE.</p></td>
     </tr>
     <tr>
@@ -235,12 +236,12 @@ on a grid), the possible value for alpha. Default to NULL.</p></td>
     </tr>
     <tr>
       <th>check.tips.names</th>
-      <td><p>Wether to check the tips names of the tree against
+      <td><p>whether to check the tips names of the tree against
 the column names of the data. Default to TRUE.</p></td>
     </tr>
     <tr>
       <th>progress.bar</th>
-      <td><p>Wether to display a progress bar of the computations.
+      <td><p>whether to display a progress bar of the computations.
 Default to TRUE.</p></td>
     </tr>
     <tr>
@@ -250,13 +251,13 @@ function can be re-run for other model election method. Default to NULL.</p></td
     </tr>
     <tr>
       <th>save_step</th>
-      <td><p>If alpha_grid=TRUE, wether to save the intermediate results
+      <td><p>If alpha_grid=TRUE, whether to save the intermediate results
 for each value of alpha (in a temporary file). Useful for long computations.
 Default to FALSE.</p></td>
     </tr>
     <tr>
       <th>parallel_alpha</th>
-      <td><p>If alpha_grid=TRUE, wether to run the 
+      <td><p>If alpha_grid=TRUE, whether to run the 
 estimations with different values of alpha on separate cores. Default to 
 FALSE. If TRUE, the log is written as a temporary file.</p></td>
     </tr>
@@ -266,7 +267,7 @@ FALSE. If TRUE, the log is written as a temporary file.</p></td>
     </tr>
     <tr>
       <th>impute_init_Rphylopars</th>
-      <td><p>Wether to use 
+      <td><p>whether to use 
 <code><a href='http://www.rdocumentation.org/packages/Rphylopars/topics/Rphylopars-package'>Rphylopars-package</a></code> for initialization. 
 Default to FALSE.</p></td>
     </tr>
@@ -278,20 +279,26 @@ too high. Default to 5.</p></td>
     </tr>
     <tr>
       <th>light_result</th>
-      <td><p>if TRUE (the default), the object returned is enlighted,
-without easilly computatble quantities. If FALSE, the object can be very heavy, but
+      <td><p>if TRUE (the default), the object returned is made light,
+without easily computable quantities. If FALSE, the object can be very heavy, but
 its subsequent manipulations can be faster (especially for plotting).</p></td>
+    </tr>
+    <tr>
+      <th>tol_tree</th>
+      <td><p>tolerance to consider a branch length significantly greater than zero, or
+two lineages lengths to be different, when checking for ultrametry. 
+(Default to .Machine$double.eps^0.5). See <code>is.ultrametric</code> and <code>di2multi</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
       <td><p>Further arguments to be passed to <code><a href='estimateEM.html'>estimateEM</a></code>, including
-tolerance parameters for stopping criterions, maximal number of iterations, etc.</p></td>
+tolerance parameters for stopping criteria, maximal number of iterations, etc.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class <code>PhyloEM</code>. Relevent quantities can be extracted from it 
+    <p>An object of class <code>PhyloEM</code>. Relevant quantities can be extracted from it 
 using helper functions <code><a href='params_process.PhyloEM.html'>params_process.PhyloEM</a></code>,
 <code><a href='imputed_traits.html'>imputed_traits.PhyloEM</a></code></p>
     
@@ -301,7 +308,7 @@ using helper functions <code><a href='params_process.PhyloEM.html'>params_proces
 <li><p>BM with fixed root, univariate or multivariate.</p></li>
 <li><p>OU with fixed or stationary root, univariate or multivariate.</p></li>
 </ul><p>For the OU in the multivariate setting, two assumptions can be made:</p><ul>
-<li><p>Independent traits. This amounts to digonal rate and selection matrices.</p></li>
+<li><p>Independent traits. This amounts to diagonal rate and selection matrices.</p></li>
 <li><p>"Scalar OU" (scOU): the rate matrix can be full, but the selection 
 strength matrix is assumed to be scalar, i.e. all the traits are supposed to
 go to their optimum values with the same speed.</p></li>
@@ -314,31 +321,32 @@ go to their optimum values with the same speed.</p></li>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>not_run</span>({
-  <span class='co'>## Load Data</span>
-  <span class='fu'>data</span>(<span class='no'>monkeys</span>)
-  <span class='co'>## Run method</span>
-  <span class='co'># Note: use more alpha values for better results.</span>
-  <span class='no'>res</span> <span class='kw'>&lt;-</span> <span class='fu'>PhyloEM</span>(<span class='kw'>Y_data</span> <span class='kw'>=</span> <span class='no'>monkeys</span>$<span class='no'>dat</span>,        <span class='co'>## data</span>
-                 <span class='kw'>phylo</span> <span class='kw'>=</span> <span class='no'>monkeys</span>$<span class='no'>phy</span>,         <span class='co'>## phylogeny</span>
-                 <span class='kw'>process</span> <span class='kw'>=</span> <span class='st'>"scOU"</span>,            <span class='co'>## scalar OU</span>
-                 <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,          <span class='co'>## root is stationary</span>
-                 <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                 <span class='kw'>K_max</span> <span class='kw'>=</span> <span class='fl'>10</span>,                  <span class='co'>## maximal number of shifts</span>
-                 <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>4</span>,               <span class='co'>## number of alpha values</span>
-                 <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,       <span class='co'>## parallelize on alpha values</span>
-                 <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
-  <span class='co'>## Plot selected solution (LINselect)</span>
-  <span class='fu'>plot</span>(<span class='no'>res</span>) <span class='co'># three shifts</span>
-  <span class='co'>## Plot selected solution (DDSE)</span>
-  <span class='fu'>plot</span>(<span class='no'>res</span>, <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='st'>"DDSE"</span>) <span class='co'># no shift</span>
-  <span class='co'>## Extract and solution with 5 shifts</span>
-  <span class='no'>params_5</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='params_process.html'>params_process</a></span>(<span class='no'>res</span>, <span class='kw'>K</span> <span class='kw'>=</span> <span class='fl'>5</span>)
-  <span class='fu'>plot</span>(<span class='no'>res</span>, <span class='kw'>params</span> <span class='kw'>=</span> <span class='no'>params_5</span>)
-  <span class='co'>## Show all equivalent solutions</span>
-  <span class='no'>eq_sol</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='equivalent_shifts.html'>equivalent_shifts</a></span>(<span class='no'>monkeys</span>$<span class='no'>phy</span>, <span class='no'>params_5</span>)
-  <span class='fu'>plot</span>(<span class='no'>eq_sol</span>)
-})</div></pre>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='co'>## Load Data</span>
+<span class='fu'>data</span>(<span class='no'>monkeys</span>)
+<span class='co'>## Run method</span>
+<span class='co'># Note: use more alpha values for better results.</span>
+<span class='no'>res</span> <span class='kw'>&lt;-</span> <span class='fu'>PhyloEM</span>(<span class='kw'>Y_data</span> <span class='kw'>=</span> <span class='no'>monkeys</span>$<span class='no'>dat</span>,        <span class='co'>## data</span>
+               <span class='kw'>phylo</span> <span class='kw'>=</span> <span class='no'>monkeys</span>$<span class='no'>phy</span>,         <span class='co'>## phylogeny</span>
+               <span class='kw'>process</span> <span class='kw'>=</span> <span class='st'>"scOU"</span>,            <span class='co'>## scalar OU</span>
+               <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,          <span class='co'>## root is stationary</span>
+               <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+               <span class='kw'>K_max</span> <span class='kw'>=</span> <span class='fl'>10</span>,                  <span class='co'>## maximal number of shifts</span>
+               <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>4</span>,               <span class='co'>## number of alpha values</span>
+               <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,       <span class='co'>## parallelize on alpha values</span>
+               <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+<span class='co'>## Plot selected solution (LINselect)</span>
+<span class='fu'>plot</span>(<span class='no'>res</span>) <span class='co'># three shifts</span>
+<span class='co'>## Plot selected solution (DDSE)</span>
+<span class='fu'>plot</span>(<span class='no'>res</span>, <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='st'>"DDSE"</span>) <span class='co'># no shift</span>
+<span class='co'>## Extract and solution with 5 shifts</span>
+<span class='no'>params_5</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='params_process.html'>params_process</a></span>(<span class='no'>res</span>, <span class='kw'>K</span> <span class='kw'>=</span> <span class='fl'>5</span>)
+<span class='fu'>plot</span>(<span class='no'>res</span>, <span class='kw'>params</span> <span class='kw'>=</span> <span class='no'>params_5</span>)
+<span class='co'>## Show all equivalent solutions</span>
+<span class='no'>eq_sol</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='equivalent_shifts.html'>equivalent_shifts</a></span>(<span class='no'>monkeys</span>$<span class='no'>phy</span>, <span class='no'>params_5</span>)
+<span class='fu'>plot</span>(<span class='no'>eq_sol</span>)
+<span class='co'># }</span><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

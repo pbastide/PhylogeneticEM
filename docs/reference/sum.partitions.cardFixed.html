@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -92,18 +93,18 @@ fixed, of the sums computed by <code>sum.prod.comb</code>.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>A</th>
-      <td><p>a martix with p rows and K column. Each row contains the number of
-marqued partition in 1&lt;=k&lt;=K groups for one of the p children of a
+      <td><p>a matrix with p rows and K column. Each row contains the number of
+marked partition in 1&lt;=k&lt;=K groups for one of the p children of a
 given node.</p></td>
     </tr>
     <tr>
       <th>N</th>
-      <td><p>a martix with p rows and K column. Each row contains the number of
+      <td><p>a matrix with p rows and K column. Each row contains the number of
 partition in 1&lt;=k&lt;=K groups for one of the p children of a given node</p></td>
     </tr>
     <tr>
       <th>K</th>
-      <td><p>an integer. Tne number of groups wanted.</p></td>
+      <td><p>an integer. The number of groups wanted.</p></td>
     </tr>
     <tr>
       <th>p</th>
@@ -121,7 +122,7 @@ partition in 1&lt;=k&lt;=K groups for one of the p children of a given node</p><
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This function uses <code>combn</code> to enumarate all the subsets I of [1,p] of
+    <p>This function uses <code>combn</code> to enumerate all the subsets I of [1,p] of
 a given cardinal, and then performs the wanted sum on these subsets.</p>
     
 

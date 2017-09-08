@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -105,7 +106,7 @@ in one single cluster.</p></td>
 
     <p>an object of S3 class "<code>parsimonyNumber</code>" with:</p><dl class='dl-horizontal'>
  <dt>nbrReconstructions</dt><dd><p>a (ntaxa + nNodes) x (nclus)
- matrix of loccaly parsimonious solutions starting from a cluster k at a
+ matrix of locally parsimonious solutions starting from a cluster k at a
  given node</p></dd>
  <dt>costReconstructions</dt><dd><p>an object of class "<code>parsimonyCost</code>",
  result of function <code><a href='parsimonyCost.html'>parsimonyCost</a></code>.</p></dd>
@@ -115,7 +116,7 @@ in one single cluster.</p></td>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>This function does a recursion up the tree.
-The function <code><a href='extract.parsimonyNumber.html'>extract.parsimonyNumber</a></code> gives the result seeked for
+The function <code><a href='extract.parsimonyNumber.html'>extract.parsimonyNumber</a></code> gives the result sought for
 any subtree.
 The matrix of costs of the states (number of shifts) is also required, it is
 computed by function <code><a href='parsimonyCost.html'>parsimonyCost</a></code>.</p>
@@ -129,7 +130,7 @@ computed by function <code><a href='parsimonyCost.html'>parsimonyCost</a></code>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='no'>tree</span> <span class='kw'>&lt;-</span> <span class='fu'>read.tree</span>(<span class='kw'>text</span><span class='kw'>=</span><span class='st'>"(((0,1),2),2);"</span>)
-<span class='fu'>plot</span>(<span class='no'>tree</span>); <span class='fu'>nodelabels</span>()</div><img src='parsimonyNumber-2.png' alt='' width='540' height='400' /><div class='input'><span class='no'>clusters</span> <span class='kw'>&lt;-</span> <span class='fu'>c</span>(<span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>2</span>)
+<span class='fu'>plot</span>(<span class='no'>tree</span>); <span class='fu'>nodelabels</span>()</div><div class='img'><img src='parsimonyNumber-2.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='no'>clusters</span> <span class='kw'>&lt;-</span> <span class='fu'>c</span>(<span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>2</span>)
 <span class='no'>n_sols</span> <span class='kw'>&lt;-</span> <span class='fu'>parsimonyNumber</span>(<span class='no'>tree</span>, <span class='no'>clusters</span>)
 <span class='no'>n_sols</span></div><div class='output co'>#&gt; 
 #&gt; Number of parsimonious solutions: 3.

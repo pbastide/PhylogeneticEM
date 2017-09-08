@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Initialisation of the shifts using Lasso. — init.EM.lasso • PhylogeneticEM</title>
+<title>Initialization of the shifts using Lasso. — init.EM.lasso • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -76,14 +77,14 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Initialisation of the shifts using Lasso.</h1>
+    <h1>Initialization of the shifts using Lasso.</h1>
     </div>
 
     
     <p><code>init.EM.lasso</code> does the following regression :
 ||Y_data-T.delta||_(Sigma_YY^(-1)) + lambda |delta|_1
-using the function <code>glmnet::glmnet</code> of package <code>glmnet</code>,
-throught function <code>lasso_regression_K_fixed</code>. 
+using the function <code><a href='http://www.rdocumentation.org/packages/glmnet/topics/glmnet'>glmnet::glmnet</a></code> of package <code>glmnet</code>,
+through function <code>lasso_regression_K_fixed</code>. 
 T is the incidence matrix of the tree, and 
 delta the vectorial representation of the shifts (see functions 
 <code>incidence.matrix</code> and <code>shifts.list_to_vector</code> for further details).</p>
@@ -116,7 +117,7 @@ delta the vectorial representation of the shifts (see functions
     </tr>
     <tr>
       <th>distances_phylo</th>
-      <td><p>(matrix) : phylogenetics distance, result of function 
+      <td><p>(matrix) : phylogenetic distance, result of function 
 <code>compute_dist_phy</code></p></td>
     </tr>
     <tr>
@@ -132,8 +133,8 @@ delta the vectorial representation of the shifts (see functions
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>A cholesky decomposition of function Sigma_YY^(-1) is used.
-lambda is choosen so that delta has the right number of non zero components.</p>
+    <p>A Cholesky decomposition of function Sigma_YY^(-1) is used.
+lambda is chosen so that delta has the right number of non zero components.</p>
     
 
   </div>

@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -86,7 +87,7 @@ given sub-tree, either marked or non-marked.</p>
 
     <pre class="usage"><span class='co'># S3 method for partitionsNumber</span>
 <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>x</span>, <span class='kw'>node</span> <span class='kw'>=</span> <span class='fu'>attr</span>(<span class='no'>x</span>, <span class='st'>"ntaxa"</span>) + <span class='fl'>1</span>,
-  <span class='kw'>npart</span> <span class='kw'>=</span> <span class='fu'>attr</span>(<span class='no'>x</span>, <span class='st'>"npart"</span>), <span class='kw'>marqued</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>npart</span> <span class='kw'>=</span> <span class='fu'>attr</span>(<span class='no'>x</span>, <span class='st'>"npart"</span>), <span class='kw'>marked</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -108,9 +109,9 @@ Default to the value used in the call of function
 <code><a href='partitionsNumber.html'>partitionsNumber</a></code> (the maximum).</p></td>
     </tr>
     <tr>
-      <th>marqued</th>
-      <td><p>whether to extract the marqued (TRUE) or un-marqued (FALSE)
-partitions. The number of models is the number of un-marqued partitions.
+      <th>marked</th>
+      <td><p>whether to extract the marked (TRUE) or un-marked (FALSE)
+partitions. The number of models is the number of un-marked partitions.
 Default to FALSE.</p></td>
     </tr>
     <tr>
@@ -122,7 +123,7 @@ Default to FALSE.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>the number of partitions with npart colors, on the sub-tree starting
-at node, marqued or not.</p>
+at node, marked or not.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 

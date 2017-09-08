@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -81,21 +82,54 @@
     </div>
 
     <div class="contents">
+    <div id="phylogeneticem-1-1-0" class="section level1">
+<h1 class="hasAnchor">
+<a href="#phylogeneticem-1-1-0" class="anchor"></a>PhylogeneticEM 1.1.0</h1>
+<ul>
+<li>Deprecation Fix:
+<ul>
+<li>Remove dependency from gglasso (replaced with grplasso). This should not change the results of PhylogeneticEM.</li>
+</ul>
+</li>
+<li>Bug Fixes:
+<ul>
+<li>Issue an error message when the tree has some zero-length branches.</li>
+</ul>
+</li>
+<li>Minor Changes:
+<ul>
+<li>Added options to plot.equivalent_shifts.</li>
+</ul>
+</li>
+</ul>
+</div>
     <div id="phylogeneticem-1-0-1" class="section level1">
 <h1 class="hasAnchor">
 <a href="#phylogeneticem-1-0-1" class="anchor"></a>PhylogeneticEM 1.0.1</h1>
 <ul>
-<li>Minor Changes:</li>
+<li>Minor Changes:
+<ul>
 <li>Impose a maximum value for alpha in find_grid_alpha to respect machine max double.</li>
-<li>New Features</li>
+</ul>
+</li>
+<li>New Features
+<ul>
 <li>added argument <code>label_font</code> to <code>plot</code> function to control the label font.</li>
 <li>added argument <code>axis_las</code> to <code>plot</code> function to control the axis las.</li>
-<li>Bug fixes:</li>
+</ul>
+</li>
+<li>Bug fixes:
+<ul>
 <li>Plotting missing values correctly in plot.PhyloEM.</li>
 <li>Bug fixes in plotting PhyloEM object when p = 1.</li>
 <li>When p=1 and nbr_alpha is not missing, do not switch to estimated mode for alpha.</li>
-<li>Technical:</li>
+</ul>
+</li>
+<li>Technical:
+<ul>
 <li>registration of c++ code to comply with R 3.4 new standards.</li>
+</ul>
+</li>
 </ul>
 </div>
     <div id="phylogeneticem-1-0-0" class="section level1">
@@ -110,6 +144,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="#phylogeneticem-1-1-0">1.1.0</a></li>
         <li><a href="#phylogeneticem-1-0-1">1.0.1</a></li>
         <li><a href="#phylogeneticem-1-0-0">1.0.0</a></li>
       </ul>

@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -116,16 +117,16 @@
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>conditional_law_X (list) : list of conditionnal statistics :
+    <p>conditional_law_X (list) : list of conditional statistics :
                   "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
-fisrt columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
-of the nodes conditionned to the tips E[Z_j|Y]
+first columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
+of the nodes conditioned to the tips E[Z_j|Y]
                   "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
-matrices of zeros (tips) and conditional variance of the nodes conditionned to the tips 
+matrices of zeros (tips) and conditional variance of the nodes conditioned to the tips 
 Var[Z_j|Y]
                  "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
 matrices of zeros (tips) and conditional covariance of the nodes and their parents
-conditionned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
+conditioned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
                   "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
 values beta(t_j)</p>
     

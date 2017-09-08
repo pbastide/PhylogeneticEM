@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -81,7 +82,7 @@
 
     
     <p><code>equivalent_shifts_values</code> computes the values of the shifts given all
-thepossible allocations computed by function
+the possible allocations computed by function
 <code><a href='equivalent_shifts_edges.html'>equivalent_shifts_edges</a></code>.</p>
     
 
@@ -102,7 +103,7 @@ thepossible allocations computed by function
     <tr>
       <th>T_tree_ac</th>
       <td><p>matrix of incidence of the tree, result of function 
-<code><a href='incidence.matrix.html'>incidence.matrix</a></code>, actualized with coeficients computed by
+<code><a href='incidence.matrix.html'>incidence.matrix</a></code>, actualized with coefficients computed by
 function <code><a href='incidence_matrix_actualization_factors.html'>incidence_matrix_actualization_factors</a></code>.</p></td>
     </tr>
     <tr>
@@ -124,12 +125,12 @@ vector of corresponding root optimal values.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>This function uses the linear representation of the problem. It fist compute
-the mean at the tips given by the orgininal shifts positions and values, and
+the mean at the tips given by the orginal shifts positions and values, and
 then uses function <code>qr.solve</code>
-to find back the values of the shifts, givent their various positions,
+to find back the values of the shifts, given their various positions,
 and the means at the tips. Function <code>compute_actualization_factors</code> is
-used to compute the actualization factor that multipies the shifts values at
-the tips. Carefull, only work for ULTRAMETRIC trees.</p>
+used to compute the actualization factor that multiplies the shifts values at
+the tips. Careful, only works for ULTRAMETRIC trees.</p>
     
 
   </div>

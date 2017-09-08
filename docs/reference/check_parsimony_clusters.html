@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check wether an allocation of the shifts is parsimonious, 
+<title>Check whether an allocation of the shifts is parsimonious, 
 in the "infinite site model". — check_parsimony_clusters • PhylogeneticEM</title>
 
 <!-- jquery -->
@@ -24,7 +24,8 @@ in the "infinite site model". — check_parsimony_clusters • PhylogeneticEM</t
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -77,13 +78,13 @@ in the "infinite site model". — check_parsimony_clusters • PhylogeneticEM</t
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check wether an allocation of the shifts is parsimonious, 
+    <h1>Check whether an allocation of the shifts is parsimonious, 
 in the "infinite site model".</h1>
     </div>
 
     
     <p><code>check_parsimony_clusters</code> takes a vector clusters of the tips, and
-checks wether the number of groups of the tips induced by this allocation is
+checks whether the number of groups of the tips induced by this allocation is
 exactly the number of shifts plus one.</p>
     
 
@@ -109,7 +110,7 @@ function <code><a href='clusters_from_shifts.html'>clusters_from_shifts</a></cod
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This function computes explicitely the clustering of the tips, using 
+    <p>This function computes explicitly the clustering of the tips, using 
 function <code>check_parsimony</code>.
 By default, this function uses <code>enumerate_tips_under_edges</code> to compute 
 the list of tips under each edge, but a list can be provided (if many tests are done).</p>

@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -101,11 +102,11 @@
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An S3 object of class <code>params_process</code>. This is essencially a list containing the following entries:</p><dl class='dl-horizontal'>
+    <p>An S3 object of class <code>params_process</code>. This is essentially a list containing the following entries:</p><dl class='dl-horizontal'>
 <dt>process</dt><dd><p>The model used. One of "BM" (for a full BM
 model, univariate or multivariate); "OU" (for a full OU model, univariate or
 multivariate); or "scOU" (for a "scalar OU" model).</p></dd>
-<dt>p</dt><dd><p>Dimention of the trait.</p></dd>
+<dt>p</dt><dd><p>Dimension of the trait.</p></dd>
 <dt>root.state</dt><dd><p>List describing the state of the root, with:
 <dl class='dl-horizontal'>
  <dt>random</dt><dd><p>random state (TRUE) or deterministic state (FALSE)</p></dd>
@@ -118,7 +119,7 @@ multivariate); or "scOU" (for a "scalar OU" model).</p></dd>
  <dt>edges</dt><dd><p>vector of the K id of edges where the shifts are</p></dd>
  <dt>values</dt><dd><p>matrix p x K of values of the shifts on the edges
   (one column = one shift)</p></dd>
- <dt>relativeTimes</dt><dd><p>vector of dimension K of relative time of the shift from the parentnode of edges</p></dd>
+ <dt>relativeTimes</dt><dd><p>vector of dimension K of relative time of the shift from the parent node of edges</p></dd>
  </dl></p></dd>
 <dt>variance</dt><dd><p>Variance-covariance matrix size p x p.</p></dd>
 <dt>selection.strength</dt><dd><p>Matrix of selection strength size p x p (OU).</p></dd>

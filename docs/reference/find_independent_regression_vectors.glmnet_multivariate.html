@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Given a regularization path, find K selected independant variables. — find_independent_regression_vectors.glmnet_multivariate • PhylogeneticEM</title>
+<title>Given a regularization path, find K selected independent variables. — find_independent_regression_vectors.glmnet_multivariate • PhylogeneticEM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -76,12 +77,12 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Given a regularization path, find K selected independant variables.</h1>
+    <h1>Given a regularization path, find K selected independent variables.</h1>
     </div>
 
     
     <p><code>find_independent_regression_vectors</code> tries to find a situation where K variables
-are selected, so that the selected columns of matrix Xp are independant.</p>
+are selected, so that the selected columns of matrix Xp are independent.</p>
     
 
     <pre class="usage"><span class='fu'>find_independent_regression_vectors.glmnet_multivariate</span>(<span class='no'>Xp</span>, <span class='no'>K</span>, <span class='no'>fit</span>, <span class='no'>root</span>)</pre>
@@ -111,7 +112,7 @@ if no root column.</p></td>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>To do that, if a set of selected is not independent, we go back to the previous selected 
-variables, and forbid the moves that led to non-independance for the rest of the path.</p>
+variables, and forbid the moves that led to non-independence for the rest of the path.</p>
     
 
   </div>

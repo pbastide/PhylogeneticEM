@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -104,7 +105,7 @@ mean and variance matrix with parameters params_old.</p>
     </tr>
     <tr>
       <th>distances_phylo</th>
-      <td><p>(matrix) : phylogenetics distance, result of function 
+      <td><p>(matrix) : phylogenetic distance, result of function 
 <code>compute_dist_phy</code></p></td>
     </tr>
     <tr>
@@ -119,12 +120,11 @@ mean and variance matrix with parameters params_old.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>sim (list) : result of funtion <code>simulate</code> with the appropriate
+    <p>sim (list) : result of function <code>simulate</code> with the appropriate
  parameters</p>
 <p>Sigma matrix of variance covariance, result of function 
-<code>compute_variance_covariance</code>
-#@return Sigma_YY_inv inverse of vairance matrix of the data</p>
-<p>Sigma_YY_chol_inv invert of cholesky matrix of Sigma_YY:
+<code>compute_variance_covariance</code></p>
+<p>Sigma_YY_chol_inv invert of Cholesky matrix of Sigma_YY:
  (Sigma_YY)^(-1) = tcrossprod(Sigma_YY_chol_inv)</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>

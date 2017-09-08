@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Enumerate all the possible regime allocations, given a culstering 
+<title>Enumerate all the possible regime allocations, given a clustering 
 of the tips. — enumerate_parsimony • PhylogeneticEM</title>
 
 <!-- jquery -->
@@ -24,7 +24,8 @@ of the tips. — enumerate_parsimony • PhylogeneticEM</title>
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -77,7 +78,7 @@ of the tips. — enumerate_parsimony • PhylogeneticEM</title>
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Enumerate all the possible regime allocations, given a culstering 
+    <h1>Enumerate all the possible regime allocations, given a clustering 
 of the tips.</h1>
     </div>
 
@@ -134,9 +135,9 @@ the tree.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='no'>tree</span> <span class='kw'>&lt;-</span> <span class='fu'>read.tree</span>(<span class='kw'>text</span><span class='kw'>=</span><span class='st'>"(((A,B),C),D);"</span>)
-<span class='fu'>plot</span>(<span class='no'>tree</span>)</div><img src='enumerate_parsimony-2.png' alt='' width='540' height='400' /><div class='input'><span class='no'>clusters</span> <span class='kw'>&lt;-</span> <span class='fu'>c</span>(<span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>2</span>)
+<span class='fu'>plot</span>(<span class='no'>tree</span>)</div><div class='img'><img src='enumerate_parsimony-3.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='no'>clusters</span> <span class='kw'>&lt;-</span> <span class='fu'>c</span>(<span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>2</span>)
 <span class='no'>sols</span> <span class='kw'>&lt;-</span> <span class='fu'>enumerate_parsimony</span>(<span class='no'>tree</span>, <span class='no'>clusters</span>)
-<span class='fu'>plot</span>(<span class='no'>sols</span>)</div><img src='enumerate_parsimony-4.png' alt='' width='540' height='400' /><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>sols</span>)</div><div class='img'><img src='enumerate_parsimony-4.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
 <span class='co'>## Extract the parsimonious solutions from the root</span>
 <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>sols</span>) <span class='co'># each line is a solution, with states of each node</span></div><div class='output co'>#&gt;      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
 #&gt; [1,]    0    1    2    2    2    2    0

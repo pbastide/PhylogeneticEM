@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -173,7 +174,7 @@ values. Default to "lasso".</p></td>
     </tr>
     <tr>
       <th>method.init.alpha</th>
-      <td><p>For OU model, initialisation method for the selection
+      <td><p>For OU model, initialization method for the selection
 strength alpha. One of "estimation" for a cherry-based initialization, using
 <code><a href='http://www.rdocumentation.org/packages/robustbase/topics/nlrob'>nlrob</a></code>; or "default" for user-specified 
 initialization values. Default to "estimation".</p></td>
@@ -193,12 +194,12 @@ Default to all of them.</p></td>
     </tr>
     <tr>
       <th>random.root</th>
-      <td><p>Wether the root is assumed to be random (TRUE) of fixed
+      <td><p>whether the root is assumed to be random (TRUE) of fixed
 (FALSE). Default to TRUE</p></td>
     </tr>
     <tr>
       <th>stationary.root</th>
-      <td><p>Wether the root is assumed to be in the stationnary 
+      <td><p>whether the root is assumed to be in the stationary 
 state. Default to TRUE.</p></td>
     </tr>
     <tr>
@@ -277,7 +278,7 @@ both of them. Using only "lasso" might speed up the function a lot.</p></td>
     </tr>
     <tr>
       <th>check.tips.names</th>
-      <td><p>Wether to check the tips names of the tree against
+      <td><p>whether to check the tips names of the tree against
 the column names of the data. Default to TRUE.</p></td>
     </tr>
     <tr>
@@ -287,7 +288,7 @@ result of function <code><a href='compute_times_ca.html'>compute_times_ca</a></c
     </tr>
     <tr>
       <th>distances_phylo</th>
-      <td><p>(optional) phylogenetics distances, result of function 
+      <td><p>(optional) phylogenetic distances, result of function 
 <code><a href='compute_dist_phy.html'>compute_dist_phy</a></code>.</p></td>
     </tr>
     <tr>
@@ -320,7 +321,7 @@ phylogenetic half life (TRUE, default) or to the raw selection strength ?</p></t
     </tr>
     <tr>
       <th>warning_several_solutions</th>
-      <td><p>wether to issue a warning if several equivalent
+      <td><p>whether to issue a warning if several equivalent
 solutions are found (default to TRUE).</p></td>
     </tr>
     <tr>
@@ -331,12 +332,12 @@ tolerance be applied to the raw parameters, or to the renormalized ones ?</p></t
     <tr>
       <th>check_convergence_likelihood</th>
       <td><p>should the likelihood be taken into
-consideration for convergence assesment ? (default to TRUE).</p></td>
+consideration for convergence assessment ? (default to TRUE).</p></td>
     </tr>
     <tr>
       <th>sBM_variance</th>
       <td><p>Is the root of the BM supposed to be random and
-"stationnary"? Used for BM equivalent computations. Default to FALSE.</p></td>
+"stationary"? Used for BM equivalent computations. Default to FALSE.</p></td>
     </tr>
     <tr>
       <th>method.OUsun</th>
@@ -346,7 +347,7 @@ univariate processes).</p></td>
     </tr>
     <tr>
       <th>impute_init_Rphylopars</th>
-      <td><p>Wether to use 
+      <td><p>whether to use 
 <code><a href='http://www.rdocumentation.org/packages/Rphylopars/topics/Rphylopars-package'>Rphylopars-package</a></code> for initialization. 
 Default to FALSE.</p></td>
     </tr>
@@ -359,7 +360,7 @@ too high. Default to 5.</p></td>
     <tr>
       <th>...</th>
       <td><p>Further arguments to be passed to <code>estimateEM</code>, including
-tolerance parameters for stopping criterions, maximal number of iterations, etc.</p></td>
+tolerance parameters for stopping criteria, maximal number of iterations, etc.</p></td>
     </tr>
     </table>
     

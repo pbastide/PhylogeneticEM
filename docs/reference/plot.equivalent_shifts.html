@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -86,8 +87,9 @@ and a coloration of the branches in term of regimes.</p>
     
 
     <pre class="usage"><span class='co'># S3 method for equivalent_shifts</span>
-<span class='fu'>plot</span>(<span class='no'>x</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>numbering</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>colors_tips</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>nbr_col</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>gray_scale</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
+<span class='fu'>plot</span>(<span class='no'>x</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>show_shifts_values</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>numbering</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>colors_tips</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>nbr_col</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='kw'>gray_scale</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>edge.width</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>shifts_cex</span> <span class='kw'>=</span> <span class='fl'>1.2</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -102,8 +104,13 @@ function <code><a href='equivalent_shifts.html'>equivalent_shifts</a></code></p>
       <td><p>(integer) the trait to be plotted, if multivariate. Default to 1.</p></td>
     </tr>
     <tr>
+      <th>show_shifts_values</th>
+      <td><p>whether to show the equivalent shifts values or not. 
+Default to FALSE.</p></td>
+    </tr>
+    <tr>
       <th>numbering</th>
-      <td><p>wheter to number the solutions. Default to FALSE.</p></td>
+      <td><p>whether to number the solutions. Default to FALSE.</p></td>
     </tr>
     <tr>
       <th>colors_tips</th>
@@ -118,12 +125,21 @@ Default to 3.</p></td>
     </tr>
     <tr>
       <th>gray_scale</th>
-      <td><p>if TRUE, a gray scale is used instead of colors. Default to
-FALSE.</p></td>
+      <td><p>if TRUE, the colors are replaced by a gray scale.
+Default to FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>edge.width</th>
+      <td><p>width of the edge. Default to 1.</p></td>
+    </tr>
+    <tr>
+      <th>shifts_cex</th>
+      <td><p>if <code>value_in_box=TRUE</code>, the size of the text in the boxes.
+Default to 0.8.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>further arguments to be passed to <code><a href='http://www.rdocumentation.org/packages/ape/topics/plot.phylo'>plot.phylo</a></code>.</p></td>
+      <td><p>further arguments to be passed to <code>plot.phylo</code>.</p></td>
     </tr>
     </table>
     

@@ -57,7 +57,7 @@
       <h1>An Introduction to the PhylogeneticEM Package</h1>
                         <h4 class="author">Paul Bastide</h4>
             
-            <h4 class="date">2017-05-01</h4>
+            <h4 class="date">2017-09-08</h4>
           </div>
 
     
@@ -66,7 +66,7 @@
 <div id="introduction" class="section level2">
 <h2 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h2>
-<p>The <code>PhylogeneticEM</code> package is designed to automatically detect shifts in quatitative traits.</p>
+<p>The <code>PhylogeneticEM</code> package is designed to automatically detect shifts in quantitative traits.</p>
 <p>Simply load the package with:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PhylogeneticEM)</code></pre></div>
 </div>
@@ -74,7 +74,7 @@
 <h2 class="hasAnchor">
 <a href="#simulation-of-a-dataset" class="anchor"></a>Simulation of a dataset</h2>
 <p>To show how the functions work, let’s first simulate some traits with known parameters.</p>
-<p>We use function <code>sim.bd.taxa.age</code> from package <code>TreeSim</code> to simualte a phylogenetic tree.</p>
+<p>We use function <code>sim.bd.taxa.age</code> from package <code>TreeSim</code> to simulate a phylogenetic tree.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">17920902</span>)
 ntaxa =<span class="st"> </span><span class="dv">80</span>
 tree &lt;-<span class="st"> </span>TreeSim::<span class="kw">sim.bd.taxa.age</span>(<span class="dt">n =</span> ntaxa, <span class="dt">numbsim =</span> <span class="dv">1</span>, <span class="dt">lambda =</span> <span class="fl">0.1</span>, <span class="dt">mu =</span> <span class="dv">0</span>,
@@ -91,7 +91,7 @@ tree &lt;-<span class="st"> </span>TreeSim::<span class="kw">sim.bd.taxa.age</sp
                                         <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">5</span>),
                                         <span class="kw">c</span>(<span class="dv">5</span>, -<span class="dv">3</span>)))</code></pre></div>
 <p>Note that here, we took the selection strength to a scalar matrix, but we could specify a full matrix. Also, we did not specified the ancestral values of the optimum states: these are took to be <span class="math inline">\(0\)</span> by default.</p>
-<p>The position of the shifts is specified through to the number of the edge where it occurs. These can be saw using a standart <code>plot</code> fromp package <code>ape</code>. Once the parameters are constructed, we can check the position of the shifts by plotting them:</p>
+<p>The position of the shifts is specified through to the number of the edge where it occurs. These can be saw using a standard <code>plot</code> from package <code>ape</code>. Once the parameters are constructed, we can check the position of the shifts by plotting them:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(params, <span class="dt">phylo =</span> tree, <span class="dt">traits =</span> <span class="dv">1</span>, <span class="dt">value_in_box =</span> <span class="ot">TRUE</span>, <span class="dt">shifts_bg =</span> <span class="st">"white"</span>)
 <span class="kw">plot</span>(params, <span class="dt">phylo =</span> tree, <span class="dt">traits =</span> <span class="dv">2</span>, <span class="dt">value_in_box =</span> <span class="ot">TRUE</span>, <span class="dt">shifts_bg =</span> <span class="st">"white"</span>)</code></pre></div>
 <p><img src="tutorial_files/figure-html/unnamed-chunk-1-1.png" width="326.4"><img src="tutorial_files/figure-html/unnamed-chunk-1-2.png" width="326.4"></p>
@@ -169,17 +169,17 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
 ## 
 ## 
 ## See help to see all plotting and handling functions.</code></pre>
-<p>The fitted object contains the infered parameters for every values of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(K\)</span>, as well as the parameters selected by the various model selection criteria.</p>
-<p>Here, we can see that the original shifts were recovered by the model selection procedure. We can plot the obtained solution, as shown below. The infered states a the tips are shown in dotted lines. Notice that they are coherent with the positions of the shifts that we found.</p>
+<p>The fitted object contains the inferred parameters for every values of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(K\)</span>, as well as the parameters selected by the various model selection criteria.</p>
+<p>Here, we can see that the original shifts were recovered by the model selection procedure. We can plot the obtained solution, as shown below. The inferred states a the tips are shown in dotted lines. Notice that they are coherent with the positions of the shifts that we found.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res)</code></pre></div>
 <p><img src="tutorial_files/figure-html/unnamed-chunk-4-1.png" width="672"></p>
 <p>Above, we plotted the solution given by the LINselect method (the default). But we might want to see the solution given by another selection method, such as the slope heuristic. In that case, we just need to run:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">method.selection =</span> <span class="st">"DDSE"</span>))</code></pre></div>
 <p>where we extracted the parameters with the method <code>params_process</code>. Here, the results are the same.</p>
-<p>We can also extract the solution for a given number of shifts and/or a given value of alpha. For instance, we can see that in this simple case, the infered position of the shifts is robust to the value of the selection strength:</p>
+<p>We can also extract the solution for a given number of shifts and/or a given value of alpha. For instance, we can see that in this simple case, the inferred position of the shifts is robust to the value of the selection strength:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> <span class="dv">1</span>))</code></pre></div>
 <p><img src="tutorial_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
-<p>The infered shifts values however are quite different:</p>
+<p>The inferred shifts values however are quite different:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> <span class="dv">1</span>)$shifts</code></pre></div>
 <pre><code>## $edges
 ## [1] 127  89  29
@@ -206,7 +206,7 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
 <div id="equivalent-solutions" class="section level2">
 <h2 class="hasAnchor">
 <a href="#equivalent-solutions" class="anchor"></a>Equivalent Solutions</h2>
-<p>When there are too many shifts, the solutin might not be identifiable. For instance here, if we take the (degenerate) solution with <span class="math inline">\(8\)</span> shifts, we get this warning:</p>
+<p>When there are too many shifts, the solution might not be identifiable. For instance here, if we take the (degenerate) solution with <span class="math inline">\(8\)</span> shifts, we get this warning:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">params_8 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">8</span>)</code></pre></div>
 <pre><code>## Warning in params_process.PhyloEM(res, K = 8): There are several equivalent
 ## solutions for this shift position.</code></pre>
@@ -250,7 +250,8 @@ res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
         <div id="tocnav">
-      <h2>Contents</h2>
+      <h2 class="hasAnchor">
+<a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#introduction">Introduction</a></li>
       <li><a href="#simulation-of-a-dataset">Simulation of a dataset</a></li>
