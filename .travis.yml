@@ -8,4 +8,4 @@ env:
 r_packages:
   - covr
 after_success:
-  - Rscript -e 'library(covr); codecov()'
+  - travis_wait 30 Rscript -e 'library(covr); codecov()'
