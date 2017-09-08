@@ -1,4 +1,7 @@
 # PhylogeneticEM 1.0.1.9000
+* Deprecation Fix:
+    * Remove dependency from gglasso (replaced with grplasso). 
+    This should not change the results of PhylogeneticEM.
 * Minor Changes:
     * Added options to plot.equivalent_shifts.
 * Bug Fixes:
