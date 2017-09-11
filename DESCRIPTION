@@ -1,6 +1,6 @@
 Package: PhylogeneticEM
 Title: Automatic Shift Detection using a Phylogenetic EM
-Version: 1.1.0
+Version: 1.1.0.9000
 Authors@R: c(
     person("Paul", "Bastide", email = "paul.bastide@m4x.org", role = c("aut", "cre")),
     person("Mahendra", "Mariadassou", role = "ctb"))
