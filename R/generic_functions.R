@@ -710,6 +710,29 @@ find_grid_alpha <- function(phy, alpha = NULL,
 }
 
 ##
+#' @title Check range of alpha
+#' 
+#' @description Check that the choosen values of alpha are not too large
+#' or too small, in order to avoid numerical instabilities.
+#'
+#' @param alpha a vector of alpha values.
+#' @param h_tree the total height of the tree.
+#' 
+#' @keywords internal
+#' 
+##
+check_range_alpha <- function(alpha, h_tree){
+  alpha_max_machine <- log(.Machine$double.xmax^0.98)/(2*h_tree)
+  alpha_min_machine <- log(.Machine$double.eps^0.98)/(2*h_tree)
+  if (any(alpha > alpha_max_machine)) {
+    stop(paste0("The value for the selection strengh you took is too big, and will lead to numerical instabilities. Please consider using a value below ", alpha_max_machine))
+  }
+  if (any(alpha < alpha_min_machine)) {
+    stop(paste0("The value for the selection strengh you took is too small, and will lead to numerical instabilities. Please consider using a value above ", alpha_min_machine))
+  }
+}
+
+##
 #' @title Transform branch length for a re-scaled BM
 #' 
 #' @description Re-scale the branch length of the tree so that a BM running

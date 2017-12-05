@@ -865,6 +865,32 @@ estimateEM <- function(phylo,
 #' go to their optimum values with the same speed.
 #' }
 #' 
+#' Note that the "scalar OU" model can also be seen as a re-scaling of the tree.
+#' The selection strength parameter alpha can then be interpreted as a measure
+#' of the "phylogenetic signal":
+#' \itemize{
+#' \item If alpha is close to 0, then the process is similar to a BM on the original tree,
+#' and the signal is strong.
+#' \item If alpha is large, then the re-scaled tree is similar to a star-tree,
+#' and the signal is weak.
+#' }
+#' When there are no shifts, and the root is taken to be constant, this
+#' model is actually equivalent to an AC model (Uyeda et al. 2015).
+#' With this interpretation in mind, one might want to explore 
+#' negative values of alpha, in order to fit a DC (or Early Burst) model.
+#' With no shift and a fixed root, the same proof shows that the scOU
+#' with alpha negative is equivalent to the DC model. There are two
+#' strong caveats in doing that.
+#' \itemize{
+#' \item The interpretation of the OU as modelling the dynamic of a trait
+#' undergoing stabilizing selection is lost. In this case, the scOU can only
+#' be seen as a re-scaling of the tree, similar to Pagel's delta.
+#' \item The values of the "optimal values", and of the shifts on them, cannot
+#' be interpreted as such (the process is actually going away from this values,
+#' instead of being attracted). When looking at these values, one should only use
+#' the un-normalized values happening of the underlying BM. You can extract those
+#' using the \code{\link{params_process}} function with \code{rBM = TRUE}.
+#' }
 #'
 #' @param phylo A phylogenetic tree of class \code{phylo} 
 #' (from package \code{\link{ape}}).
@@ -1037,7 +1063,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     alpha_grid = TRUE,
                     nbr_alpha = 10,
                     random.root = TRUE,
-                    stationary.root = TRUE,
+                    stationary.root = random.root,
                     alpha = NULL,
                     check.tips.names = TRUE,
                     progress.bar = TRUE,
@@ -1092,7 +1118,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     alpha_grid <- TRUE
     alpha <- 0
   }
-  ## Model Selection
+  ## Model Selection ##########################################################
   method.selection  <- match.arg(method.selection,
                                  choices = c("LINselect", "DDSE", "Djump",
                                              "BirgeMassart1", "BirgeMassart2",
@@ -1282,7 +1308,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #' specified, then \code{K} must be precised too. Default to NULL (automatically
 #' selected value, see \code{method.selection} argument).
 #' @param rBM (optional) if TRUE, and if the process is "scOU", returns the raw
-#' parameters of the BM on the re-scaled tree. Default to FALSE.
+#' parameters of the BM on the re-scaled tree. Default to FALSE, except if 
+#' the selection strength is negative (see doc of \code{\link{PhyloEM}} for
+#' an explanation of this particular case).
 #' @param init (optional) if TRUE, gives the parameters from the initialization of
 #' the EM. Default to FALSE. This has no effect if \code{K} is not specified.
 #' @param ... unused.
@@ -1383,6 +1411,13 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
     if (method.selection == "BGHlsqraw"){
       res <- extract_params(x, "BGHlsqraw", "alpha_min_raw")
     } 
+  }
+  ## Case scOU with negative value
+  if ((length(as.vector(res$selection.strength)) == 1)
+        && (res$selection.strength < 0)
+        && !rBM) {
+    warning("The 'selection strength' is negative. One should only look at the un-normalized values of the shifts. To do so, please call this function using 'rBM = TRUE'.")
+    warning("The 'selection strength' is negative. One should only look at the un-normalized values of the shifts. To do so, please call this function using 'rBM = TRUE'.")
   }
   ## Return to rBM parameters if needed
   if (rBM){
@@ -1749,6 +1784,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     alpha <- find_grid_alpha(phylo, alpha, nbr_alpha = nbr_alpha, ...)
     if (stationary.root) alpha <- alpha[alpha != 0]
   }
+  ## Check alpha for numerical instabilities
+  check_range_alpha(alpha, h_tree_original)
   ## Loop on alpha
   estimate_alpha_several_K <- function(alp, 
                                        original_phy, Y_data,
@@ -2367,7 +2404,7 @@ merge_max_grid_alpha <- function(X, alpha, light_result = TRUE){
 }
 
 add_lsq <- function(X){
-  nums <- grep("alpha_[[:digit:]]", names(X))
+  nums <- grep("alpha_-?[[:digit:]]", names(X))
   for (i in nums){
     X[[i]]$results_summary$least_squares <- sapply(X[[i]]$m_Y_estim,
                                                    function(z) sum((X$Y_data - z)^2))
@@ -2377,7 +2414,7 @@ add_lsq <- function(X){
 }
 
 merge_min_grid_alpha <- function(X, light_result = TRUE, raw = FALSE){
-  nums <- grep("alpha_[[:digit:]]", names(X))
+  nums <- grep("alpha_-?[[:digit:]]", names(X))
   summary_all <- X[[nums[1]]]$results_summary
   for (i in nums[-1]){
     summary_all <- rbind(summary_all,
@@ -2579,7 +2616,13 @@ choose_process_EM <- function(process, p, random.root, stationary.root,
     }
   }
   if (process == "scOU"){
+    if ((!is.null(known.selection.strength)) && known.selection.strength < 0){
+      warning("The 'selection strength' you gave is negative. This might not be what you want to do. See manual for the interpretation of such a process.")
+    }
     if (random.root){
+      if ((!is.null(known.selection.strength)) && known.selection.strength < 0){
+        stop("The scalar OU with negative selection strength cannot have a random root. Please try again with 'random_root=FALSE'.")
+      }
       if ((method.OUsun == "rescale")){
         if (!alpha_known){
           stop("The re-scaled scalar OU is only implemented for known selection strength. Please consider using a grid.")

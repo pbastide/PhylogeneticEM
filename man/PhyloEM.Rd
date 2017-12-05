@@ -13,7 +13,7 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   method.init.alpha = "estimation",
   method.init.alpha.estimation = c("regression", "regression.MM", "median"),
   methods.segmentation = c("lasso", "best_single_move"), alpha_grid = TRUE,
-  nbr_alpha = 10, random.root = TRUE, stationary.root = TRUE,
+  nbr_alpha = 10, random.root = TRUE, stationary.root = random.root,
   alpha = NULL, check.tips.names = TRUE, progress.bar = TRUE,
   estimates = NULL, save_step = FALSE, parallel_alpha = FALSE,
   Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
@@ -166,6 +166,33 @@ For the OU in the multivariate setting, two assumptions can be made:
 \item "Scalar OU" (scOU): the rate matrix can be full, but the selection 
 strength matrix is assumed to be scalar, i.e. all the traits are supposed to
 go to their optimum values with the same speed.
+}
+
+Note that the "scalar OU" model can also be seen as a re-scaling of the tree.
+The selection strength parameter alpha can then be interpreted as a measure
+of the "phylogenetic signal":
+\itemize{
+\item If alpha is close to 0, then the process is similar to a BM on the original tree,
+and the signal is strong.
+\item If alpha is large, then the re-scaled tree is similar to a star-tree,
+and the signal is weak.
+}
+When there are no shifts, and the root is taken to be constant, this
+model is actually equivalent to an AC model (Uyeda et al. 2015).
+With this interpretation in mind, one might want to explore 
+negative values of alpha, in order to fit a DC (or Early Burst) model.
+With no shift and a fixed root, the same proof shows that the scOU
+with alpha negative is equivalent to the DC model. There are two
+strong caveats in doing that.
+\itemize{
+\item The interpretation of the OU as modelling the dynamic of a trait
+undergoing stabilizing selection is lost. In this case, the scOU can only
+be seen as a re-scaling of the tree, similar to Pagel's delta.
+\item The values of the "optimal values", and of the shifts on them, cannot
+be interpreted as such (the process is actually going away from this values,
+instead of being attracted). When looking at these values, one should only use
+the un-normalized values happening of the underlying BM. You can extract those
+using the \code{\link{params_process}} function with \code{rBM = TRUE}.
 }
 }
 \examples{
