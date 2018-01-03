@@ -676,6 +676,8 @@ check_dimensions.shifts <- function(p, shifts){
 #' @param quantile_low_distance quantile for min distance
 #' @param log_transform whether to take a log scale for the spacing of alpha
 #' values. Default to TRUE.
+#' @param allow_negative whether to allow negative values for alpha (Early Burst).
+#' See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.
 #' @param ... not used.
 #'     
 #' @return A grid of alpha values
@@ -690,7 +692,8 @@ find_grid_alpha <- function(phy, alpha = NULL,
                             factor_up_alpha = 2,
                             factor_down_alpha = 3,
                             quantile_low_distance = 0.0001,
-                            log_transform = TRUE, ...){
+                            log_transform = TRUE, 
+                            allow_negative = FALSE, ...){
   if (!is.null(alpha)) return(alpha)
   dtips <- cophenetic(phy)
   d_min <- quantile(dtips[dtips > 0], quantile_low_distance)
@@ -702,11 +705,21 @@ find_grid_alpha <- function(phy, alpha = NULL,
     warning("The chosen alpha_max was above the machine precision. Taking alpha_max as the largest possible on this machine.")
     alpha_max <- alpha_max_machine
   }
+  if (allow_negative) nbr_alpha <- nbr_alpha %/% 2
   if (log_transform){
-    return(c(0, exp(seq(log(alpha_min), log(alpha_max), length.out = nbr_alpha))))
+    alpha_grid <- exp(seq(log(alpha_min), log(alpha_max), length.out = nbr_alpha))
   } else {
-    return(c(0, seq(alpha_min, alpha_max, length.out = nbr_alpha)))
+    alpha_grid <- seq(alpha_min, alpha_max, length.out = nbr_alpha)
   }
+  if (allow_negative){
+    alpha_min_neg_machine <- log(.Machine$double.eps^0.975)/(2*h_tree)
+    if (log_transform){
+      alpha_grid <- c(-exp(seq(log(-alpha_min_neg_machine), log(alpha_min), length.out = nbr_alpha)), 0, alpha_grid)
+    } else {
+      alpha_grid <- c(seq(alpha_min_neg_machine, -alpha_min, length.out = nbr_alpha), 0, alpha_grid)
+    }
+  }
+  return(alpha_grid)
 }
 
 ##

@@ -17,7 +17,8 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   alpha = NULL, check.tips.names = TRUE, progress.bar = TRUE,
   estimates = NULL, save_step = FALSE, parallel_alpha = FALSE,
   Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
-  light_result = TRUE, tol_tree = .Machine$double.eps^0.5, ...)
+  light_result = TRUE, tol_tree = .Machine$double.eps^0.5,
+  allow_negative = FALSE, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -139,6 +140,9 @@ its subsequent manipulations can be faster (especially for plotting).}
 \item{tol_tree}{tolerance to consider a branch length significantly greater than zero, or
 two lineages lengths to be different, when checking for ultrametry. 
 (Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.}
+
+\item{allow_negative}{whether to allow negative values for alpha (Early Burst).
+See details. Default to FALSE.}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
 tolerance parameters for stopping criteria, maximal number of iterations, etc.}

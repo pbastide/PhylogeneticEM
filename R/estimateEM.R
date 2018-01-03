@@ -166,6 +166,8 @@ NULL
 #' univariate processes).
 #' @param sBM_variance Is the root of the BM supposed to be random and
 #' "stationary"? Used for BM equivalent computations. Default to FALSE.
+#' @param allow_negative whether to allow negative values for alpha (Early Burst).
+#' See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.
 #' 
 #' @return
 #' An object of class \code{EstimateEM}.
@@ -238,6 +240,7 @@ estimateEM <- function(phylo,
                        method.OUsun = c("rescale", "raw"),
                        impute_init_Rphylopars = FALSE,
                        K_lag_init = 0,
+                       allow_negative = FALSE,
                        ...){
   
   ntaxa <- length(phylo$tip.label)
@@ -288,7 +291,8 @@ estimateEM <- function(phylo,
                             eps = eps,
                             sBM_variance = sBM_variance,
                             method.OUsun = method.OUsun,
-                            independent = independent)
+                            independent = independent,
+                            allow_negative = allow_negative)
   process <- temp$process
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
@@ -984,6 +988,8 @@ estimateEM <- function(phylo,
 #' @param tol_tree tolerance to consider a branch length significantly greater than zero, or
 #' two lineages lengths to be different, when checking for ultrametry. 
 #' (Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.
+#' @param allow_negative whether to allow negative values for alpha (Early Burst).
+#' See details. Default to FALSE.
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
 #' tolerance parameters for stopping criteria, maximal number of iterations, etc.
 #' 
@@ -1078,6 +1084,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     K_lag_init = 5,
                     light_result = TRUE,
                     tol_tree = .Machine$double.eps^0.5,
+                    allow_negative = FALSE,
                     ...){
   ## Required packages
   # library(doParallel)
@@ -1193,6 +1200,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             impute_init_Rphylopars = impute_init_Rphylopars, 
                             K_lag_init = K_lag_init,
                             light_result = light_result,
+                            allow_negative = allow_negative,
                             ...)
   } else { # For an in-loop estimation of alpha (independent = TRUE)
     if ((p > 1) && !independent){
@@ -1340,7 +1348,11 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
     }
   ## Select a given alpha
     if (!is.null(alpha)){
-      tmp <- grep(alpha, names(x))
+      if (alpha == 0){
+        tmp <- which("alpha_0" == names(x))
+      } else {
+        tmp <- grep(alpha, names(x))
+      }
       if (length(tmp) == 0){
         stop(paste0("The value of alpha: ", alpha, " was not found in the fitted object."))
       } else if (length(tmp) > 1){
@@ -1417,7 +1429,6 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
         && (res$selection.strength < 0)
         && !rBM) {
     warning("The 'selection strength' is negative. One should only look at the un-normalized values of the shifts. To do so, please call this function using 'rBM = TRUE'.")
-    warning("The 'selection strength' is negative. One should only look at the un-normalized values of the shifts. To do so, please call this function using 'rBM = TRUE'.")
   }
   ## Return to rBM parameters if needed
   if (rBM){
@@ -1446,7 +1457,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
   res$optimal.value <- tmp$optimal.value
   ## Process
   res$process <- x$process
-  if (rBM) res$process <- "BM"
+  if (rBM || (!is.null(alpha) && alpha == 0)) res$process <- "BM"
   ## Check root state
   res$root.state <- test.root.state(res$root.state,
                                     res$process,
@@ -1749,6 +1760,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                impute_init_Rphylopars = FALSE,
                                K_lag_init = 0,
                                light_result = TRUE,
+                               allow_negative = FALSE,
                                ...){
   # reqpckg <- c("ape", "glmnet", "robustbase")
   reqpckg <- c("PhylogeneticEM")
@@ -1781,7 +1793,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   if (process == "BM") {
     alpha <- 0
   } else {
-    alpha <- find_grid_alpha(phylo, alpha, nbr_alpha = nbr_alpha, ...)
+    alpha <- find_grid_alpha(phylo, alpha, nbr_alpha = nbr_alpha, allow_negative = allow_negative, ...)
     if (stationary.root) alpha <- alpha[alpha != 0]
   }
   ## Check alpha for numerical instabilities
@@ -1817,6 +1829,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        U_tree,
                                        K_lag_init,
                                        light_result,
+                                       allow_negative,
                                        ...){
     if(progress.bar){
       message(paste0("Alpha ", alp))
@@ -1829,7 +1842,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                               known.selection.strength = alp,
                               sBM_variance = sBM_variance,
                               method.OUsun = method.OUsun,
-                              independent = independent)
+                              independent = independent,
+                              allow_negative = allow_negative)
     
     rescale_tree <- temp$rescale_tree # Rescale the tree ?
     transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
@@ -1924,6 +1938,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              impute_init_Rphylopars = impute_init_Rphylopars,
                              K_lag_init = K_lag_init,
                              light_result = light_result,
+                             allow_negative = allow_negative,
                              ...)
     ## Trnasform back parameters to OU if needed
     if (transform_scOU){
@@ -2008,10 +2023,6 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     doParallel::registerDoParallel(cl)
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %dopar%
     {
-      ## Progress Bar
-      # if(progress.bar){
-      #   message(paste0("Alpha ", alp))
-      # }
       estimate_alpha_several_K(alp = a_greek,
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
@@ -2042,16 +2053,13 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                U_tree = U_tree,
                                K_lag_init = K_lag_init,
                                light_result = light_result,
+                               allow_negative = allow_negative,
                                ...)
     }
     parallel::stopCluster(cl)
   } else {
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %do%
     {
-      ## Progress Bar
-      # if(progress.bar){
-      #   message(paste0("Alpha ", alp))
-      # }
       estimate_alpha_several_K(alp = a_greek,
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
@@ -2082,6 +2090,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                U_tree = U_tree,
                                K_lag_init = K_lag_init,
                                light_result = light_result,
+                               allow_negative = allow_negative,
                                ...)
     }
   }
@@ -2215,9 +2224,9 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 process,
                                 independent,
                                 K_max,
-#                               curent = list(Y_data = Y_data,
-#                                             K_try = 0:K_max,
-#                                             ntaxa = length(phylo$tip.label)),
+                                #                               curent = list(Y_data = Y_data,
+                                #                                             K_try = 0:K_max,
+                                #                                             ntaxa = length(phylo$tip.label)),
                                 use_previous = TRUE,
                                 order = TRUE,
                                 method.variance = c("simple", "upward_downward"),
@@ -2246,6 +2255,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
                                 light_result = TRUE,
+                                allow_negative = FALSE,
                                 ...){
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
@@ -2295,6 +2305,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       method.OUsun = method.OUsun,
                                                       impute_init_Rphylopars = impute_init_Rphylopars,
                                                       K_lag_init = K_lag_init,
+                                                      allow_negative = allow_negative,
                                                       ...)
   if (K_first == 0 && any(is.na(Y_data))){
     Y_data_imp <- XX[["0"]]$Yhat
@@ -2342,6 +2353,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                             method.OUsun = method.OUsun,
                                                             impute_init_Rphylopars = impute_init_Rphylopars,
                                                             K_lag_init = K_lag_init,
+                                                            allow_negative = allow_negative,
                                                             ...)
       pp <- check_dimensions(p,
                              XX[[paste0(K_t)]]$params$root.state,
@@ -2480,6 +2492,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         method.OUsun,
                                         impute_init_Rphylopars,
                                         K_lag_init,
+                                        allow_negative,
                                         ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -2507,6 +2520,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    method.OUsun = method.OUsun,
                                                    impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
+                                                   allow_negative = allow_negative,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -2526,6 +2540,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        method.OUsun,
                                        impute_init_Rphylopars,
                                        K_lag_init,
+                                       allow_negative,
                                        ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -2545,7 +2560,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    method.OUsun = method.OUsun,
                                                    impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
-
+                                                   allow_negative = allow_negative,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -2603,7 +2618,8 @@ choose_process_EM <- function(process, p, random.root, stationary.root,
                               known.selection.strength = 1, eps = 10^(-3),
                               sBM_variance = FALSE,
                               method.OUsun = "rescale",
-                              independent = FALSE){
+                              independent = FALSE,
+                              allow_negative = FALSE){
   ## Reduce Process
   transform_scOU <- FALSE # Should we re-transform back the parameters to get an OU ?
   rescale_tree <- FALSE # Should we re-scale the tree ?
@@ -2616,8 +2632,8 @@ choose_process_EM <- function(process, p, random.root, stationary.root,
     }
   }
   if (process == "scOU"){
-    if ((!is.null(known.selection.strength)) && known.selection.strength < 0){
-      warning("The 'selection strength' you gave is negative. This might not be what you want to do. See manual for the interpretation of such a process.")
+    if ((!is.null(known.selection.strength)) && known.selection.strength < 0 && !allow_negative){
+      stop("The 'selection strength' you gave is negative. This might not be what you want to do. See manual for the interpretation of such a process. If you really want a negative alpha, please set 'allow_negative=TRUE'.")
     }
     if (random.root){
       if ((!is.null(known.selection.strength)) && known.selection.strength < 0){
