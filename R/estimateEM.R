@@ -1098,6 +1098,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     stop("The tree has zero-length branches.
          Please use `ape::di2multi` function to transform the zero-length branches into ploytomies.")
   }
+  if (any(phylo$edge.length < 0)){
+    stop("The tree has negative branch lengths. This is not allowed.")
+  }
   phylo_given <- phylo
   method.variance  <- match.arg(method.variance)
   if (method.variance == "simple") check_postorder <- FALSE
