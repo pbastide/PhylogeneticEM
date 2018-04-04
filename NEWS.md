@@ -1,6 +1,9 @@
 # PhylogeneticEM 1.1.0.9000
 * Added Options:
     * `option_is.ultrametric` to control the `ape::is.ultrametric` check.
+* Deprecation Fix:
+    * Go back to updated version of gglasso (faster than grplasso). 
+    This should not change the results of PhylogeneticEM.
 
 # PhylogeneticEM 1.1.0
 * Deprecation Fix:
