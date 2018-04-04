@@ -982,12 +982,12 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp,
     ## Segmentation per se
     group <- rep(1:(ntaxa + nNodes), each = length(D))
     # Lasso regression
-    fit <- try(lasso_regression_K_fixed.grplasso(Yvec = Dvec, Xkro = Xkro,
-                                                 K = nbr_of_shifts,
-                                                 root = ntaxa + nNodes,
-                                                 penscale = penscale,
-                                                 group = group,
-                                                 p_dim = p))
+    fit <- try(lasso_regression_K_fixed.gglasso(Yvec = Dvec, Xkro = Xkro,
+                                                K = nbr_of_shifts,
+                                                root = ntaxa + nNodes,
+                                                penscale = penscale,
+                                                group = group,
+                                                p_dim = p))
   } else { # Only one trait
     fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp,
                                                             K = nbr_of_shifts,

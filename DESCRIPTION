@@ -16,10 +16,10 @@ Depends:
 Imports:
     capushe (>= 1.1.1),
     foreach (>= 1.4.3),
+    gglasso (>= 1.4),
     glmnet (>= 2.0.5),
     graphics (>= 3.2.1),
     grDevices (>= 3.2.1),
-    grplasso (>= 0.4-5),
     LINselect (>= 0.0.2),
     MASS (>= 7.3.45),
     methods (>= 3.2.1),
