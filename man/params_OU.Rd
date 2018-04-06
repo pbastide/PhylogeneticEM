@@ -4,17 +4,21 @@
 \alias{params_OU}
 \title{Create an object \code{params_process} for an OU}
 \usage{
-params_OU(p = 1, variance = diag(1, p, p), selection.strength = diag(1, p,
-  p), optimal.value = rep(0, p), random = TRUE, stationary.root = TRUE,
-  value.root = rep(0, p), exp.root = rep(0, p), var.root = diag(1, p, p),
-  edges = NULL, values = matrix(0, p, length(edges)),
-  relativeTimes = NULL, nbr_of_shifts = length(edges), phylo = NULL, ...)
+params_OU(p = 1, variance = diag(1, p, p), pheno_error = matrix(0, p, p),
+  selection.strength = diag(1, p, p), optimal.value = rep(0, p),
+  random = TRUE, stationary.root = TRUE, value.root = rep(0, p),
+  exp.root = rep(0, p), var.root = diag(1, p, p), edges = NULL,
+  values = matrix(0, p, length(edges)), relativeTimes = NULL,
+  nbr_of_shifts = length(edges), phylo = NULL, ...)
 }
 \arguments{
 \item{p}{the dimension (number of traits) of the parameters. Default to 1.}
 
 \item{variance}{the variance (rate matrix) of the BM. Default to 
 \code{diag(1, p, p)}.}
+
+\item{pheno_error}{the variance of the intra-specific phenotypic error.
+Default to 0.}
 
 \item{selection.strength}{the selection strength matrix. Default to 
 \code{diag(1, p, p)}.}

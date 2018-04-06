@@ -1,6 +1,8 @@
 #ifndef updown_h
 #define updown_h
 
+# include <RcppArmadillo.h>
+
 //---------------------------------------------------------------------------//
 // Class Root_State ---------------------------------------------------------//
 //---------------------------------------------------------------------------//
@@ -55,10 +57,11 @@ public:
   Model(int siz);
   // For a BM:
   Model(arma::mat const & Delta, arma::mat const & Variance,
-        arma::vec const & edge_length);
+        arma::vec const & edge_length, arma::mat const & pheno_error);
   // For an OU:
   Model(arma::mat const & Beta, arma::mat const & Stationary_Var,
-        arma::vec const & edge_length, arma::mat const & Alpha);
+        arma::vec const & edge_length, arma::mat const & Alpha,
+        arma::mat const & Variance);
   
   // Access to fields
   arma::vec Rs(int edge) const;

@@ -8,16 +8,16 @@
 */
 
 /* .Call calls */
-extern SEXP _PhylogeneticEM_log_likelihood_BM(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _PhylogeneticEM_log_likelihood_OU(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _PhylogeneticEM_upward_downward_BM(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _PhylogeneticEM_upward_downward_OU(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PhylogeneticEM_log_likelihood_BM(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PhylogeneticEM_log_likelihood_OU(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PhylogeneticEM_upward_downward_BM(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PhylogeneticEM_upward_downward_OU(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_PhylogeneticEM_log_likelihood_BM",  (DL_FUNC) &_PhylogeneticEM_log_likelihood_BM,  6},
-    {"_PhylogeneticEM_log_likelihood_OU",  (DL_FUNC) &_PhylogeneticEM_log_likelihood_OU,  7},
-    {"_PhylogeneticEM_upward_downward_BM", (DL_FUNC) &_PhylogeneticEM_upward_downward_BM, 6},
-    {"_PhylogeneticEM_upward_downward_OU", (DL_FUNC) &_PhylogeneticEM_upward_downward_OU, 7},
+    {"_PhylogeneticEM_log_likelihood_BM",  (DL_FUNC) &_PhylogeneticEM_log_likelihood_BM,  7},
+    {"_PhylogeneticEM_log_likelihood_OU",  (DL_FUNC) &_PhylogeneticEM_log_likelihood_OU,  8},
+    {"_PhylogeneticEM_upward_downward_BM", (DL_FUNC) &_PhylogeneticEM_upward_downward_BM, 7},
+    {"_PhylogeneticEM_upward_downward_OU", (DL_FUNC) &_PhylogeneticEM_upward_downward_OU, 8},
     {NULL, NULL, 0}
 };
 

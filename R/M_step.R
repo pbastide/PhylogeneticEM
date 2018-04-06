@@ -370,11 +370,13 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
                            params$root.state,
                            params$shifts,
                            params$variance,
+                           params$pheno_error,
                            params$selection.strength,
                            params$optimal.value)
     params$root.state <- pp$root.state
     params$shifts <- pp$shifts
     params$variance <- pp$variance
+    params$pheno_error <- pp$pheno_error
     params$selection.strength <- pp$selection.strength
     params$optimal.value <- pp$optimal.value
     return(params)
@@ -391,11 +393,13 @@ compute_M.OU.specialCase <- function(phylo, Y_data, conditional_law_X,
                              params[[l]]$root.state,
                              params[[l]]$shifts,
                              params[[l]]$variance,
+                             params[[l]]$pheno_error,
                              params[[l]]$selection.strength,
                              params[[l]]$optimal.value)
       params[[l]]$root.state <- pp$root.state
       params[[l]]$shifts <- pp$shifts
       params[[l]]$variance <- pp$variance
+      params[[l]]$pheno_error <- pp$pheno_error
       params[[l]]$selection.strength <- pp$selection.strength
       params[[l]]$optimal.value <- pp$optimal.value
     }

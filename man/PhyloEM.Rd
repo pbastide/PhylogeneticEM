@@ -5,7 +5,7 @@
 \title{Model Estimation with Detection of Shifts}
 \usage{
 PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
-  check_postorder = TRUE, independent = FALSE,
+  pheno_error = NULL, check_postorder = TRUE, independent = FALSE,
   K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
   use_previous = FALSE, order = TRUE, method.selection = c("LINselect",
   "DDSE", "Djump"), C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
@@ -30,6 +30,10 @@ tip names of the tree.}
 \item{process}{The model used for the fit. One of "BM" (for a full BM model, 
 univariate or multivariate); "OU" (for an OU with independent traits, 
 univariate or multivariate); or "scOU" (for a "scalar OU" model, see details).}
+
+\item{pheno_error}{A fixed variance matrix for the phenotypic (intra-specific) 
+errors. Should be a positive definite symmetric matrix of size p.
+Default to NULL (matrix of 0s, no phenotypic errors).}
 
 \item{check_postorder}{Re-order the tree in post-order. If the Upward-Downward
 algorithm is used, the tree need to be in post-order. Default to TRUE if the

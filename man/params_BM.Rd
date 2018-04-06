@@ -4,17 +4,20 @@
 \alias{params_BM}
 \title{Create an object \code{params_process} for a BM}
 \usage{
-params_BM(p = 1, variance = diag(1, p, p), random = FALSE,
-  value.root = rep(0, p), exp.root = rep(0, p), var.root = diag(1, p, p),
-  edges = NULL, values = matrix(0, p, length(edges)),
-  relativeTimes = NULL, nbr_of_shifts = length(edges), phylo = NULL,
-  sBM_variance = FALSE, ...)
+params_BM(p = 1, variance = diag(1, p, p), pheno_error = matrix(0, p, p),
+  random = FALSE, value.root = rep(0, p), exp.root = rep(0, p),
+  var.root = diag(1, p, p), edges = NULL, values = matrix(0, p,
+  length(edges)), relativeTimes = NULL, nbr_of_shifts = length(edges),
+  phylo = NULL, sBM_variance = FALSE, ...)
 }
 \arguments{
 \item{p}{the dimension (number of traits) of the parameters. Default to 1.}
 
 \item{variance}{the variance (rate matrix) of the BM. Default to 
 \code{diag(1, p, p)}.}
+
+\item{pheno_error}{the variance of the intra-specific phenotypic error.
+Default to 0.}
 
 \item{random}{whether the root of the BM is random (TRUE) or fixed (FALSE).
 Default to FALSE.}

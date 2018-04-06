@@ -179,6 +179,7 @@ estimateEM <- function(phylo,
                        Y_data, 
                        Y_data_imp = Y_data,
                        process = c("BM", "OU", "scOU", "rBM"), 
+                       pheno_error = NULL,
                        independent = FALSE,
                        tol = list(variance = 10^(-2), 
                                   value.root = 10^(-2), 
@@ -347,7 +348,7 @@ estimateEM <- function(phylo,
   
   ########## Moments computation method #######################################
   method.variance  <- match.arg(method.variance)
-  if (process == "BM" && !Flag_Missing && method.variance == "simple"){
+  if (process == "BM" && !Flag_Missing && any(pheno_error != 0) && method.variance == "simple"){
     method.variance <- "simple.nomissing.BM"
   }
   compute_E  <- switch(method.variance, 
@@ -435,6 +436,19 @@ estimateEM <- function(phylo,
   known.selection.strength <-  known.selection.strength / factor_rescale
   init.selection.strength <- init.selection.strength / factor_rescale
   variance.init <- variance.init / factor_rescale
+  
+  ## Check phenotypic error matrix ############################################
+  # if ((method.variance != "upward_downward") && pheno_error != 0){
+  #   stop("Non-zero phenotypic error is only allowed for the upward downward approach. Please set 'method.variance = \"upward_downward\"'.")
+  # }
+  pheno_error <- check_dimensions.matrix(p, p, pheno_error, "pheno_error")
+  if (any(pheno_error != 0)) {
+    pheno_error <- try(as(pheno_error, "dpoMatrix"))
+    if (inherits(pheno_error, "try-error")) stop("The `pheno_error` matrix should be positive definite symmetric.") 
+  }
+  ## Modified tree with extra tips ############################################
+  tree_errors <- phylo
+  if (any(pheno_error != 0)) tree_errors <- add_zero_length_tips(tree_errors)
 
   ########## Initialization of alpha and Variance #############################
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
@@ -540,6 +554,12 @@ estimateEM <- function(phylo,
                                        selection.strength = params$selection.strength)
   attr(params, "ntaxa")  <- ntaxa
   attr(params, "p_dim")  <- p
+  
+  ## Adaptations to pheno errors
+  params$pheno_error <- pheno_error
+  # shifts relative to tree_errors
+  # params$shifts$edges <- params$shifts$edges + nrow(tree_errors$edges) - nrow(phylo$edge)
+  
   params_old <- NULL
   
   ########## Iterations #######################################################
@@ -569,6 +589,7 @@ estimateEM <- function(phylo,
     }
     ## result
     temp <- wrapper_E_step(phylo = phylo,
+                           tree_errors = tree_errors,
                            times_shared = times_shared,
                            distances_phylo = distances_phylo,
                            process = process,
@@ -655,6 +676,8 @@ estimateEM <- function(phylo,
       if (p > 1) params <- merge_params_independent(params)
       params_old <- params_history[[paste(Nbr_It - 1, sep="")]]
     }
+    # pheno_error
+    params$pheno_error <- pheno_error
     attr(params, "ntaxa")  <- ntaxa
     attr(params, "p_dim")  <- p
     ## Number of shifts that changed position ?
@@ -668,7 +691,6 @@ estimateEM <- function(phylo,
   }
   
   ########## Scale back parameters to original tree ###########################
-  
   params <- scale_params(params, factor_rescale)
   
   h_tree <- h_tree / factor_rescale
@@ -676,6 +698,8 @@ estimateEM <- function(phylo,
   distances_phylo <- distances_phylo / factor_rescale
   phylo$edge.length <- phylo$edge.length / factor_rescale
   phylo$root.edge <- phylo$root.edge / factor_rescale
+  tree_errors$edge.length <- tree_errors$edge.length / factor_rescale
+  tree_errors$root.edge <- tree_errors$root.edge / factor_rescale
   
   if (!Flag_Missing && process == "BM"){
     F_moments$C_YY = F_moments$C_YY / factor_rescale
@@ -687,7 +711,6 @@ estimateEM <- function(phylo,
   init.selection.strength <- init.selection.strength * factor_rescale
   variance.init <- variance.init * factor_rescale
   
-  ########## Go back to OU parameters if needed ###############################
   if (transform_scOU){
     ## Go back to original tree and process
     phylo <- phy_original
@@ -720,6 +743,7 @@ estimateEM <- function(phylo,
   }
 
   temp <- wrapper_E_step(phylo = phylo,
+                         tree_errors = tree_errors,
                          times_shared = times_shared,
                          distances_phylo = distances_phylo,
                          process = process,
@@ -874,6 +898,9 @@ estimateEM <- function(phylo,
 #' @param process The model used for the fit. One of "BM" (for a full BM model, 
 #' univariate or multivariate); "OU" (for an OU with independent traits, 
 #' univariate or multivariate); or "scOU" (for a "scalar OU" model, see details).
+#' @param pheno_error A fixed variance matrix for the phenotypic (intra-specific) 
+#' errors. Should be a positive definite symmetric matrix of size p.
+#' Default to NULL (matrix of 0s, no phenotypic errors).
 #' @param check_postorder Re-order the tree in post-order. If the Upward-Downward
 #' algorithm is used, the tree need to be in post-order. Default to TRUE if the
 #' upward-downward is used, otherwise automatically set to FALSE.
@@ -1022,6 +1049,7 @@ estimateEM <- function(phylo,
 # @return params a list of inferred parameters for each EM.
 
 PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                    pheno_error = NULL,
                     check_postorder = TRUE,
                     independent = FALSE,
                     K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
@@ -1076,6 +1104,19 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   Y_data <- check_data(phylo, Y_data, check.tips.names)
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
+  ## Check phenotypic error matrix ############################################
+  if (independent && !is.null(pheno_error)){
+    stop("Non-zero phenotypic error is not allowed for independent traits.")
+  }
+  # if ((method.variance != "upward_downward") && pheno_error != 0){
+  #   stop("Non-zero phenotypic error is only allowed for the upward downward approach. Please set 'method.variance = \"upward_downward\"'.")
+  # }
+  pheno_error <- check_dimensions.matrix(p, p, pheno_error, "pheno_error")
+  if (any(pheno_error != 0)) {
+    pheno_error <- try(as(pheno_error, "dpoMatrix"))
+    if (inherits(pheno_error, "try-error")) stop("The `pheno_error` matrix should be positive definite symmetric.") 
+  }
+  
   ## Independent traits #######################################################
   method.OUsun = "rescale"
   if (p == 1) {
@@ -1137,6 +1178,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     X <- PhyloEM_grid_alpha(phylo = phylo,
                             Y_data = Y_data,
                             process = process, 
+                            pheno_error = pheno_error,
                             independent = independent, 
                             K_max = K_max,
                             use_previous = use_previous, 
@@ -1169,12 +1211,13 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             light_result = light_result,
                             ...)
   } else { # For an in-loop estimation of alpha (independent = TRUE)
-    if ((p > 1) && !independent){
-      stop("Estimation of alpha outside of a grid is only implemented for independent traits. Please consider either use a grid for alpha values (parameter alpha_grid = TRUE), or independent traits (parameter independent = TRUE). See documentation.")
+    if (((p > 1) && !independent) || (any(pheno_error != 0))){
+      stop("Estimation of alpha outside of a grid is only implemented for independent traits with no phenotypic error. Please consider either use a grid for alpha values (parameter alpha_grid = TRUE), or independent traits (parameter independent = TRUE). See documentation.")
     }
     X <- PhyloEM_alpha_estim(phylo = phylo,
                              Y_data = Y_data,
                              process = process, 
+                             pheno_error = pheno_error,
                              independent = TRUE, 
                              K_max = K_max,
                              use_previous = use_previous, 
@@ -1402,11 +1445,13 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
                           res$root.state,
                           res$shifts,
                           res$variance,
+                          res$pheno_error,
                           res$selection.strength,
                           res$optimal.value)
   res$root.state <- tmp$root.state
   res$shifts <- tmp$shifts
   res$variance <- tmp$variance
+  res$pheno_error <- tmp$pheno_error
   res$selection.strength <- tmp$selection.strength
   res$optimal.value <- tmp$optimal.value
   ## Process
@@ -1682,6 +1727,7 @@ enlight.PhyloEM <- function(x){
 ###############################################################################
 
 PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                               pheno_error = NULL,
                                independent = FALSE,
                                K_max, use_previous = TRUE,
                                order = TRUE,
@@ -1715,6 +1761,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                K_lag_init = 0,
                                light_result = TRUE,
                                ...){
+
   # reqpckg <- c("ape", "glmnet", "robustbase")
   reqpckg <- c("PhylogeneticEM")
   ntaxa <- length(phylo$tip.label)
@@ -1754,6 +1801,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        original_phy, Y_data,
                                        process_original,
                                        process,
+                                       pheno_error,
                                        independent,
                                        K_max, 
                                        use_previous,
@@ -1797,7 +1845,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     rescale_tree <- temp$rescale_tree # Rescale the tree ?
     transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
     sBM_variance <- temp$sBM_variance
-    ## Transform branch lengths if needed
+    ## Transform branch lengths if needed   #####################################
     phylo <- original_phy
     if (sBM_variance){ # process sBM : need a root branch.
       phylo$root.edge <- 1
@@ -1805,7 +1853,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     if (rescale_tree) {
       phylo <- transform_branch_length(phylo, alp)
     }
-    ## Fixed quantities
+    ## Fixed quantities  ########################################################
     if (rescale_tree){
       times_shared <- compute_times_ca(phylo)
       distances_phylo <- compute_dist_phy(phylo)
@@ -1817,7 +1865,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       subtree.list <- subtree.list_original
       h_tree <- h_tree_original
     }
-    ## Fixed Quantities if no missing data
+    ## Fixed Quantities if no missing data   ####################################
     Flag_Missing <- any(is.na(Y_data)) # TRUE if some missing values
     if ((!Flag_Missing) && (method.variance != "upward_downward")){
       # Add root edge to the branch lengths (root assumed fixed by default)
@@ -1827,7 +1875,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     } else {
       F_moments = NULL
     }
-    ## Impute data if needed
+    ## Impute data if needed   ##################################################
     # if (!order && !impute_init_Rphylopars && any(is.na(Y_data))){
     #   warning("There are some missing values, and the inference is not done by increasing values of shifts, so they cannot be inferred. Using Rphylopars for the initialization (impute_init_Rphylopars = TRUE)")
     #   impute_init_Rphylopars <- TRUE
@@ -1853,11 +1901,12 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       }
       rm(phylo_temp)
     }
-    ## Estimations
+    ## Estimations   ############################################################
     X <- Phylo_EM_sequencial(phylo = phylo,
                              Y_data = Y_data,
                              Y_data_imp = Y_data_imp,
                              process = temp$process,
+                             pheno_error = pheno_error,
                              independent = independent,
                              K_max = K_max,
                              # curent = X,
@@ -1979,6 +2028,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
                                process = process,
+                               pheno_error = pheno_error,
                                independent = independent,
                                K_max = K_max, 
                                use_previous = use_previous,
@@ -2019,6 +2069,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
                                process = process,
+                               pheno_error = pheno_error,
                                independent = independent,
                                K_max = K_max, 
                                use_previous = use_previous,
@@ -2071,6 +2122,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
 ###############################################################################
 
 PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
+                                pheno_error = NULL,
                                 independent = TRUE,
                                 K_max, use_previous = TRUE,
                                 order = TRUE,
@@ -2129,6 +2181,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                            Y_data = Y_data,
                            Y_data_imp = Y_data_imp,
                            process = process,
+                           pheno_error = pheno_error,
                            independent = independent,
                            K_max = K_max,
                            # curent = X,
@@ -2176,6 +2229,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
 Phylo_EM_sequencial <- function(phylo, Y_data,
                                 Y_data_imp,
                                 process,
+                                pheno_error,
                                 independent,
                                 K_max,
 #                               curent = list(Y_data = Y_data,
@@ -2236,6 +2290,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       Y_data = Y_data,
                                                       Y_data_imp = Y_data_imp,
                                                       process = process,
+                                                      pheno_error = pheno_error,
                                                       independent = independent,
                                                       K_t = K_first,
                                                       method.variance = method.variance,
@@ -2266,11 +2321,13 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                          XX[[paste0(K_first)]]$params$root.state,
                          XX[[paste0(K_first)]]$params$shifts,
                          XX[[paste0(K_first)]]$params$variance,
+                         XX[[paste0(K_first)]]$params$pheno_error,
                          XX[[paste0(K_first)]]$params$selection.strength,
                          XX[[paste0(K_first)]]$params$optimal.value)
   XX[[paste0(K_first)]]$params$root.state <- pp$root.state
   XX[[paste0(K_first)]]$params$shifts <- pp$shifts
   XX[[paste0(K_first)]]$params$variance <- pp$variance
+  XX[[paste0(K_first)]]$params$pheno_error <- pp$pheno_error
   XX[[paste0(K_first)]]$params$selection.strength <- pp$selection.strength
   XX[[paste0(K_first)]]$params$optimal.value <- pp$optimal.value
   # update progress bar
@@ -2282,6 +2339,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                             Y_data = Y_data,
                                                             Y_data_imp = Y_data_imp,
                                                             process = process,
+                                                            pheno_error = pheno_error,
                                                             independent = independent,
                                                             K_t = K_t,
                                                             prev = XX[[paste0(prev_it(K_t))]],
@@ -2310,11 +2368,13 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                              XX[[paste0(K_t)]]$params$root.state,
                              XX[[paste0(K_t)]]$params$shifts,
                              XX[[paste0(K_t)]]$params$variance,
+                             XX[[paste0(K_t)]]$params$pheno_error,
                              XX[[paste0(K_t)]]$params$selection.strength,
                              XX[[paste0(K_t)]]$params$optimal.value)
       XX[[paste0(K_t)]]$params$root.state <- pp$root.state
       XX[[paste0(K_t)]]$params$shifts <- pp$shifts
       XX[[paste0(K_t)]]$params$variance <- pp$variance
+      XX[[paste0(K_t)]]$params$pheno_error <- pp$pheno_error
       XX[[paste0(K_t)]]$params$selection.strength <- pp$selection.strength
       XX[[paste0(K_t)]]$params$optimal.value <- pp$optimal.value
       if(progress.bar) setTxtProgressBar(pb, counter); counter <- counter + 1
@@ -2431,6 +2491,7 @@ estimateEM_wrapper <- function(use_previous){
 estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         Y_data_imp,
                                         process,
+                                        pheno_error,
                                         independent = independent,
                                         K_t, prev,
                                         method.variance,
@@ -2448,6 +2509,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    Y_data = Y_data, 
                                                    Y_data_imp = Y_data_imp,
                                                    process = process, 
+                                                   pheno_error = pheno_error,
                                                    independent = independent,
                                                    method.variance = method.variance, 
                                                    method.init = method.init,
@@ -2477,6 +2539,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
 estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        Y_data_imp,
                                        process,
+                                       pheno_error,
                                        independent,
                                        K_t,
                                        method.variance,
@@ -2494,6 +2557,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    Y_data = Y_data, 
                                                    Y_data_imp = Y_data_imp,
                                                    process = process, 
+                                                   pheno_error = pheno_error,
                                                    independent = independent,
                                                    method.variance = method.variance, 
                                                    method.init = method.init,

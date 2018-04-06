@@ -590,13 +590,24 @@ kronecker_sum <- function(M, N){
 
 check_dimensions <- function(p,
                              root.state, shifts, variance,
+                             pheno_error = NULL,
                              selection.strength = NULL, optimal.value = NULL){
+  # root state
   root.state <- check_dimensions.root.state(p, root.state)
-  #if (!is.null(unlist(shifts)))
+  # shifts
   shifts <- check_dimensions.shifts(p, shifts)
+  # variance
   variance <- check_dimensions.matrix(p, p, variance, "variance")
-  variance <- as(variance, "dpoMatrix")
-  if (!is.null(selection.strength))
+  variance <- try(as(variance, "dpoMatrix"))
+  if (inherits(variance, "try-error")) stop("The `variance` matrix should be positive definite symmetric.") 
+  # pheno_error
+  pheno_error <- check_dimensions.matrix(p, p, pheno_error, "pheno_error")
+  if (any(pheno_error != 0)) {
+    pheno_error <- try(as(pheno_error, "dpoMatrix"))
+    if (inherits(pheno_error, "try-error")) stop("The `pheno_error` matrix should be positive definite symmetric.") 
+  }
+  # OU
+  if (!is.null(selection.strength)) {
     if (is.vector(selection.strength) && length(selection.strength) == p){
       selection.strength <- diag(selection.strength, ncol = length(selection.strength))
     }
@@ -604,12 +615,15 @@ check_dimensions <- function(p,
       selection.strength <- diag(rep(selection.strength, p))
     }
     selection.strength <- check_dimensions.matrix(p, p, selection.strength, "selection strength")
-  if (!is.null(optimal.value))
+  }
+  if (!is.null(optimal.value)) {
     optimal.value <- check_dimensions.vector(p, optimal.value, "optimal value")
+  }
   
   return(params = list(root.state = root.state,
                        shifts = shifts,
                        variance = variance,
+                       pheno_error = pheno_error,
                        selection.strength = selection.strength,
                        optimal.value = optimal.value))
 }
@@ -783,6 +797,7 @@ split_params_independent <- function(params){
   for (l in 1:p){
     params_split[[l]] <- params
     params_split[[l]]$variance <- params$variance[l, l]
+    params_split[[l]]$pheno_error <- params$pheno_error[l, l]
     params_split[[l]]$selection.strength <- params$selection.strength[l, l]
     if (!is.null(params$shifts$edges)){
       params_split[[l]]$shifts$values <- params$shifts$values[l, ]
@@ -801,6 +816,7 @@ split_params_independent <- function(params){
                                           params_split[[l]]$root.state,
                                           params_split[[l]]$shifts,
                                           params_split[[l]]$variance,
+                                          params_split[[l]]$pheno_error,
                                           params_split[[l]]$selection.strength,
                                           params_split[[l]]$optimal.value)
     if (!is.null(attr(params, "p_dim"))) attr(params_split[[l]], "p_dim") <- 1
@@ -827,6 +843,7 @@ merge_params_independent <- function(params_split){
   params <- params_split[[1]]
   if (p > 1){
     params$variance <- diag(sapply(params_split, function(z) return(as.vector(z$variance))))
+    params$pheno_error <- diag(sapply(params_split, function(z) return(as.vector(z$pheno_error))))
     if (!is.null(params$selection.strength)){
       params$selection.strength <- diag(sapply(params_split, function(z) return(z$selection.strength)))
     }
@@ -855,8 +872,42 @@ merge_params_independent <- function(params_split){
                              params$root.state,
                              params$shifts,
                              params$variance,
+                             params$pheno_error,
                              params$selection.strength,
                              params$optimal.value)
   if (!is.null(attr(params_split[[1]], "p_dim"))) attr(params, "p_dim") <- p
   return(params)
+}
+
+##
+#' @title Add artificial tips
+#' 
+#' @description \code{add_zero_length_tips} creates a new tree, where extra tips are
+#' added to each tip, with a zero-length branch.
+#'
+#' @param phylo: a phylogenetic tree of class phylo
+#'     
+#' @return A phylogenetic tree of class phylo
+#' 
+#' @keywords internal
+#' 
+##
+add_zero_length_tips <- function(phylo) {
+  tree_errors <- phylo # must be in post-order
+  ntaxa <- length(phylo$tip.label)
+  # old tips -> nodes numbered after the last old node
+  temp_fun <- function(x) {
+    if (x <= ntaxa) return(x + ntaxa + phylo$Nnode)
+    return(x)
+  }
+  tree_errors$edge <- apply(tree_errors$edge, c(1,2), temp_fun)
+  # Add new tips below old tips
+  tree_errors$edge <- rbind(cbind(1:ntaxa + ntaxa + phylo$Nnode, 1:ntaxa),
+                            tree_errors$edge)
+  # lengths
+  tree_errors$edge.length <- c(rep(0, ntaxa), tree_errors$edge.length)
+  # Nnodes
+  tree_errors$Nnode <- tree_errors$Nnode + ntaxa
+  
+  return(tree_errors)
 }

@@ -356,7 +356,8 @@ simulate_internal <- function(phylo,
                               simulate_random = TRUE,
                               U_tree = NULL,
                               times_shared = NULL,
-                              df = 1) {
+                              df = 1,
+                              pheno_error = NULL) {
   # library(MASS)
   ntaxa <- length(phylo$tip.label)
   ## Set branch stochastic process
@@ -388,11 +389,13 @@ simulate_internal <- function(phylo,
     if (checks){
       parameters <- check_dimensions(p = p, root.state = root.state,
                                      shifts = shifts, variance = variance,
+                                     pheno_error = pheno_error,
                                      selection.strength = NULL, 
                                      optimal.value = optimal.value)
       root.state <- parameters$root.state
       shifts <- parameters$shifts
       variance <- as(parameters$variance, "dpoMatrix")
+      pheno_error <- parameters$pheno_error
       # selection.strength <- parameters$selection.strength
       optimal.value <- parameters$optimal.value
     }
@@ -401,11 +404,13 @@ simulate_internal <- function(phylo,
     if (checks){
       parameters <- check_dimensions(p = p, root.state = root.state,
                                      shifts = shifts, variance = variance,
+                                     pheno_error = pheno_error,
                                      selection.strength = selection.strength, 
                                      optimal.value = optimal.value)
       root.state <- parameters$root.state
       shifts <- parameters$shifts
       variance <- as(parameters$variance, "dpoMatrix")
+      pheno_error <- parameters$pheno_error
       selection.strength <- parameters$selection.strength
       optimal.value <- parameters$optimal.value
     }

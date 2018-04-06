@@ -17,7 +17,8 @@ Model::Model(int siz){
 
 // Constructor for BM Model -------------------------------------------------//
 Model::Model(arma::mat const & Delta, arma::mat const & Variance,
-             arma::vec const & edge_length){
+             arma::vec const & edge_length,
+             arma::mat const & pheno_error){
   int p_d = Variance.n_rows;
   int nEdges = edge_length.n_rows; // number of edges
   // R
@@ -27,13 +28,18 @@ Model::Model(arma::mat const & Delta, arma::mat const & Variance,
   sigmas.set_size(p_d, p_d, nEdges);
   for (int i = 0; i < nEdges; i++){
     qs.slice(i).eye();
-    sigmas.slice(i) = edge_length(i) * Variance;
+    if (edge_length(i) == 0) {
+      sigmas.slice(i) = pheno_error;
+    } else {
+      sigmas.slice(i) = edge_length(i) * Variance;
+    }
   }
 }
 
 // Constructor for OU Model -------------------------------------------------//
 Model::Model(arma::mat const & Beta, arma::mat const & Stationary_Var,
-             arma::vec const & edge_length, arma::mat const & Alpha){
+             arma::vec const & edge_length, arma::mat const & Alpha,
+             arma::mat const & pheno_error){
   int p_d = Beta.n_rows;
   int nEdges = edge_length.n_rows; // number of edges
   arma::mat Id;
@@ -45,7 +51,11 @@ Model::Model(arma::mat const & Beta, arma::mat const & Stationary_Var,
   for (int i = 0; i < nEdges; i++){
     qs.slice(i) = arma::expmat( - edge_length(i) * Alpha);
     rs.col(i) = (Id - qs.slice(i)) *  Beta.col(i);
-    sigmas.slice(i) = Stationary_Var - qs.slice(i) * Stationary_Var * qs.slice(i).t();
+    if (edge_length(i) == 0) {
+      sigmas.slice(i) = pheno_error;
+    } else {
+      sigmas.slice(i) = Stationary_Var - qs.slice(i) * Stationary_Var * qs.slice(i).t();
+    }
   }
 }
 
@@ -239,6 +249,7 @@ arma::vec prod_na(arma::mat const & S, arma::vec const & m, arma::uvec const & m
 void Upward::recursion(Model const & mod, arma::umat const & ed,
                        int p_d, int ntaxa) {
   int nEdges = ed.n_rows;
+  // Rcpp::Rcout << "nEdges=" << nEdges << std::endl;
   for (int i = 0; i < nEdges; i++){ // Loop on the edges (rows of ed)
     int father = ed(i, 0) - 1;
     if (! arma::is_finite(csts(father))){// This node has not already been visited.
@@ -567,9 +578,10 @@ Rcpp::List upward_downward_mod(arma::mat const & data, arma::umat const & ed,
 Rcpp::List upward_downward_BM(arma::mat const & data, arma::umat const & ed,
                               arma::mat const & Delta, arma::mat const & Variance,
                               arma::vec const & edge_length,
-                              Rcpp::List root_state_list) {
+                              Rcpp::List root_state_list,
+                              arma::mat const & pheno_error) {
   // BM
-  Model mod(Delta, Variance, edge_length);
+  Model mod(Delta, Variance, edge_length, pheno_error);
   Rcpp::List res = upward_downward_mod(data, ed, mod, root_state_list);
   return res;
 }
@@ -578,9 +590,10 @@ Rcpp::List upward_downward_BM(arma::mat const & data, arma::umat const & ed,
 Rcpp::List upward_downward_OU(arma::mat const & data, arma::umat const & ed,
                               arma::mat const & Beta, arma::mat const & Stationary_Var,
                               arma::vec const & edge_length, arma::mat const & Alpha,
-                              Rcpp::List root_state_list) {
+                              Rcpp::List root_state_list,
+                              arma::mat const & pheno_error) {
   // OU
-  Model mod(Beta, Stationary_Var, edge_length, Alpha);
+  Model mod(Beta, Stationary_Var, edge_length, Alpha, pheno_error);
   Rcpp::List res = upward_downward_mod(data, ed, mod, root_state_list);
   return res;
 }
@@ -607,9 +620,10 @@ double log_likelihood_mod(arma::mat const & data, arma::umat const & ed,
 double log_likelihood_BM(arma::mat const & data, arma::umat const & ed,
                          arma::mat const & Delta, arma::mat const & Variance,
                          arma::vec const & edge_length,
-                         Rcpp::List root_state_list) {
+                         Rcpp::List root_state_list,
+                         arma::mat const & pheno_error) {
   // BM
-  Model mod(Delta, Variance, edge_length);
+  Model mod(Delta, Variance, edge_length, pheno_error);
   double res = log_likelihood_mod(data, ed, mod, root_state_list);
   return res;
 }
@@ -618,9 +632,10 @@ double log_likelihood_BM(arma::mat const & data, arma::umat const & ed,
 double log_likelihood_OU(arma::mat const & data, arma::umat const & ed,
                          arma::mat const & Beta, arma::mat const & Stationary_Var,
                          arma::vec const & edge_length, arma::mat const & Alpha,
-                         Rcpp::List root_state_list) {
+                         Rcpp::List root_state_list,
+                         arma::mat const & pheno_error) {
   // OU
-  Model mod(Beta, Stationary_Var, edge_length, Alpha);
+  Model mod(Beta, Stationary_Var, edge_length, Alpha, pheno_error);
   double res = log_likelihood_mod(data, ed, mod, root_state_list);
   return res;
 }
@@ -630,29 +645,38 @@ library(ape)
 library(TreeSim)
 library(Matrix)
 set.seed(17920902)
-ntaxa = 500
+ntaxa = 10
 tree <- sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                         age = 1, mrca = TRUE)[[1]]
 tree <- reorder(tree, order = "postorder")
-p <- 6
+p <- 2
 variance <- matrix(0.8, p, p) + diag(0.2, p, p)
+pheno_err <- diag(0, p, p)
 independent <- FALSE
 root.state <- list(random = FALSE,
                    value.root = rep(1, p),
                    exp.root = NA,
                    var.root = NA)
-shifts = list(edges = c(12, 102, 15, 146),
-              values = matrix(2*c(1, 0.5), nrow = p, ncol = 4),
+shifts = list(edges = c(15),
+              values = matrix(2*c(1, 0.5), nrow = p, ncol = 1),
               relativeTimes = 0)
+# list(edges = c(12, 102, 15, 146),
+#               values = matrix(2*c(1, 0.5), nrow = p, ncol = 4),
+#               relativeTimes = 0)
 paramsSimu <- list(variance = variance,
                    shifts = shifts,
-                   root.state = root.state)
+                   root.state = root.state,
+                   pheno_error = pheno_err)
 attr(paramsSimu, "p_dim") <- p
 
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/simulate.R")
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/generic_functions.R")
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/shifts_manipulations.R")
-source("~/Dropbox/These/Code/Phylogenetic-EM/R/E_step.R")
+source("~/Documents/These/Code/Phylogenetic-EM/R/simulate.R")
+source("~/Documents/These/Code/Phylogenetic-EM/R/generic_functions.R")
+source("~/Documents/These/Code/Phylogenetic-EM/R/shifts_manipulations.R")
+source("~/Documents/These/Code/Phylogenetic-EM/R/E_step.R")
+
+tree_err <- tree
+if (any(pheno_err != 0)) tree_err <- add_zero_length_tips(tree_err)
+
 X1 <- simulate_internal(tree,
                p = p,
                root.state = root.state,
@@ -702,6 +726,7 @@ ll_old <- tmp_old$log_likelihood_old
 conditional_law_X_old <- tmp_old$conditional_law_X
 
 tmp_new <- wrapper_E_step(phylo = tree,
+                          tree_errors = tree_err,
                           times_shared = NULL,
                           distances_phylo = NULL,
                           process = "BM",
@@ -747,27 +772,27 @@ all.equal(cov_old, cov_new)
 # cov_old <- apply(conditional_law_X_old$covariances, 3, function(z) z + t(z))
 # all.equal(cov_old, cov_new)
 # 
-library(microbenchmark)
-microbenchmark(
-  # wrapper_E_step(phylo = tree,
-  #                             times_shared = times_shared,
-  #                             distances_phylo = distances_phylo,
-  #                             process = "BM",
-  #                             params_old = paramsSimu,
-  #                             masque_data = masque_data,
-  #                             F_moments = F_moments,
-  #                             independent = independent,
-  #                             Y_data_vec_known = as.vector(traits[!miss]),
-  #                             miss = miss,
-  #                             Y_data = traits,
-  #                             U_tree = U_tree,
-  #                             compute_E = compute_E.simple),
-               wrapper_E_step(phylo = tree,
-                              process = "BM",
-                              params_old = paramsSimu,
-                              masque_data = masque_data,
-                              independent = independent,
-                              Y_data = traits,
-                              compute_E = compute_E.upward_downward),
-               times = 10)
+# library(microbenchmark)
+# microbenchmark(
+#   # wrapper_E_step(phylo = tree,
+#   #                             times_shared = times_shared,
+#   #                             distances_phylo = distances_phylo,
+#   #                             process = "BM",
+#   #                             params_old = paramsSimu,
+#   #                             masque_data = masque_data,
+#   #                             F_moments = F_moments,
+#   #                             independent = independent,
+#   #                             Y_data_vec_known = as.vector(traits[!miss]),
+#   #                             miss = miss,
+#   #                             Y_data = traits,
+#   #                             U_tree = U_tree,
+#   #                             compute_E = compute_E.simple),
+#                wrapper_E_step(phylo = tree,
+#                               process = "BM",
+#                               params_old = paramsSimu,
+#                               masque_data = masque_data,
+#                               independent = independent,
+#                               Y_data = traits,
+#                               compute_E = compute_E.upward_downward),
+#                times = 10)
 */

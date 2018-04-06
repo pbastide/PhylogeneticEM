@@ -1,5 +1,7 @@
 # PhylogeneticEM 1.1.0.9000
-
+* New Features
+    * Add a fixed pheno_error matrix to take intra-specific variations into account.
+    
 # PhylogeneticEM 1.1.0
 * Deprecation Fix:
     * Remove dependency from gglasso (replaced with grplasso). 

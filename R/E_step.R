@@ -55,6 +55,7 @@
 ##
 
 compute_E.simple <- function(phylo,
+                             tree_errors,
                              times_shared,
                              distances_phylo,
                              process,
@@ -66,6 +67,9 @@ compute_E.simple <- function(phylo,
                              miss = rep(FALSE, attr(params_old, "p_dim") * length(phylo$tip.label)),
                              Y_data,
                              U_tree, ...){
+  if (any(params_old$pheno_error != 0)) {
+    masque_data <- c(masque_data, rep(FALSE, attr(params_old, "ntaxa") * attr(params_old, "p_dim")))
+  }
   moments <- compute_mean_variance.simple(phylo = phylo,
                                           times_shared = times_shared,
                                           distances_phylo = distances_phylo,
@@ -85,7 +89,7 @@ compute_E.simple <- function(phylo,
                                                       Y_data = Y_data,
                                                       C_YY_chol_inv = F_moments$C_YY_chol_inv,
                                                       R = params_old$variance)
-  conditional_law_X <- compute_cond_law.simple(phylo = phylo,
+  conditional_law_X <- compute_cond_law.simple(phylo = tree_errors,
                                                Y_data_vec = Y_data_vec_known,
                                                sim = moments$sim,
                                                Sigma = moments$Sigma,
@@ -125,6 +129,10 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
                                             extract_simulate_internal(sim,
                                                              where="nodes",
                                                              what="optimal.values")) # NULL if BM
+  ## pheno_error
+  if (ncol(m_Z) != nNodes) { # pheno_error
+    m_Z <- cbind(m_Z, m_Y)
+  }
   ## Variance Covariance
   Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ", masque_data)
   Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ", masque_data)
@@ -182,6 +190,7 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
                                           conditional_variance_covariance_nodes)
   conditional_law_X$covariances <- array(c(cov_tips,
                                            cov_nodes), c(p, p, ntaxa + nNodes))
+  
   return(conditional_law_X)
 }
 
@@ -637,7 +646,53 @@ compute_variance_covariance.OU <- function(times_shared,
   return(varr)
 }
 
-
+##
+#' @title Add the pheno errors to a variance matrix
+#'
+#' @description
+#' \code{add_pheno_error_variance} takes the  (n+m)*p variance covariance,
+#'  matrix of vec(X), and add the pheno (independent) errors.
+#'
+#' @param varr matrix of variance, result of function \code{compute_variance_covariance}
+#' @param pheno_error a SymmetricMatrix of dimension p
+#' 
+#' @return matrix of variance covariance plus errors
+#' 
+#' @keywords internal
+#' 
+##
+add_pheno_error_variance <- function(varr, pheno_error) {
+  if (all(pheno_error == 0)) return(varr)
+  
+  ntaxa <- attr(varr, "ntaxa")
+  p_dim <- attr(varr, "p_dim")
+  nNodes <- ncol(varr) / p_dim - ntaxa
+  dim_kro <- (ntaxa + nNodes) * p_dim
+  dim_kro_big <- (2 * ntaxa + nNodes) * p_dim
+  
+  I <- diag(rep(1, ntaxa))
+  varr_pheno <- kronecker(I, pheno_error)
+  
+  big_varr <- matrix(0, ncol = dim_kro_big, nrow = dim_kro_big)
+  varr <- as.matrix(varr)
+  # new tips and nodes
+  big_varr[1:dim_kro, 1:dim_kro] <- varr
+  # new tips
+  big_varr[1:(ntaxa * p_dim), 1:(ntaxa * p_dim)] <- varr[1:(ntaxa * p_dim), 1:(ntaxa * p_dim)] + as.matrix(varr_pheno)
+  # old tips
+  big_varr[(dim_kro + 1):dim_kro_big, (dim_kro + 1):dim_kro_big] <- varr[1:(ntaxa * p_dim), 1:(ntaxa * p_dim)]
+  # old tips vs nodes
+  big_varr[(dim_kro + 1):dim_kro_big, (ntaxa * p_dim + 1):dim_kro] <- varr[1:(ntaxa * p_dim), (ntaxa * p_dim + 1):dim_kro]
+  big_varr[(ntaxa * p_dim + 1):dim_kro, (dim_kro + 1):dim_kro_big] <- varr[(ntaxa * p_dim + 1):dim_kro, 1:(ntaxa * p_dim)]
+  # old tips vs new tips
+  big_varr[(dim_kro + 1):dim_kro_big, 1:(ntaxa * p_dim)] <- varr[1:(ntaxa * p_dim), 1:(ntaxa * p_dim)]
+  big_varr[1:(ntaxa * p_dim), (dim_kro + 1):dim_kro_big] <- varr[1:(ntaxa * p_dim), 1:(ntaxa * p_dim)]
+  
+  varr <- as(big_varr, "symmetricMatrix")
+  attr(varr, "p_dim") <- p_dim
+  attr(varr, "ntaxa") <- ntaxa
+  return(varr)
+}
 
 ##
 #' @title Compute moments of params_old
@@ -702,6 +757,7 @@ compute_mean_variance.simple <- function(phylo,
   Sigma <- compute_variance_covariance(times_shared = times_shared, 
                                        distances_phylo = distances_phylo,
                                        params_old = params_old)
+  Sigma <- add_pheno_error_variance(Sigma, params_old$pheno_error)
   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data = masque_data)
   Sigma_YY_chol <- chol(Sigma_YY)
   Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, Matrix::diag(ncol(Sigma_YY_chol)))
@@ -971,46 +1027,59 @@ compute_log_likelihood.simple.nomissing.BM <- function(phylo, Y_data, sim,
 # @import RcppArmadillo
 
 compute_E.upward_downward <- function(phylo,
+                                      tree_errors,
                                       Y_data,
                                       process,
                                       params_old,
                                       U_tree, ...){
   Delta <- shifts.list_to_matrix(phylo, params_old$shifts)
   params_old$root.state$var.root <- as.matrix(params_old$root.state$var.root)
+  ntaxa_diff <- nrow(tree_errors$edge) - nrow(phylo$edge)
+  p_dim <- attr(params_old, "p_dim")
   if (process == "BM"){
+    browser()
+    if (ntaxa_diff > 0) Delta <- cbind(matrix(0, ncol = ntaxa_diff, nrow = p_dim), Delta)
     params_old$variance <- as.matrix(params_old$variance)
-    return(upward_downward_BM(Y_data, phylo$edge, Delta,
-                              params_old$variance, phylo$edge.length,
-                              params_old$root.state))
+    params_old$pheno_error <- as.matrix(params_old$pheno_error)
+    return(upward_downward_BM(Y_data, tree_errors$edge, Delta,
+                              params_old$variance, tree_errors$edge.length,
+                              params_old$root.state,
+                              params_old$pheno_error))
   } else if (process == "OU"){
     Beta1 <- tcrossprod(Delta, U_tree) + params_old$optimal.value
-    Beta <- Beta1[, phylo$edge[, 2], drop = F] # re-order by edge
+    if (ntaxa_diff > 0) Beta1 <- cbind(Beta1, Beta1[, 1:ntaxa_diff])
+    Beta <- Beta1[, tree_errors$edge[, 2], drop = F] # re-order by edge
     if (params_old$root.state$stationary.root){
       Stationary_Var <- as.matrix(params_old$root.state$var.root)
     } else {
       Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
     }
     params_old$selection.strength <- as.matrix(params_old$selection.strength)
-    res <- upward_downward_OU(Y_data, phylo$edge,
+    params_old$pheno_error <- as.matrix(params_old$pheno_error)
+    res <- upward_downward_OU(Y_data, tree_errors$edge,
                               Beta, Stationary_Var,
-                              phylo$edge.length, params_old$selection.strength,
-                              params_old$root.state)
+                              tree_errors$edge.length, params_old$selection.strength,
+                              params_old$root.state,
+                              params_old$pheno_error)
     res$conditional_law_X$optimal.values <- Beta1
     return(res)
     
   } else if (process == "scOU"){
     Beta1 <- tcrossprod(Delta, U_tree) + params_old$optimal.value
-    Beta <- Beta1[, phylo$edge[, 2], drop = F] # re-order by edge
+    if (ntaxa_diff > 0) Beta1 <- cbind(Beta1, Beta1[, 1:ntaxa_diff])
+    Beta <- Beta1[, tree_errors$edge[, 2], drop = F] # re-order by edge
     if (params_old$root.state$stationary.root){
       Stationary_Var <- as.matrix(params_old$root.state$var.root)
     } else {
       Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
     }
     Alpha <- params_old$selection.strength * diag(rep(1, ncol(Stationary_Var)))
-    res <- upward_downward_OU(Y_data, phylo$edge,
+    params_old$pheno_error <- as.matrix(params_old$pheno_error)
+    res <- upward_downward_OU(Y_data, tree_errors$edge,
                               Beta, Stationary_Var,
-                              phylo$edge.length, Alpha,
-                              params_old$root.state)
+                              tree_errors$edge.length, Alpha,
+                              params_old$root.state,
+                              params_old$pheno_error)
     res$conditional_law_X$optimal.values <- Beta1
     return(res)
   }
@@ -1051,6 +1120,9 @@ log_likelihood.params_process <- function(x,
                                           Y_data,
                                           phylo, ...){
   phy <- reorder(phylo, order = "postorder")
+  tree_errors <- phy
+  if (any(x$pheno_error != 0)) tree_errors <- add_zero_length_tips(tree_errors)
+  ntaxa_diff <- nrow(tree_errors$edge) - nrow(phy$edge)
   # Trace edges
   x$shifts$edges <- correspondanceEdges(edges = x$shifts$edges,
                                         from = phylo, to = phy)
@@ -1058,31 +1130,36 @@ log_likelihood.params_process <- function(x,
   x$root.state$var.root <- as.matrix(x$root.state$var.root)
   ## BM Process
   if (x$process == "BM"){
+    if (ntaxa_diff > 0) Delta <- cbind(matrix(0, ncol = ntaxa_diff, nrow = x$p), Delta)
     x$variance <- as.matrix(x$variance)
-    return(log_likelihood_BM(Y_data, phy$edge, Delta,
-                              x$variance, phy$edge.length,
-                              x$root.state))
+    x$pheno_error <- as.matrix(x$pheno_error)
+    return(log_likelihood_BM(Y_data, tree_errors$edge, Delta,
+                             x$variance, tree_errors$edge.length,
+                             x$root.state, x$pheno_error))
     ## OU process
   } else if (x$process == "OU"){
     U_tree <- incidence.matrix.full(phy)
     Beta1 <- tcrossprod(Delta, U_tree) + x$optimal.value
-    Beta <- Beta1[, phy$edge[, 2], drop = F] # re-order by edge
+    if (ntaxa_diff > 0) Beta1 <- cbind(Beta1, Beta1[, 1:ntaxa_diff])
+    Beta <- Beta1[, tree_errors$edge[, 2], drop = F] # re-order by edge
     if (x$root.state$stationary.root){
       Stationary_Var <- as.matrix(x$root.state$var.root)
     } else {
       Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, x$selection.strength))
     }
     x$selection.strength <- as.matrix(x$selection.strength)
-    res <- log_likelihood_OU(Y_data, phy$edge,
-                              Beta, Stationary_Var,
-                              phy$edge.length, x$selection.strength,
-                              x$root.state)
+    x$pheno_error <- as.matrix(x$pheno_error)
+    res <- log_likelihood_OU(Y_data, tree_errors$edge,
+                             Beta, Stationary_Var,
+                             tree_errors$edge.length, x$selection.strength,
+                             x$root.state, x$pheno_error)
     return(res)
     ## scOU process
   } else if (x$process == "scOU"){
     U_tree <- incidence.matrix.full(phy)
     Beta1 <- tcrossprod(Delta, U_tree) + x$optimal.value
-    Beta <- Beta1[, phy$edge[, 2], drop = F] # re-order by edge
+    if (ntaxa_diff > 0) Beta1 <- cbind(Beta1, Beta1[, 1:ntaxa_diff])
+    Beta <- Beta1[, tree_errors$edge[, 2], drop = F] # re-order by edge
     if (x$root.state$stationary.root){
       Stationary_Var <- as.matrix(x$root.state$var.root)
     } else {
@@ -1090,10 +1167,11 @@ log_likelihood.params_process <- function(x,
                                                               unique(diag(x$selection.strength))))
     }
     Alpha <- x$selection.strength * diag(rep(1, ncol(Stationary_Var)))
-    res <- log_likelihood_OU(Y_data, phy$edge,
+    x$pheno_error <- as.matrix(x$pheno_error)
+    res <- log_likelihood_OU(Y_data, tree_errors$edge,
                              Beta, Stationary_Var,
-                             phy$edge.length, Alpha,
-                             x$root.state)
+                             tree_errors$edge.length, Alpha,
+                             x$root.state, x$pheno_error)
     return(res)
   }
 }
@@ -1157,6 +1235,7 @@ residuals.PhyloEM <- function(object, ...){
 #' @keywords internal
 ##
 wrapper_E_step <- function(phylo,
+                           tree_errors = phylo,
                            times_shared,
                            distances_phylo,
                            process,
@@ -1178,6 +1257,7 @@ wrapper_E_step <- function(phylo,
     res <- vector(mode = "list", length = length(params_old))
     for (i in 1:length(res)){
       res[[i]] <- wrapper_E_step(phylo = phylo,
+                                 tree_errors = tree_errors,
                                  times_shared = times_shared,
                                  distances_phylo = distances_phylo,
                                  process = process,
@@ -1193,7 +1273,8 @@ wrapper_E_step <- function(phylo,
     }
     return(res)
   }
-  return(compute_E(phylo = phylo,
+  res <- compute_E(phylo = phylo,
+                   tree_errors = tree_errors,
                    times_shared = times_shared,
                    distances_phylo = distances_phylo,
                    process = process,
@@ -1204,5 +1285,21 @@ wrapper_E_step <- function(phylo,
                    Y_data_vec_known = Y_data_vec_known,
                    miss = miss,
                    Y_data = Y_data,
-                   U_tree = U_tree))
+                   U_tree = U_tree)
+  ## Re-order if pheno_errors
+  if (any(params_old$pheno_error != 0)) {
+    nNodes <- phylo$Nnode
+    ntaxa <- length(phylo$tip.label)
+    p <- attr(params_old, "p_dim")
+    res$conditional_law_X$expectations <- cbind(res$conditional_law_X$expectations[, (ntaxa + nNodes + 1):(2 * ntaxa + nNodes)],
+                                                res$conditional_law_X$expectations[, (ntaxa + 1):(ntaxa + nNodes)])
+    res$conditional_law_X$optimal.values <- res$conditional_law_X$optimal.values[, 1:(ntaxa + nNodes)]
+    res$conditional_law_X$variances <- array(c(res$conditional_law_X$variances[, , (ntaxa + nNodes + 1):(2 * ntaxa + nNodes)],
+                                               res$conditional_law_X$variances[, , (ntaxa + 1):(ntaxa + nNodes)]),
+                                             c(p, p, ntaxa + nNodes))
+    res$conditional_law_X$covariances <- array(c(res$conditional_law_X$covariances[, , (ntaxa + nNodes + 1):(2 * ntaxa + nNodes)],
+                                                 res$conditional_law_X$covariances[, , (ntaxa + 1):(ntaxa + nNodes)]),
+                                               c(p, p, ntaxa + nNodes))
+  }
+  return(res)
 }

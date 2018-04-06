@@ -10,7 +10,7 @@ simulate_internal(phylo, process = c("BM", "OU", "scOU", "StudentOU"),
   values = NULL, relativeTimes = NULL), eps = 10^(-6),
   selection.strength = NULL, variance = NULL, optimal.value = NULL,
   checks = TRUE, simulate_random = TRUE, U_tree = NULL,
-  times_shared = NULL, df = 1)
+  times_shared = NULL, df = 1, pheno_error = NULL)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}

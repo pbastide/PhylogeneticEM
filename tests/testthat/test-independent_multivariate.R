@@ -435,6 +435,7 @@ test_that("Independent BM - uni/multi", {
   par_multi <- split_params_independent(res$alpha_max$params_estim$`0`)[[1]]
   expect_null(par_multi$optimal.value)
   par_multi$optimal.value <- NULL
+  par_multi$selection.strength <- NULL
   
   par_uni <- res_uni$alpha_max$params_estim$`0`
   attr(par_uni, "ntaxa") <- NULL

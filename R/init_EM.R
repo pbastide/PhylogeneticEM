@@ -52,6 +52,7 @@ init.EM.default.BM <- function(phylo = NULL,
                                Y_data = matrix(NA, 1, length(phylo$tip.label)),
                                p = nrow(Y_data),
                                variance.init = diag(1, p, p),
+                               pheno_error.init = matrix(0, p, p),
                                random.init = FALSE,
                                value.root.init = rep(0, p),
                                exp.root.init = rep(1, p),
@@ -96,11 +97,13 @@ init.EM.default.BM <- function(phylo = NULL,
                                        var.root = var.root.init),
                      shifts = list(edges = edges.init,
                                    values = values.init,
-                                   relativeTimes = relativeTimes.init))
+                                   relativeTimes = relativeTimes.init),
+                     pheno_error = pheno_error.init)
   params_init <- check_dimensions(p,
                                   params_init$root.state,
                                   params_init$shifts,
-                                  params_init$variance)
+                                  params_init$variance,
+                                  params_init$pheno_error)
   params_init$root.state <- test.root.state(params_init$root.state, "BM")
   params_init$variance <- as(params_init$variance, "dpoMatrix")
   return(params_init)
@@ -121,7 +124,8 @@ init.EM.default.OU <- function(phylo = NULL,
                                selection.strength.init=1,
                                optimal.value.init = rep(0, p),
                                nbr_of_shifts = length(edges.init),
-                               subtree.list = NULL, ...) {
+                               subtree.list = NULL,
+                               pheno_error.init = matrix(0, p, p), ...) {
   if (random.init) {
     value.root.init <- NA
     if (stationary.root.init) {
@@ -159,12 +163,14 @@ init.EM.default.OU <- function(phylo = NULL,
                       shifts = list(edges = edges.init,
                                     values = values.init,
                                     relativeTimes = relativeTimes.init),
+                      pheno_error = pheno_error.init,
                       selection.strength = selection.strength.init,
                       optimal.value = optimal.value.init)
   params_init <- check_dimensions(p,
                                   params_init$root.state,
                                   params_init$shifts,
                                   params_init$variance,
+                                  params_init$pheno_error,
                                   params_init$selection.strength,
                                   params_init$optimal.value)
   params_init$root.state <- test.root.state(params_init$root.state, "OU",
@@ -327,6 +333,8 @@ params_process.character <- function(x, ...){
 #' @param p the dimension (number of traits) of the parameters. Default to 1.
 #' @param variance the variance (rate matrix) of the BM. Default to 
 #' \code{diag(1, p, p)}.
+#' @param pheno_error the variance of the intra-specific phenotypic error.
+#'  Default to 0.
 #' @param random whether the root of the BM is random (TRUE) or fixed (FALSE).
 #' Default to FALSE.
 #' @param value.root if random=FALSE, the root value. Default to 0.
@@ -362,6 +370,7 @@ params_process.character <- function(x, ...){
 ##
 params_BM <- function(p = 1,
                       variance = diag(1, p, p),
+                      pheno_error = matrix(0, p, p),
                       random = FALSE,
                       value.root = rep(0, p),
                       exp.root = rep(0, p),
@@ -407,11 +416,13 @@ params_BM <- function(p = 1,
                                        var.root = var.root),
                      shifts = list(edges = edges,
                                    values = values,
-                                   relativeTimes = relativeTimes))
+                                   relativeTimes = relativeTimes),
+                     pheno_error = pheno_error)
   params_init <- check_dimensions(p,
                                   params_init$root.state,
                                   params_init$shifts,
-                                  params_init$variance)
+                                  params_init$variance,
+                                  params_init$pheno_error)
   params_init$root.state <- test.root.state(params_init$root.state, "BM")
   params_init$variance <- as(params_init$variance, "dpoMatrix")
   params_init$process <- "BM"
@@ -430,6 +441,8 @@ params_BM <- function(p = 1,
 #' @param p the dimension (number of traits) of the parameters. Default to 1.
 #' @param variance the variance (rate matrix) of the BM. Default to 
 #' \code{diag(1, p, p)}.
+#' @param pheno_error the variance of the intra-specific phenotypic error.
+#'  Default to 0.
 #' @param selection.strength the selection strength matrix. Default to 
 #' \code{diag(1, p, p)}.
 #' @param optimal.value the vector of the optimal values at the root. Default
@@ -470,6 +483,7 @@ params_BM <- function(p = 1,
 ##
 params_OU <- function(p = 1,
                       variance = diag(1, p, p),
+                      pheno_error = matrix(0, p, p),
                       selection.strength = diag(1, p, p),
                       optimal.value = rep(0, p),
                       random = TRUE,
@@ -520,12 +534,14 @@ params_OU <- function(p = 1,
                       shifts = list(edges = edges,
                                     values = values,
                                     relativeTimes = relativeTimes),
+                      pheno_error = pheno_error,
                       selection.strength = selection.strength,
                       optimal.value = optimal.value)
   params_init <- check_dimensions(p,
                                   params_init$root.state,
                                   params_init$shifts,
                                   params_init$variance,
+                                  params_init$pheno_error,
                                   params_init$selection.strength,
                                   params_init$optimal.value)
   params_init$root.state <- test.root.state(params_init$root.state, "OU",
