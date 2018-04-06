@@ -1,7 +1,12 @@
 # PhylogeneticEM 1.1.0.9000
 * New Features
     * Add a fixed pheno_error matrix to take intra-specific variations into account.
-    
+* Added Options:
+    * `option_is.ultrametric` to control the `ape::is.ultrametric` check.
+* Deprecation Fix:
+    * Go back to updated version of gglasso (faster than grplasso). 
+    This should not change the results of PhylogeneticEM.
+
 # PhylogeneticEM 1.1.0
 * Deprecation Fix:
     * Remove dependency from gglasso (replaced with grplasso). 
