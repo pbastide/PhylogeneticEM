@@ -1,0 +1,163 @@
+---
+title: "Analysis of the New World Monkeys dataset"
+author: "Paul Bastide"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{New World Monkeys}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Dataset
+
+The dataset is taken from Aristide et al. (2016)[^1], and is embedded in the package. We can load and plot it easily.
+
+```{r, label="data", fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
+library(PhylogeneticEM)
+data(monkeys)
+
+plot(params_BM(p = 2), data = monkeys$dat, phylo = monkeys$phy, show.tip.label = TRUE, cex = 0.5, no.margin = TRUE)
+```
+
+
+## Inference
+
+In this section, we take the traits as simulated by function `simul_process`, and use function `PhyloEM` for the inference of the parameters.
+
+By default, the inference is done on an automatically computed grid of $10$ alpha values. To keep the computations down, we keep here this default, but this number should be raised on a real application.
+
+```{r, label="Fit_EM", warning=FALSE}
+res <- PhyloEM(phylo = monkeys$phy,
+               Y_data = monkeys$dat,
+               process = "scOU",                   ## scalar OU model
+               random.root = TRUE,                 ## Root is stationary (true model)
+               stationary.root = TRUE,
+               K_max = 10,                         ## Maximal number of shifts
+               parallel_alpha = TRUE,              ## This can be set to TRUE for
+               Ncores = 2)                         ## parallel computations
+res
+```
+
+As previously, we can plot the solution selected by the default criterion:
+```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
+plot(res)
+```
+
+```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
+plot_criterion(res)
+```
+
+Here, the solution selected has four shifts. As shown below, the criterion is however a bit flat around its minimum. To try and refine this result, one solution is to use a finer grid of alpha values. When a grid with $100$ values is used, the solution with $K=5$ shifts is actually selected. We can plot it here for comparison.
+
+```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
+plot(res, params = params_process(res, K = 5))
+```
+
+## Equivalent Solutions
+
+When plotting the solution with $5$ shifts, a warning pops up, about several equivalent solutions existing. We can plot these solutions.
+
+```{r, fig.show='hold', fig.height=4, fig.width=8, warning=FALSE}
+plot(equivalent_shifts(monkeys$phy, params_process(res, K = 5)), show_shifts_values = FALSE)
+```
+
+Here, the three solutions are very similar, and just have to do with the two shifts appearing on two sister branches at the bottom of the tree.
+
+## Invariance by Rotation
+
+In theory, the method should not be affected by a rotation of the dataset (see Adams & Collyer, 2018 [^2] for a review of this problem). However, because of some numerical issues, it is possible that the results vary a little bit. We can explore this behavior on this dataset.
+
+```{r, label="Fit_EM_rot", warning=FALSE, message=FALSE}
+# An arbitrary rotation
+rot <- matrix(c(cos(pi/4), -sin(pi/4), sin(pi/4), cos(pi/4)),
+              nrow= 2, ncol = 2)
+
+# Rotate data
+Yrot <- t(rot) %*% monkeys$dat
+rownames(Yrot) <- rownames(monkeys$dat)
+
+# PhyloEM on rotated data
+res_rot <- PhyloEM(phylo = monkeys$phy,
+                   Y_data = Yrot,
+                   process = "scOU",                   ## scalar OU model
+                   random.root = TRUE,                 ## Root is stationary (true model)
+                   stationary.root = TRUE,
+                   K_max = 10,                         ## Maximal number of shifts
+                   parallel_alpha = TRUE,              ## This can be set to TRUE for
+                   Ncores = 2)                         ## parallel computations
+```
+
+```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
+plot(res_rot)
+```
+
+At first sight, the solutions look very different. Indeed, when applied on the rotated dataset, PhyloEM selects for a solution with $7$ shifts, instead of $4$.
+But, if we look at the solution obtained for, say $4$ shifts, then they are identical:
+```{r, fig.show='hold', fig.height=3, fig.width=4, warning=FALSE}
+plot(res, params = params_process(res, K = 4))
+plot(res_rot, params = params_process(res, K = 4))
+```
+
+Looking a bit more closely at the outcome, we can see that the log likelihoods are actually very similar, except in a few places:
+```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
+plot_criterion(res, "log_likelihood")
+plot_criterion(res_rot, "log_likelihood", pch = "+", add = TRUE)
+```
+
+What happens is that, for numerical reasons, the likelihood was slightly better optimized in some cases for one or the other datasets. This had an impact on the criterion used, that is based on the penalized likelihood. We can see it with a plot:
+```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
+plot_criterion(res)
+plot_criterion(res_rot, pch = "+", add = TRUE)
+```
+
+But, as the two datasets should be equivalent, we don't need to choose between the two runs. For each number of shifts, our only goal is to find the maximum likelihood solution. Hence, for each number of shifts, we can just take the best of the two solutions, that is the one that converged the best. This can be done with a dedicated function:
+```{r, label="merge", warning=FALSE}
+res_merge <- merge_rotations(res, res_rot)
+```
+
+This function takes the first fit has a reference (here, with the original data), and, when the second fit has a better likelihood, it takes its solution, and rotate it back in the original space. The resulting solution has the highest likelihood possible for each value of K, and the model selection criterion can be applied to this new solution path.
+```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
+plot_criterion(res_merge)
+```
+
+We can see here that the solution with $4$ shifts is now selected.
+
+This merge function can be applied to more that two fits, as illustrated below.
+```{r, label="Fit_EM_rot2", warning=FALSE}
+# An other rotation
+rot2 <- matrix(c(cos(pi/3), -sin(pi/3), sin(pi/3), cos(pi/3)),
+              nrow= 2, ncol = 2)
+
+# Rotate data
+Yrot2 <- t(rot2) %*% monkeys$dat
+rownames(Yrot2) <- rownames(monkeys$dat)
+
+# PhyloEM on rotated data
+res_rot2 <- PhyloEM(phylo = monkeys$phy,
+                   Y_data = Yrot2,
+                   process = "scOU",                   ## scalar OU model
+                   random.root = TRUE,                 ## Root is stationary (true model)
+                   stationary.root = TRUE,
+                   K_max = 10,                         ## Maximal number of shifts
+                   parallel_alpha = TRUE,              ## This can be set to TRUE for
+                   Ncores = 2)                         ## parallel computations
+
+# Merge
+res_merge2 <- merge_rotations(res, res_rot, res_rot2)
+```
+
+Here, this does not change the result.
+
+```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
+plot_criterion(res_merge2)
+```
+
+## Lizard Dataset
+
+On the previous dataset, the introduction of rotations might appear a bit artificial. However, for some, highly correlated datasets, such rotations might be needed. For instance, when studying the Anolis Lizard dataset (Mahler et al., 2013[^3]), this was needed to get a good maximum likelihood solution for all values of K. See Bastide et al. (2018)[^4] for more details on this analysis.
+
+[^1]: Aristide, L., dos Reis, S. F., Machado, A. C., Lima, I., Lopes, R. T., & Perez, S. I. (2016). Brain shape convergence in the adaptive radiation of New World monkeys. Proceedings of the National Academy of Sciences, 113(8), 2158–2163.
+[^2]: Adams, D. C., & Collyer, M. L. (2018). Multivariate Phylogenetic Comparative Methods: Evaluations, Comparisons, and Recommendations. Systematic Biology, 67(1), 14–31.
+[^3]: Mahler, D. L., Ingram, T., Revell, L. J., & Losos, J. B. (2013). Exceptional Convergence on the Macroevolutionary Landscape in Island Lizard Radiations. Science, 341(6143), 292–295.
+[^4]: Bastide, P., Ané, C., Robin, S., & Mariadassou, M. (2018). Inference of Adaptive Shifts for Multivariate Correlated Traits. Systematic Biology, 67(4), 662–680.

@@ -1,4 +1,14 @@
 # PhylogeneticEM 1.1.0.9000
+* Added Options:
+    * `option_is.ultrametric` to control the `ape::is.ultrametric` check.
+* Deprecation Fix:
+    * Go back to updated version of gglasso (faster than grplasso). 
+    This should not change the results of PhylogeneticEM.
+* Added functions:
+    * Functions `find_rotation` and `merge_rotations` to deal with datasets that are
+    equal up to a rotation.
+    * Functions `get_criterion` and `plot_criterion` to get and plot the criterion used
+    for model selection easilly.
 
 # PhylogeneticEM 1.1.0
 * Deprecation Fix:

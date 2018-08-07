@@ -18,7 +18,8 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   estimates = NULL, save_step = FALSE, parallel_alpha = FALSE,
   Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
   light_result = TRUE, tol_tree = .Machine$double.eps^0.5,
-  allow_negative = FALSE, ...)
+  allow_negative = FALSE,
+  option_is.ultrametric = 1, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -143,6 +144,8 @@ two lineages lengths to be different, when checking for ultrametry.
 
 \item{allow_negative}{whether to allow negative values for alpha (Early Burst).
 See details. Default to FALSE.}
+
+\item{option_is.ultrametric}{option for \code{\link{is.ultrametric}} check. Default to 1.}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
 tolerance parameters for stopping criteria, maximal number of iterations, etc.}

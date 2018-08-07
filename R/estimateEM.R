@@ -990,6 +990,7 @@ estimateEM <- function(phylo,
 #' (Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.
 #' @param allow_negative whether to allow negative values for alpha (Early Burst).
 #' See details. Default to FALSE.
+#' @param option_is.ultrametric option for \code{\link{is.ultrametric}} check. Default to 1.
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
 #' tolerance parameters for stopping criteria, maximal number of iterations, etc.
 #' 
@@ -1085,6 +1086,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     light_result = TRUE,
                     tol_tree = .Machine$double.eps^0.5,
                     allow_negative = FALSE,
+                    option_is.ultrametric = 1,
                     ...){
   ## Required packages
   # library(doParallel)
@@ -1093,7 +1095,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   # library(glmnet) # For Lasso initialization
   # library(robustbase) # For robust fitting of alpha
   ## Check the tree  ##########################################################
-  if (!is.ultrametric(phylo)) stop("The tree must be ultrametric.")
+  if (!is.ultrametric(phylo, tol = tol_tree, option = option_is.ultrametric)) stop("The tree must be ultrametric.")
   if (any(abs(phylo$edge.length) < tol_tree)){
     stop("The tree has zero-length branches.
          Please use `ape::di2multi` function to transform the zero-length branches into ploytomies.")
@@ -1373,59 +1375,8 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
     }
   } else {
   ## Take the selected parameters (default)
-    if (is.null(method.selection)){
-      if (x$p == 1){
-        method.selection <- "BGHuni"
-      } else {
-        for (method in c("BGHml", "BGHlsq", "DDSE_BM1", "Djump_BM1",
-                         "BGHmlraw", "pBIC")){
-          if (method == "BGHlsq"){
-            alpha_str <- "alpha_min"
-          } else if (method == "BGHlsqraw"){
-            alpha_str <- "alpha_min_raw"
-          } else {
-            alpha_str <- "alpha_max"
-          }
-          if (!is.null(x[[alpha_str]][[method]])){
-            method.selection <- method
-            break
-          }
-        }
-        if (is.null(method.selection)) stop("No model selection procedure was found !")
-      }
-    } else {
-      method.selection <- match.arg(method.selection,
-                                    choices = c("LINselect", "DDSE", "Djump", "pBIC",
-                                                "BGHlsq", "BGHml",
-                                                "BGHlsqraw", "BGHmlraw",
-                                                "BGH", "BGHuni")) 
-      if (method.selection == "BGH") method.selection <- "BGHuni"
-      if (method.selection == "LINselect") method.selection <- "BGHml"
-    }
-    if (method.selection %in% c("DDSE", "DDSE_BM1")){
-      res <- extract_params(x, "DDSE_BM1", "alpha_max")
-    }
-    if (method.selection %in% c("Djump", "Djump_BM1")){
-      res <- extract_params(x, "Djump_BM1", "alpha_max")
-    }
-    if (method.selection == "pBIC"){
-      res <- extract_params(x, "pBIC", "alpha_max")
-    } 
-    if (method.selection == "BGHuni"){
-      res <- extract_params(x, "BGHuni", "alpha_max")
-    } 
-    if (method.selection == "BGHml"){
-      res <- extract_params(x, "BGHml", "alpha_max")
-    } 
-    if (method.selection == "BGHlsq"){
-      res <- extract_params(x, "BGHlsq", "alpha_min")
-    } 
-    if (method.selection == "BGHmlraw"){
-      res <- extract_params(x, "BGHmlraw", "alpha_max")
-    } 
-    if (method.selection == "BGHlsqraw"){
-      res <- extract_params(x, "BGHlsqraw", "alpha_min_raw")
-    } 
+    m_sel <- get_method_selection(x, method.selection = method.selection)
+    res <- extract_params(x, m_sel[1], m_sel[2])
   }
   ## Case scOU with negative value
   if ((length(as.vector(res$selection.strength)) == 1)
@@ -1477,10 +1428,241 @@ extract_params <- function(x, method, alpha_str){
   if (!is.null(x[[alpha_str]][[method]])){
     res <- x[[alpha_str]][[method]]$params_select
   } else {
-    stop(paste0(method, "method was not used in the fit."))
+    stop(paste0(method, "method was not used in the fit. Please use function 'model_selection' to add this criterion."))
   }
 }
 
+get_method_selection <- function(x, method.selection = NULL) {
+  if (is.null(method.selection)){
+    ## Take the selected parameters (default)
+    if (x$p == 1){
+      method.selection <- "BGHuni"
+    } else {
+      for (method in c("BGHml", "BGHlsq", "DDSE_BM1", "Djump_BM1",
+                       "BGHmlraw", "pBIC")){
+        if (method == "BGHlsq"){
+          alpha_str <- "alpha_min"
+        } else if (method == "BGHlsqraw"){
+          alpha_str <- "alpha_min_raw"
+        } else {
+          alpha_str <- "alpha_max"
+        }
+        if (!is.null(x[[alpha_str]][[method]])){
+          method.selection <- method
+          break
+        }
+      }
+      if (is.null(method.selection)) stop("No model selection procedure was found !")
+    }
+  } else {
+    method.selection <- match.arg(method.selection,
+                                  choices = c("LINselect", "DDSE", "Djump", "pBIC",
+                                              "BGHlsq", "BGHml",
+                                              "BGHlsqraw", "BGHmlraw",
+                                              "BGH", "BGHuni",
+                                              "log_likelihood")) 
+    if (method.selection == "BGH") method.selection <- "BGHuni"
+    if (method.selection == "LINselect") method.selection <- "BGHml"
+  }
+  # Result
+  if (method.selection %in% c("DDSE", "DDSE_BM1")){
+    res <- c("DDSE_BM1", "alpha_max", "DDSE", "max")
+  }
+  if (method.selection %in% c("Djump", "Djump_BM1")){
+    res <- c("Djump_BM1", "alpha_max", "Djump", "max")
+  }
+  if (method.selection == "pBIC"){
+    res <- c("pBIC", "alpha_max", "pBIC", "min")
+  } 
+  if (method.selection == "BGHuni"){
+    res <- c("BGHuni", "alpha_max", "BGHuni", "max")
+  } 
+  if (method.selection == "BGHml"){
+    res <- c("BGHml", "alpha_max", "BGHml", "min")
+  } 
+  if (method.selection == "BGHlsq"){
+    res <- c("BGHlsq", "alpha_min", "BGHlsq", "min")
+  } 
+  if (method.selection == "BGHmlraw"){
+    res <- c("BGHmlraw", "alpha_max", "BGHmlraw", "min")
+  } 
+  if (method.selection == "BGHlsqraw"){
+    res <- c("BGHlsqraw", "alpha_min_raw", "BGHlsqraw", "min")
+  }
+  if (method.selection == "log_likelihood"){
+    res <- c("log_likelihood", "alpha_max", "log likelihood", "no_max_min")
+  }
+  
+  return(res)
+}
+
+##
+#' @title Merge fits from independent runs of PhyloEM.
+#'
+#' @description
+#' \code{merge_rotations} takes several fits from \code{\link{PhyloEM}}, and
+#' merge them according to the best score (maximum likelihood or least squares).
+#' For each number of shifts, 
+#' The datesets needs to be equal up to a rotation. This is tested thanks to a QR
+#' decomposition, see function \code{\link{find_rotation}}.
+#'
+#' @param ... objects of class \code{\link{PhyloEM}} fitted on datasets that are equal up to a rotation.
+#' @param method.selection (optional) selection method to be applied to the merged fit. 
+#' See \code{\link{params_process.PhyloEM}}.
+#' @param tol (optional) relative numerical tolerence. See \code{\link{find_rotation}}.
+#' 
+#' @examples
+#' \dontrun{
+#' ## Load Data
+#' data(monkeys)
+#' ## Run method
+#' # Note: use more alpha values for better results.
+#' res <- PhyloEM(Y_data = monkeys$dat,        ## data
+#'                phylo = monkeys$phy,         ## phylogeny
+#'                process = "scOU",            ## scalar OU
+#'                random.root = TRUE,          ## root is stationary
+#'                stationary.root = TRUE,
+#'                K_max = 10,                  ## maximal number of shifts
+#'                nbr_alpha = 4,               ## number of alpha values
+#'                parallel_alpha = TRUE,       ## parallelize on alpha values
+#'                Ncores = 2)
+#' ## Rotate dataset
+#' rot <- matrix(c(cos(pi/4), -sin(pi/4), sin(pi/4), cos(pi/4)), nrow= 2, ncol = 2)
+#' Yrot <- t(rot) %*% monkeys$dat
+#' rownames(Yrot) <- rownames(monkeys$dat)
+#' ## Fit rotated dataset
+#' # Note: use more alpha values for better results.
+#' res_rot <- PhyloEM(Y_data = Yrot,               ## rotated data
+#'                    phylo = monkeys$phy,         
+#'                    process = "scOU",            
+#'                    random.root = TRUE,          
+#'                    stationary.root = TRUE,
+#'                    K_max = 10,                  
+#'                    nbr_alpha = 4,               
+#'                    parallel_alpha = TRUE,       
+#'                    Ncores = 2)
+#' ## Merge the two
+#' res_merge <- merge_rotations(res, res_rot)
+#' ## Plot the selected result
+#' plot(res_merge)
+#' ## Plot the model selection criterion
+#' plot_criterion(res_merge)
+#' }
+#' 
+#' @return
+#' An object of class \code{\link{PhyloEM}}, result of the merge.
+#' 
+#' @export
+#'
+##
+merge_rotations <- function(...,  method.selection = NULL, tol = NULL) {
+  ress <- list(...)
+  ## Basic tests
+  if (length(ress) <= 1) stop("There should be at least 2 results to merge.")
+  rots <- lapply(ress, function(x) find_rotation(ress[[1]], x, tol = tol))
+  ## Criterion
+  m_sels <- sapply(ress, get_method_selection)
+  m_sel_1 <- m_sels[, 1]
+  if (any(apply(m_sels, 2, function(x) x[1] != m_sel_1[1]))) {
+    stop("The same criterion should be used for all the PhyloEM objects.")
+  }
+  ## Find maximum likelihood
+  ll_max <- apply(sapply(ress, function(x) x$alpha_max$results_summary[["log_likelihood"]]), 1, which.max)
+  lsq_min <- apply(sapply(ress, function(x) x$alpha_min$results_summary[["least_squares"]]), 1, which.min)
+  lsq_min_raw <- apply(sapply(ress, function(x) x$alpha_min_raw$results_summary[["least_squares_raw"]]), 1, which.min)
+  ## Make new result
+  resMerge <- ress[[1]]
+  resMerge[grep("alpha_[[:digit:]]", names(resMerge))] <- NULL
+  for (K_t in 0:(length(ll_max)-1)) {
+    resMerge <- merge_rotate(resMerge, ress, rots, "alpha_max", ll_max, K_t)
+    resMerge <- merge_rotate(resMerge, ress, rots, "alpha_min", lsq_min, K_t)
+    resMerge <- merge_rotate(resMerge, ress, rots, "alpha_min_raw", lsq_min_raw, K_t)
+  }
+  resMerge <- model_selection(resMerge, method.selection = m_sel_1)
+  return(resMerge)
+}
+
+##
+#' @title Test for rotation invarient datasets
+#'
+#' @description
+#' \code{find_rotation} takes two fits from from \code{\link{PhyloEM}},
+#' and test if their datasets are equal up to a rotation.
+#'
+#' @param res1 an object of class \code{\link{PhyloEM}}.
+#' @param res2 an object of class \code{\link{PhyloEM}}.
+#' @param tol relative numerical tolerence. Default to \code{.Machine$double.eps^(0.5)}.
+#' 
+#' 
+#' @return
+#' If appropriate, the rotation matrix rot such that dat1 = rot %*% dat2.
+#' 
+#' @export
+#'
+##
+find_rotation <- function(res1, res2, tol = NULL) {
+  dat1 <- t(res1$Y_data)
+  dat2 <- t(res2$Y_data)
+  # Basic checks
+  if (any(dim(dat1) != dim(dat2))) stop("The datasets should have the same dimension.")
+  # Fit
+  fit_12 <- lm.fit(dat1, dat2)
+  # Linearly dependent ?
+  if (is.null(tol)) tol <- .Machine$double.eps^(0.5)
+  tolMax <- tol * sum(abs((dat1)))
+  testQR <- (sum(abs(fit_12$residuals)) <= tolMax)
+  if (!testQR) stop("The datasets are not linearly mapped.")
+  # Rotation ?
+  rot <- fit_12$coefficients
+  testRot <- isTRUE(all.equal(as.vector(t(rot) %*% rot), c(1, 0, 0, 1)))
+  if (!testRot) stop("The datasets are not linked by a rotation.")
+  return(unname(rot))
+}
+
+merge_rotate <- function(resMerge, ress, rots, alpha_str, ll_mm, K_t) {
+  res_mm <- ress[[ll_mm[K_t + 1]]][[alpha_str]]
+  rot_mm <- rots[[ll_mm[K_t + 1]]]
+  resMerge[[alpha_str]]$results_summary[K_t + 1, ] <- res_mm$results_summary[K_t + 1, ]
+  resMerge[[alpha_str]]$params_estim[[paste(K_t)]] <- rotate_params(res_mm$params_estim[[paste(K_t)]], rot_mm)
+  resMerge[[alpha_str]]$params_init_estim[[paste(K_t)]] <- rotate_params(res_mm$params_init_estim[[paste(K_t)]], rot_mm)
+  resMerge[[alpha_str]]$edge.quality[[paste(K_t)]] <- res_mm$edge.quality[[paste(K_t)]]
+  if (!resMerge$light_result){
+    resMerge[[alpha_str]]$Yhat[[paste(K_t)]] <- rot_mm %*% res_mm$Yhat[[paste(K_t)]]
+    resMerge[[alpha_str]]$Zhat[[paste(K_t)]] <- rot_mm %*% res_mm$Zhat[[paste(K_t)]]
+    resMerge[[alpha_str]]$Yvar[[paste(K_t)]] <- res_mm$Yvar[[paste(K_t)]]
+    resMerge[[alpha_str]]$Zvar[[paste(K_t)]] <- res_mm$Zvar[[paste(K_t)]]
+    resMerge[[alpha_str]]$m_Y_estim[[paste(K_t)]] <- rot_mm %*% res_mm$m_Y_estim[[paste(K_t)]] 
+  }
+  return(resMerge)
+}
+
+rotate_params <- function(params, rot) {
+  rot_params <- params
+  # Vectors
+  rot_params$shifts$values <- rot %*% params$shifts$values
+  vec <- params$optimal.value
+  if (!(is.null(vec) || (length(vec) == 1 && is.na(vec)))) {
+    rot_params$optimal.value <- as.vector(rot %*% vec)
+  }
+  vec <- params$root.state$value.root
+  if (!(is.null(vec) || (length(vec) == 1 && is.na(vec)))) {
+    rot_params$root.state$value.root <- as.vector(rot %*% vec)
+  }
+  vec <- params$root.state$exp.root
+  if (!(is.null(vec) || (length(vec) == 1 && is.na(vec)))) {
+    rot_params$root.state$exp.root <- as.vector(rot %*% vec)
+  }
+  vec <- params$lambda
+  if (!(is.null(vec) || (length(vec) == 1 && is.na(vec)))) {
+    rot_params$lambda <- as.vector(rot %*% vec)
+  }
+  # Variances
+  rot_params$variance <- forceSymmetric(rot %*% params$variance %*% t(rot))
+  if (!(length(params$root.state$var.root) == 1 && is.na(params$root.state$var.root))) {
+    rot_params$root.state$var.root <- forceSymmetric(rot %*% params$root.state$var.root %*% t(rot))
+  }
+  return(rot_params)
+}
 
 ##
 #' @title Ancestral State Reconstruction

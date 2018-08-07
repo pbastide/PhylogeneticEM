@@ -709,6 +709,87 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   }
 }
 
+##
+#' @title Plot Model Selection Criterion
+#'
+#' @description
+#' This function takes an object of class \code{PhyloEM}, result of function
+#' \code{\link{PhyloEM}}, and plots a model selection criterion.
+#'
+#' @param res an object of class \code{PhyloEM}, result of function
+#' \code{\link{PhyloEM}}.
+#' @param method.selection select the parameters to plot. One of "LINselect", "DDSE",
+#' "Djump" or "likelihood" (for un-penalized likelihood). Default to "LINselect". See
+#' \code{\link{params_process.PhyloEM}}.
+#' @param add boolean: should the points be added to a urent plot (default to FALSE).
+#' @param select.col the color of the point selected by the criterion. Default to "red".
+#' @param ... further argument to be passed to base \code{\link{plot}}.
+#' 
+#' @return
+#' NULL
+#' 
+#' @seealso \code{\link{params_process.PhyloEM}}, \code{\link{plot.PhyloEM}}, \code{\link{get_criterion}}
+#' 
+#' @export
+#'
+plot_criterion <- function(res, method.selection = NULL, add = FALSE, select.col = "red", ...) {
+  m_sel <- get_method_selection(res, method.selection = method.selection)
+  K_grid <- res[[m_sel[2]]]$results_summary$K_try
+  if (m_sel[1] == "log_likelihood") {
+    name_crit <- "log_likelihood"
+  } else {
+    name_crit <- paste0("crit_", m_sel[1])
+  }
+  Crit <- res[[m_sel[2]]]$results_summary[[name_crit]]
+  if (add) {
+    graphics::points(K_grid, Crit, ...)
+  } else {
+    plot(K_grid, Crit, xlab = "K", ylab = paste0("Criterion ", m_sel[3]), ...)
+  }
+  if (m_sel[4] != "no_max_min") {
+    if (m_sel[4] == "min") {
+      selected <- which.min(Crit)
+    } else {
+      selected <- which.max(Crit)
+    }
+    graphics::points(K_grid[selected], Crit[selected], col = select.col, ...)
+  }
+}
+
+##
+#' @title Get Model Selection Criterion
+#'
+#' @description
+#' This function takes an object of class \code{PhyloEM}, result of function
+#' \code{\link{PhyloEM}}, and return the values of the model selection criterion
+#' for each value of K.
+#'
+#' @param res an object of class \code{PhyloEM}, result of function
+#' \code{\link{PhyloEM}}.
+#' @param method.selection select the parameters to plot. One of "LINselect", "DDSE",
+#' "Djump" or "likelihood" (for un-penalized likelihood). Default to "LINselect". See
+#' \code{\link{params_process.PhyloEM}}.
+#' 
+#' @return
+#' A named vector with the values of the criterion for each number of shift K.
+#' 
+#' @seealso \code{\link{params_process.PhyloEM}}, \code{\link{plot.PhyloEM}}, \code{\link{plot_criterion}}
+#' 
+#' @export
+#'
+get_criterion <- function(res, method.selection = NULL) {
+  m_sel <- get_method_selection(res, method.selection = method.selection)
+  K_grid <- res[[m_sel[2]]]$results_summary$K_try
+  if (m_sel[1] == "log_likelihood") {
+    name_crit <- "log_likelihood"
+  } else {
+    name_crit <- paste0("crit_", m_sel[1])
+  }
+  Crit <- res[[m_sel[2]]]$results_summary[[name_crit]]
+  names(Crit) <- K_grid
+  return(Crit)
+}
+
 # save.process <- function(Name, TreeType, XX, process = c("BM", "OU"), paramsSimu, paramsEstimate=paramsSimu, estimate=FALSE, directory, ...) {
 #   ## Define File Name
 #   FileName <- make.name(process, paramsSimu, paramsEstimate, estimate, ...)
