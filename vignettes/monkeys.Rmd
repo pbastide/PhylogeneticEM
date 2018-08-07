@@ -157,6 +157,22 @@ plot_criterion(res_merge2)
 
 On the previous dataset, the introduction of rotations might appear a bit artificial. However, for some, highly correlated datasets, such rotations might be needed. For instance, when studying the Anolis Lizard dataset (Mahler et al., 2013[^3]), this was needed to get a good maximum likelihood solution for all values of K. See Bastide et al. (2018)[^4] for more details on this analysis.
 
+<!-- ## EB model -->
+
+<!-- It can be shown that an Early Burst model (EB) is formally equivalent on an ultrametric tree to an scOU with a negative alpha value. -->
+
+<!-- ```{r, label="Fit_EM_negative", warning=FALSE} -->
+<!-- res_neg <- PhyloEM(phylo = monkeys$phy, -->
+<!--                    Y_data = monkeys$dat, -->
+<!--                    process = "scOU",                   -->
+<!--                    random.root = FALSE,      ## root needs to be fixed       -->
+<!--                    K_max = 10,                         -->
+<!--                    parallel_alpha = TRUE,               -->
+<!--                    Ncores = 2,     -->
+<!--                    nbr_alpha = 20,           ## 10 negative, 10 positive -->
+<!--                    allow_negative = TRUE)    ## allow negative alpha in the grid          -->
+<!-- ``` -->
+
 [^1]: Aristide, L., dos Reis, S. F., Machado, A. C., Lima, I., Lopes, R. T., & Perez, S. I. (2016). Brain shape convergence in the adaptive radiation of New World monkeys. Proceedings of the National Academy of Sciences, 113(8), 2158–2163.
 [^2]: Adams, D. C., & Collyer, M. L. (2018). Multivariate Phylogenetic Comparative Methods: Evaluations, Comparisons, and Recommendations. Systematic Biology, 67(1), 14–31.
 [^3]: Mahler, D. L., Ingram, T., Revell, L. J., & Losos, J. B. (2013). Exceptional Convergence on the Macroevolutionary Landscape in Island Lizard Radiations. Science, 341(6143), 292–295.

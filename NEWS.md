@@ -9,6 +9,8 @@
     equal up to a rotation.
     * Functions `get_criterion` and `plot_criterion` to get and plot the criterion used
     for model selection easilly.
+* New feature:
+    * Function PhyloEM can now allow for negative values of alpha, to fit an EB model.
 
 # PhylogeneticEM 1.1.0
 * Deprecation Fix:

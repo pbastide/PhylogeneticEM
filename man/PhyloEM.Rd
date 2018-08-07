@@ -18,8 +18,7 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   estimates = NULL, save_step = FALSE, parallel_alpha = FALSE,
   Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
   light_result = TRUE, tol_tree = .Machine$double.eps^0.5,
-  allow_negative = FALSE,
-  option_is.ultrametric = 1, ...)
+  allow_negative = FALSE, option_is.ultrametric = 1, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
