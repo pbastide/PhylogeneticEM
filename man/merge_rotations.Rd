@@ -12,9 +12,19 @@ merge_rotations(..., method.selection = NULL, tol = NULL)
 \item{method.selection}{(optional) selection method to be applied to the merged fit. 
 See \code{\link{params_process.PhyloEM}}.}
 
-\item{tol}{(optional) relative numerical tolerence. See \code{\link{find_rotation}}.
-
-#' @examples
+\item{tol}{(optional) relative numerical tolerence. See \code{\link{find_rotation}}.}
+}
+\value{
+An object of class \code{\link{PhyloEM}}, result of the merge.
+}
+\description{
+\code{merge_rotations} takes several fits from \code{\link{PhyloEM}}, and
+merge them according to the best score (maximum likelihood or least squares).
+For each number of shifts, 
+The datesets needs to be equal up to a rotation. This is tested thanks to a QR
+decomposition, see function \code{\link{find_rotation}}.
+}
+\examples{
 \dontrun{
 ## Load Data
 data(monkeys)
@@ -31,7 +41,7 @@ res <- PhyloEM(Y_data = monkeys$dat,        ## data
                Ncores = 2)
 ## Rotate dataset
 rot <- matrix(c(cos(pi/4), -sin(pi/4), sin(pi/4), cos(pi/4)), nrow= 2, ncol = 2)
-Yrot <- t(rot) %*% monkeys$dat
+Yrot <- t(rot) \%*\% monkeys$dat
 rownames(Yrot) <- rownames(monkeys$dat)
 ## Fit rotated dataset
 # Note: use more alpha values for better results.
@@ -50,15 +60,6 @@ res_merge <- merge_rotations(res, res_rot)
 plot(res_merge)
 ## Plot the model selection criterion
 plot_criterion(res_merge)
-}}
 }
-\value{
-An object of class \code{\link{PhyloEM}}, result of the merge.
-}
-\description{
-\code{merge_rotations} takes several fits from \code{\link{PhyloEM}}, and
-merge them according to the best score (maximum likelihood or least squares).
-For each number of shifts, 
-The datesets needs to be equal up to a rotation. This is tested thanks to a QR
-decomposition, see function \code{\link{find_rotation}}.
+
 }

@@ -1462,7 +1462,7 @@ get_method_selection <- function(x, method.selection = NULL) {
 #' See \code{\link{params_process.PhyloEM}}.
 #' @param tol (optional) relative numerical tolerence. See \code{\link{find_rotation}}.
 #' 
-#' #' @examples
+#' @examples
 #' \dontrun{
 #' ## Load Data
 #' data(monkeys)
