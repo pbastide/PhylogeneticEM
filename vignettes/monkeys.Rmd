@@ -13,25 +13,32 @@ vignette: >
 
 The dataset is taken from Aristide et al. (2016)[^1], and is embedded in the package. We can load and plot it easily.
 
-```{r, label="data", fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
+```{r, label="data", fig.show='hold', fig.height=4, fig.width=7, warning=FALSE, message=FALSE}
 library(PhylogeneticEM)
 data(monkeys)
 
-plot(params_BM(p = 2), data = monkeys$dat, phylo = monkeys$phy, show.tip.label = TRUE, cex = 0.5, no.margin = TRUE)
+plot(params_BM(p = 2),
+     data = monkeys$dat, phylo = monkeys$phy,
+     show.tip.label = TRUE, cex = 0.5, no.margin = TRUE)
 ```
 
+This `plot` function inherits from most of the optional arguments of the popular `ape` plot function
+(here for instance, the optional argument `show.tip.label` is used).
+Many other graphical parameters can be set by the user, so as to control the output of the function, see the manual pages for more details.
+The two traits (PCs) are represented on the right, each with its own scale.
+Plotting the data on the tree before analyzing it allows us to spot potential errors or outliers.
 
 ## Inference
 
-In this section, we take the traits as simulated by function `simul_process`, and use function `PhyloEM` for the inference of the parameters.
+By default, the inference is done on an automatically computed grid of 10 alpha values.
+To keep the computations down, we keep here this default, but this number should be raised on a real application.
+The maximum number of shifts considered is here 10, and should be adapted considering the size of the tree.
 
-By default, the inference is done on an automatically computed grid of $10$ alpha values. To keep the computations down, we keep here this default, but this number should be raised on a real application.
-
-```{r, label="Fit_EM", warning=FALSE}
+```{r, label="Fit_EM", warning=FALSE, message=FALSE}
 res <- PhyloEM(phylo = monkeys$phy,
                Y_data = monkeys$dat,
                process = "scOU",                   ## scalar OU model
-               random.root = TRUE,                 ## Root is stationary (true model)
+               random.root = TRUE,                 ## Root is stationary
                stationary.root = TRUE,
                K_max = 10,                         ## Maximal number of shifts
                parallel_alpha = TRUE,              ## This can be set to TRUE for
@@ -39,16 +46,24 @@ res <- PhyloEM(phylo = monkeys$phy,
 res
 ```
 
-As previously, we can plot the solution selected by the default criterion:
+The result is stored in an object of class `PhyloEM`, which has several extractors available (see manual).
+The plot function shows solution selected by the default model selection method, but another one can be selected if needed.
+The same optional parameters can be used as before to control how the figure should look like.
+
 ```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
 plot(res)
 ```
+
+Function `plot_criterion` shows the value of the default model selection criterion for each number of shifts.
 
 ```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
 plot_criterion(res)
 ```
 
-Here, the solution selected has four shifts. As shown below, the criterion is however a bit flat around its minimum. To try and refine this result, one solution is to use a finer grid of alpha values. When a grid with $100$ values is used, the solution with $K=5$ shifts is actually selected. We can plot it here for comparison.
+Here, the solution selected has four shifts. 
+As shown above, the criterion is however a bit flat around its minimum.
+To try and refine this result, one solution is to use a finer grid of alpha values.
+When a grid with 100 values is used, the solution with K=5 shifts is actually selected. We can plot it here for comparison.
 
 ```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
 plot(res, params = params_process(res, K = 5))
@@ -56,22 +71,34 @@ plot(res, params = params_process(res, K = 5))
 
 ## Equivalent Solutions
 
-When plotting the solution with $5$ shifts, a warning pops up, about several equivalent solutions existing. We can plot these solutions.
+When plotting the solution with 5 shifts, the following warning pops up:
+
+```{r, echo=FALSE}
+params_5 <- params_process(res, K = 5)
+```
+
+Indeed, the solution with 5 shifts has three equivalent shift allocations on the branches.
+These solutions can be found and plotted thanks to the function `equivalent_shifts`.
 
 ```{r, fig.show='hold', fig.height=4, fig.width=8, warning=FALSE}
-plot(equivalent_shifts(monkeys$phy, params_process(res, K = 5)), show_shifts_values = FALSE)
+plot(equivalent_shifts(monkeys$phy, params_process(res, K = 5)),
+     show_shifts_values = FALSE, shifts_cex = 0.5)
 ```
 
 Here, the three solutions are very similar, and just have to do with the two shifts appearing on two sister branches at the bottom of the tree.
+Note that all these solutions have 5 shifts, and define the same clustering of the tips in 6 groups.
+These configurations all have the same likelihood, and hence cannot be distinguished from the data.
 
 ## Invariance by Rotation
 
-In theory, the method should not be affected by a rotation of the dataset (see Adams & Collyer, 2018 [^2] for a review of this problem). However, because of some numerical issues, it is possible that the results vary a little bit. We can explore this behavior on this dataset.
+In theory, the method should not be affected by a rotation of the dataset (see Adams & Collyer, 2018 [^2] for a review of this problem).
+However, because of some numerical issues, it is possible that the results vary a little bit. We can explore this behavior on this dataset.
 
 ```{r, label="Fit_EM_rot", warning=FALSE, message=FALSE}
 # An arbitrary rotation
-rot <- matrix(c(cos(pi/4), -sin(pi/4), sin(pi/4), cos(pi/4)),
-              nrow= 2, ncol = 2)
+theta <- pi/4
+rot <- matrix(c(cos(theta), -sin(theta), sin(theta), cos(theta)),
+              nrow = 2, ncol = 2)
 
 # Rotate data
 Yrot <- t(rot) %*% monkeys$dat
@@ -79,55 +106,68 @@ rownames(Yrot) <- rownames(monkeys$dat)
 
 # PhyloEM on rotated data
 res_rot <- PhyloEM(phylo = monkeys$phy,
-                   Y_data = Yrot,
-                   process = "scOU",                   ## scalar OU model
-                   random.root = TRUE,                 ## Root is stationary (true model)
+                   Y_data = Yrot,                      ## rotated data
+                   process = "scOU",                   
+                   random.root = TRUE,                 
                    stationary.root = TRUE,
-                   K_max = 10,                         ## Maximal number of shifts
-                   parallel_alpha = TRUE,              ## This can be set to TRUE for
-                   Ncores = 2)                         ## parallel computations
+                   K_max = 10,                         
+                   parallel_alpha = TRUE,              
+                   Ncores = 2)                         
 ```
 
 ```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
 plot(res_rot)
 ```
 
-At first sight, the solutions look very different. Indeed, when applied on the rotated dataset, PhyloEM selects for a solution with $7$ shifts, instead of $4$.
-But, if we look at the solution obtained for, say $4$ shifts, then they are identical:
-```{r, fig.show='hold', fig.height=3, fig.width=4, warning=FALSE}
-plot(res, params = params_process(res, K = 4))
-plot(res_rot, params = params_process(res, K = 4))
+At first sight, the solution looks very different.
+Indeed, when applied on the rotated dataset, `PhyloEM` selects for a solution with 7 shifts, instead of 4.
+But, if we look at the solution obtained for, say, 4 shifts, then they are identical:
+
+```{r, fig.show='hold', fig.height=3, fig.width=3, warning=FALSE}
+plot(res, params = params_process(res, K = 4), no.margin = TRUE)
+plot(res_rot, params = params_process(res, K = 4), no.margin = TRUE)
 ```
 
 Looking a bit more closely at the outcome, we can see that the log likelihoods are actually very similar, except in a few places:
+
 ```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
 plot_criterion(res, "log_likelihood")
 plot_criterion(res_rot, "log_likelihood", pch = "+", add = TRUE)
 ```
 
-What happens is that, for numerical reasons, the likelihood was slightly better optimized in some cases for one or the other datasets. This had an impact on the criterion used, that is based on the penalized likelihood. We can see it with a plot:
+What happens is that, for numerical reasons, the likelihood was slightly better optimized in some cases for one or the other datasets.
+This had an impact on the criterion used, that is based on the penalized likelihood. We can see it with a plot:
+
 ```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
 plot_criterion(res)
 plot_criterion(res_rot, pch = "+", add = TRUE)
 ```
 
-But, as the two datasets should be equivalent, we don't need to choose between the two runs. For each number of shifts, our only goal is to find the maximum likelihood solution. Hence, for each number of shifts, we can just take the best of the two solutions, that is the one that converged the best. This can be done with a dedicated function:
+But, as the two datasets should be equivalent, we don't need to choose between the two runs.
+For each number of shifts, our only goal is to find the maximum likelihood solution.
+Hence, for each number of shifts, we can just take the best of the two solutions, that is the one that converged the best.
+This can be done with a dedicated function:
+
 ```{r, label="merge", warning=FALSE}
 res_merge <- merge_rotations(res, res_rot)
 ```
 
-This function takes the first fit has a reference (here, with the original data), and, when the second fit has a better likelihood, it takes its solution, and rotate it back in the original space. The resulting solution has the highest likelihood possible for each value of K, and the model selection criterion can be applied to this new solution path.
+This function takes the first fit has a reference (here, with the original data), and, when the second fit has a better likelihood, it takes its solution, and rotate it back in the original space.
+The resulting solution has the highest likelihood possible for each value of K, and the model selection criterion can be applied to this new solution path.
+
 ```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
 plot_criterion(res_merge)
 ```
 
-We can see here that the solution with $4$ shifts is now selected.
+We can see here that the solution with 4 shifts is now selected again.
 
 This merge function can be applied to more that two fits, as illustrated below.
-```{r, label="Fit_EM_rot2", warning=FALSE}
+
+```{r, label="Fit_EM_rot2", warning=FALSE, message = FALSE}
 # An other rotation
-rot2 <- matrix(c(cos(pi/3), -sin(pi/3), sin(pi/3), cos(pi/3)),
-              nrow= 2, ncol = 2)
+theta <- pi/3
+rot2 <- matrix(c(cos(theta), -sin(theta), sin(theta), cos(theta)),
+              nrow = 2, ncol = 2)
 
 # Rotate data
 Yrot2 <- t(rot2) %*% monkeys$dat
@@ -136,12 +176,12 @@ rownames(Yrot2) <- rownames(monkeys$dat)
 # PhyloEM on rotated data
 res_rot2 <- PhyloEM(phylo = monkeys$phy,
                    Y_data = Yrot2,
-                   process = "scOU",                   ## scalar OU model
-                   random.root = TRUE,                 ## Root is stationary (true model)
+                   process = "scOU",                   
+                   random.root = TRUE,                 
                    stationary.root = TRUE,
-                   K_max = 10,                         ## Maximal number of shifts
-                   parallel_alpha = TRUE,              ## This can be set to TRUE for
-                   Ncores = 2)                         ## parallel computations
+                   K_max = 10,                        
+                   parallel_alpha = TRUE,            
+                   Ncores = 2)                        
 
 # Merge
 res_merge2 <- merge_rotations(res, res_rot, res_rot2)
@@ -155,23 +195,48 @@ plot_criterion(res_merge2)
 
 ## Lizard Dataset
 
-On the previous dataset, the introduction of rotations might appear a bit artificial. However, for some, highly correlated datasets, such rotations might be needed. For instance, when studying the Anolis Lizard dataset (Mahler et al., 2013[^3]), this was needed to get a good maximum likelihood solution for all values of K. See Bastide et al. (2018)[^4] for more details on this analysis.
+On the previous dataset, the introduction of rotations might appear a bit artificial.
+However, for some highly correlated datasets, such rotations might be needed.
+For instance, when studying the Anolis Lizard dataset (Mahler et al., 2013[^3]),
+the application of several pseudo-orthonormalisation techniques on the original dataset were needed to
+get a good maximum likelihood solution for all values of K.
+See Bastide et al. (2018)[^4] for more details on this analysis.
 
-<!-- ## EB model -->
+## EB model
 
-<!-- It can be shown that an Early Burst model (EB) is formally equivalent on an ultrametric tree to an scOU with a negative alpha value. -->
+It can be shown that an Early Burst model (EB) is formally equivalent on an ultrametric tree to a non-shifted scOU with a negative alpha value.
+It is possible to include this model in the fit, by allowing "negative alpha" values in the function `PhyloEM`.
 
-<!-- ```{r, label="Fit_EM_negative", warning=FALSE} -->
-<!-- res_neg <- PhyloEM(phylo = monkeys$phy, -->
-<!--                    Y_data = monkeys$dat, -->
-<!--                    process = "scOU",                   -->
-<!--                    random.root = FALSE,      ## root needs to be fixed       -->
-<!--                    K_max = 10,                         -->
-<!--                    parallel_alpha = TRUE,               -->
-<!--                    Ncores = 2,     -->
-<!--                    nbr_alpha = 20,           ## 10 negative, 10 positive -->
-<!--                    allow_negative = TRUE)    ## allow negative alpha in the grid          -->
-<!-- ``` -->
+Note that, although the case with no shift has a clear interpretation (EB model), an scOU with shifts and a negative alpha
+can be hard to interpret, and is not always appropriate.
+One should hence be careful when using and interpreting such a model, and the use of this function is not encouraged for a first analysis.
+
+```{r, label="Fit_EM_negative", warning=FALSE, message = FALSE}
+res_neg <- PhyloEM(phylo = monkeys$phy,
+                   Y_data = monkeys$dat,
+                   process = "scOU",
+                   random.root = FALSE,      ## root needs to be fixed
+                   K_max = 10,
+                   parallel_alpha = TRUE,
+                   Ncores = 2,
+                   nbr_alpha = 20,           ## 10 negative, 10 positive
+                   allow_negative = TRUE)    ## allow negative alpha in the grid
+```
+
+We can extract the parameter of the fit with no shifts, that is equivalent to an EB model:
+```{r}
+params_process(res_neg, K = 0)
+```
+The "selection strenght" $\alpha$ is linked with the rate $r$ of the EB by the relation: $r = 2\alpha$.
+
+We can also plot the criterion for the model selection. Empirically, we found that the "BGHmlraw" criterion
+would behave a bit better in this configuration.
+
+```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
+plot_criterion(res_neg, "BGHmlraw")
+```
+
+Here, the same solution with 5 shifts (and a positive alpha) is selected.
 
 [^1]: Aristide, L., dos Reis, S. F., Machado, A. C., Lima, I., Lopes, R. T., & Perez, S. I. (2016). Brain shape convergence in the adaptive radiation of New World monkeys. Proceedings of the National Academy of Sciences, 113(8), 2158–2163.
 [^2]: Adams, D. C., & Collyer, M. L. (2018). Multivariate Phylogenetic Comparative Methods: Evaluations, Comparisons, and Recommendations. Systematic Biology, 67(1), 14–31.
