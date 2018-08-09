@@ -2137,7 +2137,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       X$params_estim <- lapply(X$params_estim, fun1)
       rm(fun1)
       ## Normalize least squares
-      X$results_summary$least_squares <- X$results_summary$least_squares / (2 * alp)
+      X$results_summary$least_squares <- X$results_summary$least_squares / (2 * abs(alp))
       ## Ancestral state reconstruction
       if (!light_result){
         compute_E  <- switch(method.variance,
@@ -2600,15 +2600,15 @@ merge_max_grid_alpha <- function(X, alpha, light_result = TRUE){
   return(X)
 }
 
-add_lsq <- function(X){
-  nums <- grep("alpha_-?[[:digit:]]", names(X))
-  for (i in nums){
-    X[[i]]$results_summary$least_squares <- sapply(X[[i]]$m_Y_estim,
-                                                   function(z) sum((X$Y_data - z)^2))
-    # X[[i]]$results_summary$least_squares <- sapply(X[[i]]$params_estim, function(z) sum(diag(z$variance)))
-  }
-  return(X)
-}
+# add_lsq <- function(X){
+#   nums <- grep("alpha_-?[[:digit:]]", names(X))
+#   for (i in nums){
+#     X[[i]]$results_summary$least_squares <- sapply(X[[i]]$m_Y_estim,
+#                                                    function(z) sum((X$Y_data - z)^2))
+#     # X[[i]]$results_summary$least_squares <- sapply(X[[i]]$params_estim, function(z) sum(diag(z$variance)))
+#   }
+#   return(X)
+# }
 
 merge_min_grid_alpha <- function(X, light_result = TRUE, raw = FALSE){
   nums <- grep("alpha_-?[[:digit:]]", names(X))
