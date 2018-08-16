@@ -166,6 +166,8 @@ NULL
 #' univariate processes).
 #' @param sBM_variance Is the root of the BM supposed to be random and
 #' "stationary"? Used for BM equivalent computations. Default to FALSE.
+#' @param allow_negative whether to allow negative values for alpha (Early Burst).
+#' See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.
 #' 
 #' @return
 #' An object of class \code{EstimateEM}.
@@ -238,6 +240,7 @@ estimateEM <- function(phylo,
                        method.OUsun = c("rescale", "raw"),
                        impute_init_Rphylopars = FALSE,
                        K_lag_init = 0,
+                       allow_negative = FALSE,
                        ...){
   
   ntaxa <- length(phylo$tip.label)
@@ -288,7 +291,8 @@ estimateEM <- function(phylo,
                             eps = eps,
                             sBM_variance = sBM_variance,
                             method.OUsun = method.OUsun,
-                            independent = independent)
+                            independent = independent,
+                            allow_negative = allow_negative)
   process <- temp$process
   transform_scOU <- temp$transform_scOU # Transform back to get an OU ?
   rescale_tree <- temp$rescale_tree # Rescale the tree ?
@@ -865,6 +869,32 @@ estimateEM <- function(phylo,
 #' go to their optimum values with the same speed.
 #' }
 #' 
+#' Note that the "scalar OU" model can also be seen as a re-scaling of the tree.
+#' The selection strength parameter alpha can then be interpreted as a measure
+#' of the "phylogenetic signal":
+#' \itemize{
+#' \item If alpha is close to 0, then the process is similar to a BM on the original tree,
+#' and the signal is strong.
+#' \item If alpha is large, then the re-scaled tree is similar to a star-tree,
+#' and the signal is weak.
+#' }
+#' When there are no shifts, and the root is taken to be constant, this
+#' model is actually equivalent to an AC model (Uyeda et al. 2015).
+#' With this interpretation in mind, one might want to explore 
+#' negative values of alpha, in order to fit a DC (or Early Burst) model.
+#' With no shift and a fixed root, the same proof shows that the scOU
+#' with alpha negative is equivalent to the DC model. There are two
+#' strong caveats in doing that.
+#' \itemize{
+#' \item The interpretation of the OU as modelling the dynamic of a trait
+#' undergoing stabilizing selection is lost. In this case, the scOU can only
+#' be seen as a re-scaling of the tree, similar to Pagel's delta.
+#' \item The values of the "optimal values", and of the shifts on them, cannot
+#' be interpreted as such (the process is actually going away from this values,
+#' instead of being attracted). When looking at these values, one should only use
+#' the un-normalized values happening of the underlying BM. You can extract those
+#' using the \code{\link{params_process}} function with \code{rBM = TRUE}.
+#' }
 #'
 #' @param phylo A phylogenetic tree of class \code{phylo} 
 #' (from package \code{\link{ape}}).
@@ -958,6 +988,8 @@ estimateEM <- function(phylo,
 #' @param tol_tree tolerance to consider a branch length significantly greater than zero, or
 #' two lineages lengths to be different, when checking for ultrametry. 
 #' (Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.
+#' @param allow_negative whether to allow negative values for alpha (Early Burst).
+#' See details. Default to FALSE.
 #' @param option_is.ultrametric option for \code{\link{is.ultrametric}} check. Default to 1.
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
 #' tolerance parameters for stopping criteria, maximal number of iterations, etc.
@@ -1038,7 +1070,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     alpha_grid = TRUE,
                     nbr_alpha = 10,
                     random.root = TRUE,
-                    stationary.root = TRUE,
+                    stationary.root = random.root,
                     alpha = NULL,
                     check.tips.names = TRUE,
                     progress.bar = TRUE,
@@ -1053,6 +1085,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     K_lag_init = 5,
                     light_result = TRUE,
                     tol_tree = .Machine$double.eps^0.5,
+                    allow_negative = FALSE,
                     option_is.ultrametric = 1,
                     ...){
   ## Required packages
@@ -1066,6 +1099,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   if (any(abs(phylo$edge.length) < tol_tree)){
     stop("The tree has zero-length branches.
          Please use `ape::di2multi` function to transform the zero-length branches into ploytomies.")
+  }
+  if (any(phylo$edge.length < 0)){
+    stop("The tree has negative branch lengths. This is not allowed.")
   }
   phylo_given <- phylo
   method.variance  <- match.arg(method.variance)
@@ -1094,7 +1130,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     alpha_grid <- TRUE
     alpha <- 0
   }
-  ## Model Selection
+  ## Model Selection ##########################################################
   method.selection  <- match.arg(method.selection,
                                  choices = c("LINselect", "DDSE", "Djump",
                                              "BirgeMassart1", "BirgeMassart2",
@@ -1169,6 +1205,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             impute_init_Rphylopars = impute_init_Rphylopars, 
                             K_lag_init = K_lag_init,
                             light_result = light_result,
+                            allow_negative = allow_negative,
                             ...)
   } else { # For an in-loop estimation of alpha (independent = TRUE)
     if ((p > 1) && !independent){
@@ -1284,7 +1321,9 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
 #' specified, then \code{K} must be precised too. Default to NULL (automatically
 #' selected value, see \code{method.selection} argument).
 #' @param rBM (optional) if TRUE, and if the process is "scOU", returns the raw
-#' parameters of the BM on the re-scaled tree. Default to FALSE.
+#' parameters of the BM on the re-scaled tree. Default to FALSE, except if 
+#' the selection strength is negative (see doc of \code{\link{PhyloEM}} for
+#' an explanation of this particular case).
 #' @param init (optional) if TRUE, gives the parameters from the initialization of
 #' the EM. Default to FALSE. This has no effect if \code{K} is not specified.
 #' @param ... unused.
@@ -1314,7 +1353,11 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
     }
   ## Select a given alpha
     if (!is.null(alpha)){
-      tmp <- grep(alpha, names(x))
+      if (alpha == 0){
+        tmp <- which("alpha_0" == names(x))
+      } else {
+        tmp <- grep(alpha, names(x))
+      }
       if (length(tmp) == 0){
         stop(paste0("The value of alpha: ", alpha, " was not found in the fitted object."))
       } else if (length(tmp) > 1){
@@ -1334,6 +1377,12 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
   ## Take the selected parameters (default)
     m_sel <- get_method_selection(x, method.selection = method.selection)
     res <- extract_params(x, m_sel[1], m_sel[2])
+  }
+  ## Case scOU with negative value
+  if ((length(as.vector(res$selection.strength)) == 1)
+        && (res$selection.strength < 0)
+        && !rBM) {
+    warning("The 'selection strength' is negative. One should only look at the un-normalized values of the shifts. To do so, please call this function using 'rBM = TRUE'.")
   }
   ## Return to rBM parameters if needed
   if (rBM){
@@ -1362,7 +1411,7 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
   res$optimal.value <- tmp$optimal.value
   ## Process
   res$process <- x$process
-  if (rBM) res$process <- "BM"
+  if (rBM || (!is.null(alpha) && alpha == 0)) res$process <- "BM"
   ## Check root state
   res$root.state <- test.root.state(res$root.state,
                                     res$process,
@@ -1371,7 +1420,9 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
                                     optimal.value = res$optimal.value)
   res$variance <- as(res$variance, "dpoMatrix")
   class(res) <- "params_process"
-  if (attr(res, "Neq") > 1) warning("There are several equivalent solutions for this shift position.")
+  if (attr(res, "Neq") > 1){
+    warning("There are several equivalent solutions for this shift position.")
+  }
   return(res)
 }
 
@@ -1632,6 +1683,9 @@ rotate_params <- function(params, rot) {
 #' data imputation.
 #' @param what the quantity to retrieve. Either the imputed traits (default), their
 #' conditional variances, or the simple expectations under the selected process.
+#' @param params (optional) some user-specified parameters.
+#' Must be of class \code{\link{params_process}}. If left blank, they are extracted
+#' using the \code{method.selection} argument (see below).
 #' @param method.selection (optional) the method selection to be used.
 #' One of "LINselect", "DDSE", "Djump". Default to "LINselect".
 #' @param reconstructed_states if the reconstructed states have already been
@@ -1662,13 +1716,14 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
                                    save_all = FALSE,
                                    where = c("nodes", "tips"),
                                    what = c("imputed", "variances", "expectations"),
+                                   params = NULL,
                                    method.selection = NULL,
                                    reconstructed_states = NULL,
                                    ...){
   ## Computes all the moments if needed
   if (is.null(reconstructed_states)){
     if (save_all) what <- c("imputed", "variances", "expectations")
-    reconstructed_states <- compute_ancestral_traits(x, method.selection, what, ...)
+    reconstructed_states <- compute_ancestral_traits(x, params, method.selection, what, ...)
   }
   
   ## Stop here if save_all=TRUE
@@ -1699,12 +1754,19 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
 }
 
 compute_ancestral_traits <- function(x,
+                                     params,
                                      method.selection,
                                      what = c("imputed", "variances", "expectations"),
                                      ...){
   
   ## parameters
-  params <- params_process(x, method.selection, ...)
+  if (is.null(params)){
+    params <- params_process(x, method.selection, ...)
+  } else {
+    if (class(params) != "params_process") {
+      stop("The user specified parameters must be of class 'params_process'.")
+    }
+  }
   
   ## Heavy results
   if (!x$light_result && x$process == "scOU"){
@@ -1896,6 +1958,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                impute_init_Rphylopars = FALSE,
                                K_lag_init = 0,
                                light_result = TRUE,
+                               allow_negative = FALSE,
                                ...){
   # reqpckg <- c("ape", "glmnet", "robustbase")
   reqpckg <- c("PhylogeneticEM")
@@ -1928,9 +1991,11 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   if (process == "BM") {
     alpha <- 0
   } else {
-    alpha <- find_grid_alpha(phylo, alpha, nbr_alpha = nbr_alpha, ...)
+    alpha <- find_grid_alpha(phylo, alpha, nbr_alpha = nbr_alpha, allow_negative = allow_negative, ...)
     if (stationary.root) alpha <- alpha[alpha != 0]
   }
+  ## Check alpha for numerical instabilities
+  check_range_alpha(alpha, h_tree_original)
   ## Loop on alpha
   estimate_alpha_several_K <- function(alp, 
                                        original_phy, Y_data,
@@ -1962,6 +2027,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        U_tree,
                                        K_lag_init,
                                        light_result,
+                                       allow_negative,
                                        ...){
     if(progress.bar){
       message(paste0("Alpha ", alp))
@@ -1974,7 +2040,8 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                               known.selection.strength = alp,
                               sBM_variance = sBM_variance,
                               method.OUsun = method.OUsun,
-                              independent = independent)
+                              independent = independent,
+                              allow_negative = allow_negative)
     
     rescale_tree <- temp$rescale_tree # Rescale the tree ?
     transform_scOU <- temp$transform_scOU # Re-transform parameters back ?
@@ -2069,6 +2136,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              impute_init_Rphylopars = impute_init_Rphylopars,
                              K_lag_init = K_lag_init,
                              light_result = light_result,
+                             allow_negative = allow_negative,
                              ...)
     ## Trnasform back parameters to OU if needed
     if (transform_scOU){
@@ -2082,7 +2150,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
       X$params_estim <- lapply(X$params_estim, fun1)
       rm(fun1)
       ## Normalize least squares
-      X$results_summary$least_squares <- X$results_summary$least_squares / (2 * alp)
+      X$results_summary$least_squares <- X$results_summary$least_squares / (2 * abs(alp))
       ## Ancestral state reconstruction
       if (!light_result){
         compute_E  <- switch(method.variance,
@@ -2153,10 +2221,6 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     doParallel::registerDoParallel(cl)
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %dopar%
     {
-      ## Progress Bar
-      # if(progress.bar){
-      #   message(paste0("Alpha ", alp))
-      # }
       estimate_alpha_several_K(alp = a_greek,
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
@@ -2187,16 +2251,13 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                U_tree = U_tree,
                                K_lag_init = K_lag_init,
                                light_result = light_result,
+                               allow_negative = allow_negative,
                                ...)
     }
     parallel::stopCluster(cl)
   } else {
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %do%
     {
-      ## Progress Bar
-      # if(progress.bar){
-      #   message(paste0("Alpha ", alp))
-      # }
       estimate_alpha_several_K(alp = a_greek,
                                original_phy = original_phy, Y_data = Y_data,
                                process_original = process_original,
@@ -2227,6 +2288,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                U_tree = U_tree,
                                K_lag_init = K_lag_init,
                                light_result = light_result,
+                               allow_negative = allow_negative,
                                ...)
     }
   }
@@ -2360,9 +2422,9 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 process,
                                 independent,
                                 K_max,
-#                               curent = list(Y_data = Y_data,
-#                                             K_try = 0:K_max,
-#                                             ntaxa = length(phylo$tip.label)),
+                                #                               curent = list(Y_data = Y_data,
+                                #                                             K_try = 0:K_max,
+                                #                                             ntaxa = length(phylo$tip.label)),
                                 use_previous = TRUE,
                                 order = TRUE,
                                 method.variance = c("simple", "upward_downward"),
@@ -2391,6 +2453,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
                                 light_result = TRUE,
+                                allow_negative = FALSE,
                                 ...){
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
@@ -2440,6 +2503,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       method.OUsun = method.OUsun,
                                                       impute_init_Rphylopars = impute_init_Rphylopars,
                                                       K_lag_init = K_lag_init,
+                                                      allow_negative = allow_negative,
                                                       ...)
   if (K_first == 0 && any(is.na(Y_data))){
     Y_data_imp <- XX[["0"]]$Yhat
@@ -2487,6 +2551,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                             method.OUsun = method.OUsun,
                                                             impute_init_Rphylopars = impute_init_Rphylopars,
                                                             K_lag_init = K_lag_init,
+                                                            allow_negative = allow_negative,
                                                             ...)
       pp <- check_dimensions(p,
                              XX[[paste0(K_t)]]$params$root.state,
@@ -2548,18 +2613,18 @@ merge_max_grid_alpha <- function(X, alpha, light_result = TRUE){
   return(X)
 }
 
-add_lsq <- function(X){
-  nums <- grep("alpha_[[:digit:]]", names(X))
-  for (i in nums){
-    X[[i]]$results_summary$least_squares <- sapply(X[[i]]$m_Y_estim,
-                                                   function(z) sum((X$Y_data - z)^2))
-    # X[[i]]$results_summary$least_squares <- sapply(X[[i]]$params_estim, function(z) sum(diag(z$variance)))
-  }
-  return(X)
-}
+# add_lsq <- function(X){
+#   nums <- grep("alpha_-?[[:digit:]]", names(X))
+#   for (i in nums){
+#     X[[i]]$results_summary$least_squares <- sapply(X[[i]]$m_Y_estim,
+#                                                    function(z) sum((X$Y_data - z)^2))
+#     # X[[i]]$results_summary$least_squares <- sapply(X[[i]]$params_estim, function(z) sum(diag(z$variance)))
+#   }
+#   return(X)
+# }
 
 merge_min_grid_alpha <- function(X, light_result = TRUE, raw = FALSE){
-  nums <- grep("alpha_[[:digit:]]", names(X))
+  nums <- grep("alpha_-?[[:digit:]]", names(X))
   summary_all <- X[[nums[1]]]$results_summary
   for (i in nums[-1]){
     summary_all <- rbind(summary_all,
@@ -2625,6 +2690,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         method.OUsun,
                                         impute_init_Rphylopars,
                                         K_lag_init,
+                                        allow_negative,
                                         ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -2652,6 +2718,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    method.OUsun = method.OUsun,
                                                    impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
+                                                   allow_negative = allow_negative,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -2671,6 +2738,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        method.OUsun,
                                        impute_init_Rphylopars,
                                        K_lag_init,
+                                       allow_negative,
                                        ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -2690,7 +2758,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    method.OUsun = method.OUsun,
                                                    impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
-
+                                                   allow_negative = allow_negative,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -2748,7 +2816,8 @@ choose_process_EM <- function(process, p, random.root, stationary.root,
                               known.selection.strength = 1, eps = 10^(-3),
                               sBM_variance = FALSE,
                               method.OUsun = "rescale",
-                              independent = FALSE){
+                              independent = FALSE,
+                              allow_negative = FALSE){
   ## Reduce Process
   transform_scOU <- FALSE # Should we re-transform back the parameters to get an OU ?
   rescale_tree <- FALSE # Should we re-scale the tree ?
@@ -2761,7 +2830,13 @@ choose_process_EM <- function(process, p, random.root, stationary.root,
     }
   }
   if (process == "scOU"){
+    if ((!is.null(known.selection.strength)) && known.selection.strength < 0 && !allow_negative){
+      stop("The 'selection strength' you gave is negative. This might not be what you want to do. See manual for the interpretation of such a process. If you really want a negative alpha, please set 'allow_negative=TRUE'.")
+    }
     if (random.root){
+      if ((!is.null(known.selection.strength)) && known.selection.strength < 0){
+        stop("The scalar OU with negative selection strength cannot have a random root. Please try again with 'random_root=FALSE'.")
+      }
       if ((method.OUsun == "rescale")){
         if (!alpha_known){
           stop("The re-scaled scalar OU is only implemented for known selection strength. Please consider using a grid.")

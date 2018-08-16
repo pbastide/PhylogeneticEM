@@ -28,7 +28,7 @@ estimateEM(phylo, Y_data, Y_data_imp = Y_data, process = c("BM", "OU",
   convergence_mode = c("relative", "absolute"),
   check_convergence_likelihood = TRUE, sBM_variance = FALSE,
   method.OUsun = c("rescale", "raw"), impute_init_Rphylopars = FALSE,
-  K_lag_init = 0, ...)
+  K_lag_init = 0, allow_negative = FALSE, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -191,6 +191,9 @@ Default to FALSE.}
 \item{K_lag_init}{Number of extra shifts to be considered at the initialization
 step. Increases the accuracy, but can make computations quite slow of taken
 too high. Default to 5.}
+
+\item{allow_negative}{whether to allow negative values for alpha (Early Burst).
+See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
 tolerance parameters for stopping criteria, maximal number of iterations, etc.}

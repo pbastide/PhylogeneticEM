@@ -1070,7 +1070,11 @@ compute_E.upward_downward <- function(phylo,
     if (params_old$root.state$stationary.root){
       Stationary_Var <- as.matrix(params_old$root.state$var.root)
     } else {
-      Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
+      if (params_old$selection.strength[1] < 0){
+        Stationary_Var <- -as.matrix(compute_stationary_variance(params_old$variance, -params_old$selection.strength))
+      } else {
+        Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
+      }
     }
     Alpha <- params_old$selection.strength * diag(rep(1, ncol(Stationary_Var)))
     res <- upward_downward_OU(Y_data, phylo$edge,
@@ -1152,8 +1156,13 @@ log_likelihood.params_process <- function(x,
     if (x$root.state$stationary.root){
       Stationary_Var <- as.matrix(x$root.state$var.root)
     } else {
-      Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, 
-                                                              unique(diag(x$selection.strength))))
+      if (x$selection.strength[1] < 0){
+        Stationary_Var <- -as.matrix(compute_stationary_variance(x$variance,
+                                                                 -unique(diag(x$selection.strength))))
+      } else {
+        Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, 
+                                                                unique(diag(x$selection.strength))))      
+      }
     }
     Alpha <- x$selection.strength * diag(rep(1, ncol(Stationary_Var)))
     res <- log_likelihood_OU(Y_data, phy$edge,

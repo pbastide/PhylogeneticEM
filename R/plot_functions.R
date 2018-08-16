@@ -192,7 +192,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param traits a vector of integers giving the numbers of the trait to be plotted.
 #' Default to 1:p (all the traits).
 #' @param params (optional) some user-specified parameters.
-#' Must be of class \code{\link{params_process}}. If left blank, there are extracted
+#' Must be of class \code{\link{params_process}}. If left blank, they are extracted
 #' using the \code{method.selection} argument (see below).
 #' @param method.selection select the parameters to plot. One of "LINselect", "DDSE",
 #' "Djump". Default to "LINselect". See
@@ -328,6 +328,7 @@ plot.PhyloEM <- function(x,
   ## Ancestral and imputed traits
   reconstructed_traits <- imputed_traits.PhyloEM(x, trait = traits,
                                                  save_all = TRUE,
+                                                 params = params,
                                                  method.selection = method.selection)
   ancestral_states <- imputed_traits.PhyloEM(x, trait = traits,
                                              where = "nodes",

@@ -7,7 +7,7 @@ test_that("Rotations", {
   # Fit data
   res <- PhyloEM(Y_data = monkeys$dat,
                  phylo = monkeys$phy, 
-                 process = "scOU", nbr_alpha = 2, allow_negative = TRUE,
+                 process = "scOU", nbr_alpha = 2,
                  random.root = FALSE,
                  K_max = 10,
                  method.selection = "BGHmlraw",
@@ -21,7 +21,7 @@ test_that("Rotations", {
   # Fit rot
   res_rot <- PhyloEM(Y_data = Yrot,
                      phylo = monkeys$phy, 
-                     process = "scOU", nbr_alpha = 2, allow_negative = TRUE,
+                     process = "scOU", nbr_alpha = 2,
                      random.root = FALSE,
                      K_max = 10,
                      method.selection = "BGHmlraw",
@@ -44,7 +44,7 @@ test_that("Rotations", {
   # Fit rot
   res_rot2 <- PhyloEM(Y_data = Yrot2,
                       phylo = monkeys$phy, 
-                      process = "scOU", nbr_alpha = 2, allow_negative = TRUE,
+                      process = "scOU", nbr_alpha = 2,
                       random.root = FALSE,
                       K_max = 10,
                       method.selection = "BGHmlraw",
@@ -68,7 +68,7 @@ test_that("Not rotations", {
   # Fit data
   res <- PhyloEM(Y_data = monkeys$dat,
                  phylo = monkeys$phy, 
-                 process = "scOU", nbr_alpha = 2, allow_negative = TRUE,
+                 process = "scOU", nbr_alpha = 2,
                  random.root = FALSE,
                  K_max = 10,
                  method.selection = "BGHmlraw",
@@ -81,7 +81,7 @@ test_that("Not rotations", {
   # Fit rot
   res_norot <- PhyloEM(Y_data = Ynorot,
                      phylo = monkeys$phy, 
-                     process = "scOU", nbr_alpha = 2, allow_negative = TRUE,
+                     process = "scOU", nbr_alpha = 2,
                      random.root = FALSE,
                      K_max = 10,
                      method.selection = "BGHmlraw",
@@ -90,14 +90,13 @@ test_that("Not rotations", {
   # Rotation ?
   expect_error(find_rotation(res, res_norot), "The datasets are not linked by a rotation.")
   
-  
   ## Other completely unrelated data
   Ynorot2 <- matrix(rnorm(length(monkeys$dat)), dim(monkeys$dat))
   
   # Fit rot
   res_norot2 <- PhyloEM(Y_data = Ynorot2,
                       phylo = monkeys$phy, 
-                      process = "scOU", nbr_alpha = 2, allow_negative = TRUE,
+                      process = "scOU", nbr_alpha = 2,
                       random.root = FALSE,
                       K_max = 10,
                       method.selection = "BGHmlraw",

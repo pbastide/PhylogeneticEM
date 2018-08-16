@@ -676,6 +676,8 @@ check_dimensions.shifts <- function(p, shifts){
 #' @param quantile_low_distance quantile for min distance
 #' @param log_transform whether to take a log scale for the spacing of alpha
 #' values. Default to TRUE.
+#' @param allow_negative whether to allow negative values for alpha (Early Burst).
+#' See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.
 #' @param ... not used.
 #'     
 #' @return A grid of alpha values
@@ -690,22 +692,56 @@ find_grid_alpha <- function(phy, alpha = NULL,
                             factor_up_alpha = 2,
                             factor_down_alpha = 3,
                             quantile_low_distance = 0.0001,
-                            log_transform = TRUE, ...){
+                            log_transform = TRUE, 
+                            allow_negative = FALSE, ...){
   if (!is.null(alpha)) return(alpha)
   dtips <- cophenetic(phy)
   d_min <- quantile(dtips[dtips > 0], quantile_low_distance)
   h_tree <- node.depth.edgelength(phy)[1]
   alpha_min <- 1 / (factor_down_alpha * h_tree)
   alpha_max <- factor_up_alpha / (2 * d_min)
-  alpha_max_machine <- log(.Machine$double.xmax^0.98)/(2*h_tree)
+  alpha_max_machine <- log(.Machine$double.xmax^0.975)/(2*h_tree)
   if (alpha_max > alpha_max_machine){
     warning("The chosen alpha_max was above the machine precision. Taking alpha_max as the largest possible on this machine.")
     alpha_max <- alpha_max_machine
   }
+  if (allow_negative) nbr_alpha <- nbr_alpha %/% 2
   if (log_transform){
-    return(c(0, exp(seq(log(alpha_min), log(alpha_max), length.out = nbr_alpha))))
+    alpha_grid <- exp(seq(log(alpha_min), log(alpha_max), length.out = nbr_alpha))
   } else {
-    return(c(0, seq(alpha_min, alpha_max, length.out = nbr_alpha)))
+    alpha_grid <- seq(alpha_min, alpha_max, length.out = nbr_alpha)
+  }
+  if (allow_negative){
+    alpha_min_neg_machine <- log(.Machine$double.eps^0.9)/(2*h_tree)
+    if (log_transform){
+      alpha_grid <- c(-exp(seq(log(-alpha_min_neg_machine), log(alpha_min), length.out = nbr_alpha)), 0, alpha_grid)
+    } else {
+      alpha_grid <- c(seq(alpha_min_neg_machine, -alpha_min, length.out = nbr_alpha), 0, alpha_grid)
+    }
+  }
+  return(alpha_grid)
+}
+
+##
+#' @title Check range of alpha
+#' 
+#' @description Check that the choosen values of alpha are not too large
+#' or too small, in order to avoid numerical instabilities.
+#'
+#' @param alpha a vector of alpha values.
+#' @param h_tree the total height of the tree.
+#' 
+#' @keywords internal
+#' 
+##
+check_range_alpha <- function(alpha, h_tree){
+  alpha_max_machine <- log(.Machine$double.xmax^0.98)/(2*h_tree)
+  alpha_min_machine <- log(.Machine$double.eps^0.98)/(2*h_tree)
+  if (any(alpha > alpha_max_machine)) {
+    stop(paste0("The value for the selection strengh you took is too big, and will lead to numerical instabilities. Please consider using a value below ", alpha_max_machine))
+  }
+  if (any(alpha < alpha_min_machine)) {
+    stop(paste0("The value for the selection strengh you took is too small, and will lead to numerical instabilities. Please consider using a value above ", alpha_min_machine))
   }
 }
 
