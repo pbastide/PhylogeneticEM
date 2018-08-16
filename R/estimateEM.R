@@ -1420,7 +1420,9 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
                                     optimal.value = res$optimal.value)
   res$variance <- as(res$variance, "dpoMatrix")
   class(res) <- "params_process"
-  if (attr(res, "Neq") > 1) warning("There are several equivalent solutions for this shift position.")
+  if (attr(res, "Neq") > 1){
+    warning("There are several equivalent solutions for this shift position.")
+  }
   return(res)
 }
 
@@ -1681,6 +1683,9 @@ rotate_params <- function(params, rot) {
 #' data imputation.
 #' @param what the quantity to retrieve. Either the imputed traits (default), their
 #' conditional variances, or the simple expectations under the selected process.
+#' @param params (optional) some user-specified parameters.
+#' Must be of class \code{\link{params_process}}. If left blank, they are extracted
+#' using the \code{method.selection} argument (see below).
 #' @param method.selection (optional) the method selection to be used.
 #' One of "LINselect", "DDSE", "Djump". Default to "LINselect".
 #' @param reconstructed_states if the reconstructed states have already been
@@ -1711,13 +1716,14 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
                                    save_all = FALSE,
                                    where = c("nodes", "tips"),
                                    what = c("imputed", "variances", "expectations"),
+                                   params = NULL,
                                    method.selection = NULL,
                                    reconstructed_states = NULL,
                                    ...){
   ## Computes all the moments if needed
   if (is.null(reconstructed_states)){
     if (save_all) what <- c("imputed", "variances", "expectations")
-    reconstructed_states <- compute_ancestral_traits(x, method.selection, what, ...)
+    reconstructed_states <- compute_ancestral_traits(x, params, method.selection, what, ...)
   }
   
   ## Stop here if save_all=TRUE
@@ -1748,12 +1754,19 @@ imputed_traits.PhyloEM <- function(x, trait = 1,
 }
 
 compute_ancestral_traits <- function(x,
+                                     params,
                                      method.selection,
                                      what = c("imputed", "variances", "expectations"),
                                      ...){
   
   ## parameters
-  params <- params_process(x, method.selection, ...)
+  if (is.null(params)){
+    params <- params_process(x, method.selection, ...)
+  } else {
+    if (class(params) != "params_process") {
+      stop("The user specified parameters must be of class 'params_process'.")
+    }
+  }
   
   ## Heavy results
   if (!x$light_result && x$process == "scOU"){

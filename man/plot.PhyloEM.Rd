@@ -24,7 +24,7 @@
 Default to 1:p (all the traits).}
 
 \item{params}{(optional) some user-specified parameters.
-Must be of class \code{\link{params_process}}. If left blank, there are extracted
+Must be of class \code{\link{params_process}}. If left blank, they are extracted
 using the \code{method.selection} argument (see below).}
 
 \item{method.selection}{select the parameters to plot. One of "LINselect", "DDSE",

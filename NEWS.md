@@ -11,6 +11,9 @@
     for model selection easilly.
 * New feature:
     * Function PhyloEM can now allow for negative values of alpha, to fit an EB model.
+* Bug fix:
+    * In function plot, fixed bug that led to the wrong parameters being selected when 
+    doing ancestral trait reconstruction.
 
 # PhylogeneticEM 1.1.0
 * Deprecation Fix:

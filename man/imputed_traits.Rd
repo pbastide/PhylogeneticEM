@@ -9,8 +9,8 @@ imputed_traits(x, ...)
 
 \method{imputed_traits}{PhyloEM}(x, trait = 1, save_all = FALSE,
   where = c("nodes", "tips"), what = c("imputed", "variances",
-  "expectations"), method.selection = NULL, reconstructed_states = NULL,
-  ...)
+  "expectations"), params = NULL, method.selection = NULL,
+  reconstructed_states = NULL, ...)
 }
 \arguments{
 \item{x}{an object of class \code{\link{PhyloEM}}.}
@@ -29,6 +29,10 @@ data imputation.}
 
 \item{what}{the quantity to retrieve. Either the imputed traits (default), their
 conditional variances, or the simple expectations under the selected process.}
+
+\item{params}{(optional) some user-specified parameters.
+Must be of class \code{\link{params_process}}. If left blank, they are extracted
+using the \code{method.selection} argument (see below).}
 
 \item{method.selection}{(optional) the method selection to be used.
 One of "LINselect", "DDSE", "Djump". Default to "LINselect".}
