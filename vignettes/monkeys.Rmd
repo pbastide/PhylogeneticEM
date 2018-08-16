@@ -152,7 +152,9 @@ This can be done with a dedicated function:
 res_merge <- merge_rotations(res, res_rot)
 ```
 
-This function takes the first fit has a reference (here, with the original data), and, when the second fit has a better likelihood, it takes its solution, and rotate it back in the original space.
+This function takes the first fit as a reference (here, with the original data). For a given number of shifts,
+when the second fit has a better likelihood, its solution is selected instead. Note that the parameters of the second fit are
+expressed in the rotated space, so, when selected, they need to be transformed back into the original space (which is done automatically by the function).
 The resulting solution has the highest likelihood possible for each value of K, and the model selection criterion can be applied to this new solution path.
 
 ```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
@@ -209,7 +211,7 @@ It is possible to include this model in the fit, by allowing "negative alpha" va
 
 Note that, although the case with no shift has a clear interpretation (EB model), an scOU with shifts and a negative alpha
 can be hard to interpret, and is not always appropriate.
-One should hence be careful when using and interpreting such a model, and the use of this function is not encouraged for a first analysis.
+One should hence be careful when using and interpreting such a model, and the use of this functionality is not encouraged for a first analysis.
 
 ```{r, label="Fit_EM_negative", warning=FALSE, message = FALSE}
 res_neg <- PhyloEM(phylo = monkeys$phy,
@@ -223,11 +225,11 @@ res_neg <- PhyloEM(phylo = monkeys$phy,
                    allow_negative = TRUE)    ## allow negative alpha in the grid
 ```
 
-We can extract the parameter of the fit with no shifts, that is equivalent to an EB model:
+We can extract the parameter of the fit with no shift, that is equivalent to an EB model:
 ```{r}
 params_process(res_neg, K = 0)
 ```
-The "selection strenght" $\alpha$ is linked with the rate $r$ of the EB by the relation: $r = 2\alpha$.
+The "selection strength" $\alpha$ is linked with the rate $r$ of the EB by the relation: $r = 2\alpha$.
 
 We can also plot the criterion for the model selection. Empirically, we found that the "BGHmlraw" criterion
 would behave a bit better in this configuration.
