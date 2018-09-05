@@ -1,4 +1,4 @@
-# PhylogeneticEM 1.1.0.9000
+# PhylogeneticEM 1.2.0
 * Added Options:
     * `option_is.ultrametric` to control the `ape::is.ultrametric` check.
 * Deprecation Fix:
