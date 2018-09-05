@@ -722,7 +722,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
 #' @param method.selection select the parameters to plot. One of "LINselect", "DDSE",
 #' "Djump" or "likelihood" (for un-penalized likelihood). Default to "LINselect". See
 #' \code{\link{params_process.PhyloEM}}.
-#' @param add boolean: should the points be added to a urent plot (default to FALSE).
+#' @param add boolean: should the points be added to a curent plot (default to FALSE).
 #' @param select.col the color of the point selected by the criterion. Default to "red".
 #' @param ... further argument to be passed to base \code{\link{plot}}.
 #' 

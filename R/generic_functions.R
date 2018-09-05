@@ -725,7 +725,7 @@ find_grid_alpha <- function(phy, alpha = NULL,
 ##
 #' @title Check range of alpha
 #' 
-#' @description Check that the choosen values of alpha are not too large
+#' @description Check that the chosen values of alpha are not too large
 #' or too small, in order to avoid numerical instabilities.
 #'
 #' @param alpha a vector of alpha values.

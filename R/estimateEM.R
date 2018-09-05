@@ -914,7 +914,7 @@ estimateEM <- function(phylo,
 #' @param use_previous Should the initialization for K+1 shifts use the 
 #' estimation for $K$ shifts already obtained? Default to FALSE.
 #' @param order Should the estimations be done for K increasing (TRUE) or K
-#' decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
+#' decreasing (FALSE)? If use_previous=FALSE, this has no influence, except if one
 #' initialization fails. Default to TRUE.
 #' @param method.selection Method selection to be used. Several ones can be
 #' used at the same time. One of "LINselect" for the Baraud Giraud Huet LINselect 
@@ -1511,7 +1511,7 @@ get_method_selection <- function(x, method.selection = NULL) {
 #' @param ... objects of class \code{\link{PhyloEM}} fitted on datasets that are equal up to a rotation.
 #' @param method.selection (optional) selection method to be applied to the merged fit. 
 #' See \code{\link{params_process.PhyloEM}}.
-#' @param tol (optional) relative numerical tolerence. See \code{\link{find_rotation}}.
+#' @param tol (optional) relative numerical tolerance. See \code{\link{find_rotation}}.
 #' 
 #' @examples
 #' \dontrun{
@@ -1585,7 +1585,7 @@ merge_rotations <- function(...,  method.selection = NULL, tol = NULL) {
 }
 
 ##
-#' @title Test for rotation invarient datasets
+#' @title Test for rotation invariant datasets
 #'
 #' @description
 #' \code{find_rotation} takes two fits from from \code{\link{PhyloEM}},
@@ -1593,7 +1593,7 @@ merge_rotations <- function(...,  method.selection = NULL, tol = NULL) {
 #'
 #' @param res1 an object of class \code{\link{PhyloEM}}.
 #' @param res2 an object of class \code{\link{PhyloEM}}.
-#' @param tol relative numerical tolerence. Default to \code{.Machine$double.eps^(0.5)}.
+#' @param tol relative numerical tolerance. Default to \code{.Machine$double.eps^(0.5)}.
 #' 
 #' 
 #' @return

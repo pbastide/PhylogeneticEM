@@ -48,7 +48,7 @@ Default to FALSE. OU in a multivariate setting only works if TRUE.}
 estimation for $K$ shifts already obtained? Default to FALSE.}
 
 \item{order}{Should the estimations be done for K increasing (TRUE) or K
-decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
+decreasing (FALSE)? If use_previous=FALSE, this has no influence, except if one
 initialization fails. Default to TRUE.}
 
 \item{method.selection}{Method selection to be used. Several ones can be
