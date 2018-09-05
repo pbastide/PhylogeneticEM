@@ -2,6 +2,8 @@ navbar:
   left:
   - text: Tutorial
     href: articles/tutorial.html
+  - text: New World Monkeys
+    href: articles/monkeys.html
   - text: Reference
     href: reference/index.html
 

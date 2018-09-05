@@ -6,7 +6,7 @@
 \usage{
 find_grid_alpha(phy, alpha = NULL, nbr_alpha = 10, factor_up_alpha = 2,
   factor_down_alpha = 3, quantile_low_distance = 1e-04,
-  log_transform = TRUE, ...)
+  log_transform = TRUE, allow_negative = FALSE, ...)
 }
 \arguments{
 \item{phy}{phylogenetic tree of class "\code{phylo}"}
@@ -23,6 +23,9 @@ find_grid_alpha(phy, alpha = NULL, nbr_alpha = 10, factor_up_alpha = 2,
 
 \item{log_transform}{whether to take a log scale for the spacing of alpha
 values. Default to TRUE.}
+
+\item{allow_negative}{whether to allow negative values for alpha (Early Burst).
+See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.}
 
 \item{...}{not used.}
 }

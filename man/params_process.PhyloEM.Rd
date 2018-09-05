@@ -23,7 +23,9 @@ specified, then \code{K} must be precised too. Default to NULL (automatically
 selected value, see \code{method.selection} argument).}
 
 \item{rBM}{(optional) if TRUE, and if the process is "scOU", returns the raw
-parameters of the BM on the re-scaled tree. Default to FALSE.}
+parameters of the BM on the re-scaled tree. Default to FALSE, except if 
+the selection strength is negative (see doc of \code{\link{PhyloEM}} for
+an explanation of this particular case).}
 
 \item{init}{(optional) if TRUE, gives the parameters from the initialization of
 the EM. Default to FALSE. This has no effect if \code{K} is not specified.}

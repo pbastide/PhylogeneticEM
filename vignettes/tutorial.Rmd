@@ -121,6 +121,15 @@ Here, we can see that the original shifts were recovered by the model selection 
 plot(res)
 ```
 
+The function above automatically plots the solution selected by the model selection criterion.
+We can plot this criterion, to see wether the solution selected is a clear minimum.
+
+```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
+plot_criterion(res)
+```
+
+Here, the criterion behaves rather well, and the solution for $K=3$ seems to be a good choice.
+
 Above, we plotted the solution given by the LINselect method (the default). But we might want to see the solution given by another selection method, such as the slope heuristic. In that case, we just need to run:
 ```{r, eval=FALSE}
 plot(res, params = params_process(res, method.selection = "DDSE"))

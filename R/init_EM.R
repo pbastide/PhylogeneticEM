@@ -767,223 +767,58 @@ lasso_regression_K_fixed.glmnet_multivariate <- function(Yp, Xp, K,
   stop(paste0("At lasso regression, could not find K=", K_original, " independent edges (to produce a full rank matrix)"))
 }
 
-lasso_regression_K_fixed.grplasso <- function(Yvec, Xkro, K,
-                                              root,
-                                              penscale = rep(1,
-                                                             length(unique(group))),
-                                              group = 1:ncol(Xkro),
-                                              p_dim,
-                                              K_lag = 0) {
-  ## Lag
-  K_original <- K
-  K <- K + K_lag
-  ## Root is the intercept, should be excluded from varaiable selection
-  Xp_orth <- Xkro
-  Yp_orth <- Yvec
-  index <- group
-  index[index == root] <- NA
-  K <- K + 1 ## the root does not count in the number of non zero parameters.
-  ## fit
-  lambda_max <- grplasso::lambdamax(Xp_orth, Yp_orth, model = grplasso::LinReg(),
-                                    index = group, center = FALSE, standardize = FALSE)
-  lambda_min <- 0.01 * lambda_max
-  lambda_grid <- exp(seq(log(lambda_max), log(lambda_min), length.out = 100))
-  co <- capture.output(
-    suppressWarnings(
-    fit <- grplasso::grplasso(x = Xp_orth,
-                              y = Yp_orth,
-                              index = group,
-                              model = grplasso::LinReg(),
-                              lambda = lambda_grid,
-                              center = FALSE, standardize = FALSE)
-    )
-  )
-  df <- apply(fit$coefficients, 2, function(z) length(unique(group[z != 0])))
-  ## Find the lambda that gives the right number of ruptures
-  # Check that lambda goes far enought
-  if (K_original + 1 > max(df)) {
-    lambda_min <- 0.0001 * lambda_max
-    lambda_grid <- exp(seq(log(lambda_max), log(lambda_min), length.out = 100))
-    co <- capture.output(
-      suppressWarnings(
-      fit <- grplasso::grplasso(x = Xp_orth,
-                                y = Yp_orth,
-                                index = group,
-                                model = grplasso::LinReg(),
-                                lambda = lambda_grid,
-                                center = FALSE, standardize = FALSE)
-      )
-    )
-    df <- apply(fit$coefficients, 2, function(z) length(unique(group[z != 0])))
-  }
-  if (K_original + 1 > max(df)) {
-    stop("Lasso regression failed. There are too many variables.")
-  }
-  ## If the right lambda does not exists, raise the number of shifts
-  K_2 <- K
-  if (K_2 <= max(df)){ # If K < max, raise it till find a right one
-    while (!any(df == K_2) && K_2 < max(group)) {
-      K_2 <- K_2 + 1
-    }
-  } else { # If K_original < max(df) but K > max(df), decrease K
-    while (!any(df == K_2) && K_2 > K_original + 1) {
-      K_2 <- K_2 - 1
-    }
-  }
-  ## If could not find the right lambda, do a default initialization
-  if (!any(df == K_2)) {
-    stop("Lasso initialization failed : could not find a satisfying number of shifts.")
-  }
-  ## Select the row with the right number of coefficients
-  index <- min(which(df == K_2))
-  if (p_dim == 1){
-    delta <- fit$coefficients[, index]
-    delta <- matrix(delta, nrow = length(delta))
-  } else {
-    delta <- fit$coefficients[, index]
-    delta <- t(matrix(delta, nrow = p_dim))
-  }
-  ## Check that the matrix is of full rank
-  if (K_lag == 0){
-    projection <- which(fit$coefficients[, index] != 0)
-    Xproj <- Xkro[ , projection, drop = FALSE]
-    if (dim(Xproj)[2] != qr(Xproj)$rank) {
-      warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
-      # Try again.
-      delta <- try(find_independent_regression_vectors.grplasso(Xkro, K,
-                                                                fit, root,
-                                                                p_dim, group))
-      if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
-    }
-  }
-  vals <- rowSums(abs(delta[-root, , drop = F]))
-  edges <- unname(which(vals != 0))
-  ## Handle case wher combinatoire is too expensive
-  K_choose <- K_original
-  ed_or <- order(-vals)
-  n_ed <- length(edges)
-  fixed_edges <- NULL
-  while((choose(length(edges), K_choose) > 50000) && (K_choose > 0)){
-    K_choose <- K_choose - 1
-    fixed_edges <- ed_or[1:(K_original - K_choose)]
-    edges <- ed_or[(K_original - K_choose + 1):n_ed]
-  }
-  posibilities <- combn(edges, K_choose, simplify = FALSE) # All possible combinaisons
-  fun <- function(posi){
-    posi <- c(fixed_edges, posi)
-    if (is.null(root)){
-      delta.bis <- matrix(0, dim(delta)[1], dim(delta)[2])
-      delta.bis[posi, ] <- delta[posi, ]
-    } else {
-      delta.bis <- matrix(0, dim(delta)[1] - 1, dim(delta)[2])
-      delta.bis[posi, ] <- delta[posi, ]
-    }
-    return(suppressWarnings(compute_gauss_lasso.grplasso(Yvec, Xkro, delta.bis,
-                                                         root, group, p_dim)))
-  }
-  res_try <- lapply(posibilities, fun)
-  scores <- sapply(res_try, function(z) sum(z$residuals^2))
-  ## Check that the matrix is of full rank
-  order_scores <- order(scores)
-  for (os in order_scores){
-    res <- res_try[[os]]
-    projection <- which(res$beta[, index] != 0)
-    Xproj <- Xkro[ , projection, drop = FALSE]
-    if (dim(Xproj)[2] == qr(Xproj)$rank) return(res)
-  }
-  stop(paste0("At lasso regression, could not find K=", K_original, " independent edges (to produce a full rank matrix)"))
-}
-
-# lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
-#                                              root = NULL,
-#                                              penscale = rep(1,
-#                                                             length(unique(group))),
-#                                              group = 1:ncol(Xkro),
-#                                              p_dim,
-#                                              K_lag = 0) {
-#   browser()
+# lasso_regression_K_fixed.grplasso <- function(Yvec, Xkro, K,
+#                                               root,
+#                                               penscale = rep(1,
+#                                                              length(unique(group))),
+#                                               group = 1:ncol(Xkro),
+#                                               p_dim,
+#                                               K_lag = 0) {
 #   ## Lag
 #   K_original <- K
 #   K <- K + K_lag
 #   ## Root is the intercept, should be excluded from varaiable selection
-#   if (!is.null(root)){
-#     Xp_orth <- Xkro
-#     Yp_orth <- Yvec
-#     intercept <- FALSE
-#     penscale[root] <- 0
-#     K <- K + 1 ## the root does not count in the number of non zero parameters.
-#   } else {
-#     Xp_orth <- Xkro
-#     Yp_orth <- Yvec
-#     intercept <- TRUE
-#   }
+#   Xp_orth <- Xkro
+#   Yp_orth <- Yvec
+#   index <- group
+#   index[index == root] <- NA
+#   K <- K + 1 ## the root does not count in the number of non zero parameters.
 #   ## fit
+#   lambda_max <- grplasso::lambdamax(Xp_orth, Yp_orth, model = grplasso::LinReg(),
+#                                     index = group, center = FALSE, standardize = FALSE)
+#   lambda_min <- 0.01 * lambda_max
+#   lambda_grid <- exp(seq(log(lambda_max), log(lambda_min), length.out = 100))
 #   co <- capture.output(
-#     fit <- gglasso::gglasso(x = Xp_orth,
-#                             y = Yp_orth,
-#                             group = group,
-#                             loss = "ls",
-#                             nlambda = 500,
-#                             intercept = intercept,
-#                             dfmax = K + 10,
-#                             pf = penscale)
+#     suppressWarnings(
+#     fit <- grplasso::grplasso(x = Xp_orth,
+#                               y = Yp_orth,
+#                               index = group,
+#                               model = grplasso::LinReg(),
+#                               lambda = lambda_grid,
+#                               center = FALSE, standardize = FALSE)
+#     )
 #   )
-#   df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
+#   df <- apply(fit$coefficients, 2, function(z) length(unique(group[z != 0])))
 #   ## Find the lambda that gives the right number of ruptures
 #   # Check that lambda goes far enought
 #   if (K_original + 1 > max(df)) {
+#     lambda_min <- 0.0001 * lambda_max
+#     lambda_grid <- exp(seq(log(lambda_max), log(lambda_min), length.out = 100))
 #     co <- capture.output(
-#       fit <- gglasso::gglasso(x = Xp_orth,
-#                               y = Yp_orth,
-#                               group = group,
-#                               loss = "ls",
-#                               nlambda = 500,
-#                               intercept = intercept,
-#                               dfmax = K + 10,
-#                               pf = penscale,
-#                               lambda.factor = 0)
+#       suppressWarnings(
+#       fit <- grplasso::grplasso(x = Xp_orth,
+#                                 y = Yp_orth,
+#                                 index = group,
+#                                 model = grplasso::LinReg(),
+#                                 lambda = lambda_grid,
+#                                 center = FALSE, standardize = FALSE)
+#       )
 #     )
-#     df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
+#     df <- apply(fit$coefficients, 2, function(z) length(unique(group[z != 0])))
 #   }
 #   if (K_original + 1 > max(df)) {
 #     stop("Lasso regression failed. There are too many variables.")
 #   }
-#   # ## If the right lambda does not exists, find it.
-#   # count <- 0
-#   # fit_tmp <- fit
-#   # while (!any(df == K) && count < 500) {
-#   #   count <- count + 1
-#   #   K_inf <- max(K - 2, min(df))
-#   #   while (!any(K_inf == df) && (K_inf >= 0)) {
-#   #     K_inf <- K_inf - 1
-#   #   }
-#   #   lambda_inf <- fit$lambda[tail(which(K_inf == df), n = 1)]
-#   #   K_sup <- min(K + 2, max(df))
-#   #   if (K > max(df)){
-#   #     fit <- fit_tmp
-#   #     df <- fit_tmp$df
-#   #     break
-#   #   }
-#   #   while (!any(K_sup == df) && (K_sup <= max(df))) {
-#   #     K_sup <- K_sup + 1
-#   #   }
-#   #   lambda_sup <- fit$lambda[head(which(K_sup == df), n = 1)]
-#   #   lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
-#   #   fit_tmp <- fit
-#   #   co <- capture.output(
-#   #   fit <- gglasso::gglasso(x = Xp_orth,
-#   #                  y = Yp_orth,
-#   #                  group = group,
-#   #                  loss = "ls",
-#   #                  intercept = intercept,
-#   #                  pf = penscale,
-#   #                  lambda = lambda)
-#   #   )
-#   #   df_prev <- df
-#   #   df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
-#   #   if (identical(df, df_prev)) break
-#   # }
-#   # rm(fit_tmp)
 #   ## If the right lambda does not exists, raise the number of shifts
 #   K_2 <- K
 #   if (K_2 <= max(df)){ # If K < max, raise it till find a right one
@@ -1002,42 +837,27 @@ lasso_regression_K_fixed.grplasso <- function(Yvec, Xkro, K,
 #   ## Select the row with the right number of coefficients
 #   index <- min(which(df == K_2))
 #   if (p_dim == 1){
-#     delta <- fit$beta[, index]
+#     delta <- fit$coefficients[, index]
 #     delta <- matrix(delta, nrow = length(delta))
 #   } else {
-#     delta <- fit$beta[, index]
+#     delta <- fit$coefficients[, index]
 #     delta <- t(matrix(delta, nrow = p_dim))
 #   }
 #   ## Check that the matrix is of full rank
 #   if (K_lag == 0){
-#     projection <- which(fit$beta[, index] != 0)
+#     projection <- which(fit$coefficients[, index] != 0)
 #     Xproj <- Xkro[ , projection, drop = FALSE]
 #     if (dim(Xproj)[2] != qr(Xproj)$rank) {
 #       warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
-#       # Re-do a fit and try again.
-#       co <- capture.output(
-#         fit <- gglasso::gglasso(x = Xp_orth,
-#                                 y = Yp_orth,
-#                                 group = group,
-#                                 loss = "ls",
-#                                 nlambda = 500,
-#                                 intercept = intercept,
-#                                 dfmax = K + 10,
-#                                 pf = penscale)
-#       )
-#       delta <- try(find_independent_regression_vectors.gglasso(Xkro, K,
-#                                                                fit, root,
-#                                                                p_dim, group))
+#       # Try again.
+#       delta <- try(find_independent_regression_vectors.grplasso(Xkro, K,
+#                                                                 fit, root,
+#                                                                 p_dim, group))
 #       if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
 #     }
 #   }
-#   if (is.null(root)){
-#     vals <- rowSums(abs(delta))
-#     edges <- unname(which(vals != 0))
-#   } else {
-#     vals <- rowSums(abs(delta[-root, , drop = F]))
-#     edges <- unname(which(vals != 0))
-#   }
+#   vals <- rowSums(abs(delta[-root, , drop = F]))
+#   edges <- unname(which(vals != 0))
 #   ## Handle case wher combinatoire is too expensive
 #   K_choose <- K_original
 #   ed_or <- order(-vals)
@@ -1058,8 +878,8 @@ lasso_regression_K_fixed.grplasso <- function(Yvec, Xkro, K,
 #       delta.bis <- matrix(0, dim(delta)[1] - 1, dim(delta)[2])
 #       delta.bis[posi, ] <- delta[posi, ]
 #     }
-#     return(suppressWarnings(compute_gauss_lasso.gglasso(Yvec, Xkro, delta.bis,
-#                                                         root, group, p_dim)))
+#     return(suppressWarnings(compute_gauss_lasso.grplasso(Yvec, Xkro, delta.bis,
+#                                                          root, group, p_dim)))
 #   }
 #   res_try <- lapply(posibilities, fun)
 #   scores <- sapply(res_try, function(z) sum(z$residuals^2))
@@ -1073,6 +893,185 @@ lasso_regression_K_fixed.grplasso <- function(Yvec, Xkro, K,
 #   }
 #   stop(paste0("At lasso regression, could not find K=", K_original, " independent edges (to produce a full rank matrix)"))
 # }
+
+lasso_regression_K_fixed.gglasso <- function(Yvec, Xkro, K,
+                                             root = NULL,
+                                             penscale = rep(1,
+                                                            length(unique(group))),
+                                             group = 1:ncol(Xkro),
+                                             p_dim,
+                                             K_lag = 0) {
+  ## Lag
+  K_original <- K
+  K <- K + K_lag
+  ## Root is the intercept, should be excluded from varaiable selection
+  if (!is.null(root)){
+    Xp_orth <- Xkro
+    Yp_orth <- Yvec
+    intercept <- FALSE
+    penscale[root] <- 0
+    K <- K + 1 ## the root does not count in the number of non zero parameters.
+  } else {
+    Xp_orth <- Xkro
+    Yp_orth <- Yvec
+    intercept <- TRUE
+  }
+  ## fit
+  co <- capture.output(
+    fit <- gglasso::gglasso(x = Xp_orth,
+                            y = Yp_orth,
+                            group = group,
+                            loss = "ls",
+                            nlambda = 500,
+                            intercept = intercept,
+                            dfmax = K + 10,
+                            pf = penscale)
+  )
+  df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
+  ## Find the lambda that gives the right number of ruptures
+  # Check that lambda goes far enought
+  if (K_original + 1 > max(df)) {
+    co <- capture.output(
+      fit <- gglasso::gglasso(x = Xp_orth,
+                              y = Yp_orth,
+                              group = group,
+                              loss = "ls",
+                              nlambda = 500,
+                              intercept = intercept,
+                              dfmax = K + 10,
+                              pf = penscale,
+                              lambda.factor = 0)
+    )
+    df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
+  }
+  if (K_original + 1 > max(df)) {
+    stop("Lasso regression failed. There are too many variables.")
+  }
+  # ## If the right lambda does not exists, find it.
+  # count <- 0
+  # fit_tmp <- fit
+  # while (!any(df == K) && count < 500) {
+  #   count <- count + 1
+  #   K_inf <- max(K - 2, min(df))
+  #   while (!any(K_inf == df) && (K_inf >= 0)) {
+  #     K_inf <- K_inf - 1
+  #   }
+  #   lambda_inf <- fit$lambda[tail(which(K_inf == df), n = 1)]
+  #   K_sup <- min(K + 2, max(df))
+  #   if (K > max(df)){
+  #     fit <- fit_tmp
+  #     df <- fit_tmp$df
+  #     break
+  #   }
+  #   while (!any(K_sup == df) && (K_sup <= max(df))) {
+  #     K_sup <- K_sup + 1
+  #   }
+  #   lambda_sup <- fit$lambda[head(which(K_sup == df), n = 1)]
+  #   lambda <- seq(from = lambda_inf, to = lambda_sup, length.out = 100)
+  #   fit_tmp <- fit
+  #   co <- capture.output(
+  #   fit <- gglasso::gglasso(x = Xp_orth,
+  #                  y = Yp_orth,
+  #                  group = group,
+  #                  loss = "ls",
+  #                  intercept = intercept,
+  #                  pf = penscale,
+  #                  lambda = lambda)
+  #   )
+  #   df_prev <- df
+  #   df <- apply(fit$beta, 2, function(z) length(unique(group[z != 0])))
+  #   if (identical(df, df_prev)) break
+  # }
+  # rm(fit_tmp)
+  ## If the right lambda does not exists, raise the number of shifts
+  K_2 <- K
+  if (K_2 <= max(df)){ # If K < max, raise it till find a right one
+    while (!any(df == K_2) && K_2 < max(group)) {
+      K_2 <- K_2 + 1
+    }
+  } else { # If K_original < max(df) but K > max(df), decrease K
+    while (!any(df == K_2) && K_2 > K_original + 1) {
+      K_2 <- K_2 - 1
+    }
+  }
+  ## If could not find the right lambda, do a default initialization
+  if (!any(df == K_2)) {
+    stop("Lasso initialization failed : could not find a satisfying number of shifts.")
+  }
+  ## Select the row with the right number of coefficients
+  index <- min(which(df == K_2))
+  if (p_dim == 1){
+    delta <- fit$beta[, index]
+    delta <- matrix(delta, nrow = length(delta))
+  } else {
+    delta <- fit$beta[, index]
+    delta <- t(matrix(delta, nrow = p_dim))
+  }
+  ## Check that the matrix is of full rank
+  if (K_lag == 0){
+    projection <- which(fit$beta[, index] != 0)
+    Xproj <- Xkro[ , projection, drop = FALSE]
+    if (dim(Xproj)[2] != qr(Xproj)$rank) {
+      warning("The solution fund by lasso had non independent vectors. Had to modify this solution.")
+      # Re-do a fit and try again.
+      co <- capture.output(
+        fit <- gglasso::gglasso(x = Xp_orth,
+                                y = Yp_orth,
+                                group = group,
+                                loss = "ls",
+                                nlambda = 500,
+                                intercept = intercept,
+                                dfmax = K + 10,
+                                pf = penscale)
+      )
+      delta <- try(find_independent_regression_vectors.gglasso(Xkro, K,
+                                                               fit, root,
+                                                               p_dim, group))
+      if (inherits(delta, "try-error")) stop("The selected variables do not produce a full rank regression matrix !")
+    }
+  }
+  if (is.null(root)){
+    vals <- rowSums(abs(delta))
+    edges <- unname(which(vals != 0))
+  } else {
+    vals <- rowSums(abs(delta[-root, , drop = F]))
+    edges <- unname(which(vals != 0))
+  }
+  ## Handle case wher combinatoire is too expensive
+  K_choose <- K_original
+  ed_or <- order(-vals)
+  n_ed <- length(edges)
+  fixed_edges <- NULL
+  while((choose(length(edges), K_choose) > 50000) && (K_choose > 0)){
+    K_choose <- K_choose - 1
+    fixed_edges <- ed_or[1:(K_original - K_choose)]
+    edges <- ed_or[(K_original - K_choose + 1):n_ed]
+  }
+  posibilities <- combn(edges, K_choose, simplify = FALSE) # All possible combinaisons
+  fun <- function(posi){
+    posi <- c(fixed_edges, posi)
+    if (is.null(root)){
+      delta.bis <- matrix(0, dim(delta)[1], dim(delta)[2])
+      delta.bis[posi, ] <- delta[posi, ]
+    } else {
+      delta.bis <- matrix(0, dim(delta)[1] - 1, dim(delta)[2])
+      delta.bis[posi, ] <- delta[posi, ]
+    }
+    return(suppressWarnings(compute_gauss_lasso.gglasso(Yvec, Xkro, delta.bis,
+                                                        root, group, p_dim)))
+  }
+  res_try <- lapply(posibilities, fun)
+  scores <- sapply(res_try, function(z) sum(z$residuals^2))
+  ## Check that the matrix is of full rank
+  order_scores <- order(scores)
+  for (os in order_scores){
+    res <- res_try[[os]]
+    projection <- which(res$beta[, index] != 0)
+    Xproj <- Xkro[ , projection, drop = FALSE]
+    if (dim(Xproj)[2] == qr(Xproj)$rank) return(res)
+  }
+  stop(paste0("At lasso regression, could not find K=", K_original, " independent edges (to produce a full rank matrix)"))
+}
 
 
 # lasso_regression_K_fixed.glmnet <- function (Yp, Xp, K, intercept.penalty = FALSE ) {
@@ -1295,50 +1294,9 @@ find_independent_regression_vectors.glmnet_multivariate <- function(Xp, K, fit, 
   }
 }
 
-find_independent_regression_vectors.grplasso <- function(Xkro, K, fit, root, p, group){
-  nsets <- ncol(fit$coefficients)
-  projections <- t(fit$coefficients != 0)
-  check_independence <- function(projection, Xkro){
-    Xproj <- Xkro[ , projection, drop = FALSE]
-    return(dim(Xproj)[2] == qr(Xproj)$rank)
-  }
-  for (i in 1:nsets){
-    # If not independent : go back to the previous state.
-    if (!check_independence(projections[i, ], Xkro)){
-      # Variables that were activated or inactivated
-      changes <- xor(projections[i - 1, ], projections[i, ])
-      # Activated variables : inactivate them for the futur
-      new_vars <- changes & projections[i, ]
-      projections[i:nsets, new_vars] <- FALSE
-      # Inactivated variables : re-activate them for the futur
-      del_vars <- changes & projections[i - 1, ]
-      projections[i:nsets, del_vars] <- TRUE
-    }
-  }
-  ## Find the right number of selected variables
-  n_select <- apply(projections, 1, function(z) length(unique(group[z])))
-  right_ones <- n_select >= K
-  if (!any(right_ones)){
-    stop("Could not find K independent vectors in the regression path provided.")
-  } else {
-    right_one <- which(right_ones)[1]
-    ## If too many, take the K largests.
-    delta_ind <- t(matrix(fit$coefficients[, right_one], nrow = p))
-    edges <- which(rowSums(delta_ind) != 0)
-    delta.bis <- matrix(0, dim(delta_ind)[1], dim(delta_ind)[2])
-    values <- delta_ind[edges, , drop = FALSE]
-    values[rowSums(values) == 0, ] <- 1 # If projection selected edges not initially present
-    delta.bis[edges, ] <- values
-    return(delta.bis)
-  }
-}
-
-# find_independent_regression_vectors.gglasso <- function(Xkro, K, fit, root, p, group){
-#   nsets <- ncol(fit$beta)
-#   #   if (!is.null(root)){
-#   #     deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
-#   #   }
-#   projections <- t(fit$beta != 0)
+# find_independent_regression_vectors.grplasso <- function(Xkro, K, fit, root, p, group){
+#   nsets <- ncol(fit$coefficients)
+#   projections <- t(fit$coefficients != 0)
 #   check_independence <- function(projection, Xkro){
 #     Xproj <- Xkro[ , projection, drop = FALSE]
 #     return(dim(Xproj)[2] == qr(Xproj)$rank)
@@ -1357,7 +1315,6 @@ find_independent_regression_vectors.grplasso <- function(Xkro, K, fit, root, p, 
 #     }
 #   }
 #   ## Find the right number of selected variables
-#   # n_select <- rowSums(projections)
 #   n_select <- apply(projections, 1, function(z) length(unique(group[z])))
 #   right_ones <- n_select >= K
 #   if (!any(right_ones)){
@@ -1365,17 +1322,59 @@ find_independent_regression_vectors.grplasso <- function(Xkro, K, fit, root, p, 
 #   } else {
 #     right_one <- which(right_ones)[1]
 #     ## If too many, take the K largests.
-#     delta_ind <- t(matrix(fit$beta[, right_one], nrow = p))
+#     delta_ind <- t(matrix(fit$coefficients[, right_one], nrow = p))
 #     edges <- which(rowSums(delta_ind) != 0)
 #     delta.bis <- matrix(0, dim(delta_ind)[1], dim(delta_ind)[2])
 #     values <- delta_ind[edges, , drop = FALSE]
 #     values[rowSums(values) == 0, ] <- 1 # If projection selected edges not initially present
 #     delta.bis[edges, ] <- values
 #     return(delta.bis)
-#     #     return(matrix(rep(0 + projections[right_one, ], 3),
-#     #                   nrow = length(projections[right_one, ])))
 #   }
 # }
+
+find_independent_regression_vectors.gglasso <- function(Xkro, K, fit, root, p, group){
+  nsets <- ncol(fit$beta)
+  #   if (!is.null(root)){
+  #     deltas <- apply(deltas, 1, function(z) append(z, 0, after = root - 1))
+  #   }
+  projections <- t(fit$beta != 0)
+  check_independence <- function(projection, Xkro){
+    Xproj <- Xkro[ , projection, drop = FALSE]
+    return(dim(Xproj)[2] == qr(Xproj)$rank)
+  }
+  for (i in 1:nsets){
+    # If not independent : go back to the previous state.
+    if (!check_independence(projections[i, ], Xkro)){
+      # Variables that were activated or inactivated
+      changes <- xor(projections[i - 1, ], projections[i, ])
+      # Activated variables : inactivate them for the futur
+      new_vars <- changes & projections[i, ]
+      projections[i:nsets, new_vars] <- FALSE
+      # Inactivated variables : re-activate them for the futur
+      del_vars <- changes & projections[i - 1, ]
+      projections[i:nsets, del_vars] <- TRUE
+    }
+  }
+  ## Find the right number of selected variables
+  # n_select <- rowSums(projections)
+  n_select <- apply(projections, 1, function(z) length(unique(group[z])))
+  right_ones <- n_select >= K
+  if (!any(right_ones)){
+    stop("Could not find K independent vectors in the regression path provided.")
+  } else {
+    right_one <- which(right_ones)[1]
+    ## If too many, take the K largests.
+    delta_ind <- t(matrix(fit$beta[, right_one], nrow = p))
+    edges <- which(rowSums(delta_ind) != 0)
+    delta.bis <- matrix(0, dim(delta_ind)[1], dim(delta_ind)[2])
+    values <- delta_ind[edges, , drop = FALSE]
+    values[rowSums(values) == 0, ] <- 1 # If projection selected edges not initially present
+    delta.bis[edges, ] <- values
+    return(delta.bis)
+    #     return(matrix(rep(0 + projections[right_one, ], 3),
+    #                   nrow = length(projections[right_one, ])))
+  }
+}
 
 # find_independent_regression_vectors.quadrupen <- function(Xp, K, fit, root){
 #   deltas <- fit@coefficients
@@ -1470,39 +1469,8 @@ compute_gauss_lasso <- function (Ypt, Xp, delta, root,
               residuals = residuals(fit.gauss)))
 }
 
-compute_gauss_lasso.grplasso <- function (Yvec, Xkro, delta, root, group, p,
-                                          projection = which(as.vector(t(delta)) != 0)) {
-    Xproj <- 0 + Xkro[, c(which(group == root), projection), drop = FALSE]
-    fit.gauss <- lm(Yvec ~ Xproj - 1)
-    delta.gauss <- rep(0, dim(delta)[1] * dim(delta)[2])
-    coefs_gauss <- coef(fit.gauss)
-    E0.gauss <- coefs_gauss[1:p]; names(E0.gauss) <- NULL
-    delta.gauss[projection] <- coefs_gauss[-(1:p)]
-    delta.gauss <- t(matrix(delta.gauss, ncol = nrow(delta)))
-  # If lm fails to find some coefficients
-  if (anyNA(delta.gauss)) {
-    warning("There were some NA in the lm fit for the Gauss Lasso. These were replaced with the values obtained from the Lasso. This is not the optimal solution.")
-    delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
-  }
-  # Result
-  # shifts.gauss <- shifts.matrix_to_list(t(delta.gauss));
-  return(list(E0.gauss = E0.gauss, 
-              delta.gauss = delta.gauss,
-              residuals = residuals(fit.gauss)))
-}
-
-# compute_gauss_lasso.gglasso <- function (Yvec, Xkro, delta, root, group, p,
-#                                          projection = which(as.vector(t(delta)) != 0)) {
-#   # projection <- which(as.vector(t(delta)) != 0)
-#   if (is.null(root)) { # If no one is excluded, "real" intercept
-#     Xproj <- 0 + Xkro[, projection, drop = FALSE]
-#     fit.gauss <- lm(Yvec ~ Xproj)
-#     delta.gauss <- rep(0, dim(delta)[1] * dim(delta)[2])
-#     coefs_gauss <- coef(fit.gauss)
-#     E0.gauss <- coefs_gauss[1:p]; names(E0.gauss) <- NULL
-#     delta.gauss[projection] <- coefs_gauss[-(1:p)]
-#     delta.gauss <- t(matrix(delta.gauss, ncol = nrow(delta)))
-#   } else { # take intercept (root) into consideration
+# compute_gauss_lasso.grplasso <- function (Yvec, Xkro, delta, root, group, p,
+#                                           projection = which(as.vector(t(delta)) != 0)) {
 #     Xproj <- 0 + Xkro[, c(which(group == root), projection), drop = FALSE]
 #     fit.gauss <- lm(Yvec ~ Xproj - 1)
 #     delta.gauss <- rep(0, dim(delta)[1] * dim(delta)[2])
@@ -1510,7 +1478,6 @@ compute_gauss_lasso.grplasso <- function (Yvec, Xkro, delta, root, group, p,
 #     E0.gauss <- coefs_gauss[1:p]; names(E0.gauss) <- NULL
 #     delta.gauss[projection] <- coefs_gauss[-(1:p)]
 #     delta.gauss <- t(matrix(delta.gauss, ncol = nrow(delta)))
-#   }
 #   # If lm fails to find some coefficients
 #   if (anyNA(delta.gauss)) {
 #     warning("There were some NA in the lm fit for the Gauss Lasso. These were replaced with the values obtained from the Lasso. This is not the optimal solution.")
@@ -1522,6 +1489,38 @@ compute_gauss_lasso.grplasso <- function (Yvec, Xkro, delta, root, group, p,
 #               delta.gauss = delta.gauss,
 #               residuals = residuals(fit.gauss)))
 # }
+
+compute_gauss_lasso.gglasso <- function (Yvec, Xkro, delta, root, group, p,
+                                         projection = which(as.vector(t(delta)) != 0)) {
+  # projection <- which(as.vector(t(delta)) != 0)
+  if (is.null(root)) { # If no one is excluded, "real" intercept
+    Xproj <- 0 + Xkro[, projection, drop = FALSE]
+    fit.gauss <- lm(Yvec ~ Xproj)
+    delta.gauss <- rep(0, dim(delta)[1] * dim(delta)[2])
+    coefs_gauss <- coef(fit.gauss)
+    E0.gauss <- coefs_gauss[1:p]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coefs_gauss[-(1:p)]
+    delta.gauss <- t(matrix(delta.gauss, ncol = nrow(delta)))
+  } else { # take intercept (root) into consideration
+    Xproj <- 0 + Xkro[, c(which(group == root), projection), drop = FALSE]
+    fit.gauss <- lm(Yvec ~ Xproj - 1)
+    delta.gauss <- rep(0, dim(delta)[1] * dim(delta)[2])
+    coefs_gauss <- coef(fit.gauss)
+    E0.gauss <- coefs_gauss[1:p]; names(E0.gauss) <- NULL
+    delta.gauss[projection] <- coefs_gauss[-(1:p)]
+    delta.gauss <- t(matrix(delta.gauss, ncol = nrow(delta)))
+  }
+  # If lm fails to find some coefficients
+  if (anyNA(delta.gauss)) {
+    warning("There were some NA in the lm fit for the Gauss Lasso. These were replaced with the values obtained from the Lasso. This is not the optimal solution.")
+    delta.gauss[is.na(delta.gauss)] <- delta[is.na(delta.gauss)]
+  }
+  # Result
+  # shifts.gauss <- shifts.matrix_to_list(t(delta.gauss));
+  return(list(E0.gauss = E0.gauss,
+              delta.gauss = delta.gauss,
+              residuals = residuals(fit.gauss)))
+}
 
 ##
 #' @title Initialization of the shifts using Lasso.
@@ -1745,13 +1744,13 @@ init.EM.lasso <- function(phylo,
         }
       # Fit
       group <- rep(1:root, each = p)
-      fit <- try(lasso_regression_K_fixed.grplasso(Yvec = as.vector(Yp),
-                                                   Xkro = as.matrix(Xp),
-                                                   K = nbr_of_shifts,
-                                                   K_lag = K_lag_init,
-                                                   root = root,
-                                                   group = group,
-                                                   p_dim = p))
+      fit <- try(lasso_regression_K_fixed.gglasso(Yvec = as.vector(Yp),
+                                                  Xkro = as.matrix(Xp),
+                                                  K = nbr_of_shifts,
+                                                  K_lag = K_lag_init,
+                                                  root = root,
+                                                  group = group,
+                                                  p_dim = p))
       chol_data <- FALSE
     }
   } else {
@@ -1791,13 +1790,13 @@ init.EM.lasso <- function(phylo,
       }
       # Fit
       group <- rep(1:root, each = p)
-      fit <- try(lasso_regression_K_fixed.grplasso(Yvec = as.vector(Yp),
-                                                   Xkro = as.matrix(Xp),
-                                                   K = nbr_of_shifts,
-                                                   K_lag = K_lag_init,
-                                                   group = group,
-                                                   root = root,
-                                                   p_dim = p))
+      fit <- try(lasso_regression_K_fixed.gglasso(Yvec = as.vector(Yp),
+                                                  Xkro = as.matrix(Xp),
+                                                  K = nbr_of_shifts,
+                                                  K_lag = K_lag_init,
+                                                  group = group,
+                                                  root = root,
+                                                  p_dim = p))
     }
     chol_data <- FALSE
   }

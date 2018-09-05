@@ -637,6 +637,72 @@ compute_variance_covariance.OU <- function(times_shared,
   return(varr)
 }
 
+##
+#' @title Complete variance covariance matrix for OU
+#'
+#' @description
+#' \code{compute_variance_covariance.OU} computes the (n+m)*p squared variance
+#' covariance matrix of vec(X).
+#'
+#' @param times_shared times of shared ancestry of all nodes and tips, result 
+#'  of function \code{compute_times_ca}
+#' @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return matrix of variance covariance for the OU
+#' 
+#' @keywords internal
+#' 
+##
+compute_variance_covariance.OU.nonsym <- function(times_shared,
+                                                  distances_phylo,
+                                                  params_old, ...) {
+  p <- dim(params_old$variance)[1]
+  ntaxa <- dim(times_shared)[1]
+  if (is.null(p)){
+    return(compute_variance_covariance.scOU(times_shared,
+                                            distances_phylo,
+                                            params_old, ...))
+  }
+  alpha_mat <- params_old$selection.strength
+  sigma2 <- params_old$variance
+  varr <- matrix(NA, p*ntaxa, p*ntaxa)
+  # random root if needed
+  if (params_old$root.state$random){
+    var_root <- params_old$root.state$var.root
+  } else {
+    var_root <- matrix(0, p, p)
+  }
+  eig_alpha <- eigen(alpha_mat)
+  P <- eig_alpha$vectors
+  P_inv <- solve(P)
+  sigma_trans <- P_inv %*% sigma2 %*% t(P_inv)
+  var_root_trans <- P_inv %*% var_root %*% t(P_inv)
+  vv <- matrix(NA, p, p)
+  for (q in 1:p){
+    for (r in 1:p){
+      vv[q, r] <- 1/(eig_alpha$values[q] + eig_alpha$values[r])
+    }
+  }
+  ee <- exp(eig_alpha$values)
+  for (i in 1:ntaxa){
+    print(i)
+    for (j in 1:ntaxa){
+      ti <- times_shared[i, i]
+      tj <- times_shared[j, j]
+      tij <- times_shared[i, j]
+      cpij <- tcrossprod(ee^(-ti), ee^(-tj))
+      temp <- vv * (tcrossprod(ee^tij) - 1)
+      temp <- cpij * (temp * sigma_trans + var_root_trans)
+      varr[((i-1)*(p)+1):(i*p), ((j-1)*(p)+1):(j*p)] <- as.matrix(P %*% temp %*% t(P))
+      #       temp <- vv * exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * (exp(eig_alpha$values * tij) %*% t(exp(eig_alpha$values * tij)) - 1)
+      #       varr[((i-1)*(p)+1):(i*p),((j-1)*(p)+1):(j*p)] <- as.matrix(P %*% (temp * sigma_trans + exp(-eig_alpha$values * ti) %*% t(exp(-eig_alpha$values * tj)) * var_root_trans) %*% t(P))
+    }
+  }
+  attr(varr, "p_dim") <- p
+  attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
+  return(varr)
+}
+
 
 
 ##
@@ -1004,7 +1070,11 @@ compute_E.upward_downward <- function(phylo,
     if (params_old$root.state$stationary.root){
       Stationary_Var <- as.matrix(params_old$root.state$var.root)
     } else {
-      Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
+      if (params_old$selection.strength[1] < 0){
+        Stationary_Var <- -as.matrix(compute_stationary_variance(params_old$variance, -params_old$selection.strength))
+      } else {
+        Stationary_Var <- as.matrix(compute_stationary_variance(params_old$variance, params_old$selection.strength))
+      }
     }
     Alpha <- params_old$selection.strength * diag(rep(1, ncol(Stationary_Var)))
     res <- upward_downward_OU(Y_data, phylo$edge,
@@ -1086,8 +1156,13 @@ log_likelihood.params_process <- function(x,
     if (x$root.state$stationary.root){
       Stationary_Var <- as.matrix(x$root.state$var.root)
     } else {
-      Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, 
-                                                              unique(diag(x$selection.strength))))
+      if (x$selection.strength[1] < 0){
+        Stationary_Var <- -as.matrix(compute_stationary_variance(x$variance,
+                                                                 -unique(diag(x$selection.strength))))
+      } else {
+        Stationary_Var <- as.matrix(compute_stationary_variance(x$variance, 
+                                                                unique(diag(x$selection.strength))))      
+      }
     }
     Alpha <- x$selection.strength * diag(rep(1, ncol(Stationary_Var)))
     res <- log_likelihood_OU(Y_data, phy$edge,

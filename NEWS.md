@@ -1,3 +1,20 @@
+# PhylogeneticEM 1.2.0
+* Added Options:
+    * `option_is.ultrametric` to control the `ape::is.ultrametric` check.
+* Deprecation Fix:
+    * Go back to updated version of gglasso (faster than grplasso). 
+    This should not change the results of PhylogeneticEM.
+* Added functions:
+    * Functions `find_rotation` and `merge_rotations` to deal with datasets that are
+    equal up to a rotation.
+    * Functions `get_criterion` and `plot_criterion` to get and plot the criterion used
+    for model selection easilly.
+* New feature:
+    * Function PhyloEM can now allow for negative values of alpha, to fit an EB model.
+* Bug fix:
+    * In function plot, fixed bug that led to the wrong parameters being selected when 
+    doing ancestral trait reconstruction.
+
 # PhylogeneticEM 1.1.0
 * Deprecation Fix:
     * Remove dependency from gglasso (replaced with grplasso). 
