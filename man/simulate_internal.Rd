@@ -6,8 +6,8 @@
 \usage{
 simulate_internal(phylo, process = c("BM", "OU", "scOU", "StudentOU"),
   p = 1, root.state = list(random = FALSE, stationary.root = FALSE,
-  value.root = NA, exp.root = NA, var.root = NA), shifts = list(edges = NULL,
-  values = NULL, relativeTimes = NULL), eps = 10^(-6),
+  value.root = NA, exp.root = NA, var.root = NA), shifts = list(edges =
+  NULL, values = NULL, relativeTimes = NULL), eps = 10^(-6),
   selection.strength = NULL, variance = NULL, optimal.value = NULL,
   checks = TRUE, simulate_random = TRUE, U_tree = NULL,
   times_shared = NULL, df = 1)

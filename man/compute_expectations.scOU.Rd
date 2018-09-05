@@ -4,8 +4,8 @@
 \alias{compute_expectations.scOU}
 \title{Compute the expected states of a scOU}
 \usage{
-compute_expectations.scOU(phylo, root.state, shifts, alpha, U_tree = NULL,
-  times_shared = NULL)
+compute_expectations.scOU(phylo, root.state, shifts, alpha,
+  U_tree = NULL, times_shared = NULL)
 }
 \arguments{
 \item{root.state}{(list): state of the root, with:

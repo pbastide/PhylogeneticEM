@@ -5,8 +5,8 @@
 \title{Wrapper for E step in EM}
 \usage{
 wrapper_E_step(phylo, times_shared, distances_phylo, process, params_old,
-  masque_data, F_moments, independent, Y_data_vec_known, miss, Y_data, U_tree,
-  compute_E)
+  masque_data, F_moments, independent, Y_data_vec_known, miss, Y_data,
+  U_tree, compute_E)
 }
 \description{
 \code{wrapper_E_step} is used in the EM algorithm. It calls itself

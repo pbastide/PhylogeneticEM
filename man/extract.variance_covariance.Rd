@@ -5,8 +5,9 @@
 \title{Extract sub-matrices of variance.}
 \usage{
 \method{extract}{variance_covariance}(struct, what = c("YY", "YZ", "ZZ"),
-  masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct, "p_dim")),
-  rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) * attr(struct, "p_dim"))))
+  masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct,
+  "p_dim")), rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) *
+  attr(struct, "p_dim"))))
 }
 \arguments{
 \item{struct}{structural matrix of size (ntaxa+nNode)*p, result 

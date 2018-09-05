@@ -18,13 +18,22 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="pkgdown.css" rel="stylesheet">
-<script src="jquery.sticky-kit.min.js"></script>
 <script src="pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Citation and Authors" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -47,12 +56,19 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">PhylogeneticEM</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="index.html">PhylogeneticEM</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.2.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
   <a href="articles/tutorial.html">Tutorial</a>
+</li>
+<li>
+  <a href="articles/monkeys.html">New World Monkeys</a>
 </li>
 <li>
   <a href="reference/index.html">Reference</a>
@@ -67,6 +83,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -74,16 +91,15 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="contents col-md-9">
-
     <div class="page-header">
       <h1>Citation</h1>
     </div>
 
-    <p>Bastide P, Mariadassou M and Robin S (2017).
+    <p>Bastide P, Mariadassou M, Robin S (2017).
 &ldquo;Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree.&rdquo;
-<em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em>, <b>79</b>(4), pp. 1067&ndash;1093.
+<em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em>, <b>79</b>(4), 1067&ndash;1093.
 ISSN 1467-9868, doi: <a href="http://doi.org/10.1111/rssb.12206">10.1111/rssb.12206</a>, <a href="http://onlinelibrary.wiley.com/doi/10.1111/rssb.12206/full">http://onlinelibrary.wiley.com/doi/10.1111/rssb.12206/full</a>. 
 </p>
     <pre>@Article{,
@@ -105,11 +121,11 @@ ISSN 1467-9868, doi: <a href="http://doi.org/10.1111/rssb.12206">10.1111/rssb.12
 
     <ul class="list-unstyled">
       <li>
-        <p><strong>Paul Bastide</strong>. Author, maintainer.
+        <p><strong>Paul Bastide</strong>. Author, maintainer. 
         </p>
       </li>
       <li>
-        <p><strong>Mahendra Mariadassou</strong>. Contributor.
+        <p><strong>Mahendra Mariadassou</strong>. Contributor. 
         </p>
       </li>
     </ul>
@@ -125,11 +141,14 @@ ISSN 1467-9868, doi: <a href="http://doi.org/10.1111/rssb.12206">10.1111/rssb.12
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

@@ -18,13 +18,28 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Model Estimation with Detection of Shifts — PhyloEM" />
+
+<meta property="og:description" content="PhyloEM is the main function of the package. It uses maximum likelihood
+methods to fit a BM or an OU process for several traits evolving along a
+phylogenetic tree, with automatic shift detection on the branches of the tree.
+This function can handle missing data." />
+<meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -47,12 +62,19 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">PhylogeneticEM</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.2.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
   <a href="../articles/tutorial.html">Tutorial</a>
+</li>
+<li>
+  <a href="../articles/monkeys.html">New World Monkeys</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -67,6 +89,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -74,35 +97,42 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Model Estimation with Detection of Shifts</h1>
+    <small class="dont-index">Source: <a href='https://github.com/pbastide/PhylogeneticEM/blob/master/R/estimateEM.R'><code>R/estimateEM.R</code></a></small>
+    <div class="hidden name"><code>PhyloEM.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p><code>PhyloEM</code> is the main function of the package. It uses maximum likelihood
 methods to fit a BM or an OU process for several traits evolving along a
 phylogenetic tree, with automatic shift detection on the branches of the tree.
 This function can handle missing data.</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>PhyloEM</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>),
   <span class='kw'>check_postorder</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>K_max</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='fu'>floor</span>(<span class='fu'>sqrt</span>(<span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>))), <span class='fl'>10</span>),
-  <span class='kw'>use_previous</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"LINselect"</span>,
-  <span class='st'>"DDSE"</span>, <span class='st'>"Djump"</span>), <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>, <span class='kw'>C.LINselect</span> <span class='kw'>=</span> <span class='fl'>1.1</span>,
-  <span class='kw'>method.variance</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"upward_downward"</span>, <span class='st'>"simple"</span>), <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='st'>"lasso"</span>,
-  <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='st'>"estimation"</span>,
-  <span class='kw'>method.init.alpha.estimation</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"regression"</span>, <span class='st'>"regression.MM"</span>, <span class='st'>"median"</span>),
-  <span class='kw'>methods.segmentation</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"lasso"</span>, <span class='st'>"best_single_move"</span>), <span class='kw'>alpha_grid</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>progress.bar</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>estimates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>save_step</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>impute_init_Rphylopars</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>5</span>,
-  <span class='kw'>light_result</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>tol_tree</span> <span class='kw'>=</span> <span class='no'>.Machine</span>$<span class='no'>double.eps</span>^<span class='fl'>0.5</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>use_previous</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"LINselect"</span>, <span class='st'>"DDSE"</span>, <span class='st'>"Djump"</span>), <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
+  <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>, <span class='kw'>C.LINselect</span> <span class='kw'>=</span> <span class='fl'>1.1</span>,
+  <span class='kw'>method.variance</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"upward_downward"</span>, <span class='st'>"simple"</span>),
+  <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='st'>"lasso"</span>, <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='st'>"estimation"</span>,
+  <span class='kw'>method.init.alpha.estimation</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"regression"</span>, <span class='st'>"regression.MM"</span>,
+  <span class='st'>"median"</span>), <span class='kw'>methods.segmentation</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"lasso"</span>, <span class='st'>"best_single_move"</span>),
+  <span class='kw'>alpha_grid</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='no'>random.root</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>progress.bar</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>estimates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>save_step</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='kw'>impute_init_Rphylopars</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>5</span>,
+  <span class='kw'>light_result</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>tol_tree</span> <span class='kw'>=</span> <span class='no'>.Machine</span>$<span class='no'>double.eps</span>^<span class='fl'>0.5</span>,
+  <span class='kw'>allow_negative</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>option_is.ultrametric</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -290,6 +320,15 @@ two lineages lengths to be different, when checking for ultrametry.
 (Default to .Machine$double.eps^0.5). See <code>is.ultrametric</code> and <code>di2multi</code>.</p></td>
     </tr>
     <tr>
+      <th>allow_negative</th>
+      <td><p>whether to allow negative values for alpha (Early Burst).
+See details. Default to FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>option_is.ultrametric</th>
+      <td><p>option for <code>is.ultrametric</code> check. Default to 1.</p></td>
+    </tr>
+    <tr>
       <th>...</th>
       <td><p>Further arguments to be passed to <code><a href='estimateEM.html'>estimateEM</a></code>, including
 tolerance parameters for stopping criteria, maximal number of iterations, etc.</p></td>
@@ -313,11 +352,34 @@ using helper functions <code><a href='params_process.PhyloEM.html'>params_proces
 strength matrix is assumed to be scalar, i.e. all the traits are supposed to
 go to their optimum values with the same speed.</p></li>
 </ul>
+    <p>Note that the "scalar OU" model can also be seen as a re-scaling of the tree.
+The selection strength parameter alpha can then be interpreted as a measure
+of the "phylogenetic signal":</p><ul>
+<li><p>If alpha is close to 0, then the process is similar to a BM on the original tree,
+and the signal is strong.</p></li>
+<li><p>If alpha is large, then the re-scaled tree is similar to a star-tree,
+and the signal is weak.</p></li>
+</ul><p>When there are no shifts, and the root is taken to be constant, this
+model is actually equivalent to an AC model (Uyeda et al. 2015).
+With this interpretation in mind, one might want to explore 
+negative values of alpha, in order to fit a DC (or Early Burst) model.
+With no shift and a fixed root, the same proof shows that the scOU
+with alpha negative is equivalent to the DC model. There are two
+strong caveats in doing that.</p><ul>
+<li><p>The interpretation of the OU as modelling the dynamic of a trait
+undergoing stabilizing selection is lost. In this case, the scOU can only
+be seen as a re-scaling of the tree, similar to Pagel's delta.</p></li>
+<li><p>The values of the "optimal values", and of the shifts on them, cannot
+be interpreted as such (the process is actually going away from this values,
+instead of being attracted). When looking at these values, one should only use
+the un-normalized values happening of the underlying BM. You can extract those
+using the <code><a href='params_process.html'>params_process</a></code> function with <code>rBM = TRUE</code>.</p></li>
+</ul>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><code><a href='plot.PhyloEM.html'>plot.PhyloEM</a></code>, <code><a href='params_process.PhyloEM.html'>params_process.PhyloEM</a></code>,
-<code><a href='imputed_traits.html'>imputed_traits.PhyloEM</a></code></p>
+    <div class='dont-index'><p><code><a href='plot.PhyloEM.html'>plot.PhyloEM</a></code>, <code><a href='params_process.PhyloEM.html'>params_process.PhyloEM</a></code>,
+<code><a href='imputed_traits.html'>imputed_traits.PhyloEM</a></code></p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -371,11 +433,14 @@ go to their optimum values with the same speed.</p></li>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

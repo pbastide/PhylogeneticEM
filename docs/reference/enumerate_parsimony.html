@@ -19,13 +19,28 @@ of the tips. — enumerate_parsimony • PhylogeneticEM</title>
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Enumerate all the possible regime allocations, given a clustering 
+of the tips. — enumerate_parsimony" />
+
+<meta property="og:description" content="enumerate_parsimony enumerate all the equivalent allocation of the 
+regimes in the tree, a clustering of the tips being given. The number of such
+equivalent regimes is given by parsimonyNumber (which is faster)." />
+<meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -48,12 +63,19 @@ of the tips. — enumerate_parsimony • PhylogeneticEM</title>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">PhylogeneticEM</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.2.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
   <a href="../articles/tutorial.html">Tutorial</a>
+</li>
+<li>
+  <a href="../articles/monkeys.html">New World Monkeys</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -68,6 +90,7 @@ of the tips. — enumerate_parsimony • PhylogeneticEM</title>
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -75,22 +98,26 @@ of the tips. — enumerate_parsimony • PhylogeneticEM</title>
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Enumerate all the possible regime allocations, given a clustering 
 of the tips.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/pbastide/PhylogeneticEM/blob/master/R/parsimonyNumber.R'><code>R/parsimonyNumber.R</code></a></small>
+    <div class="hidden name"><code>enumerate_parsimony.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p><code>enumerate_parsimony</code> enumerate all the equivalent allocation of the 
 regimes in the tree, a clustering of the tips being given. The number of such
 equivalent regimes is given by <code><a href='parsimonyNumber.html'>parsimonyNumber</a></code> (which is faster).</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>enumerate_parsimony</span>(<span class='no'>phylo</span>, <span class='kw'>clusters</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fu'>length</span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)))</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -127,17 +154,17 @@ the tree.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><code><a href='extract.enumerate_parsimony.html'>extract.enumerate_parsimony</a></code>,
+    <div class='dont-index'><p><code><a href='extract.enumerate_parsimony.html'>extract.enumerate_parsimony</a></code>,
 <code><a href='plot.enumerate_parsimony.html'>plot.enumerate_parsimony</a></code>, <code><a href='parsimonyCost.html'>parsimonyCost</a></code>,
 <code><a href='parsimonyNumber.html'>parsimonyNumber</a></code>, <code><a href='partitionsNumber.html'>partitionsNumber</a></code>,
-<code><a href='equivalent_shifts.html'>equivalent_shifts</a></code></p>
+<code><a href='equivalent_shifts.html'>equivalent_shifts</a></code></p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='no'>tree</span> <span class='kw'>&lt;-</span> <span class='fu'>read.tree</span>(<span class='kw'>text</span><span class='kw'>=</span><span class='st'>"(((A,B),C),D);"</span>)
-<span class='fu'>plot</span>(<span class='no'>tree</span>)</div><div class='img'><img src='enumerate_parsimony-3.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='no'>clusters</span> <span class='kw'>&lt;-</span> <span class='fu'>c</span>(<span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>2</span>)
+<span class='fu'>plot</span>(<span class='no'>tree</span>)</div><div class='img'><img src='enumerate_parsimony-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='no'>clusters</span> <span class='kw'>&lt;-</span> <span class='fu'>c</span>(<span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>2</span>)
 <span class='no'>sols</span> <span class='kw'>&lt;-</span> <span class='fu'>enumerate_parsimony</span>(<span class='no'>tree</span>, <span class='no'>clusters</span>)
-<span class='fu'>plot</span>(<span class='no'>sols</span>)</div><div class='img'><img src='enumerate_parsimony-4.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>sols</span>)</div><div class='img'><img src='enumerate_parsimony-2.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## Extract the parsimonious solutions from the root</span>
 <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>sols</span>) <span class='co'># each line is a solution, with states of each node</span></div><div class='output co'>#&gt;      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
 #&gt; [1,]    0    1    2    2    2    2    0
@@ -176,11 +203,14 @@ the tree.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

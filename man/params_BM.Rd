@@ -5,8 +5,8 @@
 \title{Create an object \code{params_process} for a BM}
 \usage{
 params_BM(p = 1, variance = diag(1, p, p), random = FALSE,
-  value.root = rep(0, p), exp.root = rep(0, p), var.root = diag(1, p, p),
-  edges = NULL, values = matrix(0, p, length(edges)),
+  value.root = rep(0, p), exp.root = rep(0, p), var.root = diag(1, p,
+  p), edges = NULL, values = matrix(0, p, length(edges)),
   relativeTimes = NULL, nbr_of_shifts = length(edges), phylo = NULL,
   sBM_variance = FALSE, ...)
 }

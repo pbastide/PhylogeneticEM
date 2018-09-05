@@ -26,6 +26,10 @@ reference:
       - enlight
       - enlight.PhyloEM
       - log_likelihood.PhyloEM 
+      - find_rotation
+      - merge_rotations
+      - get_criterion
+      - plot_criterion
   - title: "Parameters and Simulations"
     desc: >
       Functions to simulate various processes on the tree, and deal with their parameters.
@@ -91,3 +95,7 @@ reference:
       - compute_stationary_variance
       - transform_branch_length
       - extract
+  - title: "Dataset"
+    desc: "New World Monkeys dataset"
+    contents:
+      - monkeys

@@ -18,13 +18,26 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Find all equivalent shifts allocations and values. — equivalent_shifts" />
+
+<meta property="og:description" content="equivalent_shifts computes the equivalent shifts positions and their
+corresponding values, assuming an ultrametric tree." />
+<meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -47,12 +60,19 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">PhylogeneticEM</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.2.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
   <a href="../articles/tutorial.html">Tutorial</a>
+</li>
+<li>
+  <a href="../articles/monkeys.html">New World Monkeys</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -67,6 +87,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -74,21 +95,25 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Find all equivalent shifts allocations and values.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/pbastide/PhylogeneticEM/blob/master/R/parsimonyNumber.R'><code>R/parsimonyNumber.R</code></a></small>
+    <div class="hidden name"><code>equivalent_shifts.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p><code>equivalent_shifts</code> computes the equivalent shifts positions and their
 corresponding values, assuming an ultrametric tree.</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>equivalent_shifts</span>(<span class='no'>phylo</span>, <span class='no'>params</span>, <span class='kw'>T_tree</span> <span class='kw'>=</span> <span class='fu'><a href='incidence.matrix.html'>incidence.matrix</a></span>(<span class='no'>phylo</span>),
   <span class='kw'>part.list</span> <span class='kw'>=</span> <span class='fu'><a href='enumerate_tips_under_edges.html'>enumerate_tips_under_edges</a></span>(<span class='no'>phylo</span>), <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -139,9 +164,9 @@ fixed root or stationary root. It assumes that there are no homoplasies.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><code><a href='plot.equivalent_shifts.html'>plot.equivalent_shifts</a></code>,
+    <div class='dont-index'><p><code><a href='plot.equivalent_shifts.html'>plot.equivalent_shifts</a></code>,
 <code><a href='extract.equivalent_shifts.html'>extract.equivalent_shifts</a></code>, <code><a href='params_BM.html'>params_BM</a></code>, 
-<code><a href='params_OU.html'>params_OU</a></code>, <code><a href='enumerate_parsimony.html'>enumerate_parsimony</a></code></p>
+<code><a href='params_OU.html'>params_OU</a></code>, <code><a href='enumerate_parsimony.html'>enumerate_parsimony</a></code></p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -165,8 +190,8 @@ fixed root or stationary root. It assumes that there are no homoplasies.</p>
 #&gt; [1,]    2    2    2
 #&gt; [2,]   -2   -2    1
 #&gt; [3,]    1    3   -3</div><div class='input'><span class='co'># Root values for trait 4, for the tree solutions (columns)</span>
-<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>eq_shifts</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"root_values"</span>)</div><div class='output co'>#&gt;              [,1]         [,2]         [,3]
-#&gt; [1,] 4.965068e-16 1.092315e-15 9.930137e-17</div><div class='input'>
+<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>eq_shifts</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"root_values"</span>)</div><div class='output co'>#&gt;              [,1]         [,2] [,3]
+#&gt; [1,] 3.972055e-16 2.482534e-15    0</div><div class='input'>
 <span class='co'>## Define parameters (OU, stationary root)</span>
 <span class='no'>params</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='params_OU.html'>params_OU</a></span>(<span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>edges</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>4</span>, <span class='fl'>17</span>, <span class='fl'>22</span>),
                     <span class='kw'>values</span> <span class='kw'>=</span> <span class='fu'>cbind</span>(<span class='fl'>1</span>:<span class='fl'>4</span>, -(<span class='fl'>1</span>:<span class='fl'>4</span>), <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fl'>4</span>)),
@@ -176,14 +201,14 @@ fixed root or stationary root. It assumes that there are no homoplasies.</p>
 <span class='no'>eq_shifts</span></div><div class='output co'>#&gt; 
 #&gt; There are 3 equivalent solutions.
 #&gt; 
-#&gt; Use function plot to see them all.</div><div class='input'><span class='fu'>plot</span>(<span class='no'>eq_shifts</span>)</div><div class='img'><img src='equivalent_shifts-2.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='co'>## Extract the values</span>
+#&gt; Use function plot to see them all.</div><div class='input'><span class='fu'>plot</span>(<span class='no'>eq_shifts</span>)</div><div class='img'><img src='equivalent_shifts-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'>## Extract the values</span>
 <span class='co'># Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)</span>
 <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>eq_shifts</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"shifts_values"</span>)</div><div class='output co'>#&gt;      [,1]      [,2]       [,3]
 #&gt; [1,]    2  2.000000  2.0000000
 #&gt; [2,]   -2 -1.903936  0.9519678
 #&gt; [3,]    1  3.000000 -3.0000000</div><div class='input'><span class='co'># Root values for trait 4, for the three solutions (columns)</span>
-<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>eq_shifts</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"root_values"</span>)</div><div class='output co'>#&gt;               [,1]         [,2]          [,3]
-#&gt; [1,] -1.986027e-16 4.468561e-16 -1.986027e-16</div><div class='input'>
+<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>eq_shifts</span>, <span class='kw'>trait</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"root_values"</span>)</div><div class='output co'>#&gt;              [,1]         [,2]         [,3]
+#&gt; [1,] 3.475548e-16 2.482534e-16 2.979041e-16</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -209,11 +234,14 @@ fixed root or stationary root. It assumes that there are no homoplasies.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

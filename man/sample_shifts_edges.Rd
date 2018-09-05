@@ -4,7 +4,8 @@
 \alias{sample_shifts_edges}
 \title{Sample shifts edges in a parsimonious way.}
 \usage{
-sample_shifts_edges(tree, K, part.list = enumerate_tips_under_edges(tree))
+sample_shifts_edges(tree, K,
+  part.list = enumerate_tips_under_edges(tree))
 }
 \arguments{
 \item{tree}{: input tree}
