@@ -1,3 +1,8 @@
+# PhylogeneticEM 1.2.1
+* CRAN maintenance
+  * Added references in Description
+  * Reduce checking and vignette building time
+
 # PhylogeneticEM 1.2.0
 * Added Options:
     * `option_is.ultrametric` to control the `ape::is.ultrametric` check.

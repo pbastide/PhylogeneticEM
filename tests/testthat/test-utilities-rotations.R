@@ -2,6 +2,7 @@ context("Function merge rotation")
 
 ###############################################################################
 test_that("Rotations", {
+  testthat::skip_on_cran()
   data(monkeys)
   
   # Fit data
@@ -58,21 +59,9 @@ test_that("Rotations", {
   
   expect_equal(log_likelihood(params_process(res_merge, K = 3), phylo = monkeys$phy, Y_data = monkeys$dat),
                res_merge$alpha_max$results_summary$log_likelihood[4])
-  
-})
 
-###############################################################################
-test_that("Not rotations", {
-  data(monkeys)
-  
-  # Fit data
-  res <- PhyloEM(Y_data = monkeys$dat,
-                 phylo = monkeys$phy, 
-                 process = "scOU", nbr_alpha = 2,
-                 random.root = FALSE,
-                 K_max = 10,
-                 method.selection = "BGHmlraw",
-                 parallel_alpha = F)
+  ###############################################################################
+  ## Not rotations
   
   ## transform data
   norot <- matrix(c(1, 0.5, 0.1, 2), 2)

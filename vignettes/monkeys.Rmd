@@ -31,7 +31,7 @@ Plotting the data on the tree before analyzing it allows us to spot potential er
 ## Inference
 
 By default, the inference is done on an automatically computed grid of 10 alpha values.
-To keep the computations down, we keep here this default, but this number should be raised on a real application.
+To keep the computations down, we ask for a custom grid of only 4 values, but this number should be raised on a real application.
 The maximum number of shifts considered is here 10, and should be adapted considering the size of the tree.
 
 ```{r, label="Fit_EM", warning=FALSE, message=FALSE}
@@ -40,6 +40,7 @@ res <- PhyloEM(phylo = monkeys$phy,
                process = "scOU",                   ## scalar OU model
                random.root = TRUE,                 ## Root is stationary
                stationary.root = TRUE,
+               nbr_alpha = 4,                      ## Number of alpha values tested (should be raised)
                K_max = 10,                         ## Maximal number of shifts
                parallel_alpha = TRUE,              ## This can be set to TRUE for
                Ncores = 2)                         ## parallel computations
@@ -60,8 +61,9 @@ Function `plot_criterion` shows the value of the default model selection criteri
 plot_criterion(res)
 ```
 
-Here, the solution selected has four shifts. 
-As shown above, the criterion is however a bit flat around its minimum.
+Here, the solution selected has three shifts. 
+As shown above, the criterion is however a bit flat around its minimum, with a strange value for four shifts.
+This outlier is actually only due to the small grid on alpha taken in this toy example, and goes away for a finer analysis.
 To try and refine this result, one solution is to use a finer grid of alpha values.
 When a grid with 100 values is used, the solution with K=5 shifts is actually selected. We can plot it here for comparison.
 
@@ -110,6 +112,7 @@ res_rot <- PhyloEM(phylo = monkeys$phy,
                    process = "scOU",                   
                    random.root = TRUE,                 
                    stationary.root = TRUE,
+                   nbr_alpha = 4,
                    K_max = 10,                         
                    parallel_alpha = TRUE,              
                    Ncores = 2)                         
@@ -120,12 +123,12 @@ plot(res_rot)
 ```
 
 At first sight, the solution looks very different.
-Indeed, when applied on the rotated dataset, `PhyloEM` selects for a solution with 7 shifts, instead of 4.
-But, if we look at the solution obtained for, say, 4 shifts, then they are identical:
+Indeed, when applied on the rotated dataset, `PhyloEM` selects for a solution with 7 shifts, instead of 3.
+But, if we look at the solution obtained for, say, 3 shifts, then they are identical:
 
 ```{r, fig.show='hold', fig.height=3, fig.width=3, warning=FALSE}
-plot(res, params = params_process(res, K = 4), no.margin = TRUE)
-plot(res_rot, params = params_process(res, K = 4), no.margin = TRUE)
+plot(res, params = params_process(res, K = 3), no.margin = TRUE)
+plot(res_rot, params = params_process(res, K = 3), no.margin = TRUE)
 ```
 
 Looking a bit more closely at the outcome, we can see that the log likelihoods are actually very similar, except in a few places:
@@ -161,7 +164,7 @@ The resulting solution has the highest likelihood possible for each value of K, 
 plot_criterion(res_merge)
 ```
 
-We can see here that the solution with 4 shifts is now selected again.
+We can see here that the solution with 3 shifts is now selected again.
 
 This merge function can be applied to more that two fits, as illustrated below.
 
@@ -181,6 +184,7 @@ res_rot2 <- PhyloEM(phylo = monkeys$phy,
                    process = "scOU",                   
                    random.root = TRUE,                 
                    stationary.root = TRUE,
+                   nbr_alpha = 2,           ## Note that this can also be different
                    K_max = 10,                        
                    parallel_alpha = TRUE,            
                    Ncores = 2)                        
@@ -221,7 +225,7 @@ res_neg <- PhyloEM(phylo = monkeys$phy,
                    K_max = 10,
                    parallel_alpha = TRUE,
                    Ncores = 2,
-                   nbr_alpha = 20,           ## 10 negative, 10 positive
+                   nbr_alpha = 4,            ## 2 negative, 2 positive (should be more)
                    allow_negative = TRUE)    ## allow negative alpha in the grid
 ```
 
@@ -238,7 +242,9 @@ would behave a bit better in this configuration.
 plot_criterion(res_neg, "BGHmlraw")
 ```
 
-Here, the same solution with 5 shifts (and a positive alpha) is selected.
+Here, a same solution with 7 shifts (and a positive alpha) is selected. 
+Again, to keep computations to a minimum, we used a very coarse grid with only 4 values of alpha.
+On a finer grid, the same solution with 5 shifts is selected.
 
 [^1]: Aristide, L., dos Reis, S. F., Machado, A. C., Lima, I., Lopes, R. T., & Perez, S. I. (2016). Brain shape convergence in the adaptive radiation of New World monkeys. Proceedings of the National Academy of Sciences, 113(8), 2158–2163.
 [^2]: Adams, D. C., & Collyer, M. L. (2018). Multivariate Phylogenetic Comparative Methods: Evaluations, Comparisons, and Recommendations. Systematic Biology, 67(1), 14–31.
