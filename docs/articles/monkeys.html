@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.2.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.2.1</span>
       </span>
     </div>
 
@@ -67,7 +67,7 @@
       <h1>Analysis of the New World Monkeys dataset</h1>
                         <h4 class="author">Paul Bastide</h4>
             
-            <h4 class="date">2018-09-05</h4>
+            <h4 class="date">2018-09-11</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/pbastide/PhylogeneticEM/blob/master/vignettes/monkeys.Rmd"><code>vignettes/monkeys.Rmd</code></a></small>
       <div class="hidden name"><code>monkeys.Rmd</code></div>
@@ -92,12 +92,13 @@
 <div id="inference" class="section level2">
 <h2 class="hasAnchor">
 <a href="#inference" class="anchor"></a>Inference</h2>
-<p>By default, the inference is done on an automatically computed grid of 10 alpha values. To keep the computations down, we keep here this default, but this number should be raised on a real application. The maximum number of shifts considered is here 10, and should be adapted considering the size of the tree.</p>
+<p>By default, the inference is done on an automatically computed grid of 10 alpha values. To keep the computations down, we ask for a custom grid of only 4 values, but this number should be raised on a real application. The maximum number of shifts considered is here 10, and should be adapted considering the size of the tree.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/PhyloEM.html">PhyloEM</a></span>(<span class="dt">phylo =</span> monkeys<span class="op">$</span>phy,
                <span class="dt">Y_data =</span> monkeys<span class="op">$</span>dat,
                <span class="dt">process =</span> <span class="st">"scOU"</span>,                   ## scalar OU model
                <span class="dt">random.root =</span> <span class="ot">TRUE</span>,                 ## Root is stationary
                <span class="dt">stationary.root =</span> <span class="ot">TRUE</span>,
+               <span class="dt">nbr_alpha =</span> <span class="dv">4</span>,                      ## Number of alpha values tested (should be raised)
                <span class="dt">K_max =</span> <span class="dv">10</span>,                         ## Maximal number of shifts
                <span class="dt">parallel_alpha =</span> <span class="ot">TRUE</span>,              ## This can be set to TRUE for
                <span class="dt">Ncores =</span> <span class="dv">2</span>)                         ## parallel computations
@@ -107,31 +108,31 @@ res</code></pre></div>
 ## 2 dimensional scOU process with a random stationary root.
 ## 
 ## Root expectations:
-## [1]  0.02543197 -0.02450103
+## [1]  0.01552091 -0.01483439
 ## 
 ## Root variance:
 ##               [,1]          [,2]
-## [1,]  3.229205e-04 -1.592602e-05
-## [2,] -1.592602e-05  8.882448e-05
+## [1,]  3.636791e-04 -9.031817e-05
+## [2,] -9.031817e-05  1.230269e-04
 ## 
 ## Process variance:
 ##               [,1]          [,2]
-## [1,]  8.315839e-05 -4.101265e-06
-## [2,] -4.101265e-06  2.287405e-05
+## [1,]  1.477757e-04 -3.669947e-05
+## [2,] -3.669947e-05  4.999019e-05
 ## 
 ## Process selection strength:
 ##           [,1]      [,2]
-## [1,] 0.1287599 0.0000000
-## [2,] 0.0000000 0.1287599
+## [1,] 0.2031677 0.0000000
+## [2,] 0.0000000 0.2031677
 ## 
 ## Process root optimal values:
-## [1]  0.02543197 -0.02450103
+## [1]  0.01552091 -0.01483439
 ## 
-## Shifts positions on branches: 3, 77, 63, 46 
+## Shifts positions on branches: 4, 63, 46 
 ## Shifts values:
-##                3          77           63         46
-## [1,] -0.03095959 -0.03258917 -0.113124048 0.07559138
-## [2,]  0.05942997  0.03313123  0.001874136 0.03794586
+##                4           63         46
+## [1,] -0.01812684 -0.093914264 0.08031859
+## [2,]  0.05234025 -0.008148889 0.02527294
 ## 
 ## 
 ## 
@@ -142,7 +143,7 @@ res</code></pre></div>
 <p>Function <code>plot_criterion</code> shows the value of the default model selection criterion for each number of shifts.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot_criterion.html">plot_criterion</a></span>(res)</code></pre></div>
 <p><img src="monkeys_files/figure-html/unnamed-chunk-2-1.png" width="384"></p>
-<p>Here, the solution selected has four shifts. As shown above, the criterion is however a bit flat around its minimum. To try and refine this result, one solution is to use a finer grid of alpha values. When a grid with 100 values is used, the solution with K=5 shifts is actually selected. We can plot it here for comparison.</p>
+<p>Here, the solution selected has three shifts. As shown above, the criterion is however a bit flat around its minimum, with a strange value for four shifts. This outlier is actually only due to the small grid on alpha taken in this toy example, and goes away for a finer analysis. To try and refine this result, one solution is to use a finer grid of alpha values. When a grid with 100 values is used, the solution with K=5 shifts is actually selected. We can plot it here for comparison.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">5</span>))</code></pre></div>
 <p><img src="monkeys_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
 </div>
@@ -177,14 +178,15 @@ res_rot &lt;-<span class="st"> </span><span class="kw"><a href="../reference/Phy
                    <span class="dt">process =</span> <span class="st">"scOU"</span>,                   
                    <span class="dt">random.root =</span> <span class="ot">TRUE</span>,                 
                    <span class="dt">stationary.root =</span> <span class="ot">TRUE</span>,
+                   <span class="dt">nbr_alpha =</span> <span class="dv">4</span>,
                    <span class="dt">K_max =</span> <span class="dv">10</span>,                         
                    <span class="dt">parallel_alpha =</span> <span class="ot">TRUE</span>,              
                    <span class="dt">Ncores =</span> <span class="dv">2</span>)                         </code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res_rot)</code></pre></div>
 <p><img src="monkeys_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
-<p>At first sight, the solution looks very different. Indeed, when applied on the rotated dataset, <code>PhyloEM</code> selects for a solution with 7 shifts, instead of 4. But, if we look at the solution obtained for, say, 4 shifts, then they are identical:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">4</span>), <span class="dt">no.margin =</span> <span class="ot">TRUE</span>)
-<span class="kw">plot</span>(res_rot, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">4</span>), <span class="dt">no.margin =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p>At first sight, the solution looks very different. Indeed, when applied on the rotated dataset, <code>PhyloEM</code> selects for a solution with 7 shifts, instead of 3. But, if we look at the solution obtained for, say, 3 shifts, then they are identical:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(res, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>), <span class="dt">no.margin =</span> <span class="ot">TRUE</span>)
+<span class="kw">plot</span>(res_rot, <span class="dt">params =</span> <span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res, <span class="dt">K =</span> <span class="dv">3</span>), <span class="dt">no.margin =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p><img src="monkeys_files/figure-html/unnamed-chunk-7-1.png" width="288"><img src="monkeys_files/figure-html/unnamed-chunk-7-2.png" width="288"></p>
 <p>Looking a bit more closely at the outcome, we can see that the log likelihoods are actually very similar, except in a few places:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot_criterion.html">plot_criterion</a></span>(res, <span class="st">"log_likelihood"</span>)
@@ -199,7 +201,7 @@ res_rot &lt;-<span class="st"> </span><span class="kw"><a href="../reference/Phy
 <p>This function takes the first fit as a reference (here, with the original data). For a given number of shifts, when the second fit has a better likelihood, its solution is selected instead. Note that the parameters of the second fit are expressed in the rotated space, so, when selected, they need to be transformed back into the original space (which is done automatically by the function). The resulting solution has the highest likelihood possible for each value of K, and the model selection criterion can be applied to this new solution path.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot_criterion.html">plot_criterion</a></span>(res_merge)</code></pre></div>
 <p><img src="monkeys_files/figure-html/unnamed-chunk-10-1.png" width="384"></p>
-<p>We can see here that the solution with 4 shifts is now selected again.</p>
+<p>We can see here that the solution with 3 shifts is now selected again.</p>
 <p>This merge function can be applied to more that two fits, as illustrated below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># An other rotation</span>
 theta &lt;-<span class="st"> </span>pi<span class="op">/</span><span class="dv">3</span>
@@ -216,6 +218,7 @@ res_rot2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/Ph
                    <span class="dt">process =</span> <span class="st">"scOU"</span>,                   
                    <span class="dt">random.root =</span> <span class="ot">TRUE</span>,                 
                    <span class="dt">stationary.root =</span> <span class="ot">TRUE</span>,
+                   <span class="dt">nbr_alpha =</span> <span class="dv">2</span>,           ## Note that this can also be different
                    <span class="dt">K_max =</span> <span class="dv">10</span>,                        
                    <span class="dt">parallel_alpha =</span> <span class="ot">TRUE</span>,            
                    <span class="dt">Ncores =</span> <span class="dv">2</span>)                        
@@ -243,7 +246,7 @@ res_merge2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
                    <span class="dt">K_max =</span> <span class="dv">10</span>,
                    <span class="dt">parallel_alpha =</span> <span class="ot">TRUE</span>,
                    <span class="dt">Ncores =</span> <span class="dv">2</span>,
-                   <span class="dt">nbr_alpha =</span> <span class="dv">20</span>,           ## 10 negative, 10 positive
+                   <span class="dt">nbr_alpha =</span> <span class="dv">4</span>,            ## 2 negative, 2 positive (should be more)
                    <span class="dt">allow_negative =</span> <span class="ot">TRUE</span>)    ## allow negative alpha in the grid</code></pre></div>
 <p>We can extract the parameter of the fit with no shift, that is equivalent to an EB model:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/params_process.html">params_process</a></span>(res_neg, <span class="dt">K =</span> <span class="dv">0</span>)</code></pre></div>
@@ -255,27 +258,27 @@ res_merge2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 ## 
 ## 
 ## Root value:
-## [1]  0.006404078 -0.003761024
+## [1]  0.006507194 -0.003532184
 ## 
 ## Process variance:
 ##               [,1]          [,2]
-## [1,]  5.029516e-05 -5.462026e-06
-## [2,] -5.462026e-06  1.182434e-05
+## [1,]  5.370330e-05 -5.661713e-06
+## [2,] -5.661713e-06  1.276595e-05
 ## 
 ## Process selection strength:
 ##             [,1]        [,2]
-## [1,] -0.02027085  0.00000000
-## [2,]  0.00000000 -0.02027085
+## [1,] -0.01316466  0.00000000
+## [2,]  0.00000000 -0.01316466
 ## 
 ## Process root optimal values:
-## [1]  0.006404078 -0.003761024
+## [1]  0.006507194 -0.003532184
 ## 
 ## This process has no shift.</code></pre>
 <p>The “selection strength” <span class="math inline">\(\alpha\)</span> is linked with the rate <span class="math inline">\(r\)</span> of the EB by the relation: <span class="math inline">\(r = 2\alpha\)</span>.</p>
 <p>We can also plot the criterion for the model selection. Empirically, we found that the “BGHmlraw” criterion would behave a bit better in this configuration.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot_criterion.html">plot_criterion</a></span>(res_neg, <span class="st">"BGHmlraw"</span>)</code></pre></div>
 <p><img src="monkeys_files/figure-html/unnamed-chunk-13-1.png" width="384"></p>
-<p>Here, the same solution with 5 shifts (and a positive alpha) is selected.</p>
+<p>Here, a same solution with 7 shifts (and a positive alpha) is selected. Again, to keep computations to a minimum, we used a very coarse grid with only 4 values of alpha. On a finer grid, the same solution with 5 shifts is selected.</p>
 </div>
 <div class="footnotes">
 <hr>
