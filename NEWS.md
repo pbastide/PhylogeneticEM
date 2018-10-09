@@ -1,4 +1,6 @@
 # PhylogeneticEM 1.2.1.9000
+* Bug fix:
+  * Bug fix in plot function for univariate result.
 
 # PhylogeneticEM 1.2.1
 * CRAN maintenance

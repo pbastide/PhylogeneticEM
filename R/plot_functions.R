@@ -323,6 +323,7 @@ plot.PhyloEM <- function(x,
     }
     params <- split_params_independent(params)
     params <- params[[traits]]
+    class(params) <- "params_process"
   }
   
   ## Ancestral and imputed traits
