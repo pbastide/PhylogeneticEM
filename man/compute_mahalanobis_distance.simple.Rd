@@ -4,8 +4,9 @@
 \alias{compute_mahalanobis_distance.simple}
 \title{Squared Mahalanobis Distance}
 \usage{
-compute_mahalanobis_distance.simple(phylo, Y_data_vec, sim, Sigma_YY_chol_inv,
-  miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)), ...)
+compute_mahalanobis_distance.simple(phylo, Y_data_vec, sim,
+  Sigma_YY_chol_inv, miss = rep(FALSE, dim(sim)[1] *
+  length(phylo$tip.label)), ...)
 }
 \arguments{
 \item{phylo}{Input tree.}

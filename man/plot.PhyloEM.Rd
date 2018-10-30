@@ -8,12 +8,13 @@
   method.selection = NULL, automatic_colors = TRUE,
   color_characters = "black", color_edges = "black",
   plot_ancestral_states = FALSE, imposed_scale, ancestral_cex = 2,
-  ancestral_pch = 19, value_in_box = FALSE, ancestral_as_shift = FALSE,
-  shifts_cex = 0.6, shifts_bg = "chocolate4", root_bg = "chocolate4",
-  shifts_adj = 0, root_adj = 1, color_shifts_regimes = FALSE,
-  regime_boxes = FALSE, alpha_border = 70, show.tip.label = FALSE,
-  label_cex = 0.5, label_font = 1, label_offset = 0, axis_cex = 0.7,
-  axis_las = 0, edge.width = 1, margin_plot = NULL, gray_scale = FALSE,
+  ancestral_pch = 19, value_in_box = FALSE,
+  ancestral_as_shift = FALSE, shifts_cex = 0.6,
+  shifts_bg = "chocolate4", root_bg = "chocolate4", shifts_adj = 0,
+  root_adj = 1, color_shifts_regimes = FALSE, regime_boxes = FALSE,
+  alpha_border = 70, show.tip.label = FALSE, label_cex = 0.5,
+  label_font = 1, label_offset = 0, axis_cex = 0.7, axis_las = 0,
+  edge.width = 1, margin_plot = NULL, gray_scale = FALSE,
   root.edge = TRUE, ...)
 }
 \arguments{

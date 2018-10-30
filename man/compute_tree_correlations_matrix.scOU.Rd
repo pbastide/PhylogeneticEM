@@ -4,8 +4,8 @@
 \alias{compute_tree_correlations_matrix.scOU}
 \title{Matrix of tree-induced correlations for the scOU}
 \usage{
-compute_tree_correlations_matrix.scOU(times_shared, distances_phylo, params_old,
-  ...)
+compute_tree_correlations_matrix.scOU(times_shared, distances_phylo,
+  params_old, ...)
 }
 \arguments{
 \item{times_shared}{times of shared ancestry of all nodes and tips, result of function

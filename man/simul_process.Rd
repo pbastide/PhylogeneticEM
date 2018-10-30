@@ -11,8 +11,8 @@ simul_process(x, ...)
 \method{simul_process}{params_process}(x, phylo, simulate_random = TRUE,
   checks = TRUE, U_tree = NULL, times_shared = NULL, ...)
 
-\method{simul_process}{PhyloEM}(x, simulate_random = TRUE, checks = TRUE,
-  U_tree = NULL, times_shared = NULL, ...)
+\method{simul_process}{PhyloEM}(x, simulate_random = TRUE,
+  checks = TRUE, U_tree = NULL, times_shared = NULL, ...)
 }
 \arguments{
 \item{x}{an object of class \code{\link{params_process}} or \code{\link{PhyloEM}}.}

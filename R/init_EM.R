@@ -2048,7 +2048,7 @@ init.alpha.gamma.estimation <- function(phylo,
                                         max_triplet_number, 
                                         alpha_known,
                                         method.init.alpha.estimation,
-                                        tol, h_tree,
+                                        tol_EM, h_tree,
                                         miss,
                                         masque_data,
                                         independent, ...){
@@ -2136,7 +2136,7 @@ init.alpha.gamma.estimation <- function(phylo,
         ag_0_try <- try(estimate.alpha(square_diff[l, mask],
                                        dists[mask],
                                        gamma_0["mad", l],
-                                       tol, h_tree), silent = TRUE)
+                                       tol_EM, h_tree), silent = TRUE)
         
         if (inherits(ag_0_try, "try-error")) {
           message(paste0("Robust estimation of alpha by ", method, " failed."))
@@ -2248,8 +2248,8 @@ init.variance.BM.estimation <- function(phylo,
 }
 
 ## Regression on normalized half life to have the good tolerance.
-estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree) {
-  tol_t_half <- tol$normalized_half_life * h_tree
+estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol_EM, h_tree) {
+  tol_t_half <- tol_EM$normalized_half_life * h_tree
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
   fit.rob <- robustbase::nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
@@ -2268,8 +2268,8 @@ estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree)
 }
 
 estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
-                                          tol, h_tree) {
-  tol_t_half <- tol$normalized_half_life * h_tree
+                                          tol_EM, h_tree) {
+  tol_t_half <- tol_EM$normalized_half_life * h_tree
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
   set.seed(18051220)

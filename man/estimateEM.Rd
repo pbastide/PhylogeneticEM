@@ -5,25 +5,27 @@
 \title{Perform One EM}
 \usage{
 estimateEM(phylo, Y_data, Y_data_imp = Y_data, process = c("BM", "OU",
-  "scOU", "rBM"), independent = FALSE, tol = list(variance = 10^(-2),
-  value.root = 10^(-2), exp.root = 10^(-2), var.root = 10^(-2),
-  selection.strength = 10^(-2), normalized_half_life = 10^(-2), log_likelihood =
-  10^(-2)), Nbr_It_Max = 500, method.variance = c("simple",
-  "upward_downward"), method.init = c("default", "lasso"),
-  method.init.alpha = c("default", "estimation"),
-  method.init.alpha.estimation = c("regression", "regression.MM", "median"),
-  nbr_of_shifts = 0, random.root = TRUE, stationary.root = TRUE,
-  alpha_known = FALSE, eps = 10^(-3), known.selection.strength = 1,
-  init.selection.strength = 1, max_selection.strength = 100,
-  use_sigma_for_lasso = TRUE, max_triplet_number = 10000,
-  min_params = list(variance = 0, value.root = -10^(5), exp.root = -10^(5),
-  var.root = 0, selection.strength = 0), max_params = list(variance = 10^(5),
-  value.root = 10^(5), exp.root = 10^(5), var.root = 10^(5), selection.strength
-  = 10^(5)), var.init.root = diag(1, nrow(Y_data)), variance.init = diag(1,
-  nrow(Y_data), nrow(Y_data)), methods.segmentation = c("lasso",
-  "same_shifts", "best_single_move"), check.tips.names = FALSE,
-  times_shared = NULL, distances_phylo = NULL, subtree.list = NULL,
-  T_tree = NULL, U_tree = NULL, h_tree = NULL, F_moments = NULL,
+  "scOU", "rBM"), independent = FALSE, tol_EM = list(variance =
+  10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root = 10^(-2),
+  selection.strength = 10^(-2), normalized_half_life = 10^(-2),
+  log_likelihood = 10^(-2)), Nbr_It_Max = 500,
+  method.variance = c("simple", "upward_downward"),
+  method.init = c("default", "lasso"), method.init.alpha = c("default",
+  "estimation"), method.init.alpha.estimation = c("regression",
+  "regression.MM", "median"), nbr_of_shifts = 0, random.root = TRUE,
+  stationary.root = TRUE, alpha_known = FALSE, eps = 10^(-3),
+  known.selection.strength = 1, init.selection.strength = 1,
+  max_selection.strength = 100, use_sigma_for_lasso = TRUE,
+  max_triplet_number = 10000, min_params = list(variance = 0,
+  value.root = -10^(5), exp.root = -10^(5), var.root = 0,
+  selection.strength = 0), max_params = list(variance = 10^(5),
+  value.root = 10^(5), exp.root = 10^(5), var.root = 10^(5),
+  selection.strength = 10^(5)), var.init.root = diag(1, nrow(Y_data)),
+  variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
+  methods.segmentation = c("lasso", "same_shifts", "best_single_move"),
+  check.tips.names = FALSE, times_shared = NULL,
+  distances_phylo = NULL, subtree.list = NULL, T_tree = NULL,
+  U_tree = NULL, h_tree = NULL, F_moments = NULL,
   tol_half_life = TRUE, warning_several_solutions = TRUE,
   convergence_mode = c("relative", "absolute"),
   check_convergence_likelihood = TRUE, sBM_variance = FALSE,
@@ -48,7 +50,7 @@ univariate or multivariate); or "scOU" (for a "scalar OU" model, see details).}
 \item{independent}{Are the trait assumed to be independent from one another?
 Default to FALSE. OU in a multivariate setting only works if TRUE.}
 
-\item{tol}{the tolerance for the convergence of the parameters. A named list, with
+\item{tol_EM}{the tolerance for the convergence of the parameters. A named list, with
 items:
 \describe{
 \item{variance}{default to 10^(-2)}
@@ -208,7 +210,7 @@ should not need it.
 }
 \details{
 See documentation of \code{\link{PhyloEM}} for further details.
-All the parameters monitoring the EM (like \code{tol}, \code{Nbr_It_Max}, etc.)
+All the parameters monitoring the EM (like \code{tol_EM}, \code{Nbr_It_Max}, etc.)
 can be called from \code{PhyloEM}.
 }
 \seealso{

@@ -4,10 +4,10 @@
 \alias{compute_log_likelihood.simple}
 \title{Log Likelihood}
 \usage{
-compute_log_likelihood.simple(phylo, Y_data_vec, sim, Sigma, Sigma_YY_chol_inv,
-  miss = rep(FALSE, dim(sim)[1] * length(phylo$tip.label)),
-  masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)), rep(FALSE,
-  dim(sim)[1] * phylo$Nnode)), ...)
+compute_log_likelihood.simple(phylo, Y_data_vec, sim, Sigma,
+  Sigma_YY_chol_inv, miss = rep(FALSE, dim(sim)[1] *
+  length(phylo$tip.label)), masque_data = c(rep(TRUE, dim(sim)[1] *
+  length(phylo$tip.label)), rep(FALSE, dim(sim)[1] * phylo$Nnode)), ...)
 }
 \arguments{
 \item{phylo}{Input tree.}

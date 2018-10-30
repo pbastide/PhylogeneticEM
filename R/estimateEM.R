@@ -85,13 +85,13 @@ NULL
 #'
 #' @details
 #' See documentation of \code{\link{PhyloEM}} for further details.
-#' All the parameters monitoring the EM (like \code{tol}, \code{Nbr_It_Max}, etc.)
+#' All the parameters monitoring the EM (like \code{tol_EM}, \code{Nbr_It_Max}, etc.)
 #' can be called from \code{PhyloEM}.
 #' 
 #' @inheritParams PhyloEM
 #' @param Y_data_imp (optional) imputed data if previously computed, same format as
 #' \code{Y_data}. Mostly here for internal calls.
-#' @param tol the tolerance for the convergence of the parameters. A named list, with
+#' @param tol_EM the tolerance for the convergence of the parameters. A named list, with
 #' items:
 #' \describe{
 #' \item{variance}{default to 10^(-2)}
@@ -182,13 +182,13 @@ estimateEM <- function(phylo,
                        Y_data_imp = Y_data,
                        process = c("BM", "OU", "scOU", "rBM"), 
                        independent = FALSE,
-                       tol = list(variance = 10^(-2), 
-                                  value.root = 10^(-2), 
-                                  exp.root = 10^(-2), 
-                                  var.root = 10^(-2),
-                                  selection.strength = 10^(-2),
-                                  normalized_half_life = 10^(-2),
-                                  log_likelihood = 10^(-2)),  
+                       tol_EM = list(variance = 10^(-2), 
+                                     value.root = 10^(-2), 
+                                     exp.root = 10^(-2), 
+                                     var.root = 10^(-2),
+                                     selection.strength = 10^(-2),
+                                     normalized_half_life = 10^(-2),
+                                     log_likelihood = 10^(-2)),  
                        Nbr_It_Max = 500, 
                        method.variance = c("simple", "upward_downward"), 
                        method.init = c("default", "lasso"),
@@ -452,7 +452,7 @@ estimateEM <- function(phylo,
                                                   alpha_known = alpha_known,
                                                   init.var.root = var.init.root,
                                                   method.init.alpha.estimation = method.init.alpha.estimation,
-                                                  tol = tol,
+                                                  tol_EM = tol_EM,
                                                   h_tree = h_tree,
                                                   random.root = random.root,
                                                   T_tree = T_tree,
@@ -555,7 +555,7 @@ estimateEM <- function(phylo,
   while ( Nbr_It == 0 || # initialization
           K_lag_init > 0 || 
           ( !(CV_log_lik && # CV of log-Likelihood ?
-              shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
+              shutoff.EM(params_old, params, tol_EM, has_converged, h_tree)) && # Shutoff
             is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
             Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
@@ -610,7 +610,7 @@ estimateEM <- function(phylo,
     if (check_convergence_likelihood && Nbr_It > 1){
       CV_log_lik <- has_converged_absolute(log_likelihood_old_old,
                                            log_likelihood_old,
-                                           tol$log_likelihood)
+                                           tol_EM$log_likelihood)
     }
     
     if (process == "OU" && p == 1){

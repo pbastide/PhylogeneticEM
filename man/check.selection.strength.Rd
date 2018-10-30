@@ -4,8 +4,8 @@
 \alias{check.selection.strength}
 \title{Check selection strength}
 \usage{
-check.selection.strength(process, selection.strength = NA, eps = 10^(-6),
-  ...)
+check.selection.strength(process, selection.strength = NA,
+  eps = 10^(-6), ...)
 }
 \arguments{
 \item{process}{: "BM" or "OU"}

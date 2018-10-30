@@ -4,8 +4,8 @@
 \alias{compute_gauss_lasso}
 \title{Do a lm on top of a lasso regression.}
 \usage{
-compute_gauss_lasso(Ypt, Xp, delta, root, projection = which(rowSums(delta) !=
-  0))
+compute_gauss_lasso(Ypt, Xp, delta, root,
+  projection = which(rowSums(delta) != 0))
 }
 \arguments{
 \item{Xp}{(transformed) matrix of regression}

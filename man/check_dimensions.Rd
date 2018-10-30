@@ -4,8 +4,8 @@
 \alias{check_dimensions}
 \title{Check dimensions of the parameters}
 \usage{
-check_dimensions(p, root.state, shifts, variance, selection.strength = NULL,
-  optimal.value = NULL)
+check_dimensions(p, root.state, shifts, variance,
+  selection.strength = NULL, optimal.value = NULL)
 }
 \arguments{
 \item{p}{dimension of the trait simulated}

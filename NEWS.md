@@ -2,6 +2,7 @@
 * Bug fix:
   * Bug fix in plot function for univariate result.
   * Tree does not need to be ultrametric for a BM
+  * Change `tol` to `tol_EM` in `estimateEM` for actual binding
 
 # PhylogeneticEM 1.2.1
 * CRAN maintenance
