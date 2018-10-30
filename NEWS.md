@@ -1,6 +1,7 @@
 # PhylogeneticEM 1.2.1.9000
 * Bug fix:
   * Bug fix in plot function for univariate result.
+  * Tree does not need to be ultrametric for a BM
 
 # PhylogeneticEM 1.2.1
 * CRAN maintenance
