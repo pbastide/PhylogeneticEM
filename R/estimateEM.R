@@ -613,11 +613,6 @@ estimateEM <- function(phylo,
                                            tol_EM$log_likelihood)
     }
     
-    if (process == "OU" && p == 1){
-      conditional_law_X$expectations <- as.vector(conditional_law_X$expectations)
-      conditional_law_X$variances <- as.vector(conditional_law_X$variances)
-      conditional_law_X$covariances <- as.vector(conditional_law_X$covariances)
-    }
     #   ## Log likelihood as the sum of conditional + entropy
     #         H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
     #         CLL <- conditional_expectation_log_likelihood(phylo = phylo,
@@ -970,7 +965,10 @@ estimateEM <- function(phylo,
 #' Default to FALSE.
 # @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
 # Default to FALSE.
-# @param method.OUsun DEPRECATED. Method to be used in univariate OU.
+#' @param rescale_OU For the Univariate OU, should the tree be re-scaled to use a BM ? 
+#' This can speed up the computations a lot. However, it can make it harder for the EM to 
+#' explore the space of parameters, and hence lead to a sub-optimal solution.
+#' Default to TRUE.
 #' @param parallel_alpha If alpha_grid=TRUE, whether to run the 
 #' estimations with different values of alpha on separate cores. Default to 
 #' FALSE. If TRUE, the log is written as a temporary file.
@@ -1077,7 +1075,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     estimates = NULL,
                     save_step = FALSE,
                     # sBM_variance = FALSE,
-                    #method.OUsun = "rescale",
+                    rescale_OU = TRUE,
                     parallel_alpha = FALSE,
                     Ncores = 3,
                     # exportFunctions = ls(),
@@ -1115,10 +1113,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Independent traits #######################################################
-  method.OUsun = "rescale"
+  method.OUsun <- "rescale"
   if (p == 1) {
-    method.OUsun = "raw"
-    independent = TRUE
+    if (!rescale_OU) method.OUsun <- "raw"
+    independent <- FALSE
   }
   if (independent && missing(alpha_grid) && missing(nbr_alpha)) alpha_grid <- FALSE
   ## Adaptations to the BM ####################################################

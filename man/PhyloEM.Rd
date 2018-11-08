@@ -17,8 +17,8 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   alpha_grid = TRUE, nbr_alpha = 10, random.root = TRUE,
   stationary.root = random.root, alpha = NULL,
   check.tips.names = TRUE, progress.bar = TRUE, estimates = NULL,
-  save_step = FALSE, parallel_alpha = FALSE, Ncores = 3,
-  impute_init_Rphylopars = FALSE, K_lag_init = 5,
+  save_step = FALSE, rescale_OU = TRUE, parallel_alpha = FALSE,
+  Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
   light_result = TRUE, tol_tree = .Machine$double.eps^0.5,
   allow_negative = FALSE, option_is.ultrametric = 1, ...)
 }
@@ -120,6 +120,11 @@ function can be re-run for other model election method. Default to NULL.}
 \item{save_step}{If alpha_grid=TRUE, whether to save the intermediate results
 for each value of alpha (in a temporary file). Useful for long computations.
 Default to FALSE.}
+
+\item{rescale_OU}{For the Univariate OU, should the tree be re-scaled to use a BM ? 
+This can speed up the computations a lot. However, it can make it harder for the EM to 
+explore the space of parameters, and hence lead to a sub-optimal solution.
+Default to TRUE.}
 
 \item{parallel_alpha}{If alpha_grid=TRUE, whether to run the 
 estimations with different values of alpha on separate cores. Default to 
