@@ -545,7 +545,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     ## Plots characters
     for (t in 1:p_dim){
       imp.scale  <- c(min(0, min(imposed_scale[t, ], na.rm = TRUE)),
-                      max(imposed_scale[t, ], na.rm = TRUE))
+                      max(0, max(imposed_scale[t, ], na.rm = TRUE)))
       mult <- ell / (imp.scale[2] - imp.scale[1])
       Y.plot <- mult * Y.state[t, ]
       unit <- mult * unit
