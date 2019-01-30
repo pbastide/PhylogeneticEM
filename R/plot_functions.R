@@ -581,7 +581,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                col = as.vector(color_characters)[!miss[t, ]],
                lwd = edge.width)
       # missing ones as dotted
-      if (any(miss)){
+      if (any(miss[t, ])){
         segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss[t, ]],
                  pos_last_tip + eccart_g + Y.plot[miss[t, ]], lastPP$yy[1:ntaxa][miss[t, ]],
                  col = as.vector(color_characters)[miss[t, ]],
