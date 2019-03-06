@@ -1,4 +1,7 @@
 # PhylogeneticEM 1.2.1.9000
+* New Feature
+  * Function `simul_process` can now handle an "OU/BM" process (i.e. an OU with
+  some eigen values equal to zero).
 * Bug fix:
   * Bug fix in plot function for univariate result.
   * Tree does not need to be ultrametric for a BM

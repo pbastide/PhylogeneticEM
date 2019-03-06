@@ -337,7 +337,7 @@ plot.params_process <- function(x,
 # 24/08/15 - Multivariate
 ##
 simulate_internal <- function(phylo,
-                              process = c("BM", "OU", "scOU", "StudentOU"),
+                              process = c("BM", "OU", "scOU", "OUBM", "StudentOU"),
                               p = 1,
                               # independent = FALSE,
                               root.state = list(random = FALSE, 
@@ -361,14 +361,15 @@ simulate_internal <- function(phylo,
   ntaxa <- length(phylo$tip.label)
   ## Set branch stochastic process
   process <- match.arg(process)
+  if (process == "OUBM") {
+    if (!isDiagonal(selection.strength)){
+      stop("The OUBM simulation is only implemented for a diagonal matrix.")
+    }
+    if (!is.null(shifts$edges)) {
+      stop("The OUBM simulation is only implemented for a process with no shift.")
+    }
+  }
   if (process == "scOU"){
-    # Use a OU (more efficient things can be done)
-    # process <- "OU"
-    # Check selection strength
-#      # scalar
-#     if (is.null(dim(selection.strength))){
-#       selection.strength <- selection.strength *  diag(rep(1, p))
-#     }
      # Matrix provided
     if (!is.null(dim(selection.strength))){
       zero_range <- function(x, tol = .Machine$double.eps ^ 0.5) {
@@ -376,7 +377,7 @@ simulate_internal <- function(phylo,
         x <- range(x) / mean(x)
         isTRUE(all.equal(x[1], x[2], tolerance = tol))
       }
-      if (!all(selection.strength[!diag(nrow(selection.strength))] == 0)){
+      if (!isDiagonal(selection.strength)){
         stop("Process is said to be scalar OU, but selection strengh matrix is not diagonal.")
       }
       if (!zero_range(diag(selection.strength))){
@@ -411,7 +412,7 @@ simulate_internal <- function(phylo,
     }
   }
   ## Optimal values
-  if (is.null(optimal.value) && process %in% c("OU", "scOU")){
+  if (is.null(optimal.value) && process %in% c("OU", "scOU", "OUBM")){
     stop("Optimal values for the OU simulation must be specified.")
   }
   ## Special case BM
@@ -449,12 +450,14 @@ simulate_internal <- function(phylo,
                  BM = init.simulate.BM,
                  OU = init.simulate.OU,
                  scOU = init.simulate.OU,
-                 StudentOU = init.simulate.OU)
+                 StudentOU = init.simulate.OU,
+                 OUBM = init.simulate.OU)
   updateDown <- switch(process,
                        BM = update.simulate.BM,
                        OU = update.simulate.OU,
                        scOU = update.simulate.scOU,
-                       StudentOU = update.simulate.StudentOU)
+                       StudentOU = update.simulate.StudentOU,
+                       OUBM = update.simulate.OUBM)
   ## Check root
   if (checks) {
     root.state <- test.root.state(root.state = root.state,
@@ -470,7 +473,7 @@ simulate_internal <- function(phylo,
                     root.state = root.state,
                     optimal.value = optimal.value,
                     simulate_random = simulate_random)
-  if (process %in% c("scOU", "OU")){
+  if (process %in% c("scOU", "OU", "OUBM")){
     if (root.state$stationary.root){
       stationary_variance <- root.state$var.root
     } else {
@@ -799,6 +802,48 @@ update.simulate.StudentOU <- function(edgeNbr, ancestral, length, shifts, varian
   SimExp <- c( ancestral[3]*(1-ee) + ancestral[1]*ee + ss + sqrt(variance*(1-ee^2)/(2*selection.strength))*rt(1, df),
                ancestral[3]*(1-ee) + ancestral[2]*ee + ss )
   return(c(SimExp,beta))
+}
+
+update.simulate.OUBM <- function(edgeNbr, ancestral,
+                                 length, shifts, selection.strength,
+                                 stationary_variance,
+                                 variance,
+                                 simulate_random, ...){
+  shiftsIndex <- which(shifts$edges == edgeNbr) # If no shifts = NULL, and sum = 0
+  if (length(shiftsIndex) == 0){
+    r <- 0
+  } else {
+    r <- shifts$relativeTimes[shiftsIndex]
+  }
+  beta <- ancestral[, , 3] + rowSums(shifts$values[, shiftsIndex, drop = F])
+  if (r == 0){
+    ee <- expm(-selection.strength * length)
+    I <- diag(1, dim(selection.strength))
+    plus_exp <- (I - ee) %*% beta
+  } else {
+    ee_d <- expm(-selection.strength * length * (1-r))
+    ee_p <- expm(-selection.strength * length * r)
+    ee <- expm(-selection.strength * length)
+    I <- diag(1, dim(selection.strength))
+    plus_exp <- (I - ee_d) %*% beta + (I - ee_p) %*% ancestral[ , , 3]
+  }
+  Exp <- ee %*% ancestral[ , , 2] + plus_exp
+  Exp <- as.matrix(Exp)
+  if (simulate_random){
+    Sigma_sim <- as.matrix(stationary_variance - ee %*% stationary_variance %*% t(ee))
+    Sigma_sim[is.na(Sigma_sim)] <- length * variance[is.na(Sigma_sim)]
+    Sim <- MASS::mvrnorm(1,
+                         mu = ee %*% ancestral[ , , 1] + plus_exp,
+                         Sigma = Sigma_sim)
+  } else {
+    Sim <- Exp
+  }
+  child <- ancestral
+  p <- dim(ancestral)[1]
+  child[, , 1] <- array(Sim, dim = c(p, 1, 1))
+  child[, , 2] <- array(Exp, dim = c(p, 1, 1))
+  child[, , 3] <- array(beta, dim = c(p, 1, 1))
+  return(child)
 }
 
 ##

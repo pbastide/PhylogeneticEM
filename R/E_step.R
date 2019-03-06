@@ -480,6 +480,39 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
 }
 
 ##
+#' @title Tips Variances for the BM
+#'
+#' @description
+#' \code{compute_variance_block_diagonal.BM} computes the n p*p variance
+#' matrices of each tip vector.
+#'
+#' @param times_shared times of shared ancestry of all nodes and tips, result 
+#'  of function \code{compute_times_ca}
+#' @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return p * p * ntaxa array with ntaxa variance matrices
+#' 
+#' @keywords internal
+#' 
+##
+compute_variance_block_diagonal.BM <- function(times_shared,
+                                               params_old,
+                                               ntaxa, ...) {
+  p <- dim(params_old$variance)[1]
+  if (is.null(p)){
+    stop("Variance should be a matrix.")
+  }
+  sigma2 <- as.matrix(params_old$variance)
+  # random root if needed
+  if (params_old$root.state$random){
+    var_root <- as.matrix(params_old$root.state$var.root)
+  } else {
+    var_root <- matrix(0, p, p)
+  }
+  return(sigma2 %o% diag(times_shared)[1:ntaxa] + var_root %o% rep(1, ntaxa))
+}
+
+##
 #' @title Matrix of tree-induced correlations for the BM
 #'
 #' @description
@@ -635,6 +668,62 @@ compute_variance_covariance.OU <- function(times_shared,
   attr(varr, "p_dim") <- p
   attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
   return(varr)
+}
+
+##
+#' @title Tips Variances for the OU
+#'
+#' @description
+#' \code{compute_variance_block_diagonal.OU} computes the n p*p variance
+#' matrices of each tip vector.
+#'
+#' @param times_shared times of shared ancestry of all nodes and tips, result 
+#'  of function \code{compute_times_ca}
+#' @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return p * p * ntaxa array with ntaxa variance matrices
+#' 
+#' @keywords internal
+#' 
+##
+compute_variance_block_diagonal.OU <- function(times_shared,
+                                               params_old,
+                                               ntaxa, ...) {
+  p <- dim(params_old$variance)[1]
+  if (is.null(p)){
+    stop("Variance should be a matrix.")
+  }
+  alpha_mat <- params_old$selection.strength
+  sigma2 <- as.matrix(params_old$variance)
+  # random root if needed
+  if (params_old$root.state$random){
+    var_root <- as.matrix(params_old$root.state$var.root)
+  } else {
+    var_root <- matrix(0, p, p)
+  }
+  eig_alpha <- eigen(alpha_mat)
+  P <- eig_alpha$vectors
+  P_inv <- solve(P)
+  sigma_trans <- P_inv %*% sigma2 %*% t(P_inv)
+  var_root_trans <- P_inv %*% var_root %*% t(P_inv)
+  safe_exp <- function(a, b, t) {
+    alpha <- a + b
+    if (alpha == 0) return(t)
+    return((exp(alpha * t) - 1) / alpha)
+  }
+  safe_exp_vec <- function(a, b, t) {
+    mapply(function(x, y) safe_exp(x, y, t), a, b)
+  }
+  vv <- matrix(NA, p, p)
+  for (q in 1:p){
+    for (r in 1:p){
+      vv[q, r] <- 1 / (eig_alpha$values[q] + eig_alpha$values[r])
+    }
+  }
+  ee <- exp(eig_alpha$values)
+  var1 <- sapply(diag(times_shared)[1:ntaxa],
+                 function(ti) return(P %*% (tcrossprod(ee^(-ti), ee^(-ti)) * (outer(eig_alpha$values, eig_alpha$values, function(a, b) return(safe_exp_vec(a, b, ti))) * sigma_trans + var_root_trans)) %*% t(P)))
+  return(array(var1, c(p, p, ntaxa)))
 }
 
 ##
