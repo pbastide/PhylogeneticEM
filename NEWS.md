@@ -1,4 +1,4 @@
-# PhylogeneticEM 1.2.1.9000
+# PhylogeneticEM 1.3.0
 * Bug fix:
   * Bug fix in plot function for univariate result.
   * Tree does not need to be ultrametric for a BM
