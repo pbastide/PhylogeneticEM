@@ -998,8 +998,7 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
   
   expect_that(res_new, equals(res_old))
   
-  expect_warning(ll <- log_likelihood(res_new),
-                 "There are several equivalent solutions for this shift position.")
+  ll <- suppressWarnings(log_likelihood(res_new))
   
   expect_equal(ll,
                res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
