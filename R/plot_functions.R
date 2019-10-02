@@ -207,6 +207,8 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param plot_ancestral_states whether to plot the ancestral traits inferred at the
 #' internal nodes of the tree. Only available if only one trait is plotted. Default
 #' to FALSE.
+#' @param name_trait name of the trait scale bar for the ancestral states plotting.
+#' Default to "Trait Value".
 #' @param imposed_scale if \code{plot_ancestral_states=TRUE}, a vector specifying the
 #' imposed scale for the ancestral states plotting. Useful to make comparisons.
 #' Default to the plotted trait.
@@ -270,6 +272,7 @@ plot.PhyloEM <- function(x,
                          color_characters = "black",
                          color_edges = "black",
                          plot_ancestral_states = FALSE,
+                         name_trait = "Trait Value",
                          imposed_scale,
                          ancestral_cex = 2,
                          ancestral_pch = 19,
@@ -369,6 +372,7 @@ plot.PhyloEM <- function(x,
                            # shifts_regimes = shifts_regimes,
                            plot_ancestral_states = plot_ancestral_states,
                            ancestral_states = ancestral_states,
+                           name_trait = name_trait,
                            # imposed_scale.nodes = imposed_scale.nodes,
                            ancestral_cex = ancestral_cex,
                            ancestral_pch = ancestral_pch,
@@ -406,6 +410,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      # shifts_regimes = NULL,
                                      plot_ancestral_states = FALSE,
                                      ancestral_states = NULL,
+                                     name_trait = "Trait Value",
                                      imposed_scale.nodes = ancestral_states,
                                      ancestral_cex = 2,
                                      ancestral_pch = 19,
@@ -608,7 +613,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   if (plot_ancestral_states){
     nodelabels(pch = ancestral_pch, cex = ancestral_cex, col = col_ancestral)
     leg <- 0.5 * ape::node.depth.edgelength(phylo)[1]
-    phytools::add.color.bar(leg, pal, title = "Trait Value",
+    phytools::add.color.bar(leg, pal, title = name_trait,
                             lims = imp.scale.nodes,
                             digits = 2, prompt = FALSE,
                             lwd = 4, outline = TRUE,

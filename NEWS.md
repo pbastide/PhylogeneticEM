@@ -4,6 +4,8 @@
   * Tree does not need to be ultrametric for a BM
   * Change `tol` to `tol_EM` in `estimateEM` for actual binding
   * Bug fixes in plot function for displying traits.
+* New Option:
+  * Add option "name_trait" to plot function for ancestral state reconstruction.
 * API Change
   * For a univariate trait, the BM re-scaling is now applied by default.
 * Deprecation Fix:
