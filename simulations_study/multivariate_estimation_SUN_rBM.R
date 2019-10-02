@@ -105,7 +105,6 @@ estimations_several_K <- function(X, pPCA = FALSE){
                  use_previous = FALSE,
                  method.selection = c("BirgeMassart1", "BirgeMassart2", "BGHml",
                                       "BGHlsq", "BGHlsqraw", "BGHmlraw"),
-                 impute_init_Rphylopars = FALSE,
                  K_lag_init = 5,
                  light = FALSE)
   )
@@ -178,7 +177,6 @@ estimations_several_K_ak <- function(X){
                  method.init = "lasso",
                  use_previous = FALSE,
                  method.selection = c("BirgeMassart1", "BirgeMassart2"),
-                 impute_init_Rphylopars = FALSE,
                  K_lag_init = 5)
   res <- add_total_time(res)
   ret <- list(sim = X,

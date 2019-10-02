@@ -15,8 +15,7 @@ init.EM.lasso(phylo, Y_data, Y_data_imp = Y_data,
   relativeTimes.init = NULL, selection.strength.init = 1,
   optimal.value.init = rep(0, p), T_tree = incidence.matrix(phylo),
   subtree.list = NULL, miss = FALSE, sBM_variance = FALSE,
-  stationary.root.init = FALSE, impute_init_Rphylopars = FALSE,
-  masque_data, independent = FALSE, ...)
+  stationary.root.init = FALSE, masque_data, independent = FALSE, ...)
 }
 \arguments{
 \item{Y_data}{data at the tips.}

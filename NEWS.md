@@ -10,6 +10,7 @@
   * For a univariate trait, the BM re-scaling is now applied by default.
 * Deprecation Fix:
   * Update `ape`, and replace `is.binary.tree` by `is.binary`.
+  * Remove dependency to Rphylopars (no longer on CRAN).
 
 # PhylogeneticEM 1.2.1
 * CRAN maintenance

@@ -11,29 +11,28 @@ Description:
     available. See Bastide et al. (2017) <doi:10.1111/rssb.12206> and
     Bastide et al. (2018) <doi:10.1093/sysbio/syy005>.
 Depends:
-    ape (>= 5.2),
+    ape (>= 5.3),
     Matrix (>= 1.2.3),
-    R (>= 3.2.1),
+    R (>= 3.6.0),
 Imports:
     capushe (>= 1.1.1),
     foreach (>= 1.4.3),
     gglasso (>= 1.4),
     glmnet (>= 2.0.5),
-    graphics (>= 3.2.1),
-    grDevices (>= 3.2.1),
+    graphics (>= 3.6.0),
+    grDevices (>= 3.6.0),
     LINselect (>= 0.0.2),
     MASS (>= 7.3.45),
-    methods (>= 3.2.1),
+    methods (>= 3.6.0),
     plyr (>= 1.8.4),
-    Rcpp (>= 0.12.6),
+    Rcpp (>= 1.0.2),
     robustbase (>= 0.92.6),
-    stats (>= 3.2.1),
-    utils (>= 3.2.1)
+    stats (>= 3.6.0),
+    utils (>= 3.6.0)
 Suggests:
     combinat (>= 0.0.8),
     doParallel (>= 1.0.10),
     phytools (>= 0.5.38),
-    Rphylopars (>= 0.2.9),
     testthat (>= 1.0.2),
     TreeSim (>= 2.2),
     knitr,
