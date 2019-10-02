@@ -21,7 +21,7 @@ Imports:
     glmnet (>= 2.0.5),
     graphics (>= 3.6.0),
     grDevices (>= 3.6.0),
-    LINselect (>= 0.0.2),
+    LINselect (>= 1.1.1),
     MASS (>= 7.3.45),
     methods (>= 3.6.0),
     plyr (>= 1.8.4),

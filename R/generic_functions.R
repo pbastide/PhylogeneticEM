@@ -402,12 +402,12 @@ test.root.state.BM <- function(root.state, ...) {
     warning("The BM does not have a stationary state. root.state$stationary.root is set to NULL")
     root.state$stationary.root <- NULL
   }
-  if (root.state$random && !is.na(root.state$value.root)) {
+  if (root.state$random && !anyNA(root.state$value.root)) {
     warning("As root state is supposed random, its value is not defined and set to NA")
     root.state$value.root <- NA
     root.state$var.root <- as(root.state$var.root, "dpoMatrix")
   }
-  if (!root.state$random && (!is.na(root.state$exp.root) || !is.na(root.state$exp.root))) {
+  if (!root.state$random && (!anyNA(root.state$exp.root) || !anyNA(root.state$exp.root))) {
     warning("As root state is supposed fixed, its expectation and variance are not defined and set to NA")
     root.state$exp.root <- NA
     root.state$var.root <- NA
@@ -416,12 +416,12 @@ test.root.state.BM <- function(root.state, ...) {
 }
 
 test.root.state.OU <- function(root.state, process, variance, selection.strength, optimal.value, ...) {
-  if (root.state$random && !is.na(root.state$value.root)) {
+  if (root.state$random && !anyNA(root.state$value.root)) {
     warning("As root state is supposed random, its value is not defined and set to NA")
     root.state$value.root <- NA
     root.state$var.root <- as(root.state$var.root, "dpoMatrix")
   }
-  if (!root.state$random && (!is.na(root.state$exp.root) || !is.na(root.state$exp.root))) {
+  if (!root.state$random && (!anyNA(root.state$exp.root) || !anyNA(root.state$exp.root))) {
     warning("As root state is supposed fixed, its expectation and variance are not defined and set to NA")
     root.state$exp.root <- NA
     root.state$var.root <- NA
@@ -874,13 +874,13 @@ merge_params_independent <- function(params_split){
     } else {
       params$shifts$values <- matrix(0, p, 0)
     }
-    if (!is.na(params$root.state$value.root)){
+    if (!anyNA(params$root.state$value.root)){
       params$root.state$value.root <- sapply(params_split, function(z) return(z$root.state$value.root))
     }
-    if (!is.na(params$root.state$exp.root)){
+    if (!anyNA(params$root.state$exp.root)){
       params$root.state$exp.root <- sapply(params_split, function(z) return(z$root.state$exp.root))
     }
-    if (!is.na(as.vector(params$root.state$var.root))){
+    if (!anyNA(as.vector(params$root.state$var.root))){
       params$root.state$var.root <- diag(sapply(params_split, function(z) return(as.vector(z$root.state$var.root))))
     }
     if (!is.null(params$optimal.value)){

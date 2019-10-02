@@ -1093,6 +1093,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   # library(glmnet) # For Lasso initialization
   # library(robustbase) # For robust fitting of alpha
   ## Check the tree  ##########################################################
+  process <- match.arg(process)
   if ((process != "BM") && !is.ultrametric(phylo, tol = tol_tree, option = option_is.ultrametric)) stop("The tree must be ultrametric.")
   if (any(abs(phylo$edge.length) < tol_tree)){
     stop("The tree has zero-length branches.
@@ -1151,7 +1152,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     method.selection <- method.selection[method.selection != "BGHlsqraw"]
     method.selection <- method.selection[method.selection != "BGHmlraw"]
   }
-  if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2"){
+  if ("BirgeMassart1" %in% method.selection || "BirgeMassart2" %in% method.selection){
     if (K_max < 10){
       warning("Slope and Jump heuristics need at least 10 observations. Consider choosing K_max >= 10, or an other model selection.")
       method.selection <- method.selection[method.selection != "BirgeMassart1"]
