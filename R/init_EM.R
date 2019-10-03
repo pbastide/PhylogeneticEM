@@ -1579,7 +1579,7 @@ init.EM.lasso <- function(phylo,
                           miss = FALSE,
                           sBM_variance = FALSE,
                           stationary.root.init = FALSE,
-                          impute_init_Rphylopars = FALSE,
+                          # impute_init_Rphylopars = FALSE,
                           masque_data,
                           independent = FALSE,
                           ...) {
@@ -1588,7 +1588,7 @@ init.EM.lasso <- function(phylo,
   init.EM.default <- init.EM.default(process)
   ## If no shifts, hasty fix for initial value (if missing values)
   # TO DO : take variance matrix into account
-  if (nbr_of_shifts == 0 && any(is.na(Y_data_imp)) && !impute_init_Rphylopars){
+  if (nbr_of_shifts == 0 && any(is.na(Y_data_imp))) { #&& !impute_init_Rphylopars){
     E0 <- rowMeans(Y_data, na.rm = TRUE)
     params_init <- init.EM.default(Y_data = Y_data,
                                    value.root.init = E0, 
@@ -1607,10 +1607,10 @@ init.EM.lasso <- function(phylo,
     return(params_init)
   }
   ## If missing data, impute them using Rphylopars
-  if (impute_init_Rphylopars && any(is.na(Y_data_imp))){
-    message("Imputing data for lasso initialization.")
-    Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.init)
-  }
+  # if (impute_init_Rphylopars && any(is.na(Y_data_imp))){
+  #   message("Imputing data for lasso initialization.")
+  #   Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.init)
+  # }
   ## Actualization of incidence matrix
   Tr <- T_tree
   if (independent){
@@ -2048,7 +2048,7 @@ init.alpha.gamma.estimation <- function(phylo,
                                         max_triplet_number, 
                                         alpha_known,
                                         method.init.alpha.estimation,
-                                        tol, h_tree,
+                                        tol_EM, h_tree,
                                         miss,
                                         masque_data,
                                         independent, ...){
@@ -2070,7 +2070,7 @@ init.alpha.gamma.estimation <- function(phylo,
                            T_tree = T_tree,
                            subtree.list = subtree.list,
                            miss = miss,
-                           impute_init_Rphylopars = FALSE,
+                           # impute_init_Rphylopars = FALSE,
                            masque_data = masque_data,
                            independent = independent,
                            selection.strength.init = rep(1, p))
@@ -2136,7 +2136,7 @@ init.alpha.gamma.estimation <- function(phylo,
         ag_0_try <- try(estimate.alpha(square_diff[l, mask],
                                        dists[mask],
                                        gamma_0["mad", l],
-                                       tol, h_tree), silent = TRUE)
+                                       tol_EM, h_tree), silent = TRUE)
         
         if (inherits(ag_0_try, "try-error")) {
           message(paste0("Robust estimation of alpha by ", method, " failed."))
@@ -2165,7 +2165,7 @@ init.variance.BM.estimation <- function(phylo,
                                         T_tree,
                                         subtree.list,
                                         miss,
-                                        impute_init_Rphylopars,
+                                        # impute_init_Rphylopars,
                                         masque_data,
                                         ...){
   ## Initialize a vector with the group of each tip
@@ -2187,7 +2187,7 @@ init.variance.BM.estimation <- function(phylo,
                            h_tree = h_tree,
                            subtree.list = subtree.list,
                            miss = miss,
-                           impute_init_Rphylopars = impute_init_Rphylopars,
+                           # impute_init_Rphylopars = impute_init_Rphylopars,
                            masque_data = masque_data,
                            ...)
     ## Roeorder phylo and trace edges
@@ -2215,23 +2215,26 @@ init.variance.BM.estimation <- function(phylo,
     }
   }
   # centered_data <- centered_data[, colSums(is.na(centered_data)) < 1]
-  R_0 <- try(suppressWarnings(robustbase::covMcd(t(centered_data),
-                                                 nsamp = "deterministic")))
-  # Robust did not fail
-  if (!inherits(R_0, "try-error")) {
-    Cov0 <- R_0$cov
-    if (any(is.na(Cov0))) {
-      warning("The initial estimation of the variance by covMcd gave some NAs. Replacing them by default value of 0.1.")
-      Cov0[is.na(Cov0)] <- 0.1
+  if (nrow(centered_data) > 1) {
+    R_0 <- try(suppressWarnings(robustbase::covMcd(t(centered_data),
+                                                   nsamp = "deterministic")))
+    # Robust did not fail
+    if (!inherits(R_0, "try-error")) {
+      Cov0 <- R_0$cov
+      if (any(is.na(Cov0))) {
+        warning("The initial estimation of the variance by covMcd gave some NAs. Replacing them by default value of 0.1.")
+        Cov0[is.na(Cov0)] <- 0.1
+      }
+      Cov0 <- 1 / (h_tree + phylo$root.edge) * Cov0
+      Cov0 <- try(suppressWarnings(nearPD(Cov0))) # Make sure the matrix is positive definite
+      if (!inherits(Cov0, "try-error")) {
+        return(Cov0$mat)
+      }
     }
-    Cov0 <- 1 / (h_tree + phylo$root.edge) * Cov0
-    Cov0 <- try(suppressWarnings(nearPD(Cov0))) # Make sure the matrix is positive definite
-    if (!inherits(Cov0, "try-error")) {
-      return(Cov0$mat)
-    }    
+    # Robust did fail
+    warning("Robust intial estimation of the variance with covMcd failed or did not give a positive definite matrix. Doing a standard variance initialization with function cov.")
   }
-  # Robust did fail
-  warning("Robust intial estimation of the variance with covMcd failed or did not give a positive definite matrix. Doing a standard variance initialization with function cov.")
+  # Robust failed or p = 1
   Cov0 <- cov(t(centered_data), use = "na.or.complete")
   if (any(is.na(Cov0))) {
     warning("The initial estimation of the variance by covMcd gave some NAs. Replacing them by default value of 0.1.")
@@ -2248,8 +2251,8 @@ init.variance.BM.estimation <- function(phylo,
 }
 
 ## Regression on normalized half life to have the good tolerance.
-estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree) {
-  tol_t_half <- tol$normalized_half_life * h_tree
+estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol_EM, h_tree) {
+  tol_t_half <- tol_EM$normalized_half_life * h_tree
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
   fit.rob <- robustbase::nlrob(square_diff ~ 2 * gam * (1 - exp(-log(2) / t_half * dists)),
@@ -2268,8 +2271,8 @@ estimate.alpha.regression <- function (square_diff, dists, gamma_0, tol, h_tree)
 }
 
 estimate.alpha.regression.MM <- function (square_diff, dists, gamma_0,
-                                          tol, h_tree) {
-  tol_t_half <- tol$normalized_half_life * h_tree
+                                          tol_EM, h_tree) {
+  tol_t_half <- tol_EM$normalized_half_life * h_tree
   df <- data.frame(square_diff = square_diff,
                    dists = dists)
   set.seed(18051220)
@@ -2307,74 +2310,74 @@ estimate.alpha.median <- function (square_diff, dists, gamma_0, ...) {
 
 
 ##
-#' @title Initial imputation of missing data for lasso
-#'
-#' @description
-#' \code{impute.data.Rphylopars} uses function \code{phylopars} from package \code{Rphylopars}
-#' to impute missing data.
-#' 
-#' @details 
-#' This function assume that there are no shifts on the tree. It is only a first approximation
-#' for initialization purposes.
-#'
-#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
-#' @param Y_data data at the tips.
-#' @param process the stochastic process
-#' @param random.init whether root is random or fixed.
-#' 
-#' @return Y_data_imp the imputed data using Rphylopars
-#' 
-#' @keywords internal
+# @title Initial imputation of missing data for lasso
+#
+# @description
+# \code{impute.data.Rphylopars} uses function \code{phylopars} from package \code{Rphylopars}
+# to impute missing data.
+# 
+# @details 
+# This function assume that there are no shifts on the tree. It is only a first approximation
+# for initialization purposes.
+#
+# @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+# @param Y_data data at the tips.
+# @param process the stochastic process
+# @param random.init whether root is random or fixed.
+# 
+# @return Y_data_imp the imputed data using Rphylopars
+# 
+# @keywords internal
 ##
 
-impute.data.Rphylopars <- function(phylo, Y_data, process, random.init){
-  if (!requireNamespace("Rphylopars", quietly = TRUE)) {
-    stop("Rphylopars is needed when option 'impute_init_Rphylopars' is set to TRUE. Please install it.",
-         call. = FALSE)
-  } else {
-    message("Using Rphylopars for initial data imputation.")
-  }
-  process_Rphylopars <- choose_process_Rphyopars(process, random.init)
-  # library(Rphylopars)
-  trait_data <- as.data.frame(t(Y_data))
-  trait_data <- cbind(phylo$tip.label, trait_data)
-  colnames(trait_data)[1] <- "species"
-#   trait_data <- as.data.frame(t(Y_data))
-#   trait_data[ , "species"] <- phylo$tip.label
-  fit_phylopars <- Rphylopars::phylopars(trait_data,
-                                         phylo,
-                                         model = process_Rphylopars,
-                                         pheno_error = FALSE,
-                                         phylo_correlated = TRUE,
-                                         pheno_correlated = FALSE,
-                                         REML = TRUE,
-                                         # optim_limit = 50,
-                                         # BM_first = TRUE,
-                                         usezscores = TRUE)
-#   data_phylopars <- try(phylopars.predict(fit_phylopars, nodes = NULL))
-#   if (inherits(data_phylopars, "try-error")) { # If fails, replace with mean of the trait
-#     warning("The RPhyloPars imputation failed. Taking the mean of each trait for missing data for initialization.")
-#     Y_data_imp <- Y_data
-#     for (j in 1:(dim(Y_data_imp)[1])){
-#       Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
-#     }
+# impute.data.Rphylopars <- function(phylo, Y_data, process, random.init){
+#   if (!requireNamespace("Rphylopars", quietly = TRUE)) {
+#     stop("Rphylopars is needed when option 'impute_init_Rphylopars' is set to TRUE. Please install it.",
+#          call. = FALSE)
 #   } else {
-#     Y_data_imp <- t(unname(as.matrix(data_phylopars$predicted)))
+#     message("Using Rphylopars for initial data imputation.")
 #   }
-  Y_data_imp <- t(fit_phylopars$anc_recon[1:ncol(Y_data), ])
-  return(Y_data_imp)
-}
-
-choose_process_Rphyopars <- function(process, random.init){
-  if (process == "BM"){
-    return(process)
-  } else if (process == "OU"){
-    stop("Rphylopars imputation only works for scalar OU. Could not do the Lasso initialization.")
-  } else if (process == "scOU"){
-    if (random.init){
-      return("OUrandomRoot")
-    } else {
-      return("OUfixedRoot")
-    }
-  }
-}
+#   process_Rphylopars <- choose_process_Rphyopars(process, random.init)
+#   # library(Rphylopars)
+#   trait_data <- as.data.frame(t(Y_data))
+#   trait_data <- cbind(phylo$tip.label, trait_data)
+#   colnames(trait_data)[1] <- "species"
+# #   trait_data <- as.data.frame(t(Y_data))
+# #   trait_data[ , "species"] <- phylo$tip.label
+#   fit_phylopars <- Rphylopars::phylopars(trait_data,
+#                                          phylo,
+#                                          model = process_Rphylopars,
+#                                          pheno_error = FALSE,
+#                                          phylo_correlated = TRUE,
+#                                          pheno_correlated = FALSE,
+#                                          REML = TRUE,
+#                                          # optim_limit = 50,
+#                                          # BM_first = TRUE,
+#                                          usezscores = TRUE)
+# #   data_phylopars <- try(phylopars.predict(fit_phylopars, nodes = NULL))
+# #   if (inherits(data_phylopars, "try-error")) { # If fails, replace with mean of the trait
+# #     warning("The RPhyloPars imputation failed. Taking the mean of each trait for missing data for initialization.")
+# #     Y_data_imp <- Y_data
+# #     for (j in 1:(dim(Y_data_imp)[1])){
+# #       Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
+# #     }
+# #   } else {
+# #     Y_data_imp <- t(unname(as.matrix(data_phylopars$predicted)))
+# #   }
+#   Y_data_imp <- t(fit_phylopars$anc_recon[1:ncol(Y_data), ])
+#   return(Y_data_imp)
+# }
+# 
+# choose_process_Rphyopars <- function(process, random.init){
+#   if (process == "BM"){
+#     return(process)
+#   } else if (process == "OU"){
+#     stop("Rphylopars imputation only works for scalar OU. Could not do the Lasso initialization.")
+#   } else if (process == "scOU"){
+#     if (random.init){
+#       return("OUrandomRoot")
+#     } else {
+#       return("OUfixedRoot")
+#     }
+#   }
+# }

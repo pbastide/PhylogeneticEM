@@ -296,7 +296,7 @@ test_that("check tree",{
   
   ## Not ultrametric
   tree$edge.length[2 * ntaxa - 2] <- tree$edge.length[2 * ntaxa - 2] * 3/2
-  expect_that(PhyloEM(phylo = tree, Y_data = Y_data), throws_error("The tree must be ultrametric."))
+  expect_that(PhyloEM(phylo = tree, Y_data = Y_data, process = "scOU"), throws_error("The tree must be ultrametric."))
   tree$edge.length[2 * ntaxa - 2] <- tree$edge.length[2 * ntaxa - 2] * 2/3
   
   ## Zero length branch

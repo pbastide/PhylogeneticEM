@@ -68,19 +68,21 @@ test_that("Rotations", {
   Ynorot <- t(norot) %*% monkeys$dat
   
   # Fit rot
-  res_norot <- PhyloEM(Y_data = Ynorot,
-                     phylo = monkeys$phy, 
-                     process = "scOU", nbr_alpha = 2,
-                     random.root = FALSE,
-                     K_max = 10,
-                     method.selection = "BGHmlraw",
-                     parallel_alpha = F)
+  expect_warning(res_norot <- PhyloEM(Y_data = Ynorot,
+                                      phylo = monkeys$phy, 
+                                      process = "scOU", nbr_alpha = 2,
+                                      random.root = FALSE,
+                                      K_max = 10,
+                                      method.selection = "BGHmlraw",
+                                      parallel_alpha = F),
+                 "The solution fund by lasso had non independent vectors. Had to modify this solution.")
   
   # Rotation ?
   expect_error(find_rotation(res, res_norot), "The datasets are not linked by a rotation.")
   
   ## Other completely unrelated data
   Ynorot2 <- matrix(rnorm(length(monkeys$dat)), dim(monkeys$dat))
+  colnames(Ynorot2) <- colnames(Ynorot)
   
   # Fit rot
   res_norot2 <- PhyloEM(Y_data = Ynorot2,

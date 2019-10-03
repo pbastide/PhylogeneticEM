@@ -2,7 +2,7 @@ context("E step upward-downward")
 
 test_that("Upward Downward - BM", {
   testthat::skip_on_cran()
-  set.seed(17920902)
+  set.seed(17920921)
   ntaxa = 100
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
                           age = 1, mrca = TRUE)[[1]]
@@ -260,7 +260,6 @@ test_that("Upward Downward - estimateEM - BM", {
                                        nbr_of_shifts = 3,
                                        random.root = FALSE,
                                        convergence_mode = "relative",
-                                       impute_init_Rphylopars = FALSE,
                                        K_lag_init = 2),
                  "The maximum number of iterations")
   
@@ -273,7 +272,6 @@ test_that("Upward Downward - estimateEM - BM", {
                                        nbr_of_shifts = 3,
                                        random.root = FALSE,
                                        convergence_mode = "relative",
-                                       impute_init_Rphylopars = FALSE,
                                        K_lag_init = 2),
                  "The maximum number of iterations")
   
@@ -337,7 +335,6 @@ test_that("Upward Downward - PhyloEM - BM", {
                                     random.root = FALSE,
                                     progress.bar = FALSE,
                                     sBM_variance = FALSE,
-                                    impute_init_Rphylopars = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
   
@@ -358,7 +355,6 @@ test_that("Upward Downward - PhyloEM - BM", {
                                     random.root = FALSE,
                                     progress.bar = FALSE,
                                     sBM_variance = FALSE,
-                                    impute_init_Rphylopars = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
   
@@ -382,7 +378,7 @@ test_that("Upward Downward - PhyloEM - BM", {
   ## Log Likelihood
   expect_equal(log_likelihood(res_new),
                res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
-  expect_warning(ll <- log_likelihood(res_new, K = 5, alpha = 0))
+  ll <- log_likelihood(res_new, K = 5, alpha = 0)
   expect_equal(ll, res_new$alpha_0$results_summary$log_likelihood[6])
 })
 
@@ -648,7 +644,6 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
@@ -666,7 +661,6 @@ test_that("Upward Downward - PhyloEM - scOU - fixed root", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
@@ -752,7 +746,6 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
@@ -770,7 +763,6 @@ test_that("Upward Downward - PhyloEM - scOU - random root", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
@@ -855,7 +847,6 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
@@ -873,7 +864,6 @@ test_that("Upward Downward - PhyloEM - scOU - random root - un-ordered", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 2),
                  "The maximum number of iterations")
@@ -977,7 +967,6 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 1))
   
@@ -996,7 +985,6 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "BirgeMassart1",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 1))
   
@@ -1010,9 +998,13 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
   
   expect_that(res_new, equals(res_old))
   
-  expect_equal(log_likelihood(res_new),
+  ll <- suppressWarnings(log_likelihood(res_new))
+  
+  expect_equal(ll,
                res_new$alpha_max$DDSE_BM1$results_summary$log_likelihood)
-  ll <- log_likelihood(res_new, K = 5, alpha = "max")
+  expect_warning(ll <- log_likelihood(res_new, K = 5, alpha = "max"),
+                 "There are several equivalent solutions for this shift position.")
+
   expect_equal(ll, res_new$alpha_max$results_summary$log_likelihood[6])
 })
 
@@ -1186,7 +1178,6 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                                                                 "lasso_one_move"),
 #                                        sBM_variance = FALSE,
 #                                        method.OUsun = "rescale",
-#                                        impute_init_Rphylopars = FALSE,
 #                                        K_lag_init = 2),
 #                  "The maximum number of iterations")
 #   
@@ -1213,7 +1204,6 @@ test_that("Upward Downward - PhyloEM - OU - independent", {
 #                                                                 "lasso_one_move"),
 #                                        sBM_variance = FALSE,
 #                                        method.OUsun = "rescale",
-#                                        impute_init_Rphylopars = FALSE,
 #                                        K_lag_init = 2),
 #                  "The maximum number of iterations")
 #   

@@ -52,7 +52,6 @@ test_that("log-likelihood - scOU - random root", {
                      method.init = "lasso",
                      use_previous = FALSE,
                      method.selection = "LINselect",
-                     impute_init_Rphylopars = FALSE,
                      progress.bar = FALSE,
                      K_lag_init = 2,
                      check.tips.names = FALSE)
@@ -152,7 +151,6 @@ test_that("log-likelihood - BM - p=1 - fixed root", {
                      method.init = "lasso",
                      use_previous = FALSE,
                      method.selection = "LINselect",
-                     impute_init_Rphylopars = FALSE,
                      progress.bar = FALSE,
                      K_lag_init = 2,
                      check.tips.names = FALSE)

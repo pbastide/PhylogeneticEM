@@ -1,3 +1,17 @@
+# PhylogeneticEM 1.3.0
+* Bug fix:
+  * Bug fix in plot function for univariate result.
+  * Tree does not need to be ultrametric for a BM
+  * Change `tol` to `tol_EM` in `estimateEM` for actual binding
+  * Bug fixes in plot function for displying traits.
+* New Option:
+  * Add option "name_trait" to plot function for ancestral state reconstruction.
+* API Change
+  * For a univariate trait, the BM re-scaling is now applied by default.
+* Deprecation Fix:
+  * Update `ape`, and replace `is.binary.tree` by `is.binary`.
+  * Remove dependency to Rphylopars (no longer on CRAN).
+
 # PhylogeneticEM 1.2.1
 * CRAN maintenance
   * Added references in Description

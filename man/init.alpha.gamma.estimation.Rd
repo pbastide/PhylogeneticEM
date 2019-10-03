@@ -6,7 +6,7 @@
 \usage{
 init.alpha.gamma.estimation(phylo, Y_data, nbr_of_shifts, times_shared,
   distances_phylo, T_tree, subtree.list, max_triplet_number, alpha_known,
-  method.init.alpha.estimation, tol, h_tree, miss, masque_data,
+  method.init.alpha.estimation, tol_EM, h_tree, miss, masque_data,
   independent, ...)
 }
 \arguments{

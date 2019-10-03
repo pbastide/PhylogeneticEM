@@ -5,8 +5,8 @@
 \title{Perform One EM}
 \usage{
 estimateEM(phylo, Y_data, Y_data_imp = Y_data, process = c("BM", "OU",
-  "scOU", "rBM"), independent = FALSE, tol = list(variance = 10^(-2),
-  value.root = 10^(-2), exp.root = 10^(-2), var.root = 10^(-2),
+  "scOU", "rBM"), independent = FALSE, tol_EM = list(variance =
+  10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root = 10^(-2),
   selection.strength = 10^(-2), normalized_half_life = 10^(-2),
   log_likelihood = 10^(-2)), Nbr_It_Max = 500,
   method.variance = c("simple", "upward_downward"),
@@ -29,8 +29,8 @@ estimateEM(phylo, Y_data, Y_data_imp = Y_data, process = c("BM", "OU",
   tol_half_life = TRUE, warning_several_solutions = TRUE,
   convergence_mode = c("relative", "absolute"),
   check_convergence_likelihood = TRUE, sBM_variance = FALSE,
-  method.OUsun = c("rescale", "raw"), impute_init_Rphylopars = FALSE,
-  K_lag_init = 0, allow_negative = FALSE, ...)
+  method.OUsun = c("rescale", "raw"), K_lag_init = 0,
+  allow_negative = FALSE, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -50,7 +50,7 @@ univariate or multivariate); or "scOU" (for a "scalar OU" model, see details).}
 \item{independent}{Are the trait assumed to be independent from one another?
 Default to FALSE. OU in a multivariate setting only works if TRUE.}
 
-\item{tol}{the tolerance for the convergence of the parameters. A named list, with
+\item{tol_EM}{the tolerance for the convergence of the parameters. A named list, with
 items:
 \describe{
 \item{variance}{default to 10^(-2)}
@@ -186,10 +186,6 @@ consideration for convergence assessment ? (default to TRUE).}
 (rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
 univariate processes).}
 
-\item{impute_init_Rphylopars}{whether to use 
-\code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
-Default to FALSE.}
-
 \item{K_lag_init}{Number of extra shifts to be considered at the initialization
 step. Increases the accuracy, but can make computations quite slow of taken
 too high. Default to 5.}
@@ -210,7 +206,7 @@ should not need it.
 }
 \details{
 See documentation of \code{\link{PhyloEM}} for further details.
-All the parameters monitoring the EM (like \code{tol}, \code{Nbr_It_Max}, etc.)
+All the parameters monitoring the EM (like \code{tol_EM}, \code{Nbr_It_Max}, etc.)
 can be called from \code{PhyloEM}.
 }
 \seealso{

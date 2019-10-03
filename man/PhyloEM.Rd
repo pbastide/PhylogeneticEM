@@ -17,10 +17,10 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   alpha_grid = TRUE, nbr_alpha = 10, random.root = TRUE,
   stationary.root = random.root, alpha = NULL,
   check.tips.names = TRUE, progress.bar = TRUE, estimates = NULL,
-  save_step = FALSE, parallel_alpha = FALSE, Ncores = 3,
-  impute_init_Rphylopars = FALSE, K_lag_init = 5,
-  light_result = TRUE, tol_tree = .Machine$double.eps^0.5,
-  allow_negative = FALSE, option_is.ultrametric = 1, ...)
+  save_step = FALSE, rescale_OU = TRUE, parallel_alpha = FALSE,
+  Ncores = 3, K_lag_init = 5, light_result = TRUE,
+  tol_tree = .Machine$double.eps^0.5, allow_negative = FALSE,
+  option_is.ultrametric = 1, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -121,15 +121,16 @@ function can be re-run for other model election method. Default to NULL.}
 for each value of alpha (in a temporary file). Useful for long computations.
 Default to FALSE.}
 
+\item{rescale_OU}{For the Univariate OU, should the tree be re-scaled to use a BM ? 
+This can speed up the computations a lot. However, it can make it harder for the EM to 
+explore the space of parameters, and hence lead to a sub-optimal solution.
+Default to TRUE.}
+
 \item{parallel_alpha}{If alpha_grid=TRUE, whether to run the 
 estimations with different values of alpha on separate cores. Default to 
 FALSE. If TRUE, the log is written as a temporary file.}
 
 \item{Ncores}{If parallel_alpha=TRUE, number of cores to be used.}
-
-\item{impute_init_Rphylopars}{whether to use 
-\code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
-Default to FALSE.}
 
 \item{K_lag_init}{Number of extra shifts to be considered at the initialization
 step. Increases the accuracy, but can make computations quite slow of taken

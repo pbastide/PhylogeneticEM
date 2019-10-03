@@ -260,7 +260,6 @@ test_that("Independent OU - uni/multi", {
                                 method.init = "lasso",
                                 use_previous = FALSE,
                                 method.selection = "LINselect",
-                                impute_init_Rphylopars = FALSE,
                                 progress.bar = FALSE,
                                 K_lag_init = 0,
                                 check.tips.names = FALSE,
@@ -285,7 +284,6 @@ test_that("Independent OU - uni/multi", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "LINselect",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 0,
                                     check.tips.names = FALSE))
@@ -341,7 +339,6 @@ test_that("Independent OU - uni/multi", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "LINselect",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 0,
                                     check.tips.names = FALSE))
@@ -394,7 +391,6 @@ test_that("Independent BM - uni/multi", {
                                 method.init = "lasso",
                                 use_previous = FALSE,
                                 method.selection = "LINselect",
-                                impute_init_Rphylopars = FALSE,
                                 progress.bar = FALSE,
                                 K_lag_init = 0,
                                 check.tips.names = FALSE))
@@ -411,7 +407,6 @@ test_that("Independent BM - uni/multi", {
                      method.init = "lasso",
                      use_previous = FALSE,
                      method.selection = "LINselect",
-                     impute_init_Rphylopars = FALSE,
                      progress.bar = FALSE,
                      K_lag_init = 0,
                      check.tips.names = FALSE)
@@ -471,7 +466,6 @@ test_that("Independent BM - uni/multi", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "LINselect",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 0,
                                     check.tips.names = FALSE))

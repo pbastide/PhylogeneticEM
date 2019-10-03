@@ -85,13 +85,13 @@ NULL
 #'
 #' @details
 #' See documentation of \code{\link{PhyloEM}} for further details.
-#' All the parameters monitoring the EM (like \code{tol}, \code{Nbr_It_Max}, etc.)
+#' All the parameters monitoring the EM (like \code{tol_EM}, \code{Nbr_It_Max}, etc.)
 #' can be called from \code{PhyloEM}.
 #' 
 #' @inheritParams PhyloEM
 #' @param Y_data_imp (optional) imputed data if previously computed, same format as
 #' \code{Y_data}. Mostly here for internal calls.
-#' @param tol the tolerance for the convergence of the parameters. A named list, with
+#' @param tol_EM the tolerance for the convergence of the parameters. A named list, with
 #' items:
 #' \describe{
 #' \item{variance}{default to 10^(-2)}
@@ -182,13 +182,13 @@ estimateEM <- function(phylo,
                        Y_data_imp = Y_data,
                        process = c("BM", "OU", "scOU", "rBM"), 
                        independent = FALSE,
-                       tol = list(variance = 10^(-2), 
-                                  value.root = 10^(-2), 
-                                  exp.root = 10^(-2), 
-                                  var.root = 10^(-2),
-                                  selection.strength = 10^(-2),
-                                  normalized_half_life = 10^(-2),
-                                  log_likelihood = 10^(-2)),  
+                       tol_EM = list(variance = 10^(-2), 
+                                     value.root = 10^(-2), 
+                                     exp.root = 10^(-2), 
+                                     var.root = 10^(-2),
+                                     selection.strength = 10^(-2),
+                                     normalized_half_life = 10^(-2),
+                                     log_likelihood = 10^(-2)),  
                        Nbr_It_Max = 500, 
                        method.variance = c("simple", "upward_downward"), 
                        method.init = c("default", "lasso"),
@@ -238,7 +238,7 @@ estimateEM <- function(phylo,
                        check_convergence_likelihood = TRUE,
                        sBM_variance = FALSE,
                        method.OUsun = c("rescale", "raw"),
-                       impute_init_Rphylopars = FALSE,
+                       # impute_init_Rphylopars = FALSE,
                        K_lag_init = 0,
                        allow_negative = FALSE,
                        ...){
@@ -452,7 +452,7 @@ estimateEM <- function(phylo,
                                                   alpha_known = alpha_known,
                                                   init.var.root = var.init.root,
                                                   method.init.alpha.estimation = method.init.alpha.estimation,
-                                                  tol = tol,
+                                                  tol_EM = tol_EM,
                                                   h_tree = h_tree,
                                                   random.root = random.root,
                                                   T_tree = T_tree,
@@ -488,11 +488,11 @@ estimateEM <- function(phylo,
   
   ## Init of Rate matrix for BM
   if (process == "BM" && (!random.root || (random.root && sBM_variance))){
-    if (impute_init_Rphylopars && any(is.na(Y_data_imp))){
-      # Impute the data only once, if needed.
-      message("Imputing data for lasso initialization.")
-      Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.root)
-    }
+    # if (impute_init_Rphylopars && any(is.na(Y_data_imp))){
+    #   # Impute the data only once, if needed.
+    #   message("Imputing data for lasso initialization.")
+    #   Y_data_imp <- impute.data.Rphylopars(phylo, Y_data, process, random.root)
+    # }
     variance.init <- init.variance.BM.estimation(phylo = phylo, 
                                                  Y_data = Y_data, 
                                                  Y_data_imp = Y_data_imp,
@@ -506,7 +506,7 @@ estimateEM <- function(phylo,
                                                  subtree.list = subtree.list,
                                                  miss = miss,
                                                  selection.strength.init = init.selection.strength,
-                                                 impute_init_Rphylopars = impute_init_Rphylopars,
+                                                 # impute_init_Rphylopars = impute_init_Rphylopars,
                                                  masque_data = masque_data,
                                                  ...)
   }
@@ -532,7 +532,7 @@ estimateEM <- function(phylo,
                          miss = miss,
                          variance.init = variance.init,
                          sBM_variance = sBM_variance,
-                         impute_init_Rphylopars = impute_init_Rphylopars,
+                         # impute_init_Rphylopars = impute_init_Rphylopars,
                          masque_data = masque_data,
                          independent = independent,
                          ...)
@@ -555,7 +555,7 @@ estimateEM <- function(phylo,
   while ( Nbr_It == 0 || # initialization
           K_lag_init > 0 || 
           ( !(CV_log_lik && # CV of log-Likelihood ?
-              shutoff.EM(params_old, params, tol, has_converged, h_tree)) && # Shutoff
+              shutoff.EM(params_old, params, tol_EM, has_converged, h_tree)) && # Shutoff
             is.in.ranges.params(params, min = min_params, max = max_params) && #Divergence?
             Nbr_It < Nbr_It_Max ) ) { # Nbr of iteration
     ## Actualization
@@ -610,14 +610,9 @@ estimateEM <- function(phylo,
     if (check_convergence_likelihood && Nbr_It > 1){
       CV_log_lik <- has_converged_absolute(log_likelihood_old_old,
                                            log_likelihood_old,
-                                           tol$log_likelihood)
+                                           tol_EM$log_likelihood)
     }
     
-    if (process == "OU" && p == 1){
-      conditional_law_X$expectations <- as.vector(conditional_law_X$expectations)
-      conditional_law_X$variances <- as.vector(conditional_law_X$variances)
-      conditional_law_X$covariances <- as.vector(conditional_law_X$covariances)
-    }
     #   ## Log likelihood as the sum of conditional + entropy
     #         H <- compute_entropy.simple(moments$Sigma, moments$Sigma_YY_inv)
     #         CLL <- conditional_expectation_log_likelihood(phylo = phylo,
@@ -970,15 +965,18 @@ estimateEM <- function(phylo,
 #' Default to FALSE.
 # @param sBM_variance DEPRECATED. Used for BM equivalent computations. 
 # Default to FALSE.
-# @param method.OUsun DEPRECATED. Method to be used in univariate OU.
+#' @param rescale_OU For the Univariate OU, should the tree be re-scaled to use a BM ? 
+#' This can speed up the computations a lot. However, it can make it harder for the EM to 
+#' explore the space of parameters, and hence lead to a sub-optimal solution.
+#' Default to TRUE.
 #' @param parallel_alpha If alpha_grid=TRUE, whether to run the 
 #' estimations with different values of alpha on separate cores. Default to 
 #' FALSE. If TRUE, the log is written as a temporary file.
 #' @param Ncores If parallel_alpha=TRUE, number of cores to be used.
 # @param exportFunctions DEPRECATED. TO BE REMOVED.
-#' @param impute_init_Rphylopars whether to use 
-#' \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
-#' Default to FALSE.
+# @param impute_init_Rphylopars whether to use 
+# \code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
+# Default to FALSE.
 #' @param K_lag_init Number of extra shifts to be considered at the initialization
 #' step. Increases the accuracy, but can make computations quite slow of taken
 #' too high. Default to 5.
@@ -1077,11 +1075,11 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     estimates = NULL,
                     save_step = FALSE,
                     # sBM_variance = FALSE,
-                    #method.OUsun = "rescale",
+                    rescale_OU = TRUE,
                     parallel_alpha = FALSE,
                     Ncores = 3,
                     # exportFunctions = ls(),
-                    impute_init_Rphylopars = FALSE,
+                    # impute_init_Rphylopars = FALSE,
                     K_lag_init = 5,
                     light_result = TRUE,
                     tol_tree = .Machine$double.eps^0.5,
@@ -1095,7 +1093,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   # library(glmnet) # For Lasso initialization
   # library(robustbase) # For robust fitting of alpha
   ## Check the tree  ##########################################################
-  if (!is.ultrametric(phylo, tol = tol_tree, option = option_is.ultrametric)) stop("The tree must be ultrametric.")
+  process <- match.arg(process)
+  if ((process != "BM") && !is.ultrametric(phylo, tol = tol_tree, option = option_is.ultrametric)) stop("The tree must be ultrametric.")
   if (any(abs(phylo$edge.length) < tol_tree)){
     stop("The tree has zero-length branches.
          Please use `ape::di2multi` function to transform the zero-length branches into ploytomies.")
@@ -1115,10 +1114,10 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Independent traits #######################################################
-  method.OUsun = "rescale"
+  method.OUsun <- "rescale"
   if (p == 1) {
-    method.OUsun = "raw"
-    independent = TRUE
+    if (!rescale_OU) method.OUsun <- "raw"
+    independent <- FALSE
   }
   if (independent && missing(alpha_grid) && missing(nbr_alpha)) alpha_grid <- FALSE
   ## Adaptations to the BM ####################################################
@@ -1153,7 +1152,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     method.selection <- method.selection[method.selection != "BGHlsqraw"]
     method.selection <- method.selection[method.selection != "BGHmlraw"]
   }
-  if (method.selection == "BirgeMassart1" || method.selection == "BirgeMassart2"){
+  if ("BirgeMassart1" %in% method.selection || "BirgeMassart2" %in% method.selection){
     if (K_max < 10){
       warning("Slope and Jump heuristics need at least 10 observations. Consider choosing K_max >= 10, or an other model selection.")
       method.selection <- method.selection[method.selection != "BirgeMassart1"]
@@ -1202,7 +1201,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             parallel_alpha = parallel_alpha, 
                             Ncores = Ncores, 
                             # exportFunctions = exportFunctions, 
-                            impute_init_Rphylopars = impute_init_Rphylopars, 
+                            # impute_init_Rphylopars = impute_init_Rphylopars, 
                             K_lag_init = K_lag_init,
                             light_result = light_result,
                             allow_negative = allow_negative,
@@ -1236,7 +1235,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              estimates = estimates, 
                              save_step = save_step, 
                              method.OUsun = "raw", 
-                             impute_init_Rphylopars = impute_init_Rphylopars, 
+                             # impute_init_Rphylopars = impute_init_Rphylopars, 
                              K_lag_init = K_lag_init,
                              light_result = light_result,
                              ...)
@@ -1955,7 +1954,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                parallel_alpha = FALSE,
                                Ncores = 3,
                                # exportFunctions = ls(),
-                               impute_init_Rphylopars = FALSE,
+                               # impute_init_Rphylopars = FALSE,
                                K_lag_init = 0,
                                light_result = TRUE,
                                allow_negative = FALSE,
@@ -2015,7 +2014,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        stationary.root,
                                        sBM_variance,
                                        method.OUsun,
-                                       impute_init_Rphylopars,
+                                       # impute_init_Rphylopars,
                                        p,
                                        ntaxa,
                                        progress.bar,
@@ -2082,26 +2081,26 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
     #   impute_init_Rphylopars <- TRUE
     # }
     Y_data_imp <- Y_data
-    if (any(is.na(Y_data_imp))
-        && impute_init_Rphylopars
-        && temp$process == "BM"){
-      ## Re-scale tree to unit height
-      factor_rescale <- 1 / h_tree # total height to 1
-      phylo_temp <- phylo
-      phylo_temp$edge.length <- factor_rescale * phylo$edge.length
-      phylo_temp$root.edge <- factor_rescale * phylo$root.edge
-      Y_data_imp <- try(impute.data.Rphylopars(phylo_temp,
-                                               Y_data,
-                                               temp$process,
-                                               random.root))
-      if (inherits(Y_data_imp, "try-error")) { # If fails, replace with mean of the trait
-        Y_data_imp <- Y_data
-        for (j in 1:(dim(Y_data_imp)[1])){
-          Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
-        }
-      }
-      rm(phylo_temp)
-    }
+    # if (any(is.na(Y_data_imp))
+    #     && impute_init_Rphylopars
+    #     && temp$process == "BM"){
+    #   ## Re-scale tree to unit height
+    #   factor_rescale <- 1 / h_tree # total height to 1
+    #   phylo_temp <- phylo
+    #   phylo_temp$edge.length <- factor_rescale * phylo$edge.length
+    #   phylo_temp$root.edge <- factor_rescale * phylo$root.edge
+    #   Y_data_imp <- try(impute.data.Rphylopars(phylo_temp,
+    #                                            Y_data,
+    #                                            temp$process,
+    #                                            random.root))
+    #   if (inherits(Y_data_imp, "try-error")) { # If fails, replace with mean of the trait
+    #     Y_data_imp <- Y_data
+    #     for (j in 1:(dim(Y_data_imp)[1])){
+    #       Y_data_imp[j, is.na(Y_data_imp[j, ])] <- mean(Y_data_imp[j, ], na.rm = TRUE)
+    #     }
+    #   }
+    #   rm(phylo_temp)
+    # }
     ## Estimations
     X <- Phylo_EM_sequencial(phylo = phylo,
                              Y_data = Y_data,
@@ -2133,7 +2132,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              save_step = save_step,
                              sBM_variance = sBM_variance,
                              method.OUsun = method.OUsun,
-                             impute_init_Rphylopars = impute_init_Rphylopars,
+                             # impute_init_Rphylopars = impute_init_Rphylopars,
                              K_lag_init = K_lag_init,
                              light_result = light_result,
                              allow_negative = allow_negative,
@@ -2239,7 +2238,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                stationary.root = stationary.root,
                                sBM_variance = sBM_variance,
                                method.OUsun = method.OUsun,
-                               impute_init_Rphylopars = impute_init_Rphylopars,
+                               # impute_init_Rphylopars = impute_init_Rphylopars,
                                p = p,
                                ntaxa = ntaxa,
                                progress.bar = progress.bar,
@@ -2276,7 +2275,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                stationary.root = stationary.root,
                                sBM_variance = sBM_variance,
                                method.OUsun = method.OUsun,
-                               impute_init_Rphylopars = impute_init_Rphylopars,
+                               # impute_init_Rphylopars = impute_init_Rphylopars,
                                p = p,
                                ntaxa = ntaxa,
                                progress.bar = progress.bar,
@@ -2334,7 +2333,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                                 estimates = NULL,
                                 save_step = FALSE,
                                 method.OUsun = "raw",
-                                impute_init_Rphylopars = FALSE,
+                                # impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
                                 light_result = TRUE,
                                 ...){
@@ -2397,7 +2396,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                            h_tree = h_tree,
                            save_step = save_step,
                            method.OUsun = method.OUsun,
-                           impute_init_Rphylopars = impute_init_Rphylopars,
+                           # impute_init_Rphylopars = impute_init_Rphylopars,
                            K_lag_init = K_lag_init,
                            light_result = light_result,
                            ...)
@@ -2450,7 +2449,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 save_step = FALSE,
                                 sBM_variance = FALSE,
                                 method.OUsun = "rescale", 
-                                impute_init_Rphylopars = FALSE,
+                                # impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
                                 light_result = TRUE,
                                 allow_negative = FALSE,
@@ -2501,7 +2500,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       warning_several_solutions = FALSE,
                                                       sBM_variance = sBM_variance,
                                                       method.OUsun = method.OUsun,
-                                                      impute_init_Rphylopars = impute_init_Rphylopars,
+                                                      # impute_init_Rphylopars = impute_init_Rphylopars,
                                                       K_lag_init = K_lag_init,
                                                       allow_negative = allow_negative,
                                                       ...)
@@ -2549,7 +2548,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                             warning_several_solutions = FALSE,
                                                             sBM_variance = sBM_variance,
                                                             method.OUsun = method.OUsun,
-                                                            impute_init_Rphylopars = impute_init_Rphylopars,
+                                                            # impute_init_Rphylopars = impute_init_Rphylopars,
                                                             K_lag_init = K_lag_init,
                                                             allow_negative = allow_negative,
                                                             ...)
@@ -2688,7 +2687,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         method.init.alpha,
                                         sBM_variance,
                                         method.OUsun,
-                                        impute_init_Rphylopars,
+                                        # impute_init_Rphylopars,
                                         K_lag_init,
                                         allow_negative,
                                         ...){
@@ -2716,7 +2715,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    methods.segmentation = methods.segmentation,
                                                    sBM_variance = sBM_variance,
                                                    method.OUsun = method.OUsun,
-                                                   impute_init_Rphylopars = impute_init_Rphylopars,
+                                                   # impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
                                                    allow_negative = allow_negative,
                                                    ...))
@@ -2736,7 +2735,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        method.init.alpha,
                                        sBM_variance,
                                        method.OUsun,
-                                       impute_init_Rphylopars,
+                                       # impute_init_Rphylopars,
                                        K_lag_init,
                                        allow_negative,
                                        ...){
@@ -2756,7 +2755,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    methods.segmentation = methods.segmentation,
                                                    sBM_variance = sBM_variance,
                                                    method.OUsun = method.OUsun,
-                                                   impute_init_Rphylopars = impute_init_Rphylopars,
+                                                   # impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
                                                    allow_negative = allow_negative,
                                                    ...))

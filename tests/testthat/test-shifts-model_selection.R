@@ -52,7 +52,6 @@ test_that("Model Selection", {
                                       method.init = "lasso",
                                       use_previous = FALSE,
                                       method.selection = "DDSE",
-                                      impute_init_Rphylopars = FALSE,
                                       progress.bar = FALSE,
                                       K_lag_init = 0,
                                       light_result = TRUE))
@@ -70,7 +69,6 @@ test_that("Model Selection", {
                                     method.init = "lasso",
                                     use_previous = FALSE,
                                     method.selection = "LINselect",
-                                    impute_init_Rphylopars = FALSE,
                                     progress.bar = FALSE,
                                     K_lag_init = 0,
                                     light_result = TRUE))

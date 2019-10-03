@@ -207,6 +207,8 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param plot_ancestral_states whether to plot the ancestral traits inferred at the
 #' internal nodes of the tree. Only available if only one trait is plotted. Default
 #' to FALSE.
+#' @param name_trait name of the trait scale bar for the ancestral states plotting.
+#' Default to "Trait Value".
 #' @param imposed_scale if \code{plot_ancestral_states=TRUE}, a vector specifying the
 #' imposed scale for the ancestral states plotting. Useful to make comparisons.
 #' Default to the plotted trait.
@@ -270,6 +272,7 @@ plot.PhyloEM <- function(x,
                          color_characters = "black",
                          color_edges = "black",
                          plot_ancestral_states = FALSE,
+                         name_trait = "Trait Value",
                          imposed_scale,
                          ancestral_cex = 2,
                          ancestral_pch = 19,
@@ -323,6 +326,7 @@ plot.PhyloEM <- function(x,
     }
     params <- split_params_independent(params)
     params <- params[[traits]]
+    class(params) <- "params_process"
   }
   
   ## Ancestral and imputed traits
@@ -368,6 +372,7 @@ plot.PhyloEM <- function(x,
                            # shifts_regimes = shifts_regimes,
                            plot_ancestral_states = plot_ancestral_states,
                            ancestral_states = ancestral_states,
+                           name_trait = name_trait,
                            # imposed_scale.nodes = imposed_scale.nodes,
                            ancestral_cex = ancestral_cex,
                            ancestral_pch = ancestral_pch,
@@ -405,6 +410,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      # shifts_regimes = NULL,
                                      plot_ancestral_states = FALSE,
                                      ancestral_states = NULL,
+                                     name_trait = "Trait Value",
                                      imposed_scale.nodes = ancestral_states,
                                      ancestral_cex = 2,
                                      ancestral_pch = 19,
@@ -544,7 +550,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
     ## Plots characters
     for (t in 1:p_dim){
       imp.scale  <- c(min(0, min(imposed_scale[t, ], na.rm = TRUE)),
-                      max(imposed_scale[t, ], na.rm = TRUE))
+                      max(0, max(imposed_scale[t, ], na.rm = TRUE)))
       mult <- ell / (imp.scale[2] - imp.scale[1])
       Y.plot <- mult * Y.state[t, ]
       unit <- mult * unit
@@ -580,7 +586,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                col = as.vector(color_characters)[!miss[t, ]],
                lwd = edge.width)
       # missing ones as dotted
-      if (any(miss)){
+      if (any(miss[t, ])){
         segments(pos_last_tip + eccart_g, lastPP$yy[1:ntaxa][miss[t, ]],
                  pos_last_tip + eccart_g + Y.plot[miss[t, ]], lastPP$yy[1:ntaxa][miss[t, ]],
                  col = as.vector(color_characters)[miss[t, ]],
@@ -607,7 +613,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   if (plot_ancestral_states){
     nodelabels(pch = ancestral_pch, cex = ancestral_cex, col = col_ancestral)
     leg <- 0.5 * ape::node.depth.edgelength(phylo)[1]
-    phytools::add.color.bar(leg, pal, title = "Trait Value",
+    phytools::add.color.bar(leg, pal, title = name_trait,
                             lims = imp.scale.nodes,
                             digits = 2, prompt = FALSE,
                             lwd = 4, outline = TRUE,

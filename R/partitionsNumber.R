@@ -78,7 +78,7 @@
 ##
 partitionsNumber <- function(phylo, npart){
   if (!is.rooted(phylo)) stop("The tree must be rooted !")
-  if (is.binary.tree(phylo)){
+  if (is.binary(phylo)){
     update.partitionsNumber <- update.partitionsNumber.bin
   } else {
     if (!requireNamespace("combinat", quietly = TRUE)) {
