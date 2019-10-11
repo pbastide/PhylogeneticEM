@@ -14,8 +14,8 @@
   root_adj = 1, color_shifts_regimes = FALSE, regime_boxes = FALSE,
   alpha_border = 70, show.tip.label = FALSE, label_cex = 0.5,
   label_font = 1, label_offset = 0, axis_cex = 0.7, axis_las = 0,
-  edge.width = 1, margin_plot = NULL, gray_scale = FALSE,
-  root.edge = TRUE, ...)
+  show_axis_traits = TRUE, edge.width = 1, margin_plot = NULL,
+  gray_scale = FALSE, root.edge = TRUE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{PhyloEM}, result of function
@@ -105,6 +105,8 @@ the tree and the labels. Default to 0.}
 \item{axis_cex}{cex for the label values of the plot. Default to 0.7.}
 
 \item{axis_las}{las for the label values of the plot. Default to 0 (see \link{par}).}
+
+\item{show_axis_traits}{control whether the trait values axis is plotted (default to TRUE).}
 
 \item{edge.width}{width of the edge. Default to 1.}
 
