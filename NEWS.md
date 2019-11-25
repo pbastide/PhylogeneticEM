@@ -1,14 +1,23 @@
-# PhylogeneticEM 1.2.1.9000
+# PhylogeneticEM 1.3.0.9000
+* New option:
+  * Add an option "show_axis_traits" to control the trait axis in a plot.
 * New Feature
   * Function `simul_process` can now handle an "OU/BM" process (i.e. an OU with
   some eigen values equal to zero).
+
+# PhylogeneticEM 1.3.0
 * Bug fix:
   * Bug fix in plot function for univariate result.
   * Tree does not need to be ultrametric for a BM
   * Change `tol` to `tol_EM` in `estimateEM` for actual binding
   * Bug fixes in plot function for displying traits.
+* New Option:
+  * Add option "name_trait" to plot function for ancestral state reconstruction.
 * API Change
   * For a univariate trait, the BM re-scaling is now applied by default.
+* Deprecation Fix:
+  * Update `ape`, and replace `is.binary.tree` by `is.binary`.
+  * Remove dependency to Rphylopars (no longer on CRAN).
 
 # PhylogeneticEM 1.2.1
 * CRAN maintenance

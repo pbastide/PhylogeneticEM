@@ -29,8 +29,8 @@ estimateEM(phylo, Y_data, Y_data_imp = Y_data, process = c("BM", "OU",
   tol_half_life = TRUE, warning_several_solutions = TRUE,
   convergence_mode = c("relative", "absolute"),
   check_convergence_likelihood = TRUE, sBM_variance = FALSE,
-  method.OUsun = c("rescale", "raw"), impute_init_Rphylopars = FALSE,
-  K_lag_init = 0, allow_negative = FALSE, ...)
+  method.OUsun = c("rescale", "raw"), K_lag_init = 0,
+  allow_negative = FALSE, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -185,10 +185,6 @@ consideration for convergence assessment ? (default to TRUE).}
 \item{method.OUsun}{Method to be used in univariate OU. One of "rescale" 
 (rescale the tree to fit a BM) or "raw" (directly use an OU, only available for
 univariate processes).}
-
-\item{impute_init_Rphylopars}{whether to use 
-\code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
-Default to FALSE.}
 
 \item{K_lag_init}{Number of extra shifts to be considered at the initialization
 step. Increases the accuracy, but can make computations quite slow of taken

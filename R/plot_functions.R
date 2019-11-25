@@ -207,6 +207,8 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param plot_ancestral_states whether to plot the ancestral traits inferred at the
 #' internal nodes of the tree. Only available if only one trait is plotted. Default
 #' to FALSE.
+#' @param name_trait name of the trait scale bar for the ancestral states plotting.
+#' Default to "Trait Value".
 #' @param imposed_scale if \code{plot_ancestral_states=TRUE}, a vector specifying the
 #' imposed scale for the ancestral states plotting. Useful to make comparisons.
 #' Default to the plotted trait.
@@ -245,6 +247,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' the tree and the labels. Default to 0.
 #' @param axis_cex cex for the label values of the plot. Default to 0.7.
 #' @param axis_las las for the label values of the plot. Default to 0 (see \link{par}).
+#' @param show_axis_traits control whether the trait values axis is plotted (default to TRUE).
 #' @param edge.width width of the edge. Default to 1.
 #' @param margin_plot vector giving the margin to around the plot.
 #' Default to \code{c(0, 0, 0, 0)}.
@@ -270,6 +273,7 @@ plot.PhyloEM <- function(x,
                          color_characters = "black",
                          color_edges = "black",
                          plot_ancestral_states = FALSE,
+                         name_trait = "Trait Value",
                          imposed_scale,
                          ancestral_cex = 2,
                          ancestral_pch = 19,
@@ -289,6 +293,7 @@ plot.PhyloEM <- function(x,
                          label_offset = 0,
                          axis_cex = 0.7,
                          axis_las = 0,
+                         show_axis_traits = TRUE,
                          edge.width = 1,
                          margin_plot = NULL,
                          gray_scale = FALSE,
@@ -364,11 +369,13 @@ plot.PhyloEM <- function(x,
                            shifts_cex = shifts_cex,
                            axis_cex = axis_cex,
                            axis_las = axis_las,
+                           show_axis_traits = show_axis_traits,
                            margin_plot = margin_plot,
                            color_shifts_regimes = color_shifts_regimes,
                            # shifts_regimes = shifts_regimes,
                            plot_ancestral_states = plot_ancestral_states,
                            ancestral_states = ancestral_states,
+                           name_trait = name_trait,
                            # imposed_scale.nodes = imposed_scale.nodes,
                            ancestral_cex = ancestral_cex,
                            ancestral_pch = ancestral_pch,
@@ -401,11 +408,13 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      shifts_cex = 1,
                                      axis_cex = 0.7,
                                      axis_las = 0,
+                                     show_axis_traits = TRUE,
                                      margin_plot = NULL,
                                      color_shifts_regimes = FALSE,
                                      # shifts_regimes = NULL,
                                      plot_ancestral_states = FALSE,
                                      ancestral_states = NULL,
+                                     name_trait = "Trait Value",
                                      imposed_scale.nodes = ancestral_states,
                                      ancestral_cex = 2,
                                      ancestral_pch = 19,
@@ -563,12 +572,14 @@ plot.data.process.actual <- function(Y.state, phylo, params,
              rownames(Y.state)[t], cex = axis_cex)
       }
       # unit length
-      axis(1, at = pos_last_tip + eccart_g + range(Y.plot, na.rm = TRUE),
-           labels = round(range(Y.state[t, ], na.rm = TRUE), digits = 2),
-           pos = y.lim.min + ntaxa/15, 
-           cex.axis = axis_cex,
-           # padj = -0.5,
-           las = axis_las)
+      if (show_axis_traits) {
+        axis(1, at = pos_last_tip + eccart_g + range(Y.plot, na.rm = TRUE),
+             labels = round(range(Y.state[t, ], na.rm = TRUE), digits = 2),
+             pos = y.lim.min + ntaxa/15, 
+             cex.axis = axis_cex,
+             # padj = -0.5,
+             las = axis_las)
+      }
       # segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
       #          pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
       #          lwd = 2)
@@ -608,7 +619,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
   if (plot_ancestral_states){
     nodelabels(pch = ancestral_pch, cex = ancestral_cex, col = col_ancestral)
     leg <- 0.5 * ape::node.depth.edgelength(phylo)[1]
-    phytools::add.color.bar(leg, pal, title = "Trait Value",
+    phytools::add.color.bar(leg, pal, title = name_trait,
                             lims = imp.scale.nodes,
                             digits = 2, prompt = FALSE,
                             lwd = 4, outline = TRUE,

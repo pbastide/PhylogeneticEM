@@ -7,15 +7,15 @@
 \method{plot}{PhyloEM}(x, traits = 1:(x$p), params = NULL,
   method.selection = NULL, automatic_colors = TRUE,
   color_characters = "black", color_edges = "black",
-  plot_ancestral_states = FALSE, imposed_scale, ancestral_cex = 2,
-  ancestral_pch = 19, value_in_box = FALSE,
-  ancestral_as_shift = FALSE, shifts_cex = 0.6,
+  plot_ancestral_states = FALSE, name_trait = "Trait Value",
+  imposed_scale, ancestral_cex = 2, ancestral_pch = 19,
+  value_in_box = FALSE, ancestral_as_shift = FALSE, shifts_cex = 0.6,
   shifts_bg = "chocolate4", root_bg = "chocolate4", shifts_adj = 0,
   root_adj = 1, color_shifts_regimes = FALSE, regime_boxes = FALSE,
   alpha_border = 70, show.tip.label = FALSE, label_cex = 0.5,
   label_font = 1, label_offset = 0, axis_cex = 0.7, axis_las = 0,
-  edge.width = 1, margin_plot = NULL, gray_scale = FALSE,
-  root.edge = TRUE, ...)
+  show_axis_traits = TRUE, edge.width = 1, margin_plot = NULL,
+  gray_scale = FALSE, root.edge = TRUE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{PhyloEM}, result of function
@@ -45,6 +45,9 @@ edges of the tree.}
 \item{plot_ancestral_states}{whether to plot the ancestral traits inferred at the
 internal nodes of the tree. Only available if only one trait is plotted. Default
 to FALSE.}
+
+\item{name_trait}{name of the trait scale bar for the ancestral states plotting.
+Default to "Trait Value".}
 
 \item{imposed_scale}{if \code{plot_ancestral_states=TRUE}, a vector specifying the
 imposed scale for the ancestral states plotting. Useful to make comparisons.
@@ -102,6 +105,8 @@ the tree and the labels. Default to 0.}
 \item{axis_cex}{cex for the label values of the plot. Default to 0.7.}
 
 \item{axis_las}{las for the label values of the plot. Default to 0 (see \link{par}).}
+
+\item{show_axis_traits}{control whether the trait values axis is plotted (default to TRUE).}
 
 \item{edge.width}{width of the edge. Default to 1.}
 

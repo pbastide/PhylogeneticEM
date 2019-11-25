@@ -18,9 +18,9 @@ PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   stationary.root = random.root, alpha = NULL,
   check.tips.names = TRUE, progress.bar = TRUE, estimates = NULL,
   save_step = FALSE, rescale_OU = TRUE, parallel_alpha = FALSE,
-  Ncores = 3, impute_init_Rphylopars = FALSE, K_lag_init = 5,
-  light_result = TRUE, tol_tree = .Machine$double.eps^0.5,
-  allow_negative = FALSE, option_is.ultrametric = 1, ...)
+  Ncores = 3, K_lag_init = 5, light_result = TRUE,
+  tol_tree = .Machine$double.eps^0.5, allow_negative = FALSE,
+  option_is.ultrametric = 1, ...)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -131,10 +131,6 @@ estimations with different values of alpha on separate cores. Default to
 FALSE. If TRUE, the log is written as a temporary file.}
 
 \item{Ncores}{If parallel_alpha=TRUE, number of cores to be used.}
-
-\item{impute_init_Rphylopars}{whether to use 
-\code{\link[Rphylopars]{Rphylopars-package}} for initialization. 
-Default to FALSE.}
 
 \item{K_lag_init}{Number of extra shifts to be considered at the initialization
 step. Increases the accuracy, but can make computations quite slow of taken
