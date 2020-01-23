@@ -4,8 +4,7 @@
 \alias{clusters_from_shifts}
 \title{Clustering associated to a shift allocation, assuming no homoplasy.}
 \usage{
-clusters_from_shifts(tree, edges,
-  part.list = enumerate_tips_under_edges(tree))
+clusters_from_shifts(tree, edges, part.list = enumerate_tips_under_edges(tree))
 }
 \arguments{
 \item{tree}{phylogenetic tree}

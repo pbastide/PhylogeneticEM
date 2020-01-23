@@ -4,8 +4,12 @@
 \alias{extract.simul_process}
 \title{Extraction of simulated traits}
 \usage{
-\method{extract}{simul_process}(x, where = c("tips", "nodes"),
-  what = c("states", "expectations", "optimal.values"), ...)
+\method{extract}{simul_process}(
+  x,
+  where = c("tips", "nodes"),
+  what = c("states", "expectations", "optimal.values"),
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class "\code{simul_process}", result of function

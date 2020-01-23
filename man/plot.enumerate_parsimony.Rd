@@ -4,8 +4,7 @@
 \alias{plot.enumerate_parsimony}
 \title{Plot all the equivalent solutions.}
 \usage{
-\method{plot}{enumerate_parsimony}(x, numbering = FALSE, nbr_col = 3,
-  ...)
+\method{plot}{enumerate_parsimony}(x, numbering = FALSE, nbr_col = 3, ...)
 }
 \arguments{
 \item{x}{an object of class \code{enumerate_parsimony}, result of

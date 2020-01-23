@@ -500,20 +500,22 @@ test_that("OU/BM", {
                      var.root = NA)
   shifts = NULL
   
-  X1 <- simulate_internal(tree,
-                          p = p,
-                          root.state = root.state,
-                          process = "OUBM",
-                          variance = variance,
-                          optimal.value = optimal.value,
-                          selection.strength = selection.strength,
-                          shifts = shifts)
+  X1 <- expect_warning(simulate_internal(tree,
+                                         p = p,
+                                         root.state = root.state,
+                                         process = "OUBM",
+                                         variance = variance,
+                                         optimal.value = optimal.value,
+                                         selection.strength = selection.strength,
+                                         shifts = shifts),
+                       "All the eigen values of the selection strengh do not have a strictly positive real part.")
   
   X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
   
   ## Compute expectations with tree matrix
   T_tree <- incidence.matrix(tree)
-  Delta <- shifts.list_to_matrix(tree, shifts)
+  expect_error(shifts.list_to_matrix(tree, shifts), "the dimension p must be specified when shift is NULL")
+  Delta <- shifts.list_to_matrix(tree, shifts, p = p)
   W <- compute_actualization_matrix_ultrametric(tree, selection.strength)
   
   vec_Y <- kronecker(T_tree, diag(1, p, p)) %*% W %*% as.vector(Delta)
@@ -534,4 +536,34 @@ test_that("OU/BM", {
                           simulate_random = FALSE)
   X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X2.tips.exp, equals(X2.tips.exp))
+  
+  ## Variances
+  set.seed(1899)
+  ntaxa <- 5
+  p <- 2
+  tree <- rcoal(ntaxa)
+  variance <- diag(0.5, p)
+  optimal.value <- c(-3, 5)
+  selection.strength <- diag(0:1)
+  exp.stationary <- optimal.value
+  root.state <- list(random = FALSE,
+                     stationary.root = FALSE,
+                     value.root = exp.stationary,
+                     exp.root = NA,
+                     var.root = NA)
+  tree_heigth <- max(node.depth.edgelength(tree))
+  var_1 <- tree_heigth * variance[1, 1]
+  var_2 <- variance[2, 2] / (2 * selection.strength[2, 2])
+  X1.tips.states <- sapply(1:50, function(x) extract_simulate_internal(simulate_internal(tree,
+                                                                                          p = p,
+                                                                                          root.state = root.state,
+                                                                                          process = "OUBM",
+                                                                                          variance = variance,
+                                                                                          optimal.value = optimal.value,
+                                                                                          selection.strength = selection.strength,
+                                                                                          shifts = shifts),
+                                                                        where = "tips", what = "states"))
+  X1.tips.states.var <- apply(X1.tips.states, 1, var)
+  expect_equal(mean(X1.tips.states.var[1 + p * 0:(ntaxa - 1)]), var_1, 0.05)
+  expect_equal(mean(X1.tips.states.var[2 + p * 0:(ntaxa - 1)]), var_2, 0.05)
 })

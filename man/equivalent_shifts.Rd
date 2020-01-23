@@ -4,8 +4,13 @@
 \alias{equivalent_shifts}
 \title{Find all equivalent shifts allocations and values.}
 \usage{
-equivalent_shifts(phylo, params, T_tree = incidence.matrix(phylo),
-  part.list = enumerate_tips_under_edges(phylo), times_shared = NULL)
+equivalent_shifts(
+  phylo,
+  params,
+  T_tree = incidence.matrix(phylo),
+  part.list = enumerate_tips_under_edges(phylo),
+  times_shared = NULL
+)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree, of class \code{\link[ape]{phylo}}.}

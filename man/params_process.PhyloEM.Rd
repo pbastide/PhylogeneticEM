@@ -4,8 +4,15 @@
 \alias{params_process.PhyloEM}
 \title{Parameter estimates}
 \usage{
-\method{params_process}{PhyloEM}(x, method.selection = NULL, K = NULL,
-  alpha = NULL, rBM = FALSE, init = FALSE, ...)
+\method{params_process}{PhyloEM}(
+  x,
+  method.selection = NULL,
+  K = NULL,
+  alpha = NULL,
+  rBM = FALSE,
+  init = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{\link{PhyloEM}}}

@@ -4,17 +4,38 @@
 \alias{plot.params_process}
 \title{Plot for class \code{simul_process}}
 \usage{
-\method{plot}{params_process}(x, phylo, data = NULL, traits,
-  automatic_colors = TRUE, color_characters = "black",
-  color_edges = "black", plot_ancestral_states = FALSE,
-  ancestral_states = NULL, imposed_scale, ancestral_cex = 2,
-  ancestral_pch = 19, value_in_box = FALSE,
-  ancestral_as_shift = FALSE, shifts_cex = 0.6,
-  shifts_bg = "chocolate4", root_bg = "chocolate4", shifts_adj = 0,
-  root_adj = 1, color_shifts_regimes = FALSE, regime_boxes = FALSE,
-  alpha_border = 70, show.tip.label = FALSE, label_cex = 0.5,
-  label_offset = 0, axis_cex = 0.7, edge.width = 1,
-  margin_plot = NULL, gray_scale = FALSE, ...)
+\method{plot}{params_process}(
+  x,
+  phylo,
+  data = NULL,
+  traits,
+  automatic_colors = TRUE,
+  color_characters = "black",
+  color_edges = "black",
+  plot_ancestral_states = FALSE,
+  ancestral_states = NULL,
+  imposed_scale,
+  ancestral_cex = 2,
+  ancestral_pch = 19,
+  value_in_box = FALSE,
+  ancestral_as_shift = FALSE,
+  shifts_cex = 0.6,
+  shifts_bg = "chocolate4",
+  root_bg = "chocolate4",
+  shifts_adj = 0,
+  root_adj = 1,
+  color_shifts_regimes = FALSE,
+  regime_boxes = FALSE,
+  alpha_border = 70,
+  show.tip.label = FALSE,
+  label_cex = 0.5,
+  label_offset = 0,
+  axis_cex = 0.7,
+  edge.width = 1,
+  margin_plot = NULL,
+  gray_scale = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{params_process}.}

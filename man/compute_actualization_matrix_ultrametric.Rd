@@ -4,8 +4,11 @@
 \alias{compute_actualization_matrix_ultrametric}
 \title{Compute Matrix W of actualization (Ultrametric case)}
 \usage{
-compute_actualization_matrix_ultrametric(tree, selection.strength,
-  times_shared = compute_times_ca(tree))
+compute_actualization_matrix_ultrametric(
+  tree,
+  selection.strength,
+  times_shared = compute_times_ca(tree)
+)
 }
 \arguments{
 \item{tree}{a phylogenetic tree.}

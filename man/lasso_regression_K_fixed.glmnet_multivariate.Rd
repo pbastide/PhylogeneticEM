@@ -4,8 +4,14 @@
 \alias{lasso_regression_K_fixed.glmnet_multivariate}
 \title{Do a lasso regression with the number of non-zero variables fixed.}
 \usage{
-lasso_regression_K_fixed.glmnet_multivariate(Yp, Xp, K, root = NULL,
-  penscale = rep(1, ncol(Xp)), K_lag = 0)
+lasso_regression_K_fixed.glmnet_multivariate(
+  Yp,
+  Xp,
+  K,
+  root = NULL,
+  penscale = rep(1, ncol(Xp)),
+  K_lag = 0
+)
 }
 \arguments{
 \item{Yp}{(transformed) data}

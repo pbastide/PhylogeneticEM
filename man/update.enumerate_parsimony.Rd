@@ -4,8 +4,15 @@
 \alias{update.enumerate_parsimony}
 \title{Actualization of the enumeration.}
 \usage{
-update.enumerate_parsimony(daughters, daughtersParams, parent, cost, clus,
-  pos, ...)
+update.enumerate_parsimony(
+  daughters,
+  daughtersParams,
+  parent,
+  cost,
+  clus,
+  pos,
+  ...
+)
 }
 \arguments{
 \item{daughters}{vector of daughters nodes.}

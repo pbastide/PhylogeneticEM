@@ -4,8 +4,13 @@
 \alias{plot_criterion}
 \title{Plot Model Selection Criterion}
 \usage{
-plot_criterion(res, method.selection = NULL, add = FALSE,
-  select.col = "red", ...)
+plot_criterion(
+  res,
+  method.selection = NULL,
+  add = FALSE,
+  select.col = "red",
+  ...
+)
 }
 \arguments{
 \item{res}{an object of class \code{PhyloEM}, result of function

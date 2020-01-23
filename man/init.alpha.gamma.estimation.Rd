@@ -4,22 +4,34 @@
 \alias{init.alpha.gamma.estimation}
 \title{Initialization the selection strength alpha using robust estimation}
 \usage{
-init.alpha.gamma.estimation(phylo, Y_data, nbr_of_shifts, times_shared,
-  distances_phylo, T_tree, subtree.list, max_triplet_number, alpha_known,
-  method.init.alpha.estimation, tol_EM, h_tree, miss, masque_data,
-  independent, ...)
+init.alpha.gamma.estimation(
+  phylo,
+  Y_data,
+  nbr_of_shifts,
+  times_shared,
+  distances_phylo,
+  T_tree,
+  subtree.list,
+  max_triplet_number,
+  alpha_known,
+  method.init.alpha.estimation,
+  tol_EM,
+  h_tree,
+  miss,
+  masque_data,
+  independent,
+  ...
+)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
 \item{Y_data}{data at the tips.}
 
-\item{nbr_of_shifts}{: number of shifts wanted}
+\item{nbr_of_shifts}{number of shifts used in the EM algorithm}
 
 \item{distances_phylo}{(matrix) : phylogenetic distance, result of function 
 \code{compute_dist_phy}}
-
-\item{nbr_of_shifts}{number of shifts used in the EM algorithm}
 }
 \value{
 params_init the list of initial parameters to be used, in the right

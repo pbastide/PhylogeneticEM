@@ -4,8 +4,12 @@
 \alias{compute_variance_covariance.scOU}
 \title{Complete variance covariance matrix for scOU}
 \usage{
-compute_variance_covariance.scOU(times_shared, distances_phylo, params_old,
-  ...)
+compute_variance_covariance.scOU(
+  times_shared,
+  distances_phylo,
+  params_old,
+  ...
+)
 }
 \arguments{
 \item{times_shared}{times of shared ancestry of all nodes and tips, result of function

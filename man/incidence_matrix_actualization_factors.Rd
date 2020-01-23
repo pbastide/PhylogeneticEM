@@ -4,8 +4,12 @@
 \alias{incidence_matrix_actualization_factors}
 \title{Compute the actualizations factors to apply to the incidence matrix.}
 \usage{
-incidence_matrix_actualization_factors(tree, selection.strength,
-  relativeTimes_tree = 0, times_shared = compute_times_ca(tree))
+incidence_matrix_actualization_factors(
+  tree,
+  selection.strength,
+  relativeTimes_tree = 0,
+  times_shared = compute_times_ca(tree)
+)
 }
 \arguments{
 \item{tree}{a phylogenetic tree.}

@@ -4,11 +4,18 @@
 \alias{compute_mean_variance.simple}
 \title{Compute moments of params_old}
 \usage{
-compute_mean_variance.simple(phylo, times_shared, distances_phylo,
-  process = c("BM", "OU", "rBM", "scOU"), params_old,
-  masque_data = c(rep(TRUE, attr(params_old, "p_dim") *
-  length(phylo$tip.label)), rep(FALSE, attr(params_old, "p_dim") *
-  phylo$Nnode)), sim = NULL, U_tree = NULL, ...)
+compute_mean_variance.simple(
+  phylo,
+  times_shared,
+  distances_phylo,
+  process = c("BM", "OU", "rBM", "scOU"),
+  params_old,
+  masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
+    rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)),
+  sim = NULL,
+  U_tree = NULL,
+  ...
+)
 }
 \arguments{
 \item{phylo}{Input tree.}

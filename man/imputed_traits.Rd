@@ -7,10 +7,17 @@
 \usage{
 imputed_traits(x, ...)
 
-\method{imputed_traits}{PhyloEM}(x, trait = 1, save_all = FALSE,
-  where = c("nodes", "tips"), what = c("imputed", "variances",
-  "expectations"), params = NULL, method.selection = NULL,
-  reconstructed_states = NULL, ...)
+\method{imputed_traits}{PhyloEM}(
+  x,
+  trait = 1,
+  save_all = FALSE,
+  where = c("nodes", "tips"),
+  what = c("imputed", "variances", "expectations"),
+  params = NULL,
+  method.selection = NULL,
+  reconstructed_states = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{\link{PhyloEM}}.}

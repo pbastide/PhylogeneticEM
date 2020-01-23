@@ -4,18 +4,37 @@
 \alias{init.EM.lasso}
 \title{Initialization of the shifts using Lasso.}
 \usage{
-init.EM.lasso(phylo, Y_data, Y_data_imp = Y_data,
-  Y_data_vec_known = as.vector(Y_data), process,
-  times_shared = compute_times_ca(phylo), distances_phylo, nbr_of_shifts,
-  K_lag_init = 0, use_sigma = TRUE, params_sigma = NULL,
-  variance.init = diag(1, p, p), random.init = FALSE,
-  value.root.init = rep(0, p), exp.root.init = rep(1, p),
-  var.root.init = diag(1, p, p), edges.init = NULL,
+init.EM.lasso(
+  phylo,
+  Y_data,
+  Y_data_imp = Y_data,
+  Y_data_vec_known = as.vector(Y_data),
+  process,
+  times_shared = compute_times_ca(phylo),
+  distances_phylo,
+  nbr_of_shifts,
+  K_lag_init = 0,
+  use_sigma = TRUE,
+  params_sigma = NULL,
+  variance.init = diag(1, p, p),
+  random.init = FALSE,
+  value.root.init = rep(0, p),
+  exp.root.init = rep(1, p),
+  var.root.init = diag(1, p, p),
+  edges.init = NULL,
   values.init = matrix(0, p, length(edges.init)),
-  relativeTimes.init = NULL, selection.strength.init = 1,
-  optimal.value.init = rep(0, p), T_tree = incidence.matrix(phylo),
-  subtree.list = NULL, miss = FALSE, sBM_variance = FALSE,
-  stationary.root.init = FALSE, masque_data, independent = FALSE, ...)
+  relativeTimes.init = NULL,
+  selection.strength.init = 1,
+  optimal.value.init = rep(0, p),
+  T_tree = incidence.matrix(phylo),
+  subtree.list = NULL,
+  miss = FALSE,
+  sBM_variance = FALSE,
+  stationary.root.init = FALSE,
+  masque_data,
+  independent = FALSE,
+  ...
+)
 }
 \arguments{
 \item{Y_data}{data at the tips.}

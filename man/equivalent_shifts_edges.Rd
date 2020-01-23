@@ -4,8 +4,11 @@
 \alias{equivalent_shifts_edges}
 \title{Find all the equivalent shift edges allocations.}
 \usage{
-equivalent_shifts_edges(phylo, shifts_edges,
-  part.list = enumerate_tips_under_edges(phylo))
+equivalent_shifts_edges(
+  phylo,
+  shifts_edges,
+  part.list = enumerate_tips_under_edges(phylo)
+)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
