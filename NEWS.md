@@ -4,6 +4,8 @@
 * New Feature
   * Function `simul_process` can now handle an "OU/BM" process (i.e. an OU with
   some eigen values equal to zero).
+* Bug fix:
+  * Documented arguments not in usage in documentation object `equivalent_shifts`.
 
 # PhylogeneticEM 1.3.0
 * Bug fix:

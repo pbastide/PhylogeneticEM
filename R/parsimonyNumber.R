@@ -1047,7 +1047,6 @@ add_complementary <- function(z){
 #' \code{\link{enumerate_tips_under_edges}}.
 #' @param times_shared (optional) a matrix, result of function
 #' \code{\link{compute_times_ca}}.
-#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
 #'
 #' @return object of class \code{equivalent_shifts}, with entries:
 #' \describe{

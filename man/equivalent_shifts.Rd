@@ -27,8 +27,6 @@ function \code{\link{PhyloEM}}, or constructed through function
 
 \item{times_shared}{(optional) a matrix, result of function
 \code{\link{compute_times_ca}}.}
-
-\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
 }
 \value{
 object of class \code{equivalent_shifts}, with entries:

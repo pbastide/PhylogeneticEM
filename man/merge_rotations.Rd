@@ -41,7 +41,7 @@ res <- PhyloEM(Y_data = monkeys$dat,        ## data
                Ncores = 2)
 ## Rotate dataset
 rot <- matrix(c(cos(pi/4), -sin(pi/4), sin(pi/4), cos(pi/4)), nrow= 2, ncol = 2)
-Yrot <- t(rot) %*% monkeys$dat
+Yrot <- t(rot) \%*\% monkeys$dat
 rownames(Yrot) <- rownames(monkeys$dat)
 ## Fit rotated dataset
 # Note: use more alpha values for better results.
