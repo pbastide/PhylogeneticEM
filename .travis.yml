@@ -9,13 +9,12 @@ cache: packages
 services: docker
 env:
   - NOT_CRAN=true
-  - NOT_CRAN=false
 r_packages:
   - covr
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libmagick++-dev
 after_success:
-  - if [ "$NOT_CRAN" == "true" -a "$TRAVIS_R_VERSION_STRING" == "release" ]; then Rscript -e 'library(covr); codecov(quiet = FALSE)'; fi
-  - docker build -t test_no_suggest .
-  - docker run test_no_suggest
+  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then Rscript -e 'library(covr); codecov(quiet = FALSE)'; fi
+  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then docker build -t test_no_suggest . ; fi
+  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then docker run test_no_suggest; fi
