@@ -1,4 +1,4 @@
-# PhylogeneticEM 1.3.0.9000
+# PhylogeneticEM 1.4.0
 * New option:
   * Add an option "show_axis_traits" to control the trait axis in a plot.
 * New Feature
