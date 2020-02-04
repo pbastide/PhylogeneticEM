@@ -15,4 +15,4 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libmagick++-dev
 after_success:
-  - test $NOT_CRAN="true" && test $TRAVIS_R_VERSION_STRING="release" && Rscript -e 'library(covr); codecov(quiet = FALSE)'
+  - test $NOT_CRAN=true && test $TRAVIS_R_VERSION_STRING="release" && Rscript -e 'library(covr); codecov(quiet = FALSE)'
