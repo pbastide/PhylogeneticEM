@@ -1,7 +1,6 @@
 context("Number Tree Compatible Paritions")
 
 test_that("partitionsNumber in Binary Case", {
-  # require(ape)
   p <- 6
   n <- 2^p
   k <- 30
@@ -58,6 +57,7 @@ test_that("partitionsNumber in Binary Case", {
 # })
 
 test_that("partitionsNumber in General Case", {
+  testthat::skip_if_not_installed("combinat")
   K <- 5
   tree <- read.tree(text = "(A,(A,A,A));")
   xx <- partitionsNumber(tree, K)

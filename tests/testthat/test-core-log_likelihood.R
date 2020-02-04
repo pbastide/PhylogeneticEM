@@ -2,6 +2,7 @@ context("Log Likelihood")
 
 test_that("log-likelihood - scOU - random root", {
   testthat::skip_on_cran()
+  testthat::skip_if_not_installed("TreeSim")
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -109,6 +110,7 @@ test_that("log-likelihood - scOU - random root", {
 
 test_that("log-likelihood - BM - p=1 - fixed root", {
   testthat::skip_on_cran()
+  testthat::skip_if_not_installed("TreeSim")
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,

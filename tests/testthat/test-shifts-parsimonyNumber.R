@@ -36,6 +36,7 @@ test_that("parsimonyNumber and enumerate_parsimony on simple exemples", {
 })
 
 test_that("Equivalent Shift - BM", {
+  testthat::skip_if_not_installed("TreeSim")
   set.seed(17920902)
   ntaxa = 20
   phylo <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 
@@ -70,6 +71,7 @@ test_that("Equivalent Shift - BM", {
 })
 
 test_that("Equivalent Shift - OU", {
+  testthat::skip_if_not_installed("TreeSim")
   set.seed(17920902)
   ntaxa = 20
   phylo <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 

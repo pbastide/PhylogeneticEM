@@ -288,6 +288,7 @@ test_that("check data",{
 })
 
 test_that("check tree",{
+  testthat::skip_if_not_installed("TreeSim")
   set.seed(1958)
   ntaxa <- 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0, 

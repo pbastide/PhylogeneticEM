@@ -6,6 +6,7 @@ r:
   - devel
 sudo: false
 cache: packages
+services: docker
 env:
   - NOT_CRAN=true
   - NOT_CRAN=false
@@ -15,4 +16,6 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libmagick++-dev
 after_success:
-  - if [ "$NOT_CRAN" = "true" -a "$TRAVIS_R_VERSION_STRING" = "release" ]; then Rscript -e 'library(covr); codecov(quiet = FALSE)'; fi
+  - if [ "$NOT_CRAN" == "true" -a "$TRAVIS_R_VERSION_STRING" == "release" ]; then Rscript -e 'library(covr); codecov(quiet = FALSE)'; fi
+  - docker build -t test_no_suggest .
+  - docker run test_no_suggest

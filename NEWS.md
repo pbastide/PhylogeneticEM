@@ -6,6 +6,7 @@
   some eigen values equal to zero).
 * Bug fix:
   * Documented arguments not in usage in documentation object `equivalent_shifts`.
+  * Check with "_R_CHECK_FORCE_SUGGESTS_=FALSE" now runs.
 
 # PhylogeneticEM 1.3.0
 * Bug fix:
