@@ -1069,7 +1069,7 @@ add_complementary <- function(z){
 #'                                   mu = 0, age = 1, mrca = TRUE)[[1]]
 #' 
 #' ## Define parameters (BM, fixed root)
-#' params <- params_BM(p = 4, edges = c(4, 17, 22),
+#' params <- params_BM(p = 4, edges = c(6, 17, 31),
 #'                     values = cbind(1:4, -(1:4), rep(1, 4)))
 #' ## Find equivalent solutions and plot them
 #' eq_shifts <- equivalent_shifts(phylo, params)
@@ -1080,9 +1080,9 @@ add_complementary <- function(z){
 #' extract(eq_shifts, trait = 2, what = "shifts_values")
 #' # Root values for trait 4, for the tree solutions (columns)
 #' extract(eq_shifts, trait = 4, what = "root_values")
-#' 
-#' ## Define parameters (OU, stationary root)
-#' params <- params_OU(p = 4, edges = c(4, 17, 22),
+#' ## Define parameters (OU, stationary root
+#' params <- params_OU(p = 4, edges = c(6, 17, 31),
+#'                     selection.strength = 0.1,
 #'                     values = cbind(1:4, -(1:4), rep(1, 4)),
 #'                     random = TRUE)
 #' ## Find equivalent solutions and plot them
