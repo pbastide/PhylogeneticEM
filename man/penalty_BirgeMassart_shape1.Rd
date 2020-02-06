@@ -14,7 +14,7 @@ penalty_BirgeMassart_shape1(K, p, model_complexity, B = 0.1)
 \item{model_complexity}{the complexity of the set of models with dimension K}
 
 \item{B}{a non-negative constant. Default is 0.1 
-(as suggested in Cleymen Lebarbier 2015)}
+(as suggested in Cleynen & Lebarbier 2015)}
 }
 \value{
 value of the penalty

@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimateEM.R
 \name{find_rotation}
 \alias{find_rotation}
-\title{Test for rotation invarient datasets}
+\title{Test for rotation invariant datasets}
 \usage{
 find_rotation(res1, res2, tol = NULL)
 }
@@ -11,7 +11,7 @@ find_rotation(res1, res2, tol = NULL)
 
 \item{res2}{an object of class \code{\link{PhyloEM}}.}
 
-\item{tol}{relative numerical tolerence. Default to \code{.Machine$double.eps^(0.5)}.}
+\item{tol}{relative numerical tolerance. Default to \code{.Machine$double.eps^(0.5)}.}
 }
 \value{
 If appropriate, the rotation matrix rot such that dat1 = rot %*% dat2.

@@ -122,7 +122,7 @@ plot(res)
 ```
 
 The function above automatically plots the solution selected by the model selection criterion.
-We can plot this criterion, to see wether the solution selected is a clear minimum.
+We can plot this criterion, to see whether the solution selected is a clear minimum.
 
 ```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
 plot_criterion(res)

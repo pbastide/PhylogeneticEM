@@ -14,7 +14,7 @@ is the number of shifts plus one (npart = K + 1).}
 }
 \value{
 an object of class \code{partitionsNumber}. This is made of a matrix
-with (Nnodes + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
+with (Nnode + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
 for k=1:npart it contains the number of partitions with k groups compatible
 with the tree and the shift process; and for k=(npart+1):2*npart, it contains
 the number of "marked" partitions with (k-npart) groups compatible with the

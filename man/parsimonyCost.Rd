@@ -14,7 +14,7 @@ in a single group).}
 }
 \value{
 An S3 class "\code{parsimonyCost}" containing a 
-(ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed to
+(ntaxa + Nnode) x (nclus) matrix of the total number of shifts needed to
 get the clustering, if starting from a node in state k. The cost can be
 extract from any subtree with function \code{\link{extract.parsimonyCost}}.
 }

@@ -100,12 +100,12 @@ correspondanceEdges <- correspondenceEdges
 #' ancestor of two tips i, j.
 #' 
 #' @details
-#' Tis function relies on \code{ape} functions
+#' This function relies on \code{ape} functions
 #' \code{\link[ape]{node.depth.edgelength}} and \code{\link[ape]{mrca}}.
 #'
 #' @param phy a phylogenetic tree of class \code{\link[ape]{phylo}}.
 #'
-#' @return a matrix of times of shared evolutions, ordered as the tips of the
+#' @return a matrix of times of shared evolution, ordered as the tips of the
 #' tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
 #'
 #' @export
@@ -142,7 +142,7 @@ compute_times_ca <- function(phy) {
 #' tips i, j.
 #' 
 #' @details
-#' Tis function relies on \code{ape} function
+#' This function relies on \code{ape} function
 #' \code{\link[ape]{dist.nodes}}.
 #'
 #' @param phy a phylogenetic tree of class \code{\link[ape]{phylo}}.
@@ -731,7 +731,7 @@ find_grid_alpha <- function(phy, alpha = NULL,
 ##
 #' @title Check range of alpha
 #' 
-#' @description Check that the choosen values of alpha are not too large
+#' @description Check that the chosen values of alpha are not too large
 #' or too small, in order to avoid numerical instabilities.
 #'
 #' @param alpha a vector of alpha values.
@@ -788,7 +788,7 @@ transform_branch_length <- function(phylo, alp){
 ##
 #' @title Scale variance and selection strength from a linear transform
 #' 
-#' @description Used for process equivalancies on re-scaled trees.
+#' @description Used for process equivalencies on re-scaled trees.
 #'
 #' @param params Parameters list
 #' @param f Factor of the linear transform. If t' = f * t, the function takes

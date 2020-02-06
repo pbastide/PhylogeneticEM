@@ -13,7 +13,7 @@
   * Bug fix in plot function for univariate result.
   * Tree does not need to be ultrametric for a BM
   * Change `tol` to `tol_EM` in `estimateEM` for actual binding
-  * Bug fixes in plot function for displying traits.
+  * Bug fixes in plot function for displaying traits.
 * New Option:
   * Add option "name_trait" to plot function for ancestral state reconstruction.
 * API Change
@@ -37,7 +37,7 @@
     * Functions `find_rotation` and `merge_rotations` to deal with datasets that are
     equal up to a rotation.
     * Functions `get_criterion` and `plot_criterion` to get and plot the criterion used
-    for model selection easilly.
+    for model selection easily.
 * New feature:
     * Function PhyloEM can now allow for negative values of alpha, to fit an EB model.
 * Bug fix:

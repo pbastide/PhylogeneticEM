@@ -15,7 +15,7 @@ in one single cluster.}
 \value{
 an object of S3 class "\code{parsimonyNumber}" with:
 \describe{
- \item{nbrReconstructions}{a (ntaxa + nNodes) x (nclus)
+ \item{nbrReconstructions}{a (ntaxa + Nnode) x (nclus)
  matrix of locally parsimonious solutions starting from a cluster k at a
  given node}
  \item{costReconstructions}{an object of class "\code{parsimonyCost}",

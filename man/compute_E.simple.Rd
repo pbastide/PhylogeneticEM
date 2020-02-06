@@ -33,16 +33,16 @@ compute_E.simple(
 }
 \value{
 conditional_law_X (list) : list of conditional statistics :
-                  "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
+                  "expectation" : matrix of size p x (ntaxa+Nnode), with ntaxa
 first columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
 of the nodes conditioned to the tips E[Z_j|Y]
-                  "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                  "variances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 matrices of zeros (tips) and conditional variance of the nodes conditioned to the tips 
 Var[Z_j|Y]
-                 "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                 "covariances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 matrices of zeros (tips) and conditional covariance of the nodes and their parents
 conditioned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
-                  "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
+                  "optimal.values" : matrix of size p x ntaxa+Nnode of optimal
 values beta(t_j)
 }
 \description{

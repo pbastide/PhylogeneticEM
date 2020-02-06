@@ -12,11 +12,11 @@ init.parsimonyCost(phy, clusters)
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 }
 \value{
-A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
+A (ntaxa + Nnode)x(nclus) matrix, with ntaxa first lines initialized as
 described.
 }
 \description{
-\code{init.parsimonyCost} initialize a (ntaxa + nNodes) x (nclus) matrix with
+\code{init.parsimonyCost} initialize a (ntaxa + Nnode) x (nclus) matrix with
 NAs everywhere, except for the tips.
 }
 \details{

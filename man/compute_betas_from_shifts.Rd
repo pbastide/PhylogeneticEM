@@ -14,7 +14,7 @@ compute_betas_from_shifts(phylo, optimal.value, shifts)
 \item{shifts}{position and values of the shifts .}
 }
 \value{
-Vector of size (ntaxa + nNodes) of the optimal values at the tips
+Vector of size (ntaxa + Nnode) of the optimal values at the tips
 of the tree.
 }
 \description{

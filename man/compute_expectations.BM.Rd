@@ -22,7 +22,7 @@ parent node of edges}
 \item{phylo:}{Input tree.}
 }
 \value{
-paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+paramSimu: array p x Nnode x 2 (BM). For each trait t, 1 <= t <= p,
  paramSimu[t, , ] has two columns, both containing the expected values for
  all the nodes.
 }

@@ -12,7 +12,7 @@ init.compute_betas_from_shifts(phy, optimal.value, ...)
 \item{optimal.value}{the optimal value at the root of the tree}
 }
 \value{
-Matrix of size (nNodes + ntaxa)x1 of NAs, with the optimal value
+Matrix of size (Nnode + ntaxa)x1 of NAs, with the optimal value
  at the root.
 }
 \description{

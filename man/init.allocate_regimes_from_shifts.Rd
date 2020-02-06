@@ -10,7 +10,7 @@ init.allocate_regimes_from_shifts(phy, ...)
 \item{phy}{Input tree.}
 }
 \value{
-Matrix of size (nNodes + ntaxa)x1 of NAs, with the 0 at the root.
+Matrix of size (Nnode + ntaxa)x1 of NAs, with the 0 at the root.
 }
 \description{
 \code{init.allocate_regimes_from_shifts} initialize the vector of regimes 

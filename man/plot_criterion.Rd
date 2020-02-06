@@ -20,7 +20,7 @@ plot_criterion(
 "Djump" or "likelihood" (for un-penalized likelihood). Default to "LINselect". See
 \code{\link{params_process.PhyloEM}}.}
 
-\item{add}{boolean: should the points be added to a urent plot (default to FALSE).}
+\item{add}{boolean: should the points be added to a current plot (default to FALSE).}
 
 \item{select.col}{the color of the point selected by the criterion. Default to "red".}
 

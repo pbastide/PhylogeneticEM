@@ -32,7 +32,7 @@ the possible allocations computed by function
 }
 \details{
 This function uses the linear representation of the problem. It fist compute
-the mean at the tips given by the orginal shifts positions and values, and
+the mean at the tips given by the original shifts positions and values, and
 then uses function \code{\link{qr.solve}}
 to find back the values of the shifts, given their various positions,
 and the means at the tips. Function \code{compute_actualization_factors} is

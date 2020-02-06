@@ -12,7 +12,7 @@ check_range_alpha(alpha, h_tree)
 \item{h_tree}{the total height of the tree.}
 }
 \description{
-Check that the choosen values of alpha are not too large
+Check that the chosen values of alpha are not too large
 or too small, in order to avoid numerical instabilities.
 }
 \keyword{internal}

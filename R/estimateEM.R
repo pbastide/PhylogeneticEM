@@ -300,14 +300,14 @@ estimateEM <- function(phylo,
   
   ########## Missing Data #####################################################
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   p <- nrow(Y_data)
   miss <- as.vector(is.na(Y_data))
   Flag_Missing <- any(miss)
   Y_data_vec <- as.vector(Y_data)
   Y_data_vec_known <- as.vector(Y_data[!miss])
   # Vectorized Data Mask
-  masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
+  masque_data <- rep(FALSE, (ntaxa + Nnode) * p)
   masque_data[1:(p*ntaxa)] <- !miss
   
   ########## Choose functions #################################################
@@ -881,7 +881,7 @@ estimateEM <- function(phylo,
 #' with alpha negative is equivalent to the DC model. There are two
 #' strong caveats in doing that.
 #' \itemize{
-#' \item The interpretation of the OU as modelling the dynamic of a trait
+#' \item The interpretation of the OU as modeling the dynamic of a trait
 #' undergoing stabilizing selection is lost. In this case, the scOU can only
 #' be seen as a re-scaling of the tree, similar to Pagel's delta.
 #' \item The values of the "optimal values", and of the shifts on them, cannot
@@ -909,7 +909,7 @@ estimateEM <- function(phylo,
 #' @param use_previous Should the initialization for K+1 shifts use the 
 #' estimation for $K$ shifts already obtained? Default to FALSE.
 #' @param order Should the estimations be done for K increasing (TRUE) or K
-#' decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
+#' decreasing (FALSE)? If use_previous=FALSE, this has no influence, except if one
 #' initialization fails. Default to TRUE.
 #' @param method.selection Method selection to be used. Several ones can be
 #' used at the same time. One of "LINselect" for the Baraud Giraud Huet LINselect 
@@ -1504,13 +1504,13 @@ get_method_selection <- function(x, method.selection = NULL) {
 #' \code{merge_rotations} takes several fits from \code{\link{PhyloEM}}, and
 #' merge them according to the best score (maximum likelihood or least squares).
 #' For each number of shifts, 
-#' The datesets needs to be equal up to a rotation. This is tested thanks to a QR
+#' The datasets needs to be equal up to a rotation. This is tested thanks to a QR
 #' decomposition, see function \code{\link{find_rotation}}.
 #'
 #' @param ... objects of class \code{\link{PhyloEM}} fitted on datasets that are equal up to a rotation.
 #' @param method.selection (optional) selection method to be applied to the merged fit. 
 #' See \code{\link{params_process.PhyloEM}}.
-#' @param tol (optional) relative numerical tolerence. See \code{\link{find_rotation}}.
+#' @param tol (optional) relative numerical tolerance. See \code{\link{find_rotation}}.
 #' 
 #' @examples
 #' \dontrun{
@@ -1584,7 +1584,7 @@ merge_rotations <- function(...,  method.selection = NULL, tol = NULL) {
 }
 
 ##
-#' @title Test for rotation invarient datasets
+#' @title Test for rotation invariant datasets
 #'
 #' @description
 #' \code{find_rotation} takes two fits from from \code{\link{PhyloEM}},
@@ -1592,7 +1592,7 @@ merge_rotations <- function(...,  method.selection = NULL, tol = NULL) {
 #'
 #' @param res1 an object of class \code{\link{PhyloEM}}.
 #' @param res2 an object of class \code{\link{PhyloEM}}.
-#' @param tol relative numerical tolerence. Default to \code{.Machine$double.eps^(0.5)}.
+#' @param tol relative numerical tolerance. Default to \code{.Machine$double.eps^(0.5)}.
 #' 
 #' 
 #' @return
@@ -1981,9 +1981,9 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   Y_data_vec_known <- as.vector(Y_data[!miss])
   # Vectorized Data Mask
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   p <- nrow(Y_data)
-  masque_data <- rep(FALSE, (ntaxa + nNodes) * p)
+  masque_data <- rep(FALSE, (ntaxa + Nnode) * p)
   masque_data[1:(p*ntaxa)] <- !miss
   
   ## Compute alpha

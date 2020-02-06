@@ -25,7 +25,7 @@ cost of a solution. Default to "solutions"}
 \item{...}{unused}
 }
 \value{
-A matrix with ntaxa + nNode columns, and as many rows as the number of
+A matrix with ntaxa + Nnode columns, and as many rows as the number of
 possible parsimonious reconstructions.
 }
 \description{

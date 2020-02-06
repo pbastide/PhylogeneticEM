@@ -68,7 +68,7 @@ Default to FALSE. OU in a multivariate setting only works if TRUE.}
 estimation for $K$ shifts already obtained? Default to FALSE.}
 
 \item{order}{Should the estimations be done for K increasing (TRUE) or K
-decreasing (FALSE)? If use_previous=FALSE, this has no influence, exept if one
+decreasing (FALSE)? If use_previous=FALSE, this has no influence, except if one
 initialization fails. Default to TRUE.}
 
 \item{method.selection}{Method selection to be used. Several ones can be
@@ -214,7 +214,7 @@ With no shift and a fixed root, the same proof shows that the scOU
 with alpha negative is equivalent to the DC model. There are two
 strong caveats in doing that.
 \itemize{
-\item The interpretation of the OU as modelling the dynamic of a trait
+\item The interpretation of the OU as modeling the dynamic of a trait
 undergoing stabilizing selection is lost. In this case, the scOU can only
 be seen as a re-scaling of the tree, similar to Pagel's delta.
 \item The values of the "optimal values", and of the shifts on them, cannot

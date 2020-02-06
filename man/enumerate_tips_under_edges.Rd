@@ -10,7 +10,7 @@ enumerate_tips_under_edges(tree)
 \item{tree}{phylogenetic tree, class \code{\link[ape]{phylo}}.}
 }
 \value{
-list of size nEdges, entry i is the vector of tips bellow edge i.
+list of size Nedge, entry i is the vector of tips bellow edge i.
 }
 \description{
 \code{enumerate_tips_under_edges} gives, for each edge of the tree, the labels

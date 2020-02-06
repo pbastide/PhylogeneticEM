@@ -45,8 +45,8 @@
 #'     
 #' @return An S3 object of class \code{simul_process}. This contains:
 #' \describe{
-#'  \item{sim_traits}{an array with dimensions p x nNodes x 2 (BM)
-#'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
+#'  \item{sim_traits}{an array with dimensions p x Nnode x 2 (BM)
+#'  or p x Nnode x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.}
 #'  \item{phylo}{the phylogenetic tree used for the simulations (class \code{phylo}).}
@@ -323,8 +323,8 @@ plot.params_process <- function(x,
 #' result of function \code{\link{compute_times_ca}}. Can be specified to avoid extra
 #' computations.
 #'     
-#' @return paramSimu An array with dimensions p x nNodes x 2 (BM)
-#'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
+#' @return paramSimu An array with dimensions p x Nnode x 2 (BM)
+#'  or p x Nnode x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.
 #'  
@@ -554,7 +554,7 @@ extract_simulate_internal <- function(paramSimu,
 #' @param array: structure to be sliced
 #' @param value: value to be attributed to the slice
 #'     
-#' @return array: array p x nNodes x 2 (BM), with slice corresponding to node filled with value
+#' @return array: array p x Nnode x 2 (BM), with slice corresponding to node filled with value
 #'  
 #' @keywords internal
 #'  
@@ -583,7 +583,7 @@ subset_node.simulate <- function(node, array){
 #'     exp.root : if random, expectation of the character at the root
 #'     var.root : if random, variance of the character at the root (pxp matrix)
 #'     
-#' @return paramSimu: array p x nNodes x 2 (BM), filled with NAs.
+#' @return paramSimu: array p x Nnode x 2 (BM), filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated states and root
 #' expectations for all the traits.
 #' 
@@ -625,7 +625,7 @@ init.simulate.StateAndExp <- function(phy, p, root.state, simulate_random){
 #'     exp.root : if random, expectation of the character at the root
 #'     var.root : if random, variance of the character at the root (pxp matrix)
 #'     
-#' @return paramSimu Array p x nNodes x 2 (BM), filled with NAs.
+#' @return paramSimu Array p x Nnode x 2 (BM), filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated
 #' states and root expectations for all the traits.
 #' 
@@ -650,7 +650,7 @@ init.simulate.BM <- function(phy, p, root.state, simulate_random, ...){
 #'     exp.root : if random, expectation of the character at the root
 #'     var.root : if random, variance of the character at the root (pxp matrix)
 #'     
-#' @return paramSimu: array p x nNodes x 3, filled with NAs.
+#' @return paramSimu: array p x Nnode x 3, filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 3) is initialized with simulated states, root
 #' expectations, and optimal values for all the traits.
 #'  
@@ -865,7 +865,7 @@ update.simulate.OUBM <- function(edgeNbr, ancestral,
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
 #'     parent node of edges
 #'     
-#' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+#' @return paramSimu: array p x Nnode x 2 (BM). For each trait t, 1 <= t <= p,
 #'  paramSimu[t, , ] has two columns, both containing the expected values for
 #'  all the nodes.
 #'  
@@ -905,7 +905,7 @@ compute_expectations.BM <- function(phylo, root.state, shifts, U_tree = NULL){
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
 #'     parent node of edges
 #'     
-#' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+#' @return paramSimu: array p x Nnode x 2 (BM). For each trait t, 1 <= t <= p,
 #'  paramSimu[t, , ] has two columns, both containing the expected values for
 #'  all the nodes.
 #'  

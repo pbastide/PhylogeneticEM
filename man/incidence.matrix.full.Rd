@@ -10,7 +10,7 @@ incidence.matrix.full(phylo)
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 }
 \value{
-Matrix of incidence, size ntaxa + nNodes.
+Matrix of incidence, size ntaxa + Nnode.
 }
 \description{
 \code{incidence.matrix.full} computes the incidence matrix U of a tree : for a 

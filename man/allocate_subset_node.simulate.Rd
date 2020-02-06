@@ -14,7 +14,7 @@ allocate_subset_node.simulate(node, array, value)
 \item{value:}{value to be attributed to the slice}
 }
 \value{
-array: array p x nNodes x 2 (BM), with slice corresponding to node filled with value
+array: array p x Nnode x 2 (BM), with slice corresponding to node filled with value
 }
 \description{
 \code{allocate_subset_node.simulate} slice the data correctly and allocate the right part.

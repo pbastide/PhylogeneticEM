@@ -12,7 +12,7 @@ compute_diff_exp.BM(phylo, conditional_law_X)
 \item{conditional_law_X}{result of function \code{compute_E}}
 }
 \value{
-matrix p x nEdges containing, for each edge e finishing at node i,
+matrix p x Nedge containing, for each edge e finishing at node i,
 the quantity E[Z_i|Y]-E[Z_pa(i)|Y].
 }
 \description{

@@ -16,6 +16,6 @@ parameters from phylo' back to phylo.}
 re-scaled parameters
 }
 \description{
-Used for process equivalancies on re-scaled trees.
+Used for process equivalencies on re-scaled trees.
 }
 \keyword{internal}
