@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Compute the actualizations factors to apply to the incidence matrix. — incidence_matrix_actualization_factors • PhylogeneticEM</title>
+<title>Compute the actualization factors to apply to the incidence matrix. — incidence_matrix_actualization_factors • PhylogeneticEM</title>
 
 
 <!-- jquery -->
@@ -35,8 +35,8 @@
 
 
 
-<meta property="og:title" content="Compute the actualizations factors to apply to the incidence matrix. — incidence_matrix_actualization_factors" />
-<meta property="og:description" content="incidence_matrix_actualization_factors computes a ntaxa x nedges matrix of the 
+<meta property="og:title" content="Compute the actualization factors to apply to the incidence matrix. — incidence_matrix_actualization_factors" />
+<meta property="og:description" content="incidence_matrix_actualization_factors computes a ntaxa x Nedge matrix of the 
 (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_i tip, j node.
 This matrix is to be multiplied to the incidence matrix with an outer product." />
 <meta name="twitter:card" content="summary" />
@@ -71,7 +71,7 @@ This matrix is to be multiplied to the incidence matrix with an outer product." 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -107,19 +107,23 @@ This matrix is to be multiplied to the incidence matrix with an outer product." 
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Compute the actualizations factors to apply to the incidence matrix.</h1>
+    <h1>Compute the actualization factors to apply to the incidence matrix.</h1>
     <small class="dont-index">Source: <a href='https://github.com/pbastide/PhylogeneticEM/blob/master/R/shifts_manipulations.R'><code>R/shifts_manipulations.R</code></a></small>
     <div class="hidden name"><code>incidence_matrix_actualization_factors.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>incidence_matrix_actualization_factors</code> computes a ntaxa x nedges matrix of the 
+    <p><code>incidence_matrix_actualization_factors</code> computes a ntaxa x Nedge matrix of the 
 (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_i tip, j node.
 This matrix is to be multiplied to the incidence matrix with an outer product.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>incidence_matrix_actualization_factors</span>(<span class='no'>tree</span>, <span class='no'>selection.strength</span>,
-  <span class='kw'>relativeTimes_tree</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='fu'><a href='compute_times_ca.html'>compute_times_ca</a></span>(<span class='no'>tree</span>))</pre>
+    <pre class="usage"><span class='fu'>incidence_matrix_actualization_factors</span>(
+  <span class='no'>tree</span>,
+  <span class='no'>selection.strength</span>,
+  <span class='kw'>relativeTimes_tree</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='fu'><a href='compute_times_ca.html'>compute_times_ca</a></span>(<span class='no'>tree</span>)
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -134,7 +138,7 @@ This matrix is to be multiplied to the incidence matrix with an outer product.</
     </tr>
     <tr>
       <th>relativeTimes_tree</th>
-      <td><p>a nedge vector of relative times associated with the branches.</p></td>
+      <td><p>a Nedge vector of relative times associated with the branches.</p></td>
     </tr>
     <tr>
       <th>times_shared</th>
@@ -144,7 +148,7 @@ This matrix is to be multiplied to the incidence matrix with an outer product.</
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Matrix of size ntaxa x nedges</p>
+    <p>Matrix of size ntaxa x Nedge</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

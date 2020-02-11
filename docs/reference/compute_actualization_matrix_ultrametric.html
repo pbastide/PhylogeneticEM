@@ -36,7 +36,7 @@
 
 
 <meta property="og:title" content="Compute Matrix W of actualization (Ultrametric case) — compute_actualization_matrix_ultrametric" />
-<meta property="og:description" content="compute_actualization_matrix_ultrametric computes a squares  p*nedges bloc diagonal
+<meta property="og:description" content="compute_actualization_matrix_ultrametric computes a squares  p*Nedge bloc diagonal
 matrix of the (I_p - exp(-A * (h - t_pa(j))))_j node." />
 <meta name="twitter:card" content="summary" />
 
@@ -70,7 +70,7 @@ matrix of the (I_p - exp(-A * (h - t_pa(j))))_j node." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -112,12 +112,15 @@ matrix of the (I_p - exp(-A * (h - t_pa(j))))_j node." />
     </div>
 
     <div class="ref-description">
-    <p><code>compute_actualization_matrix_ultrametric</code> computes a squares  p*nedges bloc diagonal
+    <p><code>compute_actualization_matrix_ultrametric</code> computes a squares  p*Nedge bloc diagonal
 matrix of the (I_p - exp(-A * (h - t_pa(j))))_j node.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compute_actualization_matrix_ultrametric</span>(<span class='no'>tree</span>, <span class='no'>selection.strength</span>,
-  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='fu'><a href='compute_times_ca.html'>compute_times_ca</a></span>(<span class='no'>tree</span>))</pre>
+    <pre class="usage"><span class='fu'>compute_actualization_matrix_ultrametric</span>(
+  <span class='no'>tree</span>,
+  <span class='no'>selection.strength</span>,
+  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='fu'><a href='compute_times_ca.html'>compute_times_ca</a></span>(<span class='no'>tree</span>)
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,7 +141,7 @@ matrix of the (I_p - exp(-A * (h - t_pa(j))))_j node.</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Matrix of size p*nedges</p>
+    <p>Matrix of size p*Nedge</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Careful: the root is not taken into account in this function.</p>

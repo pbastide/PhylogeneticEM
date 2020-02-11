@@ -67,7 +67,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -107,6 +107,29 @@
       <small>Source: <a href='https://github.com/pbastide/PhylogeneticEM/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="phylogeneticem-1-4-0" class="section level1">
+<h1 class="page-header">
+<a href="#phylogeneticem-1-4-0" class="anchor"></a>PhylogeneticEM 1.4.0<small> Unreleased </small>
+</h1>
+<ul>
+<li>New option:
+<ul>
+<li>Add an option “show_axis_traits” to control the trait axis in a plot.</li>
+</ul>
+</li>
+<li>New Feature
+<ul>
+<li>Function <code>simul_process</code> can now handle an “OU/BM” process (i.e. an OU with some eigen values equal to zero).</li>
+</ul>
+</li>
+<li>Bug fix:
+<ul>
+<li>Documented arguments not in usage in documentation object <code>equivalent_shifts</code>.</li>
+<li>Check with “<em>R_CHECK_FORCE_SUGGESTS</em>=FALSE” now runs.</li>
+</ul>
+</li>
+</ul>
+</div>
     <div id="phylogeneticem-1-3-0" class="section level1">
 <h1 class="page-header">
 <a href="#phylogeneticem-1-3-0" class="anchor"></a>PhylogeneticEM 1.3.0<small> 2019-10-03 </small>
@@ -117,7 +140,7 @@
 <li>Bug fix in plot function for univariate result.</li>
 <li>Tree does not need to be ultrametric for a BM</li>
 <li>Change <code>tol</code> to <code>tol_EM</code> in <code>estimateEM</code> for actual binding</li>
-<li>Bug fixes in plot function for displying traits.</li>
+<li>Bug fixes in plot function for displaying traits.</li>
 </ul>
 </li>
 <li>New Option:
@@ -170,7 +193,7 @@
 <li>Added functions:
 <ul>
 <li>Functions <code>find_rotation</code> and <code>merge_rotations</code> to deal with datasets that are equal up to a rotation.</li>
-<li>Functions <code>get_criterion</code> and <code>plot_criterion</code> to get and plot the criterion used for model selection easilly.</li>
+<li>Functions <code>get_criterion</code> and <code>plot_criterion</code> to get and plot the criterion used for model selection easily.</li>
 </ul>
 </li>
 <li>New feature:
@@ -249,6 +272,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="#phylogeneticem-1-4-0">1.4.0</a></li>
         <li><a href="#phylogeneticem-1-3-0">1.3.0</a></li>
         <li><a href="#phylogeneticem-1-2-1">1.2.1</a></li>
         <li><a href="#phylogeneticem-1-2-0">1.2.0</a></li>

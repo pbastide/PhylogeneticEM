@@ -71,7 +71,7 @@ tree in npart = K + 1 colors." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -137,7 +137,7 @@ is the number of shifts plus one (npart = K + 1).</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>an object of class <code>partitionsNumber</code>. This is made of a matrix
-with (Nnodes + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
+with (Nnode + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
 for k=1:npart it contains the number of partitions with k groups compatible
 with the tree and the shift process; and for k=(npart+1):2*npart, it contains
 the number of "marked" partitions with (k-npart) groups compatible with the
@@ -149,22 +149,27 @@ tree and the shift process. The actual number can be extracted with function
 <code><a href='equivalent_shifts.html'>equivalent_shifts</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>npart</span> <span class='kw'>&lt;-</span> <span class='fl'>8</span> <span class='co'># number of colors at the tips allowed</span>
-<span class='no'>tree</span> <span class='kw'>&lt;-</span> <span class='fu'>read.tree</span>(<span class='kw'>text</span><span class='kw'>=</span><span class='st'>"(A,(A,(A,A,A),A,A));"</span>) <span class='co'># a tree with polytomies</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>tree</span>)</div><div class='img'><img src='partitionsNumber-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='no'>parts_num</span> <span class='kw'>&lt;-</span> <span class='fu'>partitionsNumber</span>(<span class='no'>tree</span>, <span class='no'>npart</span>)
-<span class='no'>parts_num</span></div><div class='output co'>#&gt; 
-#&gt; Number of models with 7 shifts: 0.
-#&gt; </div><div class='input'>
-<span class='co'>## Number of possible colorings of the tips in npart colors</span>
-<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>)</div><div class='output co'>#&gt; [1] 0</div><div class='input'>
-<span class='co'>## Get all the solutions for colorings with 1 to nparts colors</span>
-<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>, <span class='kw'>npart</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='no'>npart</span>)</div><div class='output co'>#&gt; [1]  1  8 28 53 53 21  1  0</div><div class='input'>
-<span class='co'>## Number of possible colorings of the tips in npart colors</span>
-<span class='co'>## For the sub-tree starting at node 17</span>
-<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>, <span class='kw'>node</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div><div class='output co'>#&gt; [1] 0</div><div class='input'>
-<span class='co'>## Number of possible colorings of the tips in npart colors</span>
-<span class='co'>## with one marked color</span>
-<span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>, <span class='kw'>marked</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; [1] 0</div><div class='input'>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span>(<span class='st'>"combinat"</span>, <span class='kw'>quietly</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)) {
+  <span class='no'>npart</span> <span class='kw'>&lt;-</span> <span class='fl'>8</span> <span class='co'># number of colors at the tips allowed</span>
+  <span class='no'>tree</span> <span class='kw'>&lt;-</span> <span class='fu'>read.tree</span>(<span class='kw'>text</span><span class='kw'>=</span><span class='st'>"(A,(A,(A,A,A),A,A));"</span>) <span class='co'># a tree with polytomies</span>
+  <span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>tree</span>)
+  <span class='no'>parts_num</span> <span class='kw'>&lt;-</span> <span class='fu'>partitionsNumber</span>(<span class='no'>tree</span>, <span class='no'>npart</span>)
+  <span class='no'>parts_num</span>
+
+  <span class='co'>## Number of possible colorings of the tips in npart colors</span>
+  <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>)
+
+  <span class='co'>## Get all the solutions for colorings with 1 to nparts colors</span>
+  <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>, <span class='kw'>npart</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='no'>npart</span>)
+
+  <span class='co'>## Number of possible colorings of the tips in npart colors</span>
+  <span class='co'>## For the sub-tree starting at node 17</span>
+  <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>, <span class='kw'>node</span> <span class='kw'>=</span> <span class='fl'>10</span>)
+
+  <span class='co'>## Number of possible colorings of the tips in npart colors</span>
+  <span class='co'>## with one marked color</span>
+  <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>parts_num</span>, <span class='kw'>marked</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+}</div><div class='img'><img src='partitionsNumber-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; [1] 0</div><div class='input'>
 
 </div></pre>
   </div>

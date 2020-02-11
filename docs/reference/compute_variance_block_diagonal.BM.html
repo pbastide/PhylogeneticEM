@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Penalty function type pBIC — penalty_pBIC • PhylogeneticEM</title>
+<title>Tips Variances for the BM — compute_variance_block_diagonal.BM • PhylogeneticEM</title>
 
 
 <!-- jquery -->
@@ -35,8 +35,9 @@
 
 
 
-<meta property="og:title" content="Penalty function type pBIC — penalty_pBIC" />
-<meta property="og:description" content="penalty_pBIC_scalarOU is the pBIC." />
+<meta property="og:title" content="Tips Variances for the BM — compute_variance_block_diagonal.BM" />
+<meta property="og:description" content="compute_variance_block_diagonal.BM computes the n p*p variance
+matrices of each tip vector." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -105,58 +106,35 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Penalty function type pBIC</h1>
-    <small class="dont-index">Source: <a href='https://github.com/pbastide/PhylogeneticEM/blob/master/R/model_selection.R'><code>R/model_selection.R</code></a></small>
-    <div class="hidden name"><code>penalty_pBIC.Rd</code></div>
+    <h1>Tips Variances for the BM</h1>
+    <small class="dont-index">Source: <a href='https://github.com/pbastide/PhylogeneticEM/blob/master/R/E_step.R'><code>R/E_step.R</code></a></small>
+    <div class="hidden name"><code>compute_variance_block_diagonal.BM.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>penalty_pBIC_scalarOU</code> is the pBIC.</p>
+    <p><code>compute_variance_block_diagonal.BM</code> computes the n p*p variance
+matrices of each tip vector.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>penalty_pBIC</span>(
-  <span class='no'>all_params</span>,
-  <span class='no'>model_complexity</span>,
-  <span class='no'>independent</span>,
-  <span class='no'>tree</span>,
-  <span class='no'>times_shared</span>,
-  <span class='no'>distances_phylo</span>,
-  <span class='no'>T_tree</span>,
-  <span class='no'>p</span>,
-  <span class='no'>K</span>,
-  <span class='no'>ntaxa</span>,
-  <span class='no'>process</span>
-)</pre>
+    <pre class="usage"><span class='fu'>compute_variance_block_diagonal.BM</span>(<span class='no'>times_shared</span>, <span class='no'>params_old</span>, <span class='no'>ntaxa</span>, <span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>model_complexity</th>
-      <td><p>the complexity of the set of models with dimension K.</p></td>
+      <th>times_shared</th>
+      <td><p>times of shared ancestry of all nodes and tips, result 
+of function <code>compute_times_ca</code></p></td>
     </tr>
     <tr>
-      <th>K</th>
-      <td><p>the dimension of the model.</p></td>
-    </tr>
-    <tr>
-      <th>ntaxa</th>
-      <td><p>the number of tips.</p></td>
-    </tr>
-    <tr>
-      <th>C</th>
-      <td><p>a constant, C &gt; 1. Default is C = 1.1
-(as suggested in Baraud Giraud Huet (2009))</p></td>
+      <th>params_old</th>
+      <td><p>(list) : old parameters to be used in the E step</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>value of the penalty.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p><code><a href='penalty_BirgeMassart_shape1.html'>penalty_BirgeMassart_shape1</a></code>,
-<code><a href='penalty_BirgeMassart_shape2.html'>penalty_BirgeMassart_shape2</a></code></p></div>
+    <p>p * p * ntaxa array with ntaxa variance matrices</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -164,7 +142,6 @@
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#value">Value</a></li>
-      <li><a href="#see-also">See also</a></li>
     </ul>
 
   </div>

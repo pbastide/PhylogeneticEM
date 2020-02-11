@@ -72,7 +72,7 @@ This function can handle missing data." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -120,23 +120,43 @@ phylogenetic tree, with automatic shift detection on the branches of the tree.
 This function can handle missing data.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>PhyloEM</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>),
-  <span class='kw'>check_postorder</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+    <pre class="usage"><span class='fu'>PhyloEM</span>(
+  <span class='no'>phylo</span>,
+  <span class='no'>Y_data</span>,
+  <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>),
+  <span class='kw'>check_postorder</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>K_max</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/Round.html'>floor</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>))), <span class='fl'>10</span>),
-  <span class='kw'>use_previous</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"LINselect"</span>, <span class='st'>"DDSE"</span>, <span class='st'>"Djump"</span>), <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
-  <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>, <span class='kw'>C.LINselect</span> <span class='kw'>=</span> <span class='fl'>1.1</span>,
+  <span class='kw'>use_previous</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"LINselect"</span>, <span class='st'>"DDSE"</span>, <span class='st'>"Djump"</span>),
+  <span class='kw'>C.BM1</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
+  <span class='kw'>C.BM2</span> <span class='kw'>=</span> <span class='fl'>2.5</span>,
+  <span class='kw'>C.LINselect</span> <span class='kw'>=</span> <span class='fl'>1.1</span>,
   <span class='kw'>method.variance</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"upward_downward"</span>, <span class='st'>"simple"</span>),
-  <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='st'>"lasso"</span>, <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='st'>"estimation"</span>,
-  <span class='kw'>method.init.alpha.estimation</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"regression"</span>, <span class='st'>"regression.MM"</span>,
-  <span class='st'>"median"</span>), <span class='kw'>methods.segmentation</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"lasso"</span>, <span class='st'>"best_single_move"</span>),
-  <span class='kw'>alpha_grid</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='no'>random.root</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>progress.bar</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>estimates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>save_step</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>rescale_OU</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>light_result</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>tol_tree</span> <span class='kw'>=</span> <span class='no'>.Machine</span>$<span class='no'>double.eps</span>^<span class='fl'>0.5</span>, <span class='kw'>allow_negative</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>option_is.ultrametric</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='st'>"lasso"</span>,
+  <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='st'>"estimation"</span>,
+  <span class='kw'>method.init.alpha.estimation</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"regression"</span>, <span class='st'>"regression.MM"</span>, <span class='st'>"median"</span>),
+  <span class='kw'>methods.segmentation</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"lasso"</span>, <span class='st'>"best_single_move"</span>),
+  <span class='kw'>alpha_grid</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>nbr_alpha</span> <span class='kw'>=</span> <span class='fl'>10</span>,
+  <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='no'>random.root</span>,
+  <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>progress.bar</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>estimates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>save_step</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>rescale_OU</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>parallel_alpha</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>Ncores</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>5</span>,
+  <span class='kw'>light_result</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>tol_tree</span> <span class='kw'>=</span> <span class='no'>.Machine</span>$<span class='no'>double.eps</span>^<span class='fl'>0.5</span>,
+  <span class='kw'>allow_negative</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>option_is.ultrametric</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -373,7 +393,7 @@ negative values of alpha, in order to fit a DC (or Early Burst) model.
 With no shift and a fixed root, the same proof shows that the scOU
 with alpha negative is equivalent to the DC model. There are two
 strong caveats in doing that.</p><ul>
-<li><p>The interpretation of the OU as modelling the dynamic of a trait
+<li><p>The interpretation of the OU as modeling the dynamic of a trait
 undergoing stabilizing selection is lost. In this case, the scOU can only
 be seen as a re-scaling of the tree, similar to Pagel's delta.</p></li>
 <li><p>The values of the "optimal values", and of the shifts on them, cannot

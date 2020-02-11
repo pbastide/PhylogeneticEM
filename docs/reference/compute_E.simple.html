@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -114,12 +114,21 @@
     <p><code>compute_E.simple</code> computes the E step in the simple case where the invert matrix Sigma_YY_inv is given</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compute_E.simple</span>(<span class='no'>phylo</span>, <span class='no'>times_shared</span>, <span class='no'>distances_phylo</span>, <span class='no'>process</span>, <span class='no'>params_old</span>,
-  <span class='kw'>masque_data</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>TRUE</span>, <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) *
-  <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>FALSE</span>, <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) *
-  <span class='no'>phylo</span>$<span class='no'>Nnode</span>)), <span class='no'>F_moments</span>, <span class='no'>Y_data_vec_known</span>, <span class='kw'>miss</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>FALSE</span>,
-  <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) * <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)), <span class='no'>Y_data</span>, <span class='no'>U_tree</span>,
-  <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>compute_E.simple</span>(
+  <span class='no'>phylo</span>,
+  <span class='no'>times_shared</span>,
+  <span class='no'>distances_phylo</span>,
+  <span class='no'>process</span>,
+  <span class='no'>params_old</span>,
+  <span class='kw'>masque_data</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>TRUE</span>, <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) * <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)),
+    <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>FALSE</span>, <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) * <span class='no'>phylo</span>$<span class='no'>Nnode</span>)),
+  <span class='no'>F_moments</span>,
+  <span class='no'>Y_data_vec_known</span>,
+  <span class='kw'>miss</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>FALSE</span>, <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>params_old</span>, <span class='st'>"p_dim"</span>) * <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>phylo</span>$<span class='no'>tip.label</span>)),
+  <span class='no'>Y_data</span>,
+  <span class='no'>U_tree</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -149,16 +158,16 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>conditional_law_X (list) : list of conditional statistics :
-                  "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
+                  "expectation" : matrix of size p x (ntaxa+Nnode), with ntaxa
 first columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
 of the nodes conditioned to the tips E[Z_j|Y]
-                  "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                  "variances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 matrices of zeros (tips) and conditional variance of the nodes conditioned to the tips 
 Var[Z_j|Y]
-                 "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                 "covariances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 matrices of zeros (tips) and conditional covariance of the nodes and their parents
 conditioned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
-                  "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
+                  "optimal.values" : matrix of size p x ntaxa+Nnode of optimal
 values beta(t_j)</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 

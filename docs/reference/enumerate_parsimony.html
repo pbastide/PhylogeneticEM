@@ -73,7 +73,7 @@ equivalent regimes is given by parsimonyNumber (which is faster)." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -142,7 +142,7 @@ group with all the tips.)</p></td>
     <p>an S3 object of class "<code>enumerate_parsimony</code>", with:</p><dl class='dl-horizontal'>
 <dt>nbrReconstructions</dt><dd><p>an object of class "<code>parsimonyCost</code>", result
 of function <code><a href='parsimonyCost.html'>parsimonyCost</a></code>.</p></dd>
-<dt>allocations</dt><dd><p>a list of size nNode + ntaxa. Each entry i of the list
+<dt>allocations</dt><dd><p>a list of size Nnode + ntaxa. Each entry i of the list
 represents the solutions for the subtree starting at node i. It is a list with
 nclus entries, each entry being a matrix. A line of the kth matrix for the
 ith node is one possible allocation of the shifts, starting with regime k

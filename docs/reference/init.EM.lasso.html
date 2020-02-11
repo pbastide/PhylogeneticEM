@@ -75,7 +75,7 @@ incidence.matrix and shifts.list_to_vector for further details)." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -126,18 +126,37 @@ delta the vectorial representation of the shifts (see functions
 <code>incidence.matrix</code> and <code>shifts.list_to_vector</code> for further details).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>init.EM.lasso</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='kw'>Y_data_imp</span> <span class='kw'>=</span> <span class='no'>Y_data</span>,
-  <span class='kw'>Y_data_vec_known</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>as.vector</a></span>(<span class='no'>Y_data</span>), <span class='no'>process</span>,
-  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='fu'><a href='compute_times_ca.html'>compute_times_ca</a></span>(<span class='no'>phylo</span>), <span class='no'>distances_phylo</span>, <span class='no'>nbr_of_shifts</span>,
-  <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>use_sigma</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>params_sigma</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>variance.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>), <span class='kw'>random.init</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>value.root.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>), <span class='kw'>exp.root.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>),
-  <span class='kw'>var.root.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>), <span class='kw'>edges.init</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+    <pre class="usage"><span class='fu'>init.EM.lasso</span>(
+  <span class='no'>phylo</span>,
+  <span class='no'>Y_data</span>,
+  <span class='kw'>Y_data_imp</span> <span class='kw'>=</span> <span class='no'>Y_data</span>,
+  <span class='kw'>Y_data_vec_known</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>as.vector</a></span>(<span class='no'>Y_data</span>),
+  <span class='no'>process</span>,
+  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='fu'><a href='compute_times_ca.html'>compute_times_ca</a></span>(<span class='no'>phylo</span>),
+  <span class='no'>distances_phylo</span>,
+  <span class='no'>nbr_of_shifts</span>,
+  <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>use_sigma</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>params_sigma</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>variance.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>),
+  <span class='kw'>random.init</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>value.root.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>),
+  <span class='kw'>exp.root.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>),
+  <span class='kw'>var.root.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>),
+  <span class='kw'>edges.init</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>values.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>, <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>edges.init</span>)),
-  <span class='kw'>relativeTimes.init</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>selection.strength.init</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>optimal.value.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>), <span class='kw'>T_tree</span> <span class='kw'>=</span> <span class='fu'><a href='incidence.matrix.html'>incidence.matrix</a></span>(<span class='no'>phylo</span>),
-  <span class='kw'>subtree.list</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>miss</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>sBM_variance</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>stationary.root.init</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>masque_data</span>, <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>relativeTimes.init</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>selection.strength.init</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>optimal.value.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>),
+  <span class='kw'>T_tree</span> <span class='kw'>=</span> <span class='fu'><a href='incidence.matrix.html'>incidence.matrix</a></span>(<span class='no'>phylo</span>),
+  <span class='kw'>subtree.list</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>miss</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>sBM_variance</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>stationary.root.init</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='no'>masque_data</span>,
+  <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

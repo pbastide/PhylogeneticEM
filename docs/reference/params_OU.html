@@ -71,7 +71,7 @@ default values." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -118,12 +118,23 @@ provided values of the parameters. Non specified parameters are set to
 default values.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>params_OU</span>(<span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>variance</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>),
-  <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>), <span class='kw'>optimal.value</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>),
-  <span class='kw'>random</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>),
-  <span class='kw'>exp.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>), <span class='kw'>var.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>), <span class='kw'>edges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>values</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>, <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>edges</span>)), <span class='kw'>relativeTimes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>nbr_of_shifts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>edges</span>), <span class='kw'>phylo</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>params_OU</span>(
+  <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>variance</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>),
+  <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>),
+  <span class='kw'>optimal.value</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>),
+  <span class='kw'>random</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>),
+  <span class='kw'>exp.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>),
+  <span class='kw'>var.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='no'>p</span>, <span class='no'>p</span>),
+  <span class='kw'>edges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>values</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fl'>0</span>, <span class='no'>p</span>, <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>edges</span>)),
+  <span class='kw'>relativeTimes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>nbr_of_shifts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>edges</span>),
+  <span class='kw'>phylo</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

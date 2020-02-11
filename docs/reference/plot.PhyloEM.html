@@ -70,7 +70,7 @@ PhyloEM, and plots the result of the inference." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -117,18 +117,42 @@ PhyloEM, and plots the result of the inference." />
     </div>
 
     <pre class="usage"><span class='co'># S3 method for PhyloEM</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>x</span>, <span class='kw'>traits</span> <span class='kw'>=</span> <span class='fl'>1</span>:(<span class='no'>x</span>$<span class='no'>p</span>), <span class='kw'>params</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>automatic_colors</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>color_characters</span> <span class='kw'>=</span> <span class='st'>"black"</span>, <span class='kw'>color_edges</span> <span class='kw'>=</span> <span class='st'>"black"</span>,
-  <span class='kw'>plot_ancestral_states</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>name_trait</span> <span class='kw'>=</span> <span class='st'>"Trait Value"</span>,
-  <span class='no'>imposed_scale</span>, <span class='kw'>ancestral_cex</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>ancestral_pch</span> <span class='kw'>=</span> <span class='fl'>19</span>,
-  <span class='kw'>value_in_box</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>ancestral_as_shift</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>shifts_cex</span> <span class='kw'>=</span> <span class='fl'>0.6</span>,
-  <span class='kw'>shifts_bg</span> <span class='kw'>=</span> <span class='st'>"chocolate4"</span>, <span class='kw'>root_bg</span> <span class='kw'>=</span> <span class='st'>"chocolate4"</span>, <span class='kw'>shifts_adj</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>root_adj</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>color_shifts_regimes</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>regime_boxes</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>alpha_border</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>show.tip.label</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>label_cex</span> <span class='kw'>=</span> <span class='fl'>0.5</span>,
-  <span class='kw'>label_font</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>label_offset</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>axis_cex</span> <span class='kw'>=</span> <span class='fl'>0.7</span>, <span class='kw'>axis_las</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>edge.width</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>margin_plot</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>gray_scale</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>root.edge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(
+  <span class='no'>x</span>,
+  <span class='kw'>traits</span> <span class='kw'>=</span> <span class='fl'>1</span>:(<span class='no'>x</span>$<span class='no'>p</span>),
+  <span class='kw'>params</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>method.selection</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>automatic_colors</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>color_characters</span> <span class='kw'>=</span> <span class='st'>"black"</span>,
+  <span class='kw'>color_edges</span> <span class='kw'>=</span> <span class='st'>"black"</span>,
+  <span class='kw'>plot_ancestral_states</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>name_trait</span> <span class='kw'>=</span> <span class='st'>"Trait Value"</span>,
+  <span class='no'>imposed_scale</span>,
+  <span class='kw'>ancestral_cex</span> <span class='kw'>=</span> <span class='fl'>2</span>,
+  <span class='kw'>ancestral_pch</span> <span class='kw'>=</span> <span class='fl'>19</span>,
+  <span class='kw'>value_in_box</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>ancestral_as_shift</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>shifts_cex</span> <span class='kw'>=</span> <span class='fl'>0.6</span>,
+  <span class='kw'>shifts_bg</span> <span class='kw'>=</span> <span class='st'>"chocolate4"</span>,
+  <span class='kw'>root_bg</span> <span class='kw'>=</span> <span class='st'>"chocolate4"</span>,
+  <span class='kw'>shifts_adj</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>root_adj</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>color_shifts_regimes</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>regime_boxes</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>alpha_border</span> <span class='kw'>=</span> <span class='fl'>70</span>,
+  <span class='kw'>show.tip.label</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>label_cex</span> <span class='kw'>=</span> <span class='fl'>0.5</span>,
+  <span class='kw'>label_font</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>label_offset</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>axis_cex</span> <span class='kw'>=</span> <span class='fl'>0.7</span>,
+  <span class='kw'>axis_las</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>show_axis_traits</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>edge.width</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>margin_plot</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>gray_scale</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>root.edge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -276,6 +300,10 @@ the tree and the labels. Default to 0.</p></td>
     <tr>
       <th>axis_las</th>
       <td><p>las for the label values of the plot. Default to 0 (see <a href='https://rdrr.io/r/graphics/par.html'>par</a>).</p></td>
+    </tr>
+    <tr>
+      <th>show_axis_traits</th>
+      <td><p>control whether the trait values axis is plotted (default to TRUE).</p></td>
     </tr>
     <tr>
       <th>edge.width</th>

@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -114,13 +114,23 @@
     <p><code>simulate_internal</code> simulate a stochastic process on a tree.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>simulate_internal</span>(<span class='no'>phylo</span>, <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"StudentOU"</span>),
-  <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>root.state</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>random</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>exp.root</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>var.root</span> <span class='kw'>=</span> <span class='fl'>NA</span>), <span class='kw'>shifts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>edges</span> <span class='kw'>=</span>
-  <span class='kw'>NULL</span>, <span class='kw'>values</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>relativeTimes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>), <span class='kw'>eps</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>6</span>),
-  <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>variance</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>optimal.value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>checks</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>simulate_random</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>U_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
+    <pre class="usage"><span class='fu'>simulate_internal</span>(
+  <span class='no'>phylo</span>,
+  <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"OUBM"</span>, <span class='st'>"StudentOU"</span>),
+  <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>root.state</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>random</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>exp.root</span> <span class='kw'>=</span>
+    <span class='fl'>NA</span>, <span class='kw'>var.root</span> <span class='kw'>=</span> <span class='fl'>NA</span>),
+  <span class='kw'>shifts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>edges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>values</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>relativeTimes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>),
+  <span class='kw'>eps</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>6</span>),
+  <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>variance</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>optimal.value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>checks</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>simulate_random</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>U_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>1</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -205,8 +215,8 @@ the chosen student law. default to 1.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>paramSimu An array with dimensions p x nNodes x 2 (BM)
- or p x nNodes x 3 (OU). For each trait t, 1 &lt;= t &lt;= p, paramSimu[t, , ] has
+    <p>paramSimu An array with dimensions p x Nnode x 2 (BM)
+ or p x Nnode x 3 (OU). For each trait t, 1 &lt;= t &lt;= p, paramSimu[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.</p>
 

@@ -71,7 +71,7 @@ should not need it." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -118,33 +118,55 @@ from function <code><a href='PhyloEM.html'>PhyloEM</a></code>. Its use is mostly
 should not need it.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>estimateEM</span>(<span class='no'>phylo</span>, <span class='no'>Y_data</span>, <span class='kw'>Y_data_imp</span> <span class='kw'>=</span> <span class='no'>Y_data</span>, <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>,
-  <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>), <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>tol_EM</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>variance</span> <span class='kw'>=</span>
-  <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>exp.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>var.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>),
-  <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>normalized_half_life</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>),
-  <span class='kw'>log_likelihood</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>)), <span class='kw'>Nbr_It_Max</span> <span class='kw'>=</span> <span class='fl'>500</span>,
+    <pre class="usage"><span class='fu'>estimateEM</span>(
+  <span class='no'>phylo</span>,
+  <span class='no'>Y_data</span>,
+  <span class='kw'>Y_data_imp</span> <span class='kw'>=</span> <span class='no'>Y_data</span>,
+  <span class='kw'>process</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"BM"</span>, <span class='st'>"OU"</span>, <span class='st'>"scOU"</span>, <span class='st'>"rBM"</span>),
+  <span class='kw'>independent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>tol_EM</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>variance</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>exp.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>var.root</span> <span class='kw'>=</span>
+    <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>normalized_half_life</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>), <span class='kw'>log_likelihood</span>
+    <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>2</span>)),
+  <span class='kw'>Nbr_It_Max</span> <span class='kw'>=</span> <span class='fl'>500</span>,
   <span class='kw'>method.variance</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"simple"</span>, <span class='st'>"upward_downward"</span>),
-  <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"default"</span>, <span class='st'>"lasso"</span>), <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"default"</span>,
-  <span class='st'>"estimation"</span>), <span class='kw'>method.init.alpha.estimation</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"regression"</span>,
-  <span class='st'>"regression.MM"</span>, <span class='st'>"median"</span>), <span class='kw'>nbr_of_shifts</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>alpha_known</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>eps</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>3</span>),
-  <span class='kw'>known.selection.strength</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>init.selection.strength</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>max_selection.strength</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>use_sigma_for_lasso</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>max_triplet_number</span> <span class='kw'>=</span> <span class='fl'>10000</span>, <span class='kw'>min_params</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>variance</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>value.root</span> <span class='kw'>=</span> -<span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>exp.root</span> <span class='kw'>=</span> -<span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>var.root</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fl'>0</span>), <span class='kw'>max_params</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>variance</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>),
-  <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>exp.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>var.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>),
-  <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>)), <span class='kw'>var.init.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='no'>Y_data</span>)),
+  <span class='kw'>method.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"default"</span>, <span class='st'>"lasso"</span>),
+  <span class='kw'>method.init.alpha</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"default"</span>, <span class='st'>"estimation"</span>),
+  <span class='kw'>method.init.alpha.estimation</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"regression"</span>, <span class='st'>"regression.MM"</span>, <span class='st'>"median"</span>),
+  <span class='kw'>nbr_of_shifts</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>random.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>stationary.root</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>alpha_known</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>eps</span> <span class='kw'>=</span> <span class='fl'>10</span>^(-<span class='fl'>3</span>),
+  <span class='kw'>known.selection.strength</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>init.selection.strength</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>max_selection.strength</span> <span class='kw'>=</span> <span class='fl'>100</span>,
+  <span class='kw'>use_sigma_for_lasso</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>max_triplet_number</span> <span class='kw'>=</span> <span class='fl'>10000</span>,
+  <span class='kw'>min_params</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>variance</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>value.root</span> <span class='kw'>=</span> -<span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>exp.root</span> <span class='kw'>=</span> -<span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>var.root</span> <span class='kw'>=</span>
+    <span class='fl'>0</span>, <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fl'>0</span>),
+  <span class='kw'>max_params</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>variance</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>value.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>exp.root</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>var.root</span>
+    <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>), <span class='kw'>selection.strength</span> <span class='kw'>=</span> <span class='fl'>10</span>^(<span class='fl'>5</span>)),
+  <span class='kw'>var.init.root</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='no'>Y_data</span>)),
   <span class='kw'>variance.init</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='fl'>1</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='no'>Y_data</span>), <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='no'>Y_data</span>)),
   <span class='kw'>methods.segmentation</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"lasso"</span>, <span class='st'>"same_shifts"</span>, <span class='st'>"best_single_move"</span>),
-  <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>distances_phylo</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>subtree.list</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>T_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>U_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>h_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>F_moments</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>tol_half_life</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>warning_several_solutions</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>check.tips.names</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>times_shared</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>distances_phylo</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>subtree.list</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>T_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>U_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>h_tree</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>F_moments</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>tol_half_life</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>warning_several_solutions</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>convergence_mode</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"relative"</span>, <span class='st'>"absolute"</span>),
-  <span class='kw'>check_convergence_likelihood</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>sBM_variance</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>method.OUsun</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"rescale"</span>, <span class='st'>"raw"</span>), <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>allow_negative</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>check_convergence_likelihood</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>sBM_variance</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>method.OUsun</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"rescale"</span>, <span class='st'>"raw"</span>),
+  <span class='kw'>K_lag_init</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>allow_negative</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

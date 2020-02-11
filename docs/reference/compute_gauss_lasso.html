@@ -72,7 +72,7 @@ transformed data (root = an integer)." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.4.0</span>
       </span>
     </div>
 
@@ -120,8 +120,13 @@ uses them to do a simple linear least square regression. Function used is
 transformed data (root = an integer).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compute_gauss_lasso</span>(<span class='no'>Ypt</span>, <span class='no'>Xp</span>, <span class='no'>delta</span>, <span class='no'>root</span>,
-  <span class='kw'>projection</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/colSums.html'>rowSums</a></span>(<span class='no'>delta</span>) <span class='kw'>!=</span> <span class='fl'>0</span>))</pre>
+    <pre class="usage"><span class='fu'>compute_gauss_lasso</span>(
+  <span class='no'>Ypt</span>,
+  <span class='no'>Xp</span>,
+  <span class='no'>delta</span>,
+  <span class='no'>root</span>,
+  <span class='kw'>projection</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/colSums.html'>rowSums</a></span>(<span class='no'>delta</span>) <span class='kw'>!=</span> <span class='fl'>0</span>)
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
