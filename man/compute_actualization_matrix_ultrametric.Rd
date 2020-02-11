@@ -4,8 +4,11 @@
 \alias{compute_actualization_matrix_ultrametric}
 \title{Compute Matrix W of actualization (Ultrametric case)}
 \usage{
-compute_actualization_matrix_ultrametric(tree, selection.strength,
-  times_shared = compute_times_ca(tree))
+compute_actualization_matrix_ultrametric(
+  tree,
+  selection.strength,
+  times_shared = compute_times_ca(tree)
+)
 }
 \arguments{
 \item{tree}{a phylogenetic tree.}
@@ -15,10 +18,10 @@ compute_actualization_matrix_ultrametric(tree, selection.strength,
 \item{times_shared}{a matrix, result of function \code{compute_times_ca}.}
 }
 \value{
-Matrix of size p*nedges
+Matrix of size p*Nedge
 }
 \description{
-\code{compute_actualization_matrix_ultrametric} computes a squares  p*nedges bloc diagonal
+\code{compute_actualization_matrix_ultrametric} computes a squares  p*Nedge bloc diagonal
 matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
 }
 \details{

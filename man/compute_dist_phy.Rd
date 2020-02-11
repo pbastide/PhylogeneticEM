@@ -18,6 +18,6 @@ tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
 tips i, j.
 }
 \details{
-Tis function relies on \code{ape} function
+This function relies on \code{ape} function
 \code{\link[ape]{dist.nodes}}.
 }

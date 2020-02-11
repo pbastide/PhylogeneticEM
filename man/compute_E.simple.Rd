@@ -4,12 +4,21 @@
 \alias{compute_E.simple}
 \title{E step}
 \usage{
-compute_E.simple(phylo, times_shared, distances_phylo, process, params_old,
-  masque_data = c(rep(TRUE, attr(params_old, "p_dim") *
-  length(phylo$tip.label)), rep(FALSE, attr(params_old, "p_dim") *
-  phylo$Nnode)), F_moments, Y_data_vec_known, miss = rep(FALSE,
-  attr(params_old, "p_dim") * length(phylo$tip.label)), Y_data, U_tree,
-  ...)
+compute_E.simple(
+  phylo,
+  times_shared,
+  distances_phylo,
+  process,
+  params_old,
+  masque_data = c(rep(TRUE, attr(params_old, "p_dim") * length(phylo$tip.label)),
+    rep(FALSE, attr(params_old, "p_dim") * phylo$Nnode)),
+  F_moments,
+  Y_data_vec_known,
+  miss = rep(FALSE, attr(params_old, "p_dim") * length(phylo$tip.label)),
+  Y_data,
+  U_tree,
+  ...
+)
 }
 \arguments{
 \item{phylo}{Input tree.}
@@ -24,16 +33,16 @@ compute_E.simple(phylo, times_shared, distances_phylo, process, params_old,
 }
 \value{
 conditional_law_X (list) : list of conditional statistics :
-                  "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
+                  "expectation" : matrix of size p x (ntaxa+Nnode), with ntaxa
 first columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
 of the nodes conditioned to the tips E[Z_j|Y]
-                  "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                  "variances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 matrices of zeros (tips) and conditional variance of the nodes conditioned to the tips 
 Var[Z_j|Y]
-                 "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+                 "covariances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 matrices of zeros (tips) and conditional covariance of the nodes and their parents
 conditioned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
-                  "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
+                  "optimal.values" : matrix of size p x ntaxa+Nnode of optimal
 values beta(t_j)
 }
 \description{

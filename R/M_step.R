@@ -176,11 +176,11 @@ compute_root_value.BM <- function(phylo,
                                   shifts){
   ntaxa = length(phylo$tip.label)
   p <- nrow(expectations)
-  nEdges <- nrow(phylo$edge)
+  Nedge <- nrow(phylo$edge)
   daughters <- phylo$edge[ , 2]
   parents <- phylo$edge[ , 1]
   root_edges <- which(parents == ntaxa + 1)
-  deltas <- matrix(0, p, nEdges)
+  deltas <- matrix(0, p, Nedge)
   deltas <- shifts.list_to_matrix(phylo, shifts, p)
   expe_root <- expectations[ , daughters[root_edges], drop = F]
   shifts_root <- deltas[, root_edges, drop = F]
@@ -470,7 +470,7 @@ compute_M.OU.stationary.root_AND_shifts_at_nodes <- function(phylo,
 #' @param phylo a phylogenetic tree
 #' @param conditional_law_X result of function \code{compute_E}
 #' 
-#' @return matrix p x nEdges containing, for each edge e finishing at node i,
+#' @return matrix p x Nedge containing, for each edge e finishing at node i,
 #' the quantity E[Z_i|Y]-E[Z_pa(i)|Y].
 #' 
 #' @keywords internal
@@ -503,7 +503,7 @@ compute_diff_exp.OU <- function(phylo, conditional_law_X, selection.strength) {
 #' @param phylo a phylogenetic tree
 #' @param conditional_law_X result of function \code{compute_E}
 #' 
-#' @return array p x p x nEdges containing, for each edge e finishing at node i,
+#' @return array p x p x Nedge containing, for each edge e finishing at node i,
 #' the quantity Var[Z_i-Z_pa(i)|Y].
 #' 
 #' @keywords internal
@@ -511,11 +511,11 @@ compute_diff_exp.OU <- function(phylo, conditional_law_X, selection.strength) {
 ##
 compute_var_diff.BM <- function(phylo, conditional_law_X) {
   p <- nrow(conditional_law_X$expectations)
-  nEdges <- nrow(phylo$edge)
-  var_diff <- array(NA, c(p, p, nEdges))
+  Nedge <- nrow(phylo$edge)
+  var_diff <- array(NA, c(p, p, Nedge))
   daughters <- phylo$edge[,2]
   parents <- phylo$edge[,1]
-  for (e in 1:nEdges){
+  for (e in 1:Nedge){
     # range_e <- ((e - 1) * p + 1):(e * p)
     dauvar <- get_variance_node(daughters[e], conditional_law_X$variances)
     parvar <- get_variance_node(parents[e], conditional_law_X$variances)
@@ -558,11 +558,11 @@ compute_sum_var_diff <- function(phylo, var_diff){
   if (p == 1){
     return(Matrix(sum(var_diff * 1/phylo$edge.length)))
   } else {
-    nEdges <- dim(var_diff)[3]
+    Nedge <- dim(var_diff)[3]
     vv <- sweep(var_diff, MARGIN = 3, STATS = 1/phylo$edge.length,
                 FUN = '*', check.margin = FALSE)
     # vv <- var_diff %*% diag(1/rep(phylo$edge.length, each = p)) # mult each column by length
-    # arr <- array(vv, dim = c(p, p, nEdges))
+    # arr <- array(vv, dim = c(p, p, Nedge))
     res <- apply(vv, 1, rowSums)
     if (!isSymmetric(res, tol = .Machine$double.eps^0.5)){
       stop("Sum of variances should be symmetric. It is not.")
@@ -592,7 +592,7 @@ compute_sum_var_diff <- function(phylo, var_diff){
 ##
 compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max, random.root, mu){
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   p <- nrow(var_diff)
   varr <- compute_sum_var_diff(phylo, var_diff)
   if (!random.root){ ## If root not random, substract root value
@@ -602,12 +602,12 @@ compute_var_M.BM <- function(phylo, var_diff, diff_exp, edges_max, random.root, 
   expp <- as(tcrossprod(sweep(diff_exp[, -edges_max, drop = F], 2,
                               sqrt(1/phylo$edge.length[-edges_max]), '*')),
              "symmetricMatrix")
-  return(1/(ntaxa + nNodes - 1) * (varr + expp))
+  return(1/(ntaxa + Nnode - 1) * (varr + expp))
 }
 
 compute_var_M.sBM <- function(phylo, var_diff, diff_exp, edges_max, conditional_law_X){
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   p <- nrow(var_diff)
   varr <- compute_sum_var_diff(phylo, var_diff)
   varr <- varr + 1 / phylo$root.edge * get_variance_node(ntaxa + 1,
@@ -616,15 +616,15 @@ compute_var_M.sBM <- function(phylo, var_diff, diff_exp, edges_max, conditional_
                               sqrt(1/phylo$edge.length[-edges_max]), '*')),
              "symmetricMatrix")
   # expp <- expp + 1 / phylo$root.edge * tcrossprod(conditional_law_X$expectations[ , ntaxa + 1])
-  return(1/(ntaxa + nNodes) * (varr + expp))
+  return(1/(ntaxa + Nnode) * (varr + expp))
 }
 
 compute_var_M.OU.specialCase <- function(phylo, var_diff, costs, selection.strength, conditional_root_variance){
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   ee <- exp(- selection.strength * phylo$edge.length )
-  #return(1/(ntaxa + nNodes) * ( conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff ) + sum( costs0[-edges_max]) ))
-  return(1/(ntaxa + nNodes) * (conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff) + sum(costs)))
+  #return(1/(ntaxa + Nnode) * ( conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff ) + sum( costs0[-edges_max]) ))
+  return(1/(ntaxa + Nnode) * (conditional_root_variance + sum((1 - ee^2)^(-1) * var_diff) + sum(costs)))
 }
 
 ################################################################
@@ -725,13 +725,13 @@ estimate.alpha <- function(phylo,
 # ##
 # conditional_expectation_log_likelihood.OU.OLD <- function(phylo, conditional_law_X, sigma2, mu, alpha){
 #   ntaxa <- length(phylo$tip.label)
-#   nNodes <- phylo$Nnode
+#   Nnode <- phylo$Nnode
 #   ## Constante
-#   cst <- -1/2 * ((nNodes + ntaxa) * log(2*pi))
+#   cst <- -1/2 * ((Nnode + ntaxa) * log(2*pi))
 #   LogLik <- cst
 #   ## Terms in log
 #   ee <- exp(- alpha * phylo$edge.length )
-#   LogLik <- LogLik - (nNodes + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
+#   LogLik <- LogLik - (Nnode + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
 #   ## Terms with the variance
 #   K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
 #   var_diff <- compute_var_diff.OU(phylo=phylo,
@@ -779,13 +779,13 @@ estimate.alpha <- function(phylo,
 # 
 # # conditional_expectation_log_likelihood.OU.stationary_root_shifts_at_nodes <- function(phylo, conditional_law_X, sigma2, mu, shifts, alpha){
 # #   ntaxa <- length(phylo$tip.label)
-# #   nNodes <- phylo$Nnode
+# #   Nnode <- phylo$Nnode
 # #   ## Constante
-# #   cst <- -1/2 * ((nNodes + ntaxa) * log(2*pi))
+# #   cst <- -1/2 * ((Nnode + ntaxa) * log(2*pi))
 # #   LogLik <- cst
 # #   ## Terms in log
 # #   ee <- exp(- alpha * phylo$edge.length )
-# #   LogLik <- LogLik - (nNodes + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
+# #   LogLik <- LogLik - (Nnode + ntaxa - 1)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
 # #   ## Terms with the variance
 # #   K_1 <- conditional_law_X$variances[ntaxa+1] + (conditional_law_X$expectations[ntaxa+1] - mu)^2
 # #   var_diff <- compute_var_diff.OU(phylo=phylo, 
@@ -811,13 +811,13 @@ conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_
 
 conditional_expectation_log_likelihood_real_shifts.OU.stationary_root_shifts_at_nodes.from_betas <- function(phylo, conditional_law_X, sigma2, mu, betas, alpha){
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   ## Constante
-  cst <- -1/2 * ((nNodes + ntaxa) * log(2*pi))
+  cst <- -1/2 * ((Nnode + ntaxa) * log(2*pi))
   LogLik <- cst
   ## Terms in log
   ee <- exp(- alpha * phylo$edge.length )
-  LogLik <- LogLik - (nNodes + ntaxa)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
+  LogLik <- LogLik - (Nnode + ntaxa)*log(sigma2/(2*alpha))/2 - sum(log(1-ee^2))/2
   ## Terms with the variance
   K_1 <- as.vector(conditional_law_X$variances)[ntaxa+1] + (as.vector(conditional_law_X$expectations)[ntaxa+1] - mu)^2
   var_diff <- compute_var_diff.OU(phylo=phylo, 
@@ -968,7 +968,7 @@ segmentation.BM <- function(nbr_of_shifts, costs0, diff_exp){
 segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp, 
                                               penscale = rep(1, (nrow(phylo$edge) + 1)), ...){
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   ## Computation of answer matrix D : already done by now.
   if(is.list(D)){ # p independent traits
     p <- length(D)
@@ -980,18 +980,18 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp,
     Dvec <- Dvec[traittoedge]
     Xkro <- as.matrix(Xkro[traittoedge, traittoedge])
     ## Segmentation per se
-    group <- rep(1:(ntaxa + nNodes), each = length(D))
+    group <- rep(1:(ntaxa + Nnode), each = length(D))
     # Lasso regression
     fit <- try(lasso_regression_K_fixed.gglasso(Yvec = Dvec, Xkro = Xkro,
                                                 K = nbr_of_shifts,
-                                                root = ntaxa + nNodes,
+                                                root = ntaxa + Nnode,
                                                 penscale = penscale,
                                                 group = group,
                                                 p_dim = p))
   } else { # Only one trait
     fit <- try(lasso_regression_K_fixed.glmnet_multivariate(Yp = D, Xp = Xp,
                                                             K = nbr_of_shifts,
-                                                            root = ntaxa+nNodes,
+                                                            root = ntaxa+Nnode,
                                                             penscale = penscale))
   }
   if (inherits(fit, "try-error")) {
@@ -1036,7 +1036,7 @@ segmentation.OU.specialCase.lasso <- function(phylo, nbr_of_shifts, D, Xp,
 
 compute_regression_matrices <- function(phylo, conditional_law_X, selection.strength, ...){
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   ## Computation of answer matrix D
   diff_exp <- compute_diff_exp.OU(phylo = phylo, 
                                   conditional_law_X = conditional_law_X, 
@@ -1044,14 +1044,14 @@ compute_regression_matrices <- function(phylo, conditional_law_X, selection.stre
   daughters <- phylo$edge[,2]
   ee <- exp(- selection.strength * phylo$edge.length )
   D <- (1 - ee^2)^(-1/2) * diff_exp
-  D <- D[match(1:(ntaxa + nNodes), phylo$edge[,2])]
+  D <- D[match(1:(ntaxa + Nnode), phylo$edge[,2])]
   D[ntaxa + 1] <- conditional_law_X$expectations[ntaxa+1]
   ## Regression matrix : modified incidence matrix
   U <- incidence.matrix.full(phylo)
   U <- cbind(U, rep(1, dim(U)[1]))
   #A <- diag(c(sqrt((1-ee)/(1+ee)),1))
   A <- sqrt((1-ee)/(1+ee))
-  A <- A[match(1:(ntaxa + nNodes), phylo$edge[,2])]
+  A <- A[match(1:(ntaxa + Nnode), phylo$edge[,2])]
   A[ntaxa + 1] <- 1
   A <- diag(A)
   Xp <- A%*%U
@@ -1064,7 +1064,7 @@ compute_regression_matrices <- function(phylo, conditional_law_X, selection.stre
 #     return(list(beta_0 = 0, shifts = shifts_old, costs = Inf))
 #   }
 #   ntaxa <- length(phylo$tip.label)
-#   nNodes <- phylo$Nnode
+#   Nnode <- phylo$Nnode
 #   ## do not penalise K-1 shifts
 #   pens <- rep(1, ncol(Xp))
 #   penscales <- matrix(1, nrow = nbr_of_shifts, ncol = ncol(Xp))
@@ -1170,11 +1170,11 @@ segmentation.OU.specialCase.same_shifts <- function(phylo, shifts_old, D, Xp, ..
 #   # Construct vector of all allowed combinations of shifts (variation from a base scenario)
 #   shifts_edges <- shifts_old$edges
 #   K <- length(shifts_edges)
-#   nEdges <- dim(phylo$edge)[1]
-#   allowed_moves <- which(!(1:nEdges %in% shifts_edges))
-#   scenarii <- t(matrix(shifts_edges, (nEdges - K) * K + 1, nrow = K))
+#   Nedge <- dim(phylo$edge)[1]
+#   allowed_moves <- which(!(1:Nedge %in% shifts_edges))
+#   scenarii <- t(matrix(shifts_edges, (Nedge - K) * K + 1, nrow = K))
 #   for (i in 1:K) {
-#     scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
+#     scenarii[1 + ((i-1)*(Nedge - K)+1):(i*(Nedge - K)), i] <- allowed_moves
 #   }
 #   # Function to be applyed to each row
 #   fun <- function(sh_ed){
@@ -1235,13 +1235,13 @@ segmentation.OU.specialCase.same_shifts <- function(phylo, shifts_old, D, Xp, ..
 #   numerateur <- diff_exp / (1 + ee)
 #   denominateur <- (1 - ee) / (1 + ee)
 #   # Root branch
-#   nEdges <- dim(phylo$edge)[1]
-#   numerateur[nEdges + 1]  <- conditional_law_X$expectations[ntaxa+1]
-#   denominateur[nEdges + 1]  <- 1
+#   Nedge <- dim(phylo$edge)[1]
+#   numerateur[Nedge + 1]  <- conditional_law_X$expectations[ntaxa+1]
+#   denominateur[Nedge + 1]  <- 1
 #   # Function to compute betas on the regimes
 #   fun <- function(reg){
 #     edg <- which(phylo$edge[,2] %in% which(regimes == reg))
-#     if (reg == 0) edg <- c(edg, nEdges+1)
+#     if (reg == 0) edg <- c(edg, Nedge+1)
 #     return((sum(numerateur[edg])) / (sum(denominateur[edg])))
 #   }
 #   regimes_values <- 0:(length(unique(regimes))-1)
@@ -1275,16 +1275,16 @@ segmentation.OU.specialCase.best_single_move <- function(phylo, shifts_old, D, X
   }
   ## Construct scenarii
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
-  root <- ntaxa + nNodes
+  Nnode <- phylo$Nnode
+  root <- ntaxa + Nnode
   # Construct vector of all allowed combinations of shifts (variation from a base scenario)
   shifts_edges <- shifts_old$edges
   K <- length(shifts_edges)
-  nEdges <- dim(phylo$edge)[1]
-  allowed_moves <- which(!(1:nEdges %in% shifts_edges))
-  scenarii <- t(matrix(shifts_edges, (nEdges - K) * K + 1, nrow = K))
+  Nedge <- dim(phylo$edge)[1]
+  allowed_moves <- which(!(1:Nedge %in% shifts_edges))
+  scenarii <- t(matrix(shifts_edges, (Nedge - K) * K + 1, nrow = K))
   for (i in 1:K) {
-    scenarii[1 + ((i-1)*(nEdges - K)+1):(i*(nEdges - K)), i] <- allowed_moves
+    scenarii[1 + ((i-1)*(Nedge - K)+1):(i*(Nedge - K)), i] <- allowed_moves
   }
   ## Choose the best scenario
   return(best_scenario(D, Xp, scenarii, root))

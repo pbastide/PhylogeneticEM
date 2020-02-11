@@ -4,8 +4,14 @@
 \alias{compute_expectations.scOU}
 \title{Compute the expected states of a scOU}
 \usage{
-compute_expectations.scOU(phylo, root.state, shifts, alpha,
-  U_tree = NULL, times_shared = NULL)
+compute_expectations.scOU(
+  phylo,
+  root.state,
+  shifts,
+  alpha,
+  U_tree = NULL,
+  times_shared = NULL
+)
 }
 \arguments{
 \item{root.state}{(list): state of the root, with:
@@ -23,7 +29,7 @@ parent node of edges}
 \item{phylo:}{Input tree.}
 }
 \value{
-paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+paramSimu: array p x Nnode x 2 (BM). For each trait t, 1 <= t <= p,
  paramSimu[t, , ] has two columns, both containing the expected values for
  all the nodes.
 }

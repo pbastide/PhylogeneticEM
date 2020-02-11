@@ -4,8 +4,14 @@
 \alias{segmentation.OU.specialCase.lasso}
 \title{Segmentation in the OU special case, using lasso regression}
 \usage{
-segmentation.OU.specialCase.lasso(phylo, nbr_of_shifts, D, Xp,
-  penscale = rep(1, (nrow(phylo$edge) + 1)), ...)
+segmentation.OU.specialCase.lasso(
+  phylo,
+  nbr_of_shifts,
+  D,
+  Xp,
+  penscale = rep(1, (nrow(phylo$edge) + 1)),
+  ...
+)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree}

@@ -4,10 +4,17 @@
 \alias{find_grid_alpha}
 \title{Find a reasonable grid for alpha}
 \usage{
-find_grid_alpha(phy, alpha = NULL, nbr_alpha = 10,
-  factor_up_alpha = 2, factor_down_alpha = 3,
-  quantile_low_distance = 1e-04, log_transform = TRUE,
-  allow_negative = FALSE, ...)
+find_grid_alpha(
+  phy,
+  alpha = NULL,
+  nbr_alpha = 10,
+  factor_up_alpha = 2,
+  factor_down_alpha = 3,
+  quantile_low_distance = 1e-04,
+  log_transform = TRUE,
+  allow_negative = FALSE,
+  ...
+)
 }
 \arguments{
 \item{phy}{phylogenetic tree of class "\code{phylo}"}

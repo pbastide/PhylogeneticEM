@@ -550,7 +550,7 @@ params_OU <- function(p = 1,
 #' \code{lasso_regression_K_fixed} does the following regression :
 #' ||Yp-Xp.delta|| + lambda |delta|_1 using the function \code{glmnet::glmnet} of 
 #' package \code{glmnet}, where delta is a vector representing the shifts 
-#' occurring on the branches. It does a gauss lasso regression using function 
+#' occurring on the branches. It does a Gauss lasso regression using function 
 #' \code{lm} on top of it. This function is used in functions 
 #' \code{init.EM.lasso}, \code{segmentation.OU.specialCase.lasso}, ...
 #'

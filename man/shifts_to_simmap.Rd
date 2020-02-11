@@ -16,7 +16,7 @@ tree a simmap object
 }
 \description{
 \code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a
-simmap formated tree, mapped with corresponding regimes.
+simmap formatted tree, mapped with corresponding regimes.
 }
 \details{
 Ancestral state is always 0, and other states are consecutive integers.

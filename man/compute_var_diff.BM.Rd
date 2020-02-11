@@ -12,7 +12,7 @@ compute_var_diff.BM(phylo, conditional_law_X)
 \item{conditional_law_X}{result of function \code{compute_E}}
 }
 \value{
-array p x p x nEdges containing, for each edge e finishing at node i,
+array p x p x Nedge containing, for each edge e finishing at node i,
 the quantity Var[Z_i-Z_pa(i)|Y].
 }
 \description{

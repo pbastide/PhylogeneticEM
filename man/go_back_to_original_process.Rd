@@ -4,8 +4,12 @@
 \alias{go_back_to_original_process}
 \title{Scale the parameters back to the original process}
 \usage{
-go_back_to_original_process(phy_original, known.selection.strength,
-  sBM_variance, params)
+go_back_to_original_process(
+  phy_original,
+  known.selection.strength,
+  sBM_variance,
+  params
+)
 }
 \arguments{
 \item{phy_original:}{the original phylogenetic tree}

@@ -4,8 +4,12 @@
 \alias{extract.parsimonyNumber}
 \title{Extraction of the actual number of solutions.}
 \usage{
-\method{extract}{parsimonyNumber}(x, node = attr(x$nbrReconstructions,
-  "ntaxa") + 1, what = c("number", "cost"), ...)
+\method{extract}{parsimonyNumber}(
+  x,
+  node = attr(x$nbrReconstructions, "ntaxa") + 1,
+  what = c("number", "cost"),
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class "\code{parsimonyNumber}", result of function

@@ -4,13 +4,23 @@
 \alias{simulate_internal}
 \title{Simulate a Stochastic Process on a tree}
 \usage{
-simulate_internal(phylo, process = c("BM", "OU", "scOU", "StudentOU"),
-  p = 1, root.state = list(random = FALSE, stationary.root = FALSE,
-  value.root = NA, exp.root = NA, var.root = NA), shifts = list(edges =
-  NULL, values = NULL, relativeTimes = NULL), eps = 10^(-6),
-  selection.strength = NULL, variance = NULL, optimal.value = NULL,
-  checks = TRUE, simulate_random = TRUE, U_tree = NULL,
-  times_shared = NULL, df = 1)
+simulate_internal(
+  phylo,
+  process = c("BM", "OU", "scOU", "OUBM", "StudentOU"),
+  p = 1,
+  root.state = list(random = FALSE, stationary.root = FALSE, value.root = NA, exp.root =
+    NA, var.root = NA),
+  shifts = list(edges = NULL, values = NULL, relativeTimes = NULL),
+  eps = 10^(-6),
+  selection.strength = NULL,
+  variance = NULL,
+  optimal.value = NULL,
+  checks = TRUE,
+  simulate_random = TRUE,
+  U_tree = NULL,
+  times_shared = NULL,
+  df = 1
+)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
@@ -62,8 +72,8 @@ computations.}
 the chosen student law. default to 1.}
 }
 \value{
-paramSimu An array with dimensions p x nNodes x 2 (BM)
- or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
+paramSimu An array with dimensions p x Nnode x 2 (BM)
+ or p x Nnode x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.
 }

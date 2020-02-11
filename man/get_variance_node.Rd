@@ -9,7 +9,7 @@ get_variance_node(node, vars)
 \arguments{
 \item{node}{for which to extract the matrix.}
 
-\item{vars}{matrix of size p x p*(ntaxa+nNodes) result of function \code{compute_E.simple},
+\item{vars}{matrix of size p x p*(ntaxa+Nnode) result of function \code{compute_E.simple},
 entry "variances" or "covariances".}
 }
 \value{

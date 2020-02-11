@@ -11,7 +11,7 @@ update.incidence.matrix.full(daughtersParams, parent, ...)
 daughters of the current node.}
 }
 \value{
-Vector of length ntaxa + nNodes, indicating to which lineages the 
+Vector of length ntaxa + Nnode, indicating to which lineages the 
 branch above the current node belongs to.
 }
 \description{

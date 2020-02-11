@@ -4,10 +4,18 @@
 \alias{plot.equivalent_shifts}
 \title{Plot all the equivalent solutions.}
 \usage{
-\method{plot}{equivalent_shifts}(x, trait = 1,
-  show_shifts_values = TRUE, numbering = FALSE, colors_tips = NULL,
-  nbr_col = 3, gray_scale = FALSE, edge.width = 2,
-  shifts_cex = 1.2, ...)
+\method{plot}{equivalent_shifts}(
+  x,
+  trait = 1,
+  show_shifts_values = TRUE,
+  numbering = FALSE,
+  colors_tips = NULL,
+  nbr_col = 3,
+  gray_scale = FALSE,
+  edge.width = 2,
+  shifts_cex = 1.2,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{equivalent_shifts}, result of

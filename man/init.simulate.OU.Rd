@@ -18,7 +18,7 @@ var.root : if random, variance of the character at the root (pxp matrix)}
 \item{p:}{dimension of the trait simulated}
 }
 \value{
-paramSimu: array p x nNodes x 3, filled with NAs.
+paramSimu: array p x Nnode x 3, filled with NAs.
 Slice paramSimu[, ntaxa + 1, ] (array p x 3) is initialized with simulated states, root
 expectations, and optimal values for all the traits.
 }

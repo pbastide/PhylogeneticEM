@@ -41,7 +41,7 @@
 #'
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' 
-#' @return Matrix of incidence, size nEdges x ntaxa.
+#' @return Matrix of incidence, size Nedge x ntaxa.
 #' 
 #' @seealso \code{\link{incidence.matrix.full}}
 #' 
@@ -73,14 +73,14 @@ incidence.matrix <- function(phylo){
 #' in \code{incidence.matrix}.
 #'
 #' @details
-#' The initialized matrix has ntaxa column and nNodes rows. Each node
+#' The initialized matrix has ntaxa column and Nnode rows. Each node
 #' represent its parental branch. A row corresponding to a tip i is initialized
 #' to a vector of zeros, with only entry i equal to one. (Branch ending at 
 #' tip i is only in the i^th lineage)
 #'
 #' @param phy Input tree.
 #' 
-#' @return Matrix with nNodes rows and ntaxa column.
+#' @return Matrix with Nnode rows and ntaxa column.
 #'
 #' @keywords internal
 #' 
@@ -136,7 +136,7 @@ update.incidence.matrix <- function(daughtersParams, ...){
 #'
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' 
-#' @return Matrix of incidence, size ntaxa + nNodes.
+#' @return Matrix of incidence, size ntaxa + Nnode.
 #' 
 #' @seealso \code{\link{incidence.matrix}}
 #' 
@@ -168,14 +168,14 @@ incidence.matrix.full <- function(phylo){
 #'  matrix of the full tree in \code{incidence.matrix.full}.
 #'
 #' @details
-#' The initialized matrix is squared of size ntaxa + nNodes. Each node
+#' The initialized matrix is squared of size ntaxa + Nnode. Each node
 #' represent its parental branch. A row corresponding to a tip i is initialized
 #' to a vector of zeros, with only entry i equal to one. (Branch ending at 
 #' tip i is only in the i^th lineage)
 #'
 #' @param phy Input tree.
 #' 
-#' @return Matrix of size ntaxa + nNodes.
+#' @return Matrix of size ntaxa + Nnode.
 #' 
 #' @keywords internal
 #' 
@@ -183,11 +183,11 @@ incidence.matrix.full <- function(phylo){
 ##
 init.incidence.matrix.full <- function(phy){
   ntaxa <- length(phy$tip.label)
-  nNodes <- phy$Nnode
-  U <- matrix(NA, nrow = nNodes, ncol = ntaxa + nNodes)
-  T_1 <- matrix(0, nrow = ntaxa, ncol = ntaxa + nNodes)
+  Nnode <- phy$Nnode
+  U <- matrix(NA, nrow = Nnode, ncol = ntaxa + Nnode)
+  T_1 <- matrix(0, nrow = ntaxa, ncol = ntaxa + Nnode)
   U <- rbind(T_1, U)
-  diag(U) <- rep(1, ntaxa + nNodes)
+  diag(U) <- rep(1, ntaxa + Nnode)
   return(U)
 }
 
@@ -205,7 +205,7 @@ init.incidence.matrix.full <- function(phy){
 #' @param daughtersParams : rows of updated matrix corresponding to the
 #' daughters of the current node.
 #' 
-#' @return Vector of length ntaxa + nNodes, indicating to which lineages the 
+#' @return Vector of length ntaxa + Nnode, indicating to which lineages the 
 #' branch above the current node belongs to.
 #' 
 #' @keywords internal
@@ -256,7 +256,7 @@ shifts.list_to_vector <- function(phy, shifts){
 #' @param shifts list description of the shifts : shifts$edges, shifts$values.
 #' @param p number of traits (optional, needed when shifts = NULL).
 #' 
-#' @return Matrix p x nEdges of length nbranch.
+#' @return Matrix p x Nedge of length nbranch.
 #' 
 #' @seealso \code{\link{shifts.matrix_to_list}}
 #' 
@@ -264,7 +264,7 @@ shifts.list_to_vector <- function(phy, shifts){
 #' 
 ##
 shifts.list_to_matrix <- function(phy, shifts, p = nrow(shifts$values)){
-  if (p == 0) stop("In shifts.list_to_matrix the dimension p must be specified when shift is NULL.")
+  if (is.null(p) || p == 0) stop("In shifts.list_to_matrix the dimension p must be specified when shift is NULL.")
   delta <- matrix(0, p, nrow(phy$edge))
   if (!is.null(shifts$edges)){
     delta[1:p, shifts$edges] <- as.matrix(shifts$values[1:p, ])
@@ -330,19 +330,19 @@ shifts.matrix_to_list <- function(delta){
 }
 
 ##
-#' @title Compute the actualizations factors to apply to the incidence matrix.
+#' @title Compute the actualization factors to apply to the incidence matrix.
 #'
 #' @description
-#' \code{incidence_matrix_actualization_factors} computes a ntaxa x nedges matrix of the 
+#' \code{incidence_matrix_actualization_factors} computes a ntaxa x Nedge matrix of the 
 #' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
 #' This matrix is to be multiplied to the incidence matrix with an outer product.
 #'
 #' @param tree a phylogenetic tree.
 #' @param selection.strength the selection strength of the process.
-#' @param relativeTimes_tree a nedge vector of relative times associated with the branches.
+#' @param relativeTimes_tree a Nedge vector of relative times associated with the branches.
 #' @param times_shared a matrix, result of function \code{compute_times_ca}.
 #' 
-#' @return Matrix of size ntaxa x nedges
+#' @return Matrix of size ntaxa x Nedge
 #' 
 #' @keywords internal
 #' 
@@ -353,7 +353,7 @@ incidence_matrix_actualization_factors <- function(tree,
                                                    times_shared = compute_times_ca(tree)){
   if (sum(abs(selection.strength)) == 0) return(1)
   ntaxa <- length(tree$tip.label)
-  nedges <- dim(tree$edge)[1]
+  Nedge <- dim(tree$edge)[1]
   # Vector of exp(-alpha*t_i) at tips
   ac_tip <- diag(times_shared[1:ntaxa, 1:ntaxa])
   ac_tip <- exp(-selection.strength * ac_tip)
@@ -374,7 +374,7 @@ incidence_matrix_actualization_factors <- function(tree,
 #' @title Compute Matrix W of actualization (Ultrametric case)
 #'
 #' @description
-#' \code{compute_actualization_matrix_ultrametric} computes a squares  p*nedges bloc diagonal
+#' \code{compute_actualization_matrix_ultrametric} computes a squares  p*Nedge bloc diagonal
 #' matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
 #'
 #' @details
@@ -384,7 +384,7 @@ incidence_matrix_actualization_factors <- function(tree,
 #' @param selection.strength the selection strength of the process.
 #' @param times_shared a matrix, result of function \code{compute_times_ca}.
 #' 
-#' @return Matrix of size p*nedges
+#' @return Matrix of size p*Nedge
 #' 
 #' @keywords internal
 #' 
@@ -394,14 +394,14 @@ compute_actualization_matrix_ultrametric <- function(tree,
                                                      times_shared = compute_times_ca(tree)){
   if(!is.ultrametric(tree)) stop("The tree must be ultrametric.")
   ntaxa <- length(tree$tip.label)
-  nedges <- dim(tree$edge)[1]
+  Nedge <- dim(tree$edge)[1]
   p <- ncol(selection.strength)
   h <- max(diag(times_shared))
   # Init of matrix
-  W <- matrix(0, p*nedges, p*nedges)
+  W <- matrix(0, p*Nedge, p*Nedge)
   # Fill it
   parents <- tree$edge[, 1]
-  for (e in 1:nedges){
+  for (e in 1:Nedge){
     W[((e-1) * p + 1):(e * p), ((e-1) * p + 1):(e * p)] <- as.matrix(diag(1, p, p) - expm(-selection.strength * (h - times_shared[parents[e], parents[e]])))
   }
   return(W)
@@ -425,7 +425,7 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #' @param phy Input tree.
 #' @param optimal.value the optimal value at the root of the tree
 #' 
-#' @return Matrix of size (nNodes + ntaxa)x1 of NAs, with the optimal value
+#' @return Matrix of size (Nnode + ntaxa)x1 of NAs, with the optimal value
 #'  at the root.
 #'  
 #' @keywords internal
@@ -454,7 +454,7 @@ init.compute_betas_from_shifts <- function(phy, optimal.value, ...){
 #' @param ancestral : Computed vector for the parental node
 #' @param shifts position and values of the shifts 
 #' 
-#' @return Updated matrix of size (nNodes + ntaxa)x1.
+#' @return Updated matrix of size (Nnode + ntaxa)x1.
 #' 
 #' @keywords internal
 #'
@@ -484,7 +484,7 @@ update.compute_betas_from_shifts <- function(edgeNbr, ancestral, shifts, ...){
 #' @param optimal.value the optimal value at the root of the tree.
 #' @param shifts position and values of the shifts .
 #' 
-#' @return Vector of size (ntaxa + nNodes) of the optimal values at the tips
+#' @return Vector of size (ntaxa + Nnode) of the optimal values at the tips
 #' of the tree.
 #' 
 #' @export
@@ -515,7 +515,7 @@ compute_betas_from_shifts <- function(phylo, optimal.value, shifts){
 #'
 #' @param phy Input tree.
 #' 
-#' @return Matrix of size (nNodes + ntaxa)x1 of NAs, with the 0 at the root.
+#' @return Matrix of size (Nnode + ntaxa)x1 of NAs, with the 0 at the root.
 #'
 #' @keywords internal
 #10/10/14 - Initial release
@@ -575,7 +575,7 @@ update.allocate_regimes_from_shifts <- function(edgeNbr, ancestral, shifts_edges
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param shifts_edges edges were the shifts are.
 #' 
-#' @return Vector of size (ntaxa + nNodes) of the regimes of each node and tip.
+#' @return Vector of size (ntaxa + Nnode) of the regimes of each node and tip.
 #'
 #' @export
 #' 
@@ -602,7 +602,7 @@ allocate_regimes_from_shifts <- function(phylo, shifts_edges){
 # This function uses function fun on each row of matrix of edges.
 #'
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
-#' @param regimes : vector of size (ntaxa + nNodes) of the regimes of each node
+#' @param regimes : vector of size (ntaxa + Nnode) of the regimes of each node
 #' and tip.
 #' 
 #' @return Vector of edges numbers where the shifts are.
@@ -634,7 +634,7 @@ allocate_shifts_from_regimes <- function(phylo, regimes){
 #' This function uses function fun on each row of matrix of edges.
 #'
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
-#' @param betas vector of size (ntaxa + nNodes) of the optimal values at each
+#' @param betas vector of size (ntaxa + Nnode) of the optimal values at each
 #' node and tip.
 #' 
 #' @return vector of shifts.
@@ -794,7 +794,7 @@ sample_shifts_values_GMM <- function(m1, m2, s1, s2, K){
 #'
 #' @description
 #' \code{shifts_to_simmap} takes a vector of edges where the shifts occur, and return a
-#' simmap formated tree, mapped with corresponding regimes.
+#' simmap formatted tree, mapped with corresponding regimes.
 #' 
 #' @details
 #' Ancestral state is always 0, and other states are consecutive integers.

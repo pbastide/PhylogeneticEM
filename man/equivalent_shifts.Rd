@@ -4,8 +4,13 @@
 \alias{equivalent_shifts}
 \title{Find all equivalent shifts allocations and values.}
 \usage{
-equivalent_shifts(phylo, params, T_tree = incidence.matrix(phylo),
-  part.list = enumerate_tips_under_edges(phylo), times_shared = NULL)
+equivalent_shifts(
+  phylo,
+  params,
+  T_tree = incidence.matrix(phylo),
+  part.list = enumerate_tips_under_edges(phylo),
+  times_shared = NULL
+)
 }
 \arguments{
 \item{phylo}{a phylogenetic tree, of class \code{\link[ape]{phylo}}.}
@@ -22,8 +27,6 @@ function \code{\link{PhyloEM}}, or constructed through function
 
 \item{times_shared}{(optional) a matrix, result of function
 \code{\link{compute_times_ca}}.}
-
-\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
 }
 \value{
 object of class \code{equivalent_shifts}, with entries:
@@ -43,38 +46,40 @@ This function is only valid for ultrametric trees, and for models: BM, OU with
 fixed root or stationary root. It assumes that there are no homoplasies.
 }
 \examples{
-## Simualte a tree
-set.seed(17920902)
-ntaxa = 20
-phylo <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1,
-                                  mu = 0, age = 1, mrca = TRUE)[[1]]
-
-## Define parameters (BM, fixed root)
-params <- params_BM(p = 4, edges = c(4, 17, 22),
-                    values = cbind(1:4, -(1:4), rep(1, 4)))
-## Find equivalent solutions and plot them
-eq_shifts <- equivalent_shifts(phylo, params)
-eq_shifts
-plot(eq_shifts)
-## Extract the values
-# Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
-extract(eq_shifts, trait = 2, what = "shifts_values")
-# Root values for trait 4, for the tree solutions (columns)
-extract(eq_shifts, trait = 4, what = "root_values")
-
-## Define parameters (OU, stationary root)
-params <- params_OU(p = 4, edges = c(4, 17, 22),
-                    values = cbind(1:4, -(1:4), rep(1, 4)),
-                    random = TRUE)
-## Find equivalent solutions and plot them
-eq_shifts <- equivalent_shifts(phylo, params)
-eq_shifts
-plot(eq_shifts)
-## Extract the values
-# Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
-extract(eq_shifts, trait = 2, what = "shifts_values")
-# Root values for trait 4, for the three solutions (columns)
-extract(eq_shifts, trait = 4, what = "root_values")
+if (requireNamespace("TreeSim", quietly = TRUE)) {
+  ## Simualte a tree
+  set.seed(17920902)
+  ntaxa = 20
+  phylo <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1,
+                                   mu = 0, age = 1, mrca = TRUE)[[1]]
+  
+  ## Define parameters (BM, fixed root)
+  params <- params_BM(p = 4, edges = c(6, 17, 31),
+                     values = cbind(1:4, -(1:4), rep(1, 4)))
+  ## Find equivalent solutions and plot them
+  eq_shifts <- equivalent_shifts(phylo, params)
+  eq_shifts
+  plot(eq_shifts)
+  ## Extract the values
+  # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
+  extract(eq_shifts, trait = 2, what = "shifts_values")
+  # Root values for trait 4, for the tree solutions (columns)
+  extract(eq_shifts, trait = 4, what = "root_values")
+  ## Define parameters (OU, stationary root
+  params <- params_OU(p = 4, edges = c(6, 17, 31),
+                     selection.strength = 0.1,
+                     values = cbind(1:4, -(1:4), rep(1, 4)),
+                     random = TRUE)
+  ## Find equivalent solutions and plot them
+  eq_shifts <- equivalent_shifts(phylo, params)
+  eq_shifts
+  plot(eq_shifts)
+  ## Extract the values
+  # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
+  extract(eq_shifts, trait = 2, what = "shifts_values")
+  # Root values for trait 4, for the three solutions (columns)
+  extract(eq_shifts, trait = 4, what = "root_values")
+}
 
 }
 \seealso{

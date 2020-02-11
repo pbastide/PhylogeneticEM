@@ -35,7 +35,7 @@
 #' @param p the dimension of the data
 #' @param model_complexity the complexity of the set of models with dimension K
 #' @param B a non-negative constant. Default is 0.1 
-#' (as suggested in Cleymen Lebarbier 2015)
+#' (as suggested in Cleynen & Lebarbier 2015)
 #' 
 #' @return value of the penalty
 #' 

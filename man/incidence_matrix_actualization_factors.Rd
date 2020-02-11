@@ -2,25 +2,29 @@
 % Please edit documentation in R/shifts_manipulations.R
 \name{incidence_matrix_actualization_factors}
 \alias{incidence_matrix_actualization_factors}
-\title{Compute the actualizations factors to apply to the incidence matrix.}
+\title{Compute the actualization factors to apply to the incidence matrix.}
 \usage{
-incidence_matrix_actualization_factors(tree, selection.strength,
-  relativeTimes_tree = 0, times_shared = compute_times_ca(tree))
+incidence_matrix_actualization_factors(
+  tree,
+  selection.strength,
+  relativeTimes_tree = 0,
+  times_shared = compute_times_ca(tree)
+)
 }
 \arguments{
 \item{tree}{a phylogenetic tree.}
 
 \item{selection.strength}{the selection strength of the process.}
 
-\item{relativeTimes_tree}{a nedge vector of relative times associated with the branches.}
+\item{relativeTimes_tree}{a Nedge vector of relative times associated with the branches.}
 
 \item{times_shared}{a matrix, result of function \code{compute_times_ca}.}
 }
 \value{
-Matrix of size ntaxa x nedges
+Matrix of size ntaxa x Nedge
 }
 \description{
-\code{incidence_matrix_actualization_factors} computes a ntaxa x nedges matrix of the 
+\code{incidence_matrix_actualization_factors} computes a ntaxa x Nedge matrix of the 
 (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
 This matrix is to be multiplied to the incidence matrix with an outer product.
 }

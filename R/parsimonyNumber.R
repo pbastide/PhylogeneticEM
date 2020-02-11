@@ -60,7 +60,7 @@ extract <- function(x, ...) UseMethod("extract")
 #' in a single group).
 #' 
 #' @return An S3 class "\code{parsimonyCost}" containing a 
-#' (ntaxa + nNodes) x (nclus) matrix of the total number of shifts needed to
+#' (ntaxa + Nnode) x (nclus) matrix of the total number of shifts needed to
 #' get the clustering, if starting from a node in state k. The cost can be
 #' extract from any subtree with function \code{\link{extract.parsimonyCost}}.
 #' 
@@ -145,7 +145,7 @@ extract.parsimonyCost <- function(x,
 #' @title Initialization for parsimonyCost.
 #'
 #' @description
-#' \code{init.parsimonyCost} initialize a (ntaxa + nNodes) x (nclus) matrix with
+#' \code{init.parsimonyCost} initialize a (ntaxa + Nnode) x (nclus) matrix with
 #' NAs everywhere, except for the tips.
 #' 
 #' @details
@@ -155,7 +155,7 @@ extract.parsimonyCost <- function(x,
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param clusters the vector of the clusters of the tips.
 #' 
-#' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized as
+#' @return A (ntaxa + Nnode)x(nclus) matrix, with ntaxa first lines initialized as
 #' described.
 #' 
 #' @keywords internal
@@ -237,7 +237,7 @@ update.parsimonyCost <- function(daughtersParams, ...){
 #' 
 #' @return an object of S3 class "\code{parsimonyNumber}" with:
 #' \describe{
-#'  \item{nbrReconstructions}{a (ntaxa + nNodes) x (nclus)
+#'  \item{nbrReconstructions}{a (ntaxa + Nnode) x (nclus)
 #'  matrix of locally parsimonious solutions starting from a cluster k at a
 #'  given node}
 #'  \item{costReconstructions}{an object of class "\code{parsimonyCost}",
@@ -352,7 +352,7 @@ extract.parsimonyNumber <- function(x,
 #' @title Initialization for parsimonyNumber.
 #'
 #' @description
-#' \code{init.parsimonyNumber} initialize a (ntaxa + nNodes)x(nclus) matrix with
+#' \code{init.parsimonyNumber} initialize a (ntaxa + Nnode)x(nclus) matrix with
 #' NAs everywhere, except for the tips.
 #' 
 #' @details
@@ -361,7 +361,7 @@ extract.parsimonyNumber <- function(x,
 #' @param phy phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
 #' 
-#' @return A (ntaxa + nNodes)x(nclus) matrix, with ntaxa first lines initialized
+#' @return A (ntaxa + Nnode)x(nclus) matrix, with ntaxa first lines initialized
 #' as described.
 #' 
 #' @keywords internal
@@ -392,7 +392,7 @@ init.parsimonyNumber <- function(phy, clusters){
 #' @param daughters the identifiers of the daughters nodes.
 #' @param daughtersParams a ndaughters x (nclus) matrix with the line vectors of the number of
 #' solutions for the daughters nodes.
-#' @param cost the (ntaxa + nNode) x nclus matrix of costs (computed by \code{parsimonyCost}).
+#' @param cost the (ntaxa + Nnode) x nclus matrix of costs (computed by \code{parsimonyCost}).
 #' 
 #' @return A line vector corresponding to the parent node.
 #' 
@@ -471,7 +471,7 @@ compute_state_filter <- function (cost, k) {
 #'
 #' @param tree phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' 
-#' @return list of size nEdges, entry i is the vector of tips bellow edge i.
+#' @return list of size Nedge, entry i is the vector of tips bellow edge i.
 #' 
 #' @export
 #'
@@ -674,7 +674,7 @@ check_parsimony_clusters <- function(tree, edges, clusters){
 #' \describe{
 #' \item{nbrReconstructions}{an object of class "\code{parsimonyCost}", result
 #' of function \code{\link{parsimonyCost}}.}
-#' \item{allocations}{a list of size nNode + ntaxa. Each entry i of the list
+#' \item{allocations}{a list of size Nnode + ntaxa. Each entry i of the list
 #' represents the solutions for the subtree starting at node i. It is a list with
 #' nclus entries, each entry being a matrix. A line of the kth matrix for the
 #' ith node is one possible allocation of the shifts, starting with regime k
@@ -774,7 +774,7 @@ print.enumerate_parsimony <- function(x, ...){
 #' cost of a solution. Default to "solutions"
 #' @param ... unused
 #'
-#' @return A matrix with ntaxa + nNode columns, and as many rows as the number of
+#' @return A matrix with ntaxa + Nnode columns, and as many rows as the number of
 #' possible parsimonious reconstructions.
 #' 
 #' @seealso \code{\link{enumerate_parsimony}}, \code{\link{plot.enumerate_parsimony}}
@@ -859,15 +859,15 @@ plot.enumerate_parsimony <- function(x,
 #' and initialize the correct data structure.
 #' 
 #' @details
-#' This function returns a list with nNodes + ntaxa entries. Entries corresponding to
+#' This function returns a list with Nnode + ntaxa entries. Entries corresponding to
 #' the tips are initialized with a list of nclus matrices. For tip i of group k, all
 #' matrices are set to NULL, except for the kth, set to a vector of size
-#' nNodes + ntaxa, with entry i set to k, and all the others to NA.
+#' Nnode + ntaxa, with entry i set to k, and all the others to NA.
 #' 
 #' @param phy Input tree.
 #' @param clusters a vector representing the group of each tip.
 #'
-#' @return A list of size nNode + ntaxa, as described above.
+#' @return A list of size Nnode + ntaxa, as described above.
 #' 
 #' @keywords internal
 ##
@@ -911,7 +911,7 @@ init.enumerate_parsimony <- function(phy, clusters, pos){
 ##
 update.enumerate_parsimony <- function(daughters, daughtersParams, parent, cost, clus, pos, ...){
   # Number of nodes and clusters
-  nedges <- max(sapply(daughtersParams[[1]], 
+  Nedge <- max(sapply(daughtersParams[[1]], 
                        function(z) max(dim(z)[2], length(dim(z)[2]))))
   nclus <- length(daughtersParams[[1]])
   ## Cost of daughter nodes
@@ -1047,7 +1047,6 @@ add_complementary <- function(z){
 #' \code{\link{enumerate_tips_under_edges}}.
 #' @param times_shared (optional) a matrix, result of function
 #' \code{\link{compute_times_ca}}.
-#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
 #'
 #' @return object of class \code{equivalent_shifts}, with entries:
 #' \describe{
@@ -1063,38 +1062,40 @@ add_complementary <- function(z){
 #' \code{\link{params_OU}}, \code{\link{enumerate_parsimony}}
 #' 
 #' @examples
-#' ## Simualte a tree
-#' set.seed(17920902)
-#' ntaxa = 20
-#' phylo <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1,
-#'                                   mu = 0, age = 1, mrca = TRUE)[[1]]
-#' 
-#' ## Define parameters (BM, fixed root)
-#' params <- params_BM(p = 4, edges = c(4, 17, 22),
-#'                     values = cbind(1:4, -(1:4), rep(1, 4)))
-#' ## Find equivalent solutions and plot them
-#' eq_shifts <- equivalent_shifts(phylo, params)
-#' eq_shifts
-#' plot(eq_shifts)
-#' ## Extract the values
-#' # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
-#' extract(eq_shifts, trait = 2, what = "shifts_values")
-#' # Root values for trait 4, for the tree solutions (columns)
-#' extract(eq_shifts, trait = 4, what = "root_values")
-#' 
-#' ## Define parameters (OU, stationary root)
-#' params <- params_OU(p = 4, edges = c(4, 17, 22),
-#'                     values = cbind(1:4, -(1:4), rep(1, 4)),
-#'                     random = TRUE)
-#' ## Find equivalent solutions and plot them
-#' eq_shifts <- equivalent_shifts(phylo, params)
-#' eq_shifts
-#' plot(eq_shifts)
-#' ## Extract the values
-#' # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
-#' extract(eq_shifts, trait = 2, what = "shifts_values")
-#' # Root values for trait 4, for the three solutions (columns)
-#' extract(eq_shifts, trait = 4, what = "root_values")
+#' if (requireNamespace("TreeSim", quietly = TRUE)) {
+#'   ## Simualte a tree
+#'   set.seed(17920902)
+#'   ntaxa = 20
+#'   phylo <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1,
+#'                                    mu = 0, age = 1, mrca = TRUE)[[1]]
+#'   
+#'   ## Define parameters (BM, fixed root)
+#'   params <- params_BM(p = 4, edges = c(6, 17, 31),
+#'                      values = cbind(1:4, -(1:4), rep(1, 4)))
+#'   ## Find equivalent solutions and plot them
+#'   eq_shifts <- equivalent_shifts(phylo, params)
+#'   eq_shifts
+#'   plot(eq_shifts)
+#'   ## Extract the values
+#'   # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
+#'   extract(eq_shifts, trait = 2, what = "shifts_values")
+#'   # Root values for trait 4, for the tree solutions (columns)
+#'   extract(eq_shifts, trait = 4, what = "root_values")
+#'   ## Define parameters (OU, stationary root
+#'   params <- params_OU(p = 4, edges = c(6, 17, 31),
+#'                      selection.strength = 0.1,
+#'                      values = cbind(1:4, -(1:4), rep(1, 4)),
+#'                      random = TRUE)
+#'   ## Find equivalent solutions and plot them
+#'   eq_shifts <- equivalent_shifts(phylo, params)
+#'   eq_shifts
+#'   plot(eq_shifts)
+#'   ## Extract the values
+#'   # Shifts values for trait 2, for the three shifts (rows), and three solutions (columns)
+#'   extract(eq_shifts, trait = 2, what = "shifts_values")
+#'   # Root values for trait 4, for the three solutions (columns)
+#'   extract(eq_shifts, trait = 4, what = "root_values")
+#' }
 #' 
 #' @export
 ##
@@ -1107,7 +1108,7 @@ equivalent_shifts <- function(phylo, params,
   }
   p <- nrow(params$shifts$values)
   ntaxa <- length(phylo$tip.label)
-  nedges <- dim(phylo$edge)[1]
+  Nedge <- dim(phylo$edge)[1]
   ## Process
   process <- "BM"
   if (!is.null(params$selection.strength) && sum(abs(params$selection.strength)) > 0) process <- "OU"
@@ -1120,7 +1121,7 @@ equivalent_shifts <- function(phylo, params,
                                              part.list)
   ## Regression Matrix
   Delta <- shifts.list_to_matrix(phylo, params$shifts)
-  W <- diag(1, p*nedges, p*nedges)
+  W <- diag(1, p*Nedge, p*Nedge)
   if (process == "OU"){
     if (is.null(times_shared)) times_shared <- compute_times_ca(phylo)
     W <- compute_actualization_matrix_ultrametric(phylo,
@@ -1385,7 +1386,7 @@ equivalent_shifts_edges <- function(phylo,
 #' 
 #' @details
 #' This function uses the linear representation of the problem. It fist compute
-#' the mean at the tips given by the orginal shifts positions and values, and
+#' the mean at the tips given by the original shifts positions and values, and
 #' then uses function \code{\link{qr.solve}}
 # (through function \code{find_actualized_shift_values})
 #' to find back the values of the shifts, given their various positions,

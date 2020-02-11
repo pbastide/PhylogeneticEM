@@ -100,12 +100,12 @@ correspondanceEdges <- correspondenceEdges
 #' ancestor of two tips i, j.
 #' 
 #' @details
-#' Tis function relies on \code{ape} functions
+#' This function relies on \code{ape} functions
 #' \code{\link[ape]{node.depth.edgelength}} and \code{\link[ape]{mrca}}.
 #'
 #' @param phy a phylogenetic tree of class \code{\link[ape]{phylo}}.
 #'
-#' @return a matrix of times of shared evolutions, ordered as the tips of the
+#' @return a matrix of times of shared evolution, ordered as the tips of the
 #' tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
 #'
 #' @export
@@ -142,7 +142,7 @@ compute_times_ca <- function(phy) {
 #' tips i, j.
 #' 
 #' @details
-#' Tis function relies on \code{ape} function
+#' This function relies on \code{ape} function
 #' \code{\link[ape]{dist.nodes}}.
 #'
 #' @param phy a phylogenetic tree of class \code{\link[ape]{phylo}}.
@@ -361,9 +361,10 @@ check.selection.strength <- function(process, selection.strength = NA,
   } else if (sum(abs(selection.strength)) < eps) {
     warning(paste("The selection strength is too low (L1-norm<", eps, "), process is considered to be a simple Brownian Motion", sep=""))
     return("BM")
-  } else {
-    return(process)
+  } else if (any(Re(eigen(selection.strength)$values) < eps)) {
+    warning("All the eigen values of the selection strengh do not have a strictly positive real part. That might cause some issue. Proceed with caution.")
   }
+  return(process)
 }
 
 ##
@@ -387,12 +388,12 @@ check.selection.strength <- function(process, selection.strength = NA,
 #' @keywords internal
 # 28/05/14 - Initial release
 ##
-test.root.state <- function(root.state, process=c("BM", "OU", "scOU"), ...) {
+test.root.state <- function(root.state, process=c("BM", "OU", "scOU", "OUBM"), ...) {
   process <- match.arg(process)
   process <- check.selection.strength(process, ...)
   if (process == "BM") {
     return(test.root.state.BM(root.state))
-  } else if (process %in% c("OU", "scOU")) {
+  } else if (process %in% c("OU", "scOU", "OUBM")) {
     return(test.root.state.OU(root.state, ...))
   }
 }
@@ -491,6 +492,10 @@ compute_stationary_variance <- function(variance, selection.strength){
     vv <- Matrix(vv)
     vv <- as(vv, "dpoMatrix")
     return(vv)
+  } else if (isDiagonal(selection.strength)) {
+    dd <- diag(selection.strength)
+    vv <- variance / outer(dd, dd, "+")
+    vv <- as(vv, "dpoMatrix")
   } else {
     variance_vec <- as.vector(variance)
     kro_sum_A <- kronecker_sum(selection.strength, selection.strength)
@@ -499,7 +504,8 @@ compute_stationary_variance <- function(variance, selection.strength){
     gamma <- matrix(root_var_vec, dim(variance))
     if (!isSymmetric(gamma, tol = (.Machine$double.eps)^(0.7))) stop("Error in computation of stationary variance: matrix computed was not symmetric.")
     gamma <- forceSymmetric(gamma)
-    return(as(gamma, "dpoMatrix"))
+    return(as(gamma, "dsyMatrix"))
+    # return(as(gamma, "dpoMatrix"))
   }
 }
 
@@ -782,7 +788,7 @@ transform_branch_length <- function(phylo, alp){
 ##
 #' @title Scale variance and selection strength from a linear transform
 #' 
-#' @description Used for process equivalancies on re-scaled trees.
+#' @description Used for process equivalencies on re-scaled trees.
 #'
 #' @param params Parameters list
 #' @param f Factor of the linear transform. If t' = f * t, the function takes

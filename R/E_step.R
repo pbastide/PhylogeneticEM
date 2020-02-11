@@ -39,16 +39,16 @@
 #' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
 #' 
 #' @return conditional_law_X (list) : list of conditional statistics :
-#'                   "expectation" : matrix of size p x (ntaxa+nNodes), with ntaxa
+#'                   "expectation" : matrix of size p x (ntaxa+Nnode), with ntaxa
 #' first columns set to Y_data (tips), and from ntaxa+1 to conditional expectation
 #' of the nodes conditioned to the tips E[Z_j|Y]
-#'                   "variances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+#'                   "variances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 #' matrices of zeros (tips) and conditional variance of the nodes conditioned to the tips 
 #' Var[Z_j|Y]
-#'                  "covariances" : array of size p x p x (ntaxa+nNodes) with ntaxa first 
+#'                  "covariances" : array of size p x p x (ntaxa+Nnode) with ntaxa first 
 #' matrices of zeros (tips) and conditional covariance of the nodes and their parents
 #' conditioned to the tips Cov[Z_j,Z_pa(j)|Y], with NA for the root.
-#'                   "optimal.values" : matrix of size p x ntaxa+nNodes of optimal
+#'                   "optimal.values" : matrix of size p x ntaxa+Nnode of optimal
 #' values beta(t_j)
 #' 
 #' @keywords internal
@@ -108,14 +108,14 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
                                      ...) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   p <- dim(sim)[1]
   nMiss <- sum(miss)
-  # index_missing <- (nNodes * p + 1):(nNodes * p + nMiss)
-  index_missing <- c(rep(TRUE, nMiss), rep(FALSE, nNodes * p))
-  conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + nNodes), 
-                            variances = array(NA, c(p, p, ntaxa + nNodes)), 
-                            covariances = matrix(NA, c(p, p, ntaxa + nNodes)))
+  # index_missing <- (Nnode * p + 1):(Nnode * p + nMiss)
+  index_missing <- c(rep(TRUE, nMiss), rep(FALSE, Nnode * p))
+  conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + Nnode), 
+                            variances = array(NA, c(p, p, ntaxa + Nnode)), 
+                            covariances = matrix(NA, c(p, p, ntaxa + Nnode)))
   ## Mean
   m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   m_Z <- extract_simulate_internal(sim, where="nodes", what="expectations")
@@ -136,7 +136,7 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
   # Conditional expectation of unkonwn values
   exp_Z_vec <- m_Z_vec + temp %*% crossprod(Sigma_YY_chol_inv,
                                             (Y_data_vec - m_Y_vec))
-  expcond <- rep(NA, (nNodes + ntaxa) * p)
+  expcond <- rep(NA, (Nnode + ntaxa) * p)
   # Data
   expcond[masque_data] <- Y_data_vec
   # Missing Data and Nodes
@@ -176,12 +176,12 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
   var_nodes <- extract.variance_nodes(phylo,
                                       conditional_variance_covariance_nodes)
   conditional_law_X$variances <- array(c(var_tips,
-                                         var_nodes), c(p, p, ntaxa + nNodes))
+                                         var_nodes), c(p, p, ntaxa + Nnode))
   # Nodes - covariances
   cov_nodes <- extract.covariance_parents(phylo,
                                           conditional_variance_covariance_nodes)
   conditional_law_X$covariances <- array(c(cov_tips,
-                                           cov_nodes), c(p, p, ntaxa + nNodes))
+                                           cov_nodes), c(p, p, ntaxa + Nnode))
   return(conditional_law_X)
 }
 
@@ -239,11 +239,11 @@ compute_cond_law.simple.nomissing.BM <- function (phylo, Y_data, sim,
                                                   F_means, F_vars, R, ...) {
   ## Initialization
   ntaxa <- length(phylo$tip.label)
-  nNodes <- phylo$Nnode
+  Nnode <- phylo$Nnode
   p <- dim(sim)[1]
-  conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + nNodes), 
-                            variances = array(NA, c(p, p, ntaxa + nNodes)), 
-                            covariances = matrix(NA, c(p, p, ntaxa + nNodes)))
+  conditional_law_X <- list(expectations = matrix(NA, p, ntaxa + Nnode), 
+                            variances = array(NA, c(p, p, ntaxa + Nnode)), 
+                            covariances = matrix(NA, c(p, p, ntaxa + Nnode)))
   ## Mean
   m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   m_Z <- extract_simulate_internal(sim, where="nodes", what="expectations")
@@ -259,7 +259,7 @@ compute_cond_law.simple.nomissing.BM <- function (phylo, Y_data, sim,
   R <- array(R, dim(R))
   var_nodes <- R %o% array(diag(F_vars))
   conditional_law_X$variances <- array(c(var_tips,
-                                         var_nodes), c(p, p, ntaxa + nNodes))
+                                         var_nodes), c(p, p, ntaxa + Nnode))
   # Nodes - covariances
   daughters <- phylo$edge[phylo$edge[, 2] > ntaxa, 2] # Only the nodes
   parents <- phylo$edge[phylo$edge[, 2] > ntaxa, 1]
@@ -268,7 +268,7 @@ compute_cond_law.simple.nomissing.BM <- function (phylo, Y_data, sim,
   cov_nodes[1] <- NA # Root is NA
   cov_nodes <- R %o% array(cov_nodes)
   conditional_law_X$covariances <- array(c(cov_tips,
-                                           cov_nodes), c(p, p, ntaxa + nNodes))
+                                           cov_nodes), c(p, p, ntaxa + Nnode))
   return(conditional_law_X)
 }
 
@@ -312,12 +312,12 @@ compute_fixed_moments <- function(times_shared, ntaxa){
 #' @description
 #' \code{extract.variance_covariance} return the adequate sub-matrix.
 #' 
-#' @param struct structural matrix of size (ntaxa+nNode)*p, result 
+#' @param struct structural matrix of size (ntaxa+Nnode)*p, result 
 #' of function \code{compute_variance_covariance}
 #' @param what: sub-matrix to be extracted:
 #'                "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
-#'                "YZ" : sub matrix tips x nodes (p*nNodes last rows and p*ntaxa first columns)
-#'                "ZZ" : sub matrix of nodes (p*nNodes last rows and columns)
+#'                "YZ" : sub matrix tips x nodes (p*Nnode last rows and p*ntaxa first columns)
+#'                "ZZ" : sub matrix of nodes (p*Nnode last rows and columns)
 #' @param miss; missing values of Y_data
 #' 
 #' @return sub-matrix of variance covariance.
@@ -346,7 +346,7 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
 # extract.covariance_parents (phylo, struct)
 # PARAMETERS:
 #            @phylo (tree)
-#            @struct (matrix) structural matrix of size ntaxa+nNode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
+#            @struct (matrix) structural matrix of size ntaxa+Nnode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
 # RETURNS:
 #            (vector) : for every node i, entry i-ntaxa of the vector is (i,pa(i)). For the root (ntaxa+1), entry 1 is NA
 # DEPENDENCIES:
@@ -426,7 +426,7 @@ extract.variance_nodes <- function(phylo, struct){
 #' \code{get_variance_node} returns the conditional variance of a node, or the conditional
 #' covariance of a node and its parent.
 #' 
-#' @param vars matrix of size p x p*(ntaxa+nNodes) result of function \code{compute_E.simple},
+#' @param vars matrix of size p x p*(ntaxa+Nnode) result of function \code{compute_E.simple},
 #' entry "variances" or "covariances".
 #' @param node for which to extract the matrix.
 #' 
@@ -477,6 +477,39 @@ compute_variance_covariance.BM <- function(times_shared, params_old, ...) {
   attr(varr, "p_dim") <- p
   attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
   return(varr)
+}
+
+##
+#' @title Tips Variances for the BM
+#'
+#' @description
+#' \code{compute_variance_block_diagonal.BM} computes the n p*p variance
+#' matrices of each tip vector.
+#'
+#' @param times_shared times of shared ancestry of all nodes and tips, result 
+#'  of function \code{compute_times_ca}
+#' @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return p * p * ntaxa array with ntaxa variance matrices
+#' 
+#' @keywords internal
+#' 
+##
+compute_variance_block_diagonal.BM <- function(times_shared,
+                                               params_old,
+                                               ntaxa, ...) {
+  p <- dim(params_old$variance)[1]
+  if (is.null(p)){
+    stop("Variance should be a matrix.")
+  }
+  sigma2 <- as.matrix(params_old$variance)
+  # random root if needed
+  if (params_old$root.state$random){
+    var_root <- as.matrix(params_old$root.state$var.root)
+  } else {
+    var_root <- matrix(0, p, p)
+  }
+  return(sigma2 %o% diag(times_shared)[1:ntaxa] + var_root %o% rep(1, ntaxa))
 }
 
 ##
@@ -635,6 +668,62 @@ compute_variance_covariance.OU <- function(times_shared,
   attr(varr, "p_dim") <- p
   attr(varr, "ntaxa") <- attr(params_old, "ntaxa")
   return(varr)
+}
+
+##
+#' @title Tips Variances for the OU
+#'
+#' @description
+#' \code{compute_variance_block_diagonal.OU} computes the n p*p variance
+#' matrices of each tip vector.
+#'
+#' @param times_shared times of shared ancestry of all nodes and tips, result 
+#'  of function \code{compute_times_ca}
+#' @param params_old (list) : old parameters to be used in the E step
+#' 
+#' @return p * p * ntaxa array with ntaxa variance matrices
+#' 
+#' @keywords internal
+#' 
+##
+compute_variance_block_diagonal.OU <- function(times_shared,
+                                               params_old,
+                                               ntaxa, ...) {
+  p <- dim(params_old$variance)[1]
+  if (is.null(p)){
+    stop("Variance should be a matrix.")
+  }
+  alpha_mat <- params_old$selection.strength
+  sigma2 <- as.matrix(params_old$variance)
+  # random root if needed
+  if (params_old$root.state$random){
+    var_root <- as.matrix(params_old$root.state$var.root)
+  } else {
+    var_root <- matrix(0, p, p)
+  }
+  eig_alpha <- eigen(alpha_mat)
+  P <- eig_alpha$vectors
+  P_inv <- solve(P)
+  sigma_trans <- P_inv %*% sigma2 %*% t(P_inv)
+  var_root_trans <- P_inv %*% var_root %*% t(P_inv)
+  safe_exp <- function(a, b, t) {
+    alpha <- a + b
+    if (alpha == 0) return(t)
+    return((exp(alpha * t) - 1) / alpha)
+  }
+  safe_exp_vec <- function(a, b, t) {
+    mapply(function(x, y) safe_exp(x, y, t), a, b)
+  }
+  vv <- matrix(NA, p, p)
+  for (q in 1:p){
+    for (r in 1:p){
+      vv[q, r] <- 1 / (eig_alpha$values[q] + eig_alpha$values[r])
+    }
+  }
+  ee <- exp(eig_alpha$values)
+  var1 <- sapply(diag(times_shared)[1:ntaxa],
+                 function(ti) return(P %*% (tcrossprod(ee^(-ti), ee^(-ti)) * (outer(eig_alpha$values, eig_alpha$values, function(a, b) return(safe_exp_vec(a, b, ti))) * sigma_trans + var_root_trans)) %*% t(P)))
+  return(array(var1, c(p, p, ntaxa)))
 }
 
 ##

@@ -45,8 +45,8 @@
 #'     
 #' @return An S3 object of class \code{simul_process}. This contains:
 #' \describe{
-#'  \item{sim_traits}{an array with dimensions p x nNodes x 2 (BM)
-#'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
+#'  \item{sim_traits}{an array with dimensions p x Nnode x 2 (BM)
+#'  or p x Nnode x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.}
 #'  \item{phylo}{the phylogenetic tree used for the simulations (class \code{phylo}).}
@@ -323,8 +323,8 @@ plot.params_process <- function(x,
 #' result of function \code{\link{compute_times_ca}}. Can be specified to avoid extra
 #' computations.
 #'     
-#' @return paramSimu An array with dimensions p x nNodes x 2 (BM)
-#'  or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
+#' @return paramSimu An array with dimensions p x Nnode x 2 (BM)
+#'  or p x Nnode x 3 (OU). For each trait t, 1 <= t <= p, paramSimu[t, , ] has
 #'  tree columns, containing respectively the simulated state,
 #'  expected value and optimal value for all the nodes.
 #'  
@@ -337,7 +337,7 @@ plot.params_process <- function(x,
 # 24/08/15 - Multivariate
 ##
 simulate_internal <- function(phylo,
-                              process = c("BM", "OU", "scOU", "StudentOU"),
+                              process = c("BM", "OU", "scOU", "OUBM", "StudentOU"),
                               p = 1,
                               # independent = FALSE,
                               root.state = list(random = FALSE, 
@@ -361,14 +361,15 @@ simulate_internal <- function(phylo,
   ntaxa <- length(phylo$tip.label)
   ## Set branch stochastic process
   process <- match.arg(process)
+  if (process == "OUBM") {
+    if (!isDiagonal(selection.strength)){
+      stop("The OUBM simulation is only implemented for a diagonal matrix.")
+    }
+    if (!is.null(shifts$edges)) {
+      stop("The OUBM simulation is only implemented for a process with no shift.")
+    }
+  }
   if (process == "scOU"){
-    # Use a OU (more efficient things can be done)
-    # process <- "OU"
-    # Check selection strength
-#      # scalar
-#     if (is.null(dim(selection.strength))){
-#       selection.strength <- selection.strength *  diag(rep(1, p))
-#     }
      # Matrix provided
     if (!is.null(dim(selection.strength))){
       zero_range <- function(x, tol = .Machine$double.eps ^ 0.5) {
@@ -376,7 +377,7 @@ simulate_internal <- function(phylo,
         x <- range(x) / mean(x)
         isTRUE(all.equal(x[1], x[2], tolerance = tol))
       }
-      if (!all(selection.strength[!diag(nrow(selection.strength))] == 0)){
+      if (!isDiagonal(selection.strength)){
         stop("Process is said to be scalar OU, but selection strengh matrix is not diagonal.")
       }
       if (!zero_range(diag(selection.strength))){
@@ -411,7 +412,7 @@ simulate_internal <- function(phylo,
     }
   }
   ## Optimal values
-  if (is.null(optimal.value) && process %in% c("OU", "scOU")){
+  if (is.null(optimal.value) && process %in% c("OU", "scOU", "OUBM")){
     stop("Optimal values for the OU simulation must be specified.")
   }
   ## Special case BM
@@ -449,12 +450,14 @@ simulate_internal <- function(phylo,
                  BM = init.simulate.BM,
                  OU = init.simulate.OU,
                  scOU = init.simulate.OU,
-                 StudentOU = init.simulate.OU)
+                 StudentOU = init.simulate.OU,
+                 OUBM = init.simulate.OU)
   updateDown <- switch(process,
                        BM = update.simulate.BM,
                        OU = update.simulate.OU,
                        scOU = update.simulate.scOU,
-                       StudentOU = update.simulate.StudentOU)
+                       StudentOU = update.simulate.StudentOU,
+                       OUBM = update.simulate.OUBM)
   ## Check root
   if (checks) {
     root.state <- test.root.state(root.state = root.state,
@@ -470,7 +473,7 @@ simulate_internal <- function(phylo,
                     root.state = root.state,
                     optimal.value = optimal.value,
                     simulate_random = simulate_random)
-  if (process %in% c("scOU", "OU")){
+  if (process %in% c("scOU", "OU", "OUBM")){
     if (root.state$stationary.root){
       stationary_variance <- root.state$var.root
     } else {
@@ -551,7 +554,7 @@ extract_simulate_internal <- function(paramSimu,
 #' @param array: structure to be sliced
 #' @param value: value to be attributed to the slice
 #'     
-#' @return array: array p x nNodes x 2 (BM), with slice corresponding to node filled with value
+#' @return array: array p x Nnode x 2 (BM), with slice corresponding to node filled with value
 #'  
 #' @keywords internal
 #'  
@@ -580,7 +583,7 @@ subset_node.simulate <- function(node, array){
 #'     exp.root : if random, expectation of the character at the root
 #'     var.root : if random, variance of the character at the root (pxp matrix)
 #'     
-#' @return paramSimu: array p x nNodes x 2 (BM), filled with NAs.
+#' @return paramSimu: array p x Nnode x 2 (BM), filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated states and root
 #' expectations for all the traits.
 #' 
@@ -622,7 +625,7 @@ init.simulate.StateAndExp <- function(phy, p, root.state, simulate_random){
 #'     exp.root : if random, expectation of the character at the root
 #'     var.root : if random, variance of the character at the root (pxp matrix)
 #'     
-#' @return paramSimu Array p x nNodes x 2 (BM), filled with NAs.
+#' @return paramSimu Array p x Nnode x 2 (BM), filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 2) is initialized with simulated
 #' states and root expectations for all the traits.
 #' 
@@ -647,7 +650,7 @@ init.simulate.BM <- function(phy, p, root.state, simulate_random, ...){
 #'     exp.root : if random, expectation of the character at the root
 #'     var.root : if random, variance of the character at the root (pxp matrix)
 #'     
-#' @return paramSimu: array p x nNodes x 3, filled with NAs.
+#' @return paramSimu: array p x Nnode x 3, filled with NAs.
 #' Slice paramSimu[, ntaxa + 1, ] (array p x 3) is initialized with simulated states, root
 #' expectations, and optimal values for all the traits.
 #'  
@@ -801,6 +804,48 @@ update.simulate.StudentOU <- function(edgeNbr, ancestral, length, shifts, varian
   return(c(SimExp,beta))
 }
 
+update.simulate.OUBM <- function(edgeNbr, ancestral,
+                                 length, shifts, selection.strength,
+                                 stationary_variance,
+                                 variance,
+                                 simulate_random, ...){
+  shiftsIndex <- which(shifts$edges == edgeNbr) # If no shifts = NULL, and sum = 0
+  if (length(shiftsIndex) == 0){
+    r <- 0
+  } else {
+    r <- shifts$relativeTimes[shiftsIndex]
+  }
+  beta <- ancestral[, , 3] + rowSums(shifts$values[, shiftsIndex, drop = F])
+  if (r == 0){
+    ee <- expm(-selection.strength * length)
+    I <- diag(1, dim(selection.strength))
+    plus_exp <- (I - ee) %*% beta
+  } else {
+    ee_d <- expm(-selection.strength * length * (1-r))
+    ee_p <- expm(-selection.strength * length * r)
+    ee <- expm(-selection.strength * length)
+    I <- diag(1, dim(selection.strength))
+    plus_exp <- (I - ee_d) %*% beta + (I - ee_p) %*% ancestral[ , , 3]
+  }
+  Exp <- ee %*% ancestral[ , , 2] + plus_exp
+  Exp <- as.matrix(Exp)
+  if (simulate_random){
+    Sigma_sim <- as.matrix(stationary_variance - ee %*% stationary_variance %*% t(ee))
+    Sigma_sim[is.na(Sigma_sim)] <- length * variance[is.na(Sigma_sim)]
+    Sim <- MASS::mvrnorm(1,
+                         mu = ee %*% ancestral[ , , 1] + plus_exp,
+                         Sigma = Sigma_sim)
+  } else {
+    Sim <- Exp
+  }
+  child <- ancestral
+  p <- dim(ancestral)[1]
+  child[, , 1] <- array(Sim, dim = c(p, 1, 1))
+  child[, , 2] <- array(Exp, dim = c(p, 1, 1))
+  child[, , 3] <- array(beta, dim = c(p, 1, 1))
+  return(child)
+}
+
 ##
 #' @title Compute the expected states of a BM
 #'
@@ -820,7 +865,7 @@ update.simulate.StudentOU <- function(edgeNbr, ancestral, length, shifts, varian
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
 #'     parent node of edges
 #'     
-#' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+#' @return paramSimu: array p x Nnode x 2 (BM). For each trait t, 1 <= t <= p,
 #'  paramSimu[t, , ] has two columns, both containing the expected values for
 #'  all the nodes.
 #'  
@@ -860,7 +905,7 @@ compute_expectations.BM <- function(phylo, root.state, shifts, U_tree = NULL){
 #'     relativeTimes : vector of dimension K of relative time of the shift from the
 #'     parent node of edges
 #'     
-#' @return paramSimu: array p x nNodes x 2 (BM). For each trait t, 1 <= t <= p,
+#' @return paramSimu: array p x Nnode x 2 (BM). For each trait t, 1 <= t <= p,
 #'  paramSimu[t, , ] has two columns, both containing the expected values for
 #'  all the nodes.
 #'  

@@ -4,33 +4,55 @@
 \alias{estimateEM}
 \title{Perform One EM}
 \usage{
-estimateEM(phylo, Y_data, Y_data_imp = Y_data, process = c("BM", "OU",
-  "scOU", "rBM"), independent = FALSE, tol_EM = list(variance =
-  10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root = 10^(-2),
-  selection.strength = 10^(-2), normalized_half_life = 10^(-2),
-  log_likelihood = 10^(-2)), Nbr_It_Max = 500,
+estimateEM(
+  phylo,
+  Y_data,
+  Y_data_imp = Y_data,
+  process = c("BM", "OU", "scOU", "rBM"),
+  independent = FALSE,
+  tol_EM = list(variance = 10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root =
+    10^(-2), selection.strength = 10^(-2), normalized_half_life = 10^(-2), log_likelihood
+    = 10^(-2)),
+  Nbr_It_Max = 500,
   method.variance = c("simple", "upward_downward"),
-  method.init = c("default", "lasso"), method.init.alpha = c("default",
-  "estimation"), method.init.alpha.estimation = c("regression",
-  "regression.MM", "median"), nbr_of_shifts = 0, random.root = TRUE,
-  stationary.root = TRUE, alpha_known = FALSE, eps = 10^(-3),
-  known.selection.strength = 1, init.selection.strength = 1,
-  max_selection.strength = 100, use_sigma_for_lasso = TRUE,
-  max_triplet_number = 10000, min_params = list(variance = 0,
-  value.root = -10^(5), exp.root = -10^(5), var.root = 0,
-  selection.strength = 0), max_params = list(variance = 10^(5),
-  value.root = 10^(5), exp.root = 10^(5), var.root = 10^(5),
-  selection.strength = 10^(5)), var.init.root = diag(1, nrow(Y_data)),
+  method.init = c("default", "lasso"),
+  method.init.alpha = c("default", "estimation"),
+  method.init.alpha.estimation = c("regression", "regression.MM", "median"),
+  nbr_of_shifts = 0,
+  random.root = TRUE,
+  stationary.root = TRUE,
+  alpha_known = FALSE,
+  eps = 10^(-3),
+  known.selection.strength = 1,
+  init.selection.strength = 1,
+  max_selection.strength = 100,
+  use_sigma_for_lasso = TRUE,
+  max_triplet_number = 10000,
+  min_params = list(variance = 0, value.root = -10^(5), exp.root = -10^(5), var.root =
+    0, selection.strength = 0),
+  max_params = list(variance = 10^(5), value.root = 10^(5), exp.root = 10^(5), var.root
+    = 10^(5), selection.strength = 10^(5)),
+  var.init.root = diag(1, nrow(Y_data)),
   variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
   methods.segmentation = c("lasso", "same_shifts", "best_single_move"),
-  check.tips.names = FALSE, times_shared = NULL,
-  distances_phylo = NULL, subtree.list = NULL, T_tree = NULL,
-  U_tree = NULL, h_tree = NULL, F_moments = NULL,
-  tol_half_life = TRUE, warning_several_solutions = TRUE,
+  check.tips.names = FALSE,
+  times_shared = NULL,
+  distances_phylo = NULL,
+  subtree.list = NULL,
+  T_tree = NULL,
+  U_tree = NULL,
+  h_tree = NULL,
+  F_moments = NULL,
+  tol_half_life = TRUE,
+  warning_several_solutions = TRUE,
   convergence_mode = c("relative", "absolute"),
-  check_convergence_likelihood = TRUE, sBM_variance = FALSE,
-  method.OUsun = c("rescale", "raw"), K_lag_init = 0,
-  allow_negative = FALSE, ...)
+  check_convergence_likelihood = TRUE,
+  sBM_variance = FALSE,
+  method.OUsun = c("rescale", "raw"),
+  K_lag_init = 0,
+  allow_negative = FALSE,
+  ...
+)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 

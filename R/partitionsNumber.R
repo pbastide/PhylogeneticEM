@@ -37,7 +37,7 @@
 #' is the number of shifts plus one (npart = K + 1).
 #'
 #' @return an object of class \code{partitionsNumber}. This is made of a matrix
-#' with (Nnodes + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
+#' with (Nnode + ntaxa) rows and (2*npart) columns. Each column contains two vectors:
 #' for k=1:npart it contains the number of partitions with k groups compatible
 #' with the tree and the shift process; and for k=(npart+1):2*npart, it contains
 #' the number of "marked" partitions with (k-npart) groups compatible with the
@@ -48,25 +48,27 @@
 #' \code{\link{equivalent_shifts}}
 #' 
 #' @examples 
-#' npart <- 8 # number of colors at the tips allowed
-#' tree <- read.tree(text="(A,(A,(A,A,A),A,A));") # a tree with polytomies
-#' plot(tree)
-#' parts_num <- partitionsNumber(tree, npart)
-#' parts_num
-#' 
-#' ## Number of possible colorings of the tips in npart colors
-#' extract(parts_num)
-#' 
-#' ## Get all the solutions for colorings with 1 to nparts colors
-#' extract(parts_num, npart = 1:npart)
-#' 
-#' ## Number of possible colorings of the tips in npart colors
-#' ## For the sub-tree starting at node 17
-#' extract(parts_num, node = 10)
-#' 
-#' ## Number of possible colorings of the tips in npart colors
-#' ## with one marked color
-#' extract(parts_num, marked = TRUE)
+#' if (requireNamespace("combinat", quietly = TRUE)) {
+#'   npart <- 8 # number of colors at the tips allowed
+#'   tree <- read.tree(text="(A,(A,(A,A,A),A,A));") # a tree with polytomies
+#'   plot(tree)
+#'   parts_num <- partitionsNumber(tree, npart)
+#'   parts_num
+#'   
+#'   ## Number of possible colorings of the tips in npart colors
+#'   extract(parts_num)
+#'   
+#'   ## Get all the solutions for colorings with 1 to nparts colors
+#'   extract(parts_num, npart = 1:npart)
+#'   
+#'   ## Number of possible colorings of the tips in npart colors
+#'   ## For the sub-tree starting at node 17
+#'   extract(parts_num, node = 10)
+#'   
+#'   ## Number of possible colorings of the tips in npart colors
+#'   ## with one marked color
+#'   extract(parts_num, marked = TRUE)
+#' }
 #'
 # @references
 # Paul Bastide, Mahendra Mariadassou, Stéphane Robin:
@@ -160,7 +162,7 @@ extract.partitionsNumber <- function(x,
 # PARAMETERS:
 # @(phy,npart) see note above
 # RETURNS:
-# (matrix) matrix with Nnodes+ntaxa rows and 2*npart columns. All rows from 1 to ntaxa are set to 0, except for columns 1 and npart+1, set to one. All rows from ntaxa to the end are set to NAs
+# (matrix) matrix with Nnode+ntaxa rows and 2*npart columns. All rows from 1 to ntaxa are set to 0, except for columns 1 and npart+1, set to one. All rows from ntaxa to the end are set to NAs
 # DEPENDENCIES:
 # none
 # PURPOSE:

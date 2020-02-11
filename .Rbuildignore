@@ -16,3 +16,5 @@
 ^data-raw$
 ^README\.md$
 ^cran-comments\.md$
+^.dockerignore$
+^Dockerfile$

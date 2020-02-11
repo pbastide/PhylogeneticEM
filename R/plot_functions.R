@@ -247,6 +247,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' the tree and the labels. Default to 0.
 #' @param axis_cex cex for the label values of the plot. Default to 0.7.
 #' @param axis_las las for the label values of the plot. Default to 0 (see \link{par}).
+#' @param show_axis_traits control whether the trait values axis is plotted (default to TRUE).
 #' @param edge.width width of the edge. Default to 1.
 #' @param margin_plot vector giving the margin to around the plot.
 #' Default to \code{c(0, 0, 0, 0)}.
@@ -292,6 +293,7 @@ plot.PhyloEM <- function(x,
                          label_offset = 0,
                          axis_cex = 0.7,
                          axis_las = 0,
+                         show_axis_traits = TRUE,
                          edge.width = 1,
                          margin_plot = NULL,
                          gray_scale = FALSE,
@@ -367,6 +369,7 @@ plot.PhyloEM <- function(x,
                            shifts_cex = shifts_cex,
                            axis_cex = axis_cex,
                            axis_las = axis_las,
+                           show_axis_traits = show_axis_traits,
                            margin_plot = margin_plot,
                            color_shifts_regimes = color_shifts_regimes,
                            # shifts_regimes = shifts_regimes,
@@ -405,6 +408,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
                                      shifts_cex = 1,
                                      axis_cex = 0.7,
                                      axis_las = 0,
+                                     show_axis_traits = TRUE,
                                      margin_plot = NULL,
                                      color_shifts_regimes = FALSE,
                                      # shifts_regimes = NULL,
@@ -568,12 +572,14 @@ plot.data.process.actual <- function(Y.state, phylo, params,
              rownames(Y.state)[t], cex = axis_cex)
       }
       # unit length
-      axis(1, at = pos_last_tip + eccart_g + range(Y.plot, na.rm = TRUE),
-           labels = round(range(Y.state[t, ], na.rm = TRUE), digits = 2),
-           pos = y.lim.min + ntaxa/15, 
-           cex.axis = axis_cex,
-           # padj = -0.5,
-           las = axis_las)
+      if (show_axis_traits) {
+        axis(1, at = pos_last_tip + eccart_g + range(Y.plot, na.rm = TRUE),
+             labels = round(range(Y.state[t, ], na.rm = TRUE), digits = 2),
+             pos = y.lim.min + ntaxa/15, 
+             cex.axis = axis_cex,
+             # padj = -0.5,
+             las = axis_las)
+      }
       # segments(pos_last_tip + eccart_g, y.lim.min + ntaxa/15,
       #          pos_last_tip + eccart_g + unit, y.lim.min + ntaxa/15,
       #          lwd = 2)
@@ -728,7 +734,7 @@ plot.data.process.actual <- function(Y.state, phylo, params,
 #' @param method.selection select the parameters to plot. One of "LINselect", "DDSE",
 #' "Djump" or "likelihood" (for un-penalized likelihood). Default to "LINselect". See
 #' \code{\link{params_process.PhyloEM}}.
-#' @param add boolean: should the points be added to a curent plot (default to FALSE).
+#' @param add boolean: should the points be added to a current plot (default to FALSE).
 #' @param select.col the color of the point selected by the criterion. Default to "red".
 #' @param ... further argument to be passed to base \code{\link{plot}}.
 #' 

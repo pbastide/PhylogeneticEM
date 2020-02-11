@@ -12,16 +12,16 @@ init.enumerate_parsimony(phy, clusters, pos)
 \item{clusters}{a vector representing the group of each tip.}
 }
 \value{
-A list of size nNode + ntaxa, as described above.
+A list of size Nnode + ntaxa, as described above.
 }
 \description{
 \code{init.enumerate_parsimony} is used in function \code{enumerate_parsimony}, 
 and initialize the correct data structure.
 }
 \details{
-This function returns a list with nNodes + ntaxa entries. Entries corresponding to
+This function returns a list with Nnode + ntaxa entries. Entries corresponding to
 the tips are initialized with a list of nclus matrices. For tip i of group k, all
 matrices are set to NULL, except for the kth, set to a vector of size
-nNodes + ntaxa, with entry i set to k, and all the others to NA.
+Nnode + ntaxa, with entry i set to k, and all the others to NA.
 }
 \keyword{internal}

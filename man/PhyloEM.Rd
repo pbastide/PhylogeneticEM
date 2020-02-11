@@ -4,23 +4,43 @@
 \alias{PhyloEM}
 \title{Model Estimation with Detection of Shifts}
 \usage{
-PhyloEM(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
-  check_postorder = TRUE, independent = FALSE,
+PhyloEM(
+  phylo,
+  Y_data,
+  process = c("BM", "OU", "scOU", "rBM"),
+  check_postorder = TRUE,
+  independent = FALSE,
   K_max = max(floor(sqrt(length(phylo$tip.label))), 10),
-  use_previous = FALSE, order = TRUE,
-  method.selection = c("LINselect", "DDSE", "Djump"), C.BM1 = 0.1,
-  C.BM2 = 2.5, C.LINselect = 1.1,
+  use_previous = FALSE,
+  order = TRUE,
+  method.selection = c("LINselect", "DDSE", "Djump"),
+  C.BM1 = 0.1,
+  C.BM2 = 2.5,
+  C.LINselect = 1.1,
   method.variance = c("upward_downward", "simple"),
-  method.init = "lasso", method.init.alpha = "estimation",
-  method.init.alpha.estimation = c("regression", "regression.MM",
-  "median"), methods.segmentation = c("lasso", "best_single_move"),
-  alpha_grid = TRUE, nbr_alpha = 10, random.root = TRUE,
-  stationary.root = random.root, alpha = NULL,
-  check.tips.names = TRUE, progress.bar = TRUE, estimates = NULL,
-  save_step = FALSE, rescale_OU = TRUE, parallel_alpha = FALSE,
-  Ncores = 3, K_lag_init = 5, light_result = TRUE,
-  tol_tree = .Machine$double.eps^0.5, allow_negative = FALSE,
-  option_is.ultrametric = 1, ...)
+  method.init = "lasso",
+  method.init.alpha = "estimation",
+  method.init.alpha.estimation = c("regression", "regression.MM", "median"),
+  methods.segmentation = c("lasso", "best_single_move"),
+  alpha_grid = TRUE,
+  nbr_alpha = 10,
+  random.root = TRUE,
+  stationary.root = random.root,
+  alpha = NULL,
+  check.tips.names = TRUE,
+  progress.bar = TRUE,
+  estimates = NULL,
+  save_step = FALSE,
+  rescale_OU = TRUE,
+  parallel_alpha = FALSE,
+  Ncores = 3,
+  K_lag_init = 5,
+  light_result = TRUE,
+  tol_tree = .Machine$double.eps^0.5,
+  allow_negative = FALSE,
+  option_is.ultrametric = 1,
+  ...
+)
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
@@ -194,7 +214,7 @@ With no shift and a fixed root, the same proof shows that the scOU
 with alpha negative is equivalent to the DC model. There are two
 strong caveats in doing that.
 \itemize{
-\item The interpretation of the OU as modelling the dynamic of a trait
+\item The interpretation of the OU as modeling the dynamic of a trait
 undergoing stabilizing selection is lost. In this case, the scOU can only
 be seen as a re-scaling of the tree, similar to Pagel's delta.
 \item The values of the "optimal values", and of the shifts on them, cannot

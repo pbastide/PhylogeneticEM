@@ -4,19 +4,21 @@
 \alias{extract.variance_covariance}
 \title{Extract sub-matrices of variance.}
 \usage{
-\method{extract}{variance_covariance}(struct, what = c("YY", "YZ", "ZZ"),
-  masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct,
-  "p_dim")), rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) *
-  attr(struct, "p_dim"))))
+\method{extract}{variance_covariance}(
+  struct,
+  what = c("YY", "YZ", "ZZ"),
+  masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct, "p_dim")), rep(FALSE,
+    (dim(struct)[1] - attr(struct, "ntaxa")) * attr(struct, "p_dim")))
+)
 }
 \arguments{
-\item{struct}{structural matrix of size (ntaxa+nNode)*p, result 
+\item{struct}{structural matrix of size (ntaxa+Nnode)*p, result 
 of function \code{compute_variance_covariance}}
 
 \item{what:}{sub-matrix to be extracted:
 "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
-"YZ" : sub matrix tips x nodes (p*nNodes last rows and p*ntaxa first columns)
-"ZZ" : sub matrix of nodes (p*nNodes last rows and columns)}
+"YZ" : sub matrix tips x nodes (p*Nnode last rows and p*ntaxa first columns)
+"ZZ" : sub matrix of nodes (p*Nnode last rows and columns)}
 
 \item{miss;}{missing values of Y_data}
 }

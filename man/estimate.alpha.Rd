@@ -4,8 +4,15 @@
 \alias{estimate.alpha}
 \title{Function to estimate alpha}
 \usage{
-estimate.alpha(phylo, conditional_law_X, sigma2, mu, shifts, alpha_old,
-  max_selection.strength)
+estimate.alpha(
+  phylo,
+  conditional_law_X,
+  sigma2,
+  mu,
+  shifts,
+  alpha_old,
+  max_selection.strength
+)
 }
 \arguments{
 \item{phylo}{Input tree.}

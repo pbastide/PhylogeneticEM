@@ -10,7 +10,7 @@ init.incidence.matrix(phy)
 \item{phy}{Input tree.}
 }
 \value{
-Matrix with nNodes rows and ntaxa column.
+Matrix with Nnode rows and ntaxa column.
 }
 \description{
 \code{init.incidence.matrix} initialize the matrix updated in
@@ -18,7 +18,7 @@ Matrix with nNodes rows and ntaxa column.
 in \code{incidence.matrix}.
 }
 \details{
-The initialized matrix has ntaxa column and nNodes rows. Each node
+The initialized matrix has ntaxa column and Nnode rows. Each node
 represent its parental branch. A row corresponding to a tip i is initialized
 to a vector of zeros, with only entry i equal to one. (Branch ending at 
 tip i is only in the i^th lineage)

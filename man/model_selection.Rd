@@ -7,9 +7,15 @@
 \usage{
 model_selection(x, ...)
 
-\method{model_selection}{PhyloEM}(x, method.selection = c("LINselect",
-  "DDSE", "Djump"), C.BM1 = 0.1, C.BM2 = 2.5, C.LINselect = 1.1,
-  independent = FALSE, ...)
+\method{model_selection}{PhyloEM}(
+  x,
+  method.selection = c("LINselect", "DDSE", "Djump"),
+  C.BM1 = 0.1,
+  C.BM2 = 2.5,
+  C.LINselect = 1.1,
+  independent = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{a fitted \code{\link{PhyloEM}} object}

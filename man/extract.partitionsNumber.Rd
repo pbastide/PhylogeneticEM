@@ -4,8 +4,13 @@
 \alias{extract.partitionsNumber}
 \title{Extract from object \code{partitionsNumber}}
 \usage{
-\method{extract}{partitionsNumber}(x, node = attr(x, "ntaxa") + 1,
-  npart = attr(x, "npart"), marked = FALSE, ...)
+\method{extract}{partitionsNumber}(
+  x,
+  node = attr(x, "ntaxa") + 1,
+  npart = attr(x, "npart"),
+  marked = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{partitionsNumber}, result of function

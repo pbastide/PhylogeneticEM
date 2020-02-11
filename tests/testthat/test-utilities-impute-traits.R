@@ -2,6 +2,7 @@ context("Trait Imputations")
 
 test_that("imputations- scOU - random root", {
   testthat::skip_on_cran()
+  testthat::skip_if_not_installed("TreeSim")
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
@@ -128,6 +129,7 @@ test_that("imputations- scOU - random root", {
 
 test_that("imputations- scOU - fixed root", {
   testthat::skip_on_cran()
+  testthat::skip_if_not_installed("TreeSim")
   set.seed(17920902)
   ntaxa = 20
   tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,

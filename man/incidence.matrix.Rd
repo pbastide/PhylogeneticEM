@@ -10,7 +10,7 @@ incidence.matrix(phylo)
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 }
 \value{
-Matrix of incidence, size nEdges x ntaxa.
+Matrix of incidence, size Nedge x ntaxa.
 }
 \description{
 \code{incidence.matrix} computes the incidence matrix T of a tree : for a 

@@ -14,7 +14,7 @@ shifts.list_to_matrix(phy, shifts, p = nrow(shifts$values))
 \item{p}{number of traits (optional, needed when shifts = NULL).}
 }
 \value{
-Matrix p x nEdges of length nbranch.
+Matrix p x Nedge of length nbranch.
 }
 \description{
 \code{shifts.list_to_matrix} takes the list description of the shifts 

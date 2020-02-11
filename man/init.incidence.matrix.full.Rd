@@ -10,7 +10,7 @@ init.incidence.matrix.full(phy)
 \item{phy}{Input tree.}
 }
 \value{
-Matrix of size ntaxa + nNodes.
+Matrix of size ntaxa + Nnode.
 }
 \description{
 \code{init.incidence.matrix.full} initialize the matrix updated in
@@ -18,7 +18,7 @@ Matrix of size ntaxa + nNodes.
  matrix of the full tree in \code{incidence.matrix.full}.
 }
 \details{
-The initialized matrix is squared of size ntaxa + nNodes. Each node
+The initialized matrix is squared of size ntaxa + Nnode. Each node
 represent its parental branch. A row corresponding to a tip i is initialized
 to a vector of zeros, with only entry i equal to one. (Branch ending at 
 tip i is only in the i^th lineage)

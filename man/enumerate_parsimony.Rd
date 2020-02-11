@@ -18,7 +18,7 @@ an S3 object of class "\code{enumerate_parsimony}", with:
 \describe{
 \item{nbrReconstructions}{an object of class "\code{parsimonyCost}", result
 of function \code{\link{parsimonyCost}}.}
-\item{allocations}{a list of size nNode + ntaxa. Each entry i of the list
+\item{allocations}{a list of size Nnode + ntaxa. Each entry i of the list
 represents the solutions for the subtree starting at node i. It is a list with
 nclus entries, each entry being a matrix. A line of the kth matrix for the
 ith node is one possible allocation of the shifts, starting with regime k

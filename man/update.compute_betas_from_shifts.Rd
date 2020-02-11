@@ -14,7 +14,7 @@ update.compute_betas_from_shifts(edgeNbr, ancestral, shifts, ...)
 \item{shifts}{position and values of the shifts}
 }
 \value{
-Updated matrix of size (nNodes + ntaxa)x1.
+Updated matrix of size (Nnode + ntaxa)x1.
 }
 \description{
 \code{update.compute_betas_from_shifts} computes the optimal value at a daughter node, 

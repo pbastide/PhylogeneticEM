@@ -4,8 +4,7 @@
 \alias{extract.equivalent_shifts}
 \title{Extract the shifts values for one trait.}
 \usage{
-\method{extract}{equivalent_shifts}(x, trait = 1,
-  what = c("shifts_values", "root_values"), ...)
+\method{extract}{equivalent_shifts}(x, trait = 1, what = c("shifts_values", "root_values"), ...)
 }
 \arguments{
 \item{x}{an object of class \code{equivalent_shifts}, result of

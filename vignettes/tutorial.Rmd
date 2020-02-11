@@ -40,7 +40,7 @@ params <- params_process("OU",                             ## Process
                          selection.strength = 3,           ## Selection Strength
                          random = TRUE,                    ## Root is random
                          stationary.root = TRUE,           ## Root is stationary
-                         edges = c(29, 89, 127),           ## Positions of the shifts
+                         edges = c(16, 81, 124),           ## Positions of the shifts
                          values = cbind(c(5, 4),           ## Values of the shifts
                                         c(-4, -5),
                                         c(5, -3)))
@@ -122,7 +122,7 @@ plot(res)
 ```
 
 The function above automatically plots the solution selected by the model selection criterion.
-We can plot this criterion, to see wether the solution selected is a clear minimum.
+We can plot this criterion, to see whether the solution selected is a clear minimum.
 
 ```{r, fig.show='hold', fig.height=4, fig.width=4, warning=FALSE}
 plot_criterion(res)
@@ -150,14 +150,14 @@ params_process(res, K = 3, alpha = 3)$shifts
 
 ## Equivalent Solutions
 
-When there are too many shifts, the solution might not be identifiable. For instance here, if we take the (degenerate) solution with $8$ shifts, we get this warning:
+When there are too many shifts, the solution might not be identifiable. For instance here, if we take the (degenerate) solution with $6$ shifts, we get this warning:
 ```{r}
-params_8 <- params_process(res, K = 8)
+params_6 <- params_process(res, K = 6)
 ```
 
 And we can plot all the equivalent shifts allocations:
 ```{r, fig.show='hold', fig.height=4, fig.width=8, warning=FALSE}
-plot(equivalent_shifts(tree, params_8))
+plot(equivalent_shifts(tree, params_6))
 ```
 
 the default only shows the shifts values for the first trait.

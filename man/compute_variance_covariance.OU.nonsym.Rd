@@ -4,8 +4,12 @@
 \alias{compute_variance_covariance.OU.nonsym}
 \title{Complete variance covariance matrix for OU}
 \usage{
-compute_variance_covariance.OU.nonsym(times_shared, distances_phylo,
-  params_old, ...)
+compute_variance_covariance.OU.nonsym(
+  times_shared,
+  distances_phylo,
+  params_old,
+  ...
+)
 }
 \arguments{
 \item{times_shared}{times of shared ancestry of all nodes and tips, result 

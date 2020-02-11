@@ -21,7 +21,7 @@ An object of class \code{\link{PhyloEM}}, result of the merge.
 \code{merge_rotations} takes several fits from \code{\link{PhyloEM}}, and
 merge them according to the best score (maximum likelihood or least squares).
 For each number of shifts, 
-The datesets needs to be equal up to a rotation. This is tested thanks to a QR
+The datasets needs to be equal up to a rotation. This is tested thanks to a QR
 decomposition, see function \code{\link{find_rotation}}.
 }
 \examples{

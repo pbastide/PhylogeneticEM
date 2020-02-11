@@ -8,11 +8,24 @@
 \usage{
 simul_process(x, ...)
 
-\method{simul_process}{params_process}(x, phylo, simulate_random = TRUE,
-  checks = TRUE, U_tree = NULL, times_shared = NULL, ...)
+\method{simul_process}{params_process}(
+  x,
+  phylo,
+  simulate_random = TRUE,
+  checks = TRUE,
+  U_tree = NULL,
+  times_shared = NULL,
+  ...
+)
 
-\method{simul_process}{PhyloEM}(x, simulate_random = TRUE,
-  checks = TRUE, U_tree = NULL, times_shared = NULL, ...)
+\method{simul_process}{PhyloEM}(
+  x,
+  simulate_random = TRUE,
+  checks = TRUE,
+  U_tree = NULL,
+  times_shared = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{\link{params_process}} or \code{\link{PhyloEM}}.}
@@ -39,8 +52,8 @@ computations.}
 \value{
 An S3 object of class \code{simul_process}. This contains:
 \describe{
- \item{sim_traits}{an array with dimensions p x nNodes x 2 (BM)
- or p x nNodes x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
+ \item{sim_traits}{an array with dimensions p x Nnode x 2 (BM)
+ or p x Nnode x 3 (OU). For each trait t, 1 <= t <= p, sim_traits[t, , ] has
  tree columns, containing respectively the simulated state,
  expected value and optimal value for all the nodes.}
  \item{phylo}{the phylogenetic tree used for the simulations (class \code{phylo}).}

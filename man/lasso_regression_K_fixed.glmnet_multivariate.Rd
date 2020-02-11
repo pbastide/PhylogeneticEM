@@ -4,8 +4,14 @@
 \alias{lasso_regression_K_fixed.glmnet_multivariate}
 \title{Do a lasso regression with the number of non-zero variables fixed.}
 \usage{
-lasso_regression_K_fixed.glmnet_multivariate(Yp, Xp, K, root = NULL,
-  penscale = rep(1, ncol(Xp)), K_lag = 0)
+lasso_regression_K_fixed.glmnet_multivariate(
+  Yp,
+  Xp,
+  K,
+  root = NULL,
+  penscale = rep(1, ncol(Xp)),
+  K_lag = 0
+)
 }
 \arguments{
 \item{Yp}{(transformed) data}
@@ -23,7 +29,7 @@ shifts.gauss the list of shifts found on the branches
 \code{lasso_regression_K_fixed} does the following regression :
 ||Yp-Xp.delta|| + lambda |delta|_1 using the function \code{glmnet::glmnet} of 
 package \code{glmnet}, where delta is a vector representing the shifts 
-occurring on the branches. It does a gauss lasso regression using function 
+occurring on the branches. It does a Gauss lasso regression using function 
 \code{lm} on top of it. This function is used in functions 
 \code{init.EM.lasso}, \code{segmentation.OU.specialCase.lasso}, ...
 }

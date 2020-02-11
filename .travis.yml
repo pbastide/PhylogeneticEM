@@ -1,8 +1,12 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-language: R
+language: r
+r:
+  - release
+  - devel
 sudo: false
 cache: packages
+services: docker
 env:
   - NOT_CRAN=true
 r_packages:
@@ -11,4 +15,6 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libmagick++-dev
 after_success:
-  - Rscript -e 'library(covr); codecov(quiet = FALSE)'
+  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then Rscript -e 'library(covr); codecov(quiet = FALSE)'; fi
+  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then docker build -t test_no_suggest . ; fi
+  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then docker run test_no_suggest; fi

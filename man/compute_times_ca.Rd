@@ -10,7 +10,7 @@ compute_times_ca(phy)
 \item{phy}{a phylogenetic tree of class \code{\link[ape]{phylo}}.}
 }
 \value{
-a matrix of times of shared evolutions, ordered as the tips of the
+a matrix of times of shared evolution, ordered as the tips of the
 tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
 }
 \description{
@@ -18,6 +18,6 @@ tree. The matrix is of type \code{\link[Matrix]{symmetricMatrix-class}}.
 ancestor of two tips i, j.
 }
 \details{
-Tis function relies on \code{ape} functions
+This function relies on \code{ape} functions
 \code{\link[ape]{node.depth.edgelength}} and \code{\link[ape]{mrca}}.
 }

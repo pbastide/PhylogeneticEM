@@ -4,7 +4,7 @@
 \alias{test.root.state}
 \title{Test state of root.}
 \usage{
-test.root.state(root.state, process = c("BM", "OU", "scOU"), ...)
+test.root.state(root.state, process = c("BM", "OU", "scOU", "OUBM"), ...)
 }
 \arguments{
 \item{root.state}{A list giving the root state}

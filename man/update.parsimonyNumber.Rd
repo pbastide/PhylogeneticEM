@@ -12,7 +12,7 @@ update.parsimonyNumber(daughters, daughtersParams, cost, ...)
 \item{daughtersParams}{a ndaughters x (nclus) matrix with the line vectors of the number of
 solutions for the daughters nodes.}
 
-\item{cost}{the (ntaxa + nNode) x nclus matrix of costs (computed by \code{parsimonyCost}).}
+\item{cost}{the (ntaxa + Nnode) x nclus matrix of costs (computed by \code{parsimonyCost}).}
 }
 \value{
 A line vector corresponding to the parent node.

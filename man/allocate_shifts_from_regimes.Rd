@@ -9,7 +9,7 @@ allocate_shifts_from_regimes(phylo, regimes)
 \arguments{
 \item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{regimes}{: vector of size (ntaxa + nNodes) of the regimes of each node
+\item{regimes}{: vector of size (ntaxa + Nnode) of the regimes of each node
 and tip.}
 }
 \value{

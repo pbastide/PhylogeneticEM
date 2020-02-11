@@ -204,7 +204,7 @@ plot_criterion(res_merge2)
 On the previous dataset, the introduction of rotations might appear a bit artificial.
 However, for some highly correlated datasets, such rotations might be needed.
 For instance, when studying the Anolis Lizard dataset (Mahler et al., 2013[^3]),
-the application of several pseudo-orthonormalisation techniques on the original dataset were needed to
+the application of several pseudo-orthonormalization techniques on the original dataset were needed to
 get a good maximum likelihood solution for all values of K.
 See Bastide et al. (2018)[^4] for more details on this analysis.
 

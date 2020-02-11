@@ -4,8 +4,12 @@
 \alias{extract.enumerate_parsimony}
 \title{Extract the result of \code{enumerate_parsimony} at a node.}
 \usage{
-\method{extract}{enumerate_parsimony}(x, node = attr(x$allocations,
-  "ntaxa") + 1, what = c("solutions", "number", "cost"), ...)
+\method{extract}{enumerate_parsimony}(
+  x,
+  node = attr(x$allocations, "ntaxa") + 1,
+  what = c("solutions", "number", "cost"),
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class "\code{enumerate_parsimony}",
@@ -21,7 +25,7 @@ cost of a solution. Default to "solutions"}
 \item{...}{unused}
 }
 \value{
-A matrix with ntaxa + nNode columns, and as many rows as the number of
+A matrix with ntaxa + Nnode columns, and as many rows as the number of
 possible parsimonious reconstructions.
 }
 \description{
