@@ -8,13 +8,16 @@ sudo: false
 cache: packages
 services: docker
 env:
-  - NOT_CRAN=true
+  global:
+    - NOT_CRAN=true
+  jobs:
+  - _R_CHECK_SUGGESTS_ONLY_=TRUE _R_CHECK_FORCE_SUGGESTS_=FALSE
+  - _R_CHECK_SUGGESTS_ONLY_=FALSE _R_CHECK_FORCE_SUGGESTS_=TRUE
 r_packages:
   - covr
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libmagick++-dev
 after_success:
-  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then Rscript -e 'library(covr); codecov(quiet = FALSE)'; fi
-  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then docker build -t test_no_suggest . ; fi
-  - if [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then docker run test_no_suggest; fi
+  - if [ "$TRAVIS_R_VERSION_STRING" == "release" && "$_R_CHECK_SUGGESTS_ONLY_" == "FALSE"]; then Rscript -e 'library(covr); codecov(quiet = FALSE)'; fi
+  
