@@ -13,7 +13,7 @@ Description:
 Depends:
     ape (>= 5.3),
     Matrix (>= 1.2.3),
-    R (>= 3.6.0),
+    R (>= 3.6.2),
 Imports:
     capushe (>= 1.1.1),
     foreach (>= 1.4.3),
