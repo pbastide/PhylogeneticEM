@@ -4,13 +4,15 @@
 \name{monkeys}
 \alias{monkeys}
 \title{New World Monkeys dataset}
-\format{A list containing two objects:
+\format{
+A list containing two objects:
 \describe{
   \item{phy}{The Phylogenetic tree for the platyrrhine species, pruned to match
   the species in the morphometric dataset}
   \item{dat}{First two PC scores from a PCA of the species-averaged Procrustes
   coordinates}
-}}
+}
+}
 \usage{
 monkeys
 }

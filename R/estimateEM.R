@@ -168,6 +168,7 @@ NULL
 #' "stationary"? Used for BM equivalent computations. Default to FALSE.
 #' @param allow_negative whether to allow negative values for alpha (Early Burst).
 #' See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.
+#' @param trait_correlation_threshold the trait correlation threshold to stop the analysis. Default to 0.9.
 #' 
 #' @return
 #' An object of class \code{EstimateEM}.
@@ -241,11 +242,13 @@ estimateEM <- function(phylo,
                        # impute_init_Rphylopars = FALSE,
                        K_lag_init = 0,
                        allow_negative = FALSE,
+                       trait_correlation_threshold = 0.9,
                        ...){
   
   ntaxa <- length(phylo$tip.label)
   ## Check that the vector of data is in the correct order and dimensions ####
   Y_data <- check_data(phylo, Y_data, check.tips.names)
+  trait_correlation_threshold <- check_correlations(Y_data, trait_correlation_threshold)
   ## Find dimension
   p <- nrow(Y_data)
   
@@ -989,6 +992,7 @@ estimateEM <- function(phylo,
 #' @param allow_negative whether to allow negative values for alpha (Early Burst).
 #' See details. Default to FALSE.
 #' @param option_is.ultrametric option for \code{\link{is.ultrametric}} check. Default to 1.
+#' @param trait_correlation_threshold the trait correlation threshold to stop the analysis. Default to 0.9.
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
 #' tolerance parameters for stopping criteria, maximal number of iterations, etc.
 #' 
@@ -1085,6 +1089,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                     tol_tree = .Machine$double.eps^0.5,
                     allow_negative = FALSE,
                     option_is.ultrametric = 1,
+                    trait_correlation_threshold = 0.9,
                     ...){
   ## Required packages
   # library(doParallel)
@@ -1111,6 +1116,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   }
   ## Check that the vector of data is in the correct order and dimensions #####
   Y_data <- check_data(phylo, Y_data, check.tips.names)
+  trait_correlation_threshold <- check_correlations(Y_data, trait_correlation_threshold)
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
   ## Independent traits #######################################################
@@ -1205,6 +1211,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                             K_lag_init = K_lag_init,
                             light_result = light_result,
                             allow_negative = allow_negative,
+                            trait_correlation_threshold = trait_correlation_threshold,
                             ...)
   } else { # For an in-loop estimation of alpha (independent = TRUE)
     if ((p > 1) && !independent){
@@ -1238,6 +1245,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
                              # impute_init_Rphylopars = impute_init_Rphylopars, 
                              K_lag_init = K_lag_init,
                              light_result = light_result,
+                             trait_correlation_threshold = trait_correlation_threshold,
                              ...)
   }
   
@@ -1958,6 +1966,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                K_lag_init = 0,
                                light_result = TRUE,
                                allow_negative = FALSE,
+                               trait_correlation_threshold = 0.9,
                                ...){
   # reqpckg <- c("ape", "glmnet", "robustbase")
   reqpckg <- c("PhylogeneticEM")
@@ -2027,6 +2036,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                        K_lag_init,
                                        light_result,
                                        allow_negative,
+                                       trait_correlation_threshold,
                                        ...){
     if(progress.bar){
       message(paste0("Alpha ", alp))
@@ -2136,6 +2146,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                              K_lag_init = K_lag_init,
                              light_result = light_result,
                              allow_negative = allow_negative,
+                             trait_correlation_threshold = trait_correlation_threshold,
                              ...)
     ## Trnasform back parameters to OU if needed
     if (transform_scOU){
@@ -2251,6 +2262,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                K_lag_init = K_lag_init,
                                light_result = light_result,
                                allow_negative = allow_negative,
+                               trait_correlation_threshold = trait_correlation_threshold,
                                ...)
     }
     parallel::stopCluster(cl)
@@ -2288,6 +2300,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
                                K_lag_init = K_lag_init,
                                light_result = light_result,
                                allow_negative = allow_negative,
+                               trait_correlation_threshold = trait_correlation_threshold,
                                ...)
     }
   }
@@ -2336,6 +2349,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                                 # impute_init_Rphylopars = FALSE,
                                 K_lag_init = 0,
                                 light_result = TRUE,
+                                trait_correlation_threshold = 0.9,
                                 ...){
   ## Fixed quantities
   ntaxa <- length(phylo$tip.label)
@@ -2399,6 +2413,7 @@ PhyloEM_alpha_estim <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "
                            # impute_init_Rphylopars = impute_init_Rphylopars,
                            K_lag_init = K_lag_init,
                            light_result = light_result,
+                           trait_correlation_threshold = trait_correlation_threshold,
                            ...)
   
   ## Format Output
@@ -2453,6 +2468,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                 K_lag_init = 0,
                                 light_result = TRUE,
                                 allow_negative = FALSE,
+                                trait_correlation_threshold = trait_correlation_threshold,
                                 ...){
   p <- nrow(Y_data)
   ntaxa <- length(phylo$tip.label)
@@ -2503,6 +2519,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                       # impute_init_Rphylopars = impute_init_Rphylopars,
                                                       K_lag_init = K_lag_init,
                                                       allow_negative = allow_negative,
+                                                      trait_correlation_threshold = trait_correlation_threshold,
                                                       ...)
   if (K_first == 0 && any(is.na(Y_data))){
     Y_data_imp <- XX[["0"]]$Yhat
@@ -2551,6 +2568,7 @@ Phylo_EM_sequencial <- function(phylo, Y_data,
                                                             # impute_init_Rphylopars = impute_init_Rphylopars,
                                                             K_lag_init = K_lag_init,
                                                             allow_negative = allow_negative,
+                                                            trait_correlation_threshold = trait_correlation_threshold,
                                                             ...)
       pp <- check_dimensions(p,
                              XX[[paste0(K_t)]]$params$root.state,
@@ -2690,6 +2708,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                         # impute_init_Rphylopars,
                                         K_lag_init,
                                         allow_negative,
+                                        trait_correlation_threshold,
                                         ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -2718,6 +2737,7 @@ estimateEM_wrapper_previous <- function(phylo, Y_data,
                                                    # impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
                                                    allow_negative = allow_negative,
+                                                   trait_correlation_threshold = trait_correlation_threshold,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -2738,6 +2758,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                        # impute_init_Rphylopars,
                                        K_lag_init,
                                        allow_negative,
+                                       trait_correlation_threshold,
                                        ...){
   tt <- system.time(results_estim_EM <- estimateEM(phylo = phylo, 
                                                    Y_data = Y_data, 
@@ -2758,6 +2779,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
                                                    # impute_init_Rphylopars = impute_init_Rphylopars,
                                                    K_lag_init = K_lag_init,
                                                    allow_negative = allow_negative,
+                                                   trait_correlation_threshold = trait_correlation_threshold,
                                                    ...))
   return(format_output(results_estim_EM, phylo, tt))
 }
@@ -2776,6 +2798,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param Y_data matrix of data at the tips (pxntaxa)
 #' @param check.tips.names (bool) whether to check the tips names or not
+#' @param trait_correlation_threshold threshold for trait correlation. Default to 0.9.
 #' 
 #' @return Y_data a re-ordered matrix of data (if necessary)
 #' 
@@ -2808,6 +2831,25 @@ check_data <- function(phylo, Y_data, check.tips.names){
     }
   }
   return(as.matrix(Y_data))
+}
+
+## Check that correlations between traits are not too high.
+check_correlations <- function(Y_data, cor_th = 0.9) {
+  cor_data <- stats::cor(t(Y_data))
+  cor_data[lower.tri(cor_data, diag = T)] <- 0
+  ind_cor <- which(abs(cor_data) >= cor_th, arr.ind = TRUE)
+  if (length(ind_cor) > 0) {
+    for (x in 1:nrow(ind_cor)) {
+      traits_cor <- rownames(Y_data)[ind_cor[x, ]]
+      message(paste0("Traits ", traits_cor[1], " and ", traits_cor[2],
+                     " have a very high correlation of ",
+                     cor_data[ind_cor[x, 1], ind_cor[x, 2]], ".\n",
+                     "This correlation measure does not take shifs into account, and could be an artifact of grouped data, in which case this message can be ignored.\n",
+                     "If it is not induced by shifts, it might however induce some numerical errors.\n",
+                     "If problems arrise, please consider reducing the dimension of the dataset, e.g. using a pre-processing PCA."))
+    }
+  }
+  return(1.0)
 }
 
 choose_process_EM <- function(process, p, random.root, stationary.root,

@@ -10,9 +10,9 @@ estimateEM(
   Y_data_imp = Y_data,
   process = c("BM", "OU", "scOU", "rBM"),
   independent = FALSE,
-  tol_EM = list(variance = 10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root =
-    10^(-2), selection.strength = 10^(-2), normalized_half_life = 10^(-2), log_likelihood
-    = 10^(-2)),
+  tol_EM = list(variance = 10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root
+    = 10^(-2), selection.strength = 10^(-2), normalized_half_life = 10^(-2),
+    log_likelihood = 10^(-2)),
   Nbr_It_Max = 500,
   method.variance = c("simple", "upward_downward"),
   method.init = c("default", "lasso"),
@@ -51,6 +51,7 @@ estimateEM(
   method.OUsun = c("rescale", "raw"),
   K_lag_init = 0,
   allow_negative = FALSE,
+  trait_correlation_threshold = 0.9,
   ...
 )
 }
@@ -214,6 +215,8 @@ too high. Default to 5.}
 
 \item{allow_negative}{whether to allow negative values for alpha (Early Burst).
 See documentation of \code{\link{PhyloEM}} for more details. Default to FALSE.}
+
+\item{trait_correlation_threshold}{the trait correlation threshold to stop the analysis. Default to 0.9.}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
 tolerance parameters for stopping criteria, maximal number of iterations, etc.}

@@ -206,6 +206,7 @@ arma::uvec findChildren(int father, arma::umat const & ed){
 arma::mat inv_na(arma::mat const & S, arma::uvec const & miss, double ff){
   arma::uvec non_na_pos = find(miss == 0); // position of non missing
   arma::mat S_sub = S(non_na_pos, non_na_pos);
+  // Rcpp::Rcout << "S_sub = " << S_sub << std::endl;
   S_sub = arma::inv_sympd(S_sub);
   arma::mat res(size(S));
   res.fill(ff);
@@ -264,6 +265,7 @@ void Upward::recursion(Model const & mod, arma::umat const & ed,
         // Compute Condvar, Condexp, constant and missing_data
         arma::uvec missing_data = missing_datas.col(node);
         arma::mat check_S = condvars.slice(node) + mod.Sigmas(edge);
+        // Rcpp::Rcout << "i =  " << i << " j = " << j << std::endl;
         arma::mat check_S_inv = inv_na(check_S, missing_data, 0);
         arma::mat Q_edge = mod.Qs(edge);
         arma::mat tQ_checkS = Q_edge.t() * check_S_inv;

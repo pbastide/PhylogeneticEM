@@ -39,6 +39,7 @@ PhyloEM(
   tol_tree = .Machine$double.eps^0.5,
   allow_negative = FALSE,
   option_is.ultrametric = 1,
+  trait_correlation_threshold = 0.9,
   ...
 )
 }
@@ -168,6 +169,8 @@ two lineages lengths to be different, when checking for ultrametry.
 See details. Default to FALSE.}
 
 \item{option_is.ultrametric}{option for \code{\link{is.ultrametric}} check. Default to 1.}
+
+\item{trait_correlation_threshold}{the trait correlation threshold to stop the analysis. Default to 0.9.}
 
 \item{...}{Further arguments to be passed to \code{\link{estimateEM}}, including
 tolerance parameters for stopping criteria, maximal number of iterations, etc.}

@@ -269,15 +269,15 @@ test_that("check data",{
   tree <- rtree(ntaxa)
   
   ## Missing names
-  Y_data <- matrix(1, p, ntaxa)
+  Y_data <- matrix(rnorm(p*ntaxa), p, ntaxa)
   expect_that(check_data(tree, Y_data, TRUE), gives_warning())
   
   ## Wrong dimensions
-  Y_data <- matrix(1, ntaxa, p)
+  Y_data <- matrix(rnorm(p*ntaxa), ntaxa, p)
   expect_that(check_data(tree, Y_data, TRUE), throws_error())
   
   ## Reordering
-  Y_data <- matrix(1, p, ntaxa)
+  Y_data <- matrix(rnorm(p*ntaxa), p, ntaxa)
   colnames(Y_data) <- tree$tip.label
   expect_that(check_data(tree, Y_data, TRUE), equals(Y_data))
   
@@ -285,6 +285,12 @@ test_that("check data",{
   expect_that(data_new <- check_data(tree, Y_data, TRUE), gives_warning())
   expect_that(data_new, equals(Y_data[ , tree$tip.label]))
   expect_that(check_data(tree, Y_data, FALSE), equals(Y_data))
+  
+  ## Correlations
+  Y_data <- matrix(rnorm(p*ntaxa), p, ntaxa)
+  Y_data[4, ] <- -Y_data[1, ] + rnorm(ntaxa, sd = 0.2)
+  expect_that(check_correlations(Y_data), shows_message("high correlation"))
+  expect_equal(check_correlations(Y_data, 0.98), 1.0)
 })
 
 test_that("check tree",{

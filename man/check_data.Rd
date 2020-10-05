@@ -12,6 +12,8 @@ check_data(phylo, Y_data, check.tips.names)
 \item{Y_data}{matrix of data at the tips (pxntaxa)}
 
 \item{check.tips.names}{(bool) whether to check the tips names or not}
+
+\item{trait_correlation_threshold}{threshold for trait correlation. Default to 0.9.}
 }
 \value{
 Y_data a re-ordered matrix of data (if necessary)
