@@ -151,14 +151,15 @@ test_that("Mean of the OU", {
                              c(2, -8, 0.3)),
                 relativeTimes = 0)
   
-  X1 <- simulate_internal(tree,
-                          p = p,
-                          root.state = root.state,
-                          process = "OU",
-                          variance = variance,
-                          optimal.value = optimal.value,
-                          selection.strength = selection.strength,
-                          shifts = shifts)
+  expect_warning(X1 <- simulate_internal(tree,
+                                         p = p,
+                                         root.state = root.state,
+                                         process = "OU",
+                                         variance = variance,
+                                         optimal.value = optimal.value,
+                                         selection.strength = selection.strength,
+                                         shifts = shifts),
+                 "root variance")
   
   X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
   
@@ -174,15 +175,16 @@ test_that("Mean of the OU", {
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
   
   ## Without simulate
-  X2 <- simulate_internal(tree,
-                          p = p,
-                          root.state = root.state,
-                          process = "OU",
-                          variance = variance,
-                          optimal.value = optimal.value,
-                          selection.strength = selection.strength,
-                          shifts = shifts,
-                          simulate_random = FALSE)
+  expect_warning(X2 <- simulate_internal(tree,
+                                         p = p,
+                                         root.state = root.state,
+                                         process = "OU",
+                                         variance = variance,
+                                         optimal.value = optimal.value,
+                                         selection.strength = selection.strength,
+                                         shifts = shifts,
+                                         simulate_random = FALSE),
+                 "root variance")
   X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
@@ -390,25 +392,27 @@ test_that("Interval vs simul", {
                 relativeTimes = 0)
   
   set.seed(1899)
-  X1 <- simulate_internal(tree,
-                          p = p,
-                          root.state = root.state,
-                          process = "OU",
-                          variance = variance,
-                          optimal.value = optimal.value,
-                          selection.strength = selection.strength,
-                          shifts = shifts)
+  expect_warning(X1 <- simulate_internal(tree,
+                                         p = p,
+                                         root.state = root.state,
+                                         process = "OU",
+                                         variance = variance,
+                                         optimal.value = optimal.value,
+                                         selection.strength = selection.strength,
+                                         shifts = shifts),
+                 "root variance")
   
   ## Simulate External
-  para <- params_process("OU", p = p, variance = variance,
-                         selection.strength = selection.strength,
-                         optimal.value = optimal.value, random = TRUE,
-                         stationary.root = TRUE, exp.root = exp.stationary,
-                         var.root = var.stationary, edges = shifts$edges,
-                         values = shifts$values)
+  expect_warning(para <- params_process("OU", p = p, variance = variance,
+                                        selection.strength = selection.strength,
+                                        optimal.value = optimal.value, random = TRUE,
+                                        stationary.root = TRUE, exp.root = exp.stationary,
+                                        var.root = var.stationary, edges = shifts$edges,
+                                        values = shifts$values),
+                 "root variance")
   
   set.seed(1899)
-  X2 <- simul_process(para, phylo = tree)
+  X2 <- expect_warning(simul_process(para, phylo = tree), "root variance")
   
   ## Comparisons and extractors
   X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
@@ -527,15 +531,16 @@ test_that("OU/BM", {
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
   
   ## Without simulate
-  X2 <- simulate_internal(tree,
-                          p = p,
-                          root.state = root.state,
-                          process = "OU",
-                          variance = variance,
-                          optimal.value = optimal.value,
-                          selection.strength = selection.strength,
-                          shifts = shifts,
-                          simulate_random = FALSE)
+  expect_warning(X2 <- simulate_internal(tree,
+                                         p = p,
+                                         root.state = root.state,
+                                         process = "OU",
+                                         variance = variance,
+                                         optimal.value = optimal.value,
+                                         selection.strength = selection.strength,
+                                         shifts = shifts,
+                                         simulate_random = FALSE),
+                 "strictly positive real part")
   X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X2.tips.exp, equals(X2.tips.exp))
   
@@ -556,15 +561,16 @@ test_that("OU/BM", {
   tree_heigth <- max(node.depth.edgelength(tree))
   var_1 <- tree_heigth * variance[1, 1]
   var_2 <- variance[2, 2] / (2 * selection.strength[2, 2])
-  X1.tips.states <- sapply(1:50, function(x) extract_simulate_internal(simulate_internal(tree,
-                                                                                          p = p,
-                                                                                          root.state = root.state,
-                                                                                          process = "OUBM",
-                                                                                          variance = variance,
-                                                                                          optimal.value = optimal.value,
-                                                                                          selection.strength = selection.strength,
-                                                                                          shifts = shifts),
-                                                                        where = "tips", what = "states"))
+  X1.tips.states <- sapply(1:50, function(x) extract_simulate_internal(expect_warning(simulate_internal(tree,
+                                                                                                        p = p,
+                                                                                                        root.state = root.state,
+                                                                                                        process = "OUBM",
+                                                                                                        variance = variance,
+                                                                                                        optimal.value = optimal.value,
+                                                                                                        selection.strength = selection.strength,
+                                                                                                        shifts = shifts),
+                                                                                      "strictly positive real part"),
+                                                                       where = "tips", what = "states"))
   X1.tips.states.var <- apply(X1.tips.states, 1, var)
   expect_equal(mean(X1.tips.states.var[1 + p * 0:(ntaxa - 1)]), var_1, 0.05)
   expect_equal(mean(X1.tips.states.var[2 + p * 0:(ntaxa - 1)]), var_2, 0.05)
