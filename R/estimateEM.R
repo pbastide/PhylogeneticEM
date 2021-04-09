@@ -1614,6 +1614,14 @@ find_rotation <- function(res1, res2, tol = NULL) {
   dat2 <- t(res2$Y_data)
   # Basic checks
   if (any(dim(dat1) != dim(dat2))) stop("The datasets should have the same dimension.")
+  # NAs
+  if (anyNA(dat1)) {
+    if (any(!(rowSums(is.na(dat1)) %in% c(0, ncol(dat1))))) stop("Rotations can only be applied to datasets that have entire species missing (i.e. entire columns in `Y_data`).")
+    if (any(!(rowSums(is.na(dat2)) %in% c(0, ncol(dat2))))) stop("Rotations can only be applied to datasets that have entire species missing (i.e. entire columns in `Y_data`).")
+    if (any(!(is.na(dat1) == is.na(dat2)))) stop("The two datasets used in the analyses do not have the same missing data.")
+    dat1 <- na.omit(dat1)
+    dat2 <- na.omit(dat2)
+  }
   # Fit
   fit_12 <- lm.fit(dat1, dat2)
   # Linearly dependent ?
