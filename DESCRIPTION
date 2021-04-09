@@ -12,8 +12,8 @@ Description:
     Bastide et al. (2018) <doi:10.1093/sysbio/syy005>.
 Depends:
     ape (>= 5.3),
-    Matrix (>= 1.2.3),
-    R (>= 3.6.2),
+    Matrix (>= 1.2.18),
+    R (>= 3.6.0),
 Imports:
     capushe (>= 1.1.1),
     foreach (>= 1.4.3),
