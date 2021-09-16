@@ -7,6 +7,8 @@ vignette: >
   %\VignetteIndexEntry{Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{TreeSim}
+  %\VignetteDepends{doParallel}
 ---
 
 ## Introduction
@@ -24,11 +26,23 @@ To show how the functions work, let's first simulate some traits with known para
 
 We use function `sim.bd.taxa.age` from package `TreeSim` to simulate a phylogenetic tree.
 
-```{r, label="Simus_tree"}
+```{r, label="Simus_tree", eval = FALSE}
 set.seed(17920902)
 ntaxa = 80
 tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
                                  age = 1, mrca = TRUE)[[1]]
+```
+
+```{r label="Simus_tree_int", echo=FALSE}
+set.seed(17920902)
+ntaxa = 80
+if (!requireNamespace("TreeSim", quietly = TRUE)) {
+  tree <- ape::rphylo(n = ntaxa, birth = 0.1, death = 0, T0 = 1)
+  tree$edge.length <- tree$edge.length / max(ape::vcv(tree))
+} else {
+  tree <- TreeSim::sim.bd.taxa.age(n = ntaxa, numbsim = 1, lambda = 0.1, mu = 0,
+                                   age = 1, mrca = TRUE)[[1]]
+}
 ```
 
 We then choose a set of parameters, using function `params_process`:
@@ -97,7 +111,7 @@ for (i in 1:nMiss){
 
 By default, the inference is done on an automatically computed grid of alpha values. Here, to keep the computations to a minimum, we will only use $2$ values for alpha, including the true value. In a true application however, a grid with $10$ values of $\alpha$ is automatically chosen.
 
-```{r, label="Fit_EM", warning=FALSE}
+```{r, label="Fit_EM", warning=FALSE, eval = FALSE}
 ## Grid on alpha
 alpha_grid <- c(1, 3)
 
@@ -111,6 +125,34 @@ res <- PhyloEM(phylo = tree,
                K_max = 10,                         ## Maximal number of shifts
                parallel_alpha = TRUE,              ## This can be set to TRUE for
                Ncores = 2)                         ## parallel computations
+res
+```
+
+```{r label="Fit_EM_int", echo=FALSE, warning = FALSE}
+## Grid on alpha
+alpha_grid <- c(1, 3)
+if (!requireNamespace("doParallel", quietly = TRUE)) {
+  ## Run algorithm
+  res <- PhyloEM(phylo = tree,
+                 Y_data = data,
+                 process = "scOU",                   ## scalar OU model
+                 random.root = TRUE,                 ## Root is stationary (true model)
+                 stationary.root = TRUE,
+                 alpha = alpha_grid,                 ## On a grid of alpha
+                 K_max = 10,                         ## Maximal number of shifts
+                 parallel_alpha = FALSE)              ## This can be set to TRUE for
+} else {
+  ## Run algorithm
+  res <- PhyloEM(phylo = tree,
+                 Y_data = data,
+                 process = "scOU",                   ## scalar OU model
+                 random.root = TRUE,                 ## Root is stationary (true model)
+                 stationary.root = TRUE,
+                 alpha = alpha_grid,                 ## On a grid of alpha
+                 K_max = 10,                         ## Maximal number of shifts
+                 parallel_alpha = TRUE,              ## This can be set to TRUE for
+                 Ncores = 2)                         ## parallel computations
+}
 res
 ```
 

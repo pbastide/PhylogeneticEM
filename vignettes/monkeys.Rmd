@@ -7,6 +7,7 @@ vignette: >
   %\VignetteIndexEntry{New World Monkeys}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{doParallel}
 ---
 
 ## Dataset
@@ -34,7 +35,7 @@ By default, the inference is done on an automatically computed grid of 10 alpha 
 To keep the computations down, we ask for a custom grid of only 4 values, but this number should be raised on a real application.
 The maximum number of shifts considered is here 10, and should be adapted considering the size of the tree.
 
-```{r, label="Fit_EM", warning=FALSE, message=FALSE}
+```{r, label="Fit_EM", warning=FALSE, message=FALSE, eval=FALSE}
 res <- PhyloEM(phylo = monkeys$phy,
                Y_data = monkeys$dat,
                process = "scOU",                   ## scalar OU model
@@ -44,6 +45,30 @@ res <- PhyloEM(phylo = monkeys$phy,
                K_max = 10,                         ## Maximal number of shifts
                parallel_alpha = TRUE,              ## This can be set to TRUE for
                Ncores = 2)                         ## parallel computations
+res
+```
+
+```{r label="Fit_EM_int", echo=FALSE, warning=FALSE, message=FALSE}
+if (!requireNamespace("doParallel", quietly = TRUE)) {
+  res <- PhyloEM(phylo = monkeys$phy,
+                 Y_data = monkeys$dat,
+                 process = "scOU",                   ## scalar OU model
+                 random.root = TRUE,                 ## Root is stationary
+                 stationary.root = TRUE,
+                 nbr_alpha = 4,                      ## Number of alpha values tested (should be raised)
+                 K_max = 10,                         ## Maximal number of shifts
+                 parallel_alpha = FALSE)              ## This can be set to TRUE for
+} else {
+  res <- PhyloEM(phylo = monkeys$phy,
+                 Y_data = monkeys$dat,
+                 process = "scOU",                   ## scalar OU model
+                 random.root = TRUE,                 ## Root is stationary
+                 stationary.root = TRUE,
+                 nbr_alpha = 4,                      ## Number of alpha values tested (should be raised)
+                 K_max = 10,                         ## Maximal number of shifts
+                 parallel_alpha = TRUE,              ## This can be set to TRUE for
+                 Ncores = 2)                         ## parallel computations
+}
 res
 ```
 
@@ -96,7 +121,7 @@ These configurations all have the same likelihood, and hence cannot be distingui
 In theory, the method should not be affected by a rotation of the dataset (see Adams & Collyer, 2018 [^2] for a review of this problem).
 However, because of some numerical issues, it is possible that the results vary a little bit. We can explore this behavior on this dataset.
 
-```{r, label="Fit_EM_rot", warning=FALSE, message=FALSE}
+```{r, label="Fit_EM_rot", warning=FALSE, message=FALSE, eval = FALSE}
 # An arbitrary rotation
 theta <- pi/4
 rot <- matrix(c(cos(theta), -sin(theta), sin(theta), cos(theta)),
@@ -116,6 +141,40 @@ res_rot <- PhyloEM(phylo = monkeys$phy,
                    K_max = 10,                         
                    parallel_alpha = TRUE,              
                    Ncores = 2)                         
+```
+
+```{r label="Fit_EM_rot_int", echo=FALSE, warning=FALSE, message=FALSE}
+# An arbitrary rotation
+theta <- pi/4
+rot <- matrix(c(cos(theta), -sin(theta), sin(theta), cos(theta)),
+              nrow = 2, ncol = 2)
+
+# Rotate data
+Yrot <- t(rot) %*% monkeys$dat
+rownames(Yrot) <- rownames(monkeys$dat)
+
+if (!requireNamespace("doParallel", quietly = TRUE)) {
+  # PhyloEM on rotated data
+  res_rot <- PhyloEM(phylo = monkeys$phy,
+                     Y_data = Yrot,                      ## rotated data
+                     process = "scOU",                   
+                     random.root = TRUE,                 
+                     stationary.root = TRUE,
+                     nbr_alpha = 4,
+                     K_max = 10,                         
+                     parallel_alpha = FALSE)              
+} else {
+  # PhyloEM on rotated data
+  res_rot <- PhyloEM(phylo = monkeys$phy,
+                     Y_data = Yrot,                      ## rotated data
+                     process = "scOU",                   
+                     random.root = TRUE,                 
+                     stationary.root = TRUE,
+                     nbr_alpha = 4,
+                     K_max = 10,                         
+                     parallel_alpha = TRUE,              
+                     Ncores = 2)  
+}
 ```
 
 ```{r, fig.show='hold', fig.height=4, fig.width=7, warning=FALSE}
@@ -168,7 +227,7 @@ We can see here that the solution with 3 shifts is now selected again.
 
 This merge function can be applied to more that two fits, as illustrated below.
 
-```{r, label="Fit_EM_rot2", warning=FALSE, message = FALSE}
+```{r, label="Fit_EM_rot2", warning=FALSE, message = FALSE, eval = FALSE}
 # An other rotation
 theta <- pi/3
 rot2 <- matrix(c(cos(theta), -sin(theta), sin(theta), cos(theta)),
@@ -189,6 +248,42 @@ res_rot2 <- PhyloEM(phylo = monkeys$phy,
                    parallel_alpha = TRUE,            
                    Ncores = 2)                        
 
+# Merge
+res_merge2 <- merge_rotations(res, res_rot, res_rot2)
+```
+
+```{r label="Fit_EM_rot2_int", echo=FALSE, warning=FALSE, message=FALSE}
+# An other rotation
+theta <- pi/3
+rot2 <- matrix(c(cos(theta), -sin(theta), sin(theta), cos(theta)),
+              nrow = 2, ncol = 2)
+
+# Rotate data
+Yrot2 <- t(rot2) %*% monkeys$dat
+rownames(Yrot2) <- rownames(monkeys$dat)
+
+if (!requireNamespace("doParallel", quietly = TRUE)) {
+  # PhyloEM on rotated data
+  res_rot2 <- PhyloEM(phylo = monkeys$phy,
+                      Y_data = Yrot2,
+                      process = "scOU",                   
+                      random.root = TRUE,                 
+                      stationary.root = TRUE,
+                      nbr_alpha = 2,           ## Note that this can also be different
+                      K_max = 10,                        
+                      parallel_alpha = FALSE)       
+} else {
+  # PhyloEM on rotated data
+  res_rot2 <- PhyloEM(phylo = monkeys$phy,
+                      Y_data = Yrot2,
+                      process = "scOU",                   
+                      random.root = TRUE,                 
+                      stationary.root = TRUE,
+                      nbr_alpha = 2,           ## Note that this can also be different
+                      K_max = 10,                        
+                      parallel_alpha = TRUE,            
+                      Ncores = 2)  
+}
 # Merge
 res_merge2 <- merge_rotations(res, res_rot, res_rot2)
 ```
@@ -217,7 +312,7 @@ Note that, although the case with no shift has a clear interpretation (EB model)
 can be hard to interpret, and is not always appropriate.
 One should hence be careful when using and interpreting such a model, and the use of this functionality is not encouraged for a first analysis.
 
-```{r, label="Fit_EM_negative", warning=FALSE, message = FALSE}
+```{r, label="Fit_EM_negative", warning=FALSE, message = FALSE, eval = FALSE}
 res_neg <- PhyloEM(phylo = monkeys$phy,
                    Y_data = monkeys$dat,
                    process = "scOU",
@@ -227,6 +322,29 @@ res_neg <- PhyloEM(phylo = monkeys$phy,
                    Ncores = 2,
                    nbr_alpha = 4,            ## 2 negative, 2 positive (should be more)
                    allow_negative = TRUE)    ## allow negative alpha in the grid
+```
+
+```{r label="Fit_EM_negative_int", echo=FALSE, warning=FALSE, message=FALSE}
+if (!requireNamespace("doParallel", quietly = TRUE)) {
+  res_neg <- PhyloEM(phylo = monkeys$phy,
+                     Y_data = monkeys$dat,
+                     process = "scOU",
+                     random.root = FALSE,      ## root needs to be fixed
+                     K_max = 10,
+                     parallel_alpha = FALSE,
+                     nbr_alpha = 4,            ## 2 negative, 2 positive (should be more)
+                     allow_negative = TRUE)    ## allow negative alpha in the grid      
+} else {
+  res_neg <- PhyloEM(phylo = monkeys$phy,
+                     Y_data = monkeys$dat,
+                     process = "scOU",
+                     random.root = FALSE,      ## root needs to be fixed
+                     K_max = 10,
+                     parallel_alpha = TRUE,
+                     Ncores = 2,
+                     nbr_alpha = 4,            ## 2 negative, 2 positive (should be more)
+                     allow_negative = TRUE)    ## allow negative alpha in the grid
+}
 ```
 
 We can extract the parameter of the fit with no shift, that is equivalent to an EB model:
