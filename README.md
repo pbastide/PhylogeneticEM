@@ -1,6 +1,5 @@
 PhylogeneticEM
 ===============
-[![Travis-CI Build Status](https://travis-ci.org/pbastide/PhylogeneticEM.svg?branch=master)](https://travis-ci.org/pbastide/PhylogeneticEM)
 [![R-CMD-check](https://github.com/pbastide/PhylogeneticEM/workflows/R-CMD-check/badge.svg)](https://github.com/pbastide/PhylogeneticEM/actions)
 [![](https://img.shields.io/badge/docs-vignettes-blue.svg)](http://pbastide.github.io/PhylogeneticEM/)
 [![codecov](https://codecov.io/gh/pbastide/PhylogeneticEM/branch/master/graph/badge.svg)](https://codecov.io/gh/pbastide/PhylogeneticEM)

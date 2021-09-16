@@ -10,7 +10,6 @@
 ^simulations_study$
 ^tests/error_parsimony_algo_MWE\.R$
 ^tests/Test-All\.R$
-^\.travis\.yml$
 ^_pkgdown\.yml$
 ^docs$
 ^data-raw$
