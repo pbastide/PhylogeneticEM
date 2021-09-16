@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // upward_downward_BM
 Rcpp::List upward_downward_BM(arma::mat const& data, arma::umat const& ed, arma::mat const& Delta, arma::mat const& Variance, arma::vec const& edge_length, Rcpp::List root_state_list);
 RcppExport SEXP _PhylogeneticEM_upward_downward_BM(SEXP dataSEXP, SEXP edSEXP, SEXP DeltaSEXP, SEXP VarianceSEXP, SEXP edge_lengthSEXP, SEXP root_state_listSEXP) {
