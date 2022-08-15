@@ -72,5 +72,5 @@ An S3 object of class \code{simul_process}. This contains:
 }}
 
 \seealso{
-\code{\link{params_process}}, \code{\link{PhyloEM}}
+\code{\link{params_process}}, \code{\link{PhyloEM}}, \code{\link{extract.simul_process}}
 }

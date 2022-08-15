@@ -54,7 +54,7 @@
 #'  (class \code{params_proces}).}
 #'  }
 #'  
-#' @seealso \code{\link{params_process}}, \code{\link{PhyloEM}}
+#' @seealso \code{\link{params_process}}, \code{\link{PhyloEM}}, \code{\link{extract.simul_process}}
 #' 
 #' @export
 #' 
@@ -236,7 +236,7 @@ plot.params_process <- function(x,
   
   # If on trait, select relevant quantities
   if (length(traits) == 1){
-    if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, ncol(x$variance)))
+    if (length(as.vector(params$selection.strength)) == 1) params$selection.strength <- diag(rep(params$selection.strength, ncol(x$variance)), nrow = ncol(x$variance))
     params <- split_params_independent(params)
     params <- params[[traits]]
   }

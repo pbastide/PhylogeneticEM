@@ -1,4 +1,11 @@
 # PhylogeneticEM 1.5.0.9000
+* Deprecation fix:
+  * Update code to comply with Matrix 1.4-2 new coding standards.
+* API change:
+  * Function `compute_stationary_variance` now always return a `dpoMatrix`, using `Matrix::nearPD` if needed.
+  The change only impacts computations with full variance and selection strength matrices,
+  which are never used in a typical `PhyloEM` analysis,
+  but could impact direct calls to the function or simulations under complex scenarios.
 
 # PhylogeneticEM 1.5.0
 * Bug fix:

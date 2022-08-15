@@ -503,8 +503,11 @@ compute_stationary_variance <- function(variance, selection.strength){
     root_var_vec <- kro_sum_A_inv %*% variance_vec
     gamma <- matrix(root_var_vec, dim(variance))
     if (!isSymmetric(gamma, tol = (.Machine$double.eps)^(0.7))) stop("Error in computation of stationary variance: matrix computed was not symmetric.")
-    gamma <- forceSymmetric(gamma)
-    return(as(gamma, "dsyMatrix"))
+    gamma <- symmpart(gamma)
+    gamma <- nearPD(gamma)
+    return(gamma$mat)
+    # return(as(gamma, "symmetricMatrix"))
+    # return(as(gamma, "dsyMatrix"))
     # return(as(gamma, "dpoMatrix"))
   }
 }
