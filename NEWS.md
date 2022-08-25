@@ -6,6 +6,9 @@
   The change only impacts computations with full variance and selection strength matrices,
   which are never used in a typical `PhyloEM` analysis,
   but could impact direct calls to the function or simulations under complex scenarios.
+* Bug Fix:
+  * In `plot.equivalent_shifts` make sure the colors of the regimes are consistent for
+  all equivalent solutions.
 
 # PhylogeneticEM 1.5.0
 * Bug fix:
