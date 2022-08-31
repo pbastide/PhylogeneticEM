@@ -1256,6 +1256,8 @@ plot.equivalent_shifts <- function(x,
     levels(cor_col_reg) <- 0:nbrShifts
   } else {
     colors <- unique(colors_tips)
+    cor_col_reg <- as.factor(colors)
+    levels(cor_col_reg) <- 0:nbrShifts
   }
   scr <- split.screen(c(nbrLignes, nbr_col))
   if (show_shifts_values){
@@ -1281,6 +1283,9 @@ plot.equivalent_shifts <- function(x,
     regimes <- as.factor(regimes)
     cor_col_reg <- cbind(sort(unique(regimes[1:ntaxa])), colors)
     levels(regimes)[as.numeric(cor_col_reg[,1])] <- colors
+    # Make sure they are in the same order
+    if (is.null(colors_tips)) colors_tips <- regimes[1:ntaxa]
+    levels(regimes) <- colors[match(unique(regimes[1:ntaxa]), unique(colors_tips))]
     edges_regimes <- regimes[phylo$edge[,2]]
     ## Shifts Colors
     makeLighter = function(..., alpha = 0.5, saut=100) {
@@ -1311,7 +1316,8 @@ plot.equivalent_shifts <- function(x,
          edge.width = edge.width,
          value_in_box = value_in_box,
          traits = trait, 
-         shifts_cex = shifts_cex, ...)
+         shifts_cex = shifts_cex,
+         automatic_colors = FALSE, ...)
     if(numbering){
       legend("topleft",
              legend = sol,

@@ -312,7 +312,7 @@ plot.PhyloEM <- function(x,
     params <- params_process.PhyloEM(x,
                                      method.selection = method.selection)
   } else {
-    if (class(params) != "params_process") {
+    if (!inherits(params, "params_process")) {
       stop("The user specified parameters must be of class 'params_process'.")
     }
   }

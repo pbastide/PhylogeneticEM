@@ -1778,7 +1778,7 @@ compute_ancestral_traits <- function(x,
   if (is.null(params)){
     params <- params_process(x, method.selection, ...)
   } else {
-    if (class(params) != "params_process") {
+    if (!inherits(params, "params_process")) {
       stop("The user specified parameters must be of class 'params_process'.")
     }
   }

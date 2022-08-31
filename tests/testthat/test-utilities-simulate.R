@@ -151,15 +151,14 @@ test_that("Mean of the OU", {
                              c(2, -8, 0.3)),
                 relativeTimes = 0)
   
-  expect_warning(X1 <- simulate_internal(tree,
-                                         p = p,
-                                         root.state = root.state,
-                                         process = "OU",
-                                         variance = variance,
-                                         optimal.value = optimal.value,
-                                         selection.strength = selection.strength,
-                                         shifts = shifts),
-                 "root variance")
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts)
   
   X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
   
@@ -175,16 +174,15 @@ test_that("Mean of the OU", {
   expect_that(X1.tips.exp, equals(X1.tips.exp.mat))
   
   ## Without simulate
-  expect_warning(X2 <- simulate_internal(tree,
-                                         p = p,
-                                         root.state = root.state,
-                                         process = "OU",
-                                         variance = variance,
-                                         optimal.value = optimal.value,
-                                         selection.strength = selection.strength,
-                                         shifts = shifts,
-                                         simulate_random = FALSE),
-                 "root variance")
+  X2 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts,
+                          simulate_random = FALSE)
   X2.tips.exp <- extract_simulate_internal(X2, where = "tips", what = "exp")
   expect_that(X2.tips.exp, equals(X2.tips.exp))
 })
@@ -369,7 +367,7 @@ test_that("Multivariate Scalar (scOU) - Fixed Root", {
 })
 
 ###############################################################################
-test_that("Interval vs simul", {
+test_that("Internal vs simul", {
   ntaxa <- 32
   tree <- rcoal(ntaxa)
   
@@ -392,27 +390,25 @@ test_that("Interval vs simul", {
                 relativeTimes = 0)
   
   set.seed(1899)
-  expect_warning(X1 <- simulate_internal(tree,
-                                         p = p,
-                                         root.state = root.state,
-                                         process = "OU",
-                                         variance = variance,
-                                         optimal.value = optimal.value,
-                                         selection.strength = selection.strength,
-                                         shifts = shifts),
-                 "root variance")
+  X1 <- simulate_internal(tree,
+                          p = p,
+                          root.state = root.state,
+                          process = "OU",
+                          variance = variance,
+                          optimal.value = optimal.value,
+                          selection.strength = selection.strength,
+                          shifts = shifts)
   
   ## Simulate External
-  expect_warning(para <- params_process("OU", p = p, variance = variance,
-                                        selection.strength = selection.strength,
-                                        optimal.value = optimal.value, random = TRUE,
-                                        stationary.root = TRUE, exp.root = exp.stationary,
-                                        var.root = var.stationary, edges = shifts$edges,
-                                        values = shifts$values),
-                 "root variance")
+  para <- params_process("OU", p = p, variance = variance,
+                         selection.strength = selection.strength,
+                         optimal.value = optimal.value, random = TRUE,
+                         stationary.root = TRUE, exp.root = exp.stationary,
+                         var.root = var.stationary, edges = shifts$edges,
+                         values = shifts$values)
   
   set.seed(1899)
-  X2 <- expect_warning(simul_process(para, phylo = tree), "root variance")
+  X2 <- simul_process(para, phylo = tree)
   
   ## Comparisons and extractors
   X1.tips.exp <- extract_simulate_internal(X1, where = "tips", what = "exp")
