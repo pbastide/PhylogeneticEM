@@ -1,4 +1,4 @@
-# PhylogeneticEM 1.5.0.9000
+# PhylogeneticEM 1.6.0
 * Deprecation fix:
   * Update code to comply with Matrix 1.4-2 new coding standards.
 * API change:
