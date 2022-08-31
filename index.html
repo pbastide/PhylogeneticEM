@@ -24,6 +24,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -36,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">PhylogeneticEM</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.6.0</span>
       </span>
     </div>
 
@@ -54,7 +56,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/pbastide/PhylogeneticEM/">
+  <a href="https://github.com/pbastide/PhylogeneticEM/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -71,87 +73,91 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="phylogeneticem" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#phylogeneticem" class="anchor"></a>PhylogeneticEM</h1></div>
+<div class="section level1">
+<div class="page-header"><h1 id="phylogeneticem">PhylogeneticEM<a class="anchor" aria-label="anchor" href="#phylogeneticem"></a>
+</h1></div>
 
 <p>Implementation of the EM algorithm for the detection of shifts in a phylogeny.</p>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
-<p>Stable version on the <a href="https://cran.rstudio.com/web/packages/PhylogeneticEM/">CRAN</a>.</p>
-<p>To get the latest (and possibly unstable) version, you can use the <a href="https://github.com/hadley/devtools"><code>devtools</code></a> package:</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>Stable version on the <a href="https://cran.rstudio.com/web/packages/PhylogeneticEM/" class="external-link">CRAN</a>.</p>
+<p>To get the latest (and possibly unstable) version, you can use the <a href="https://github.com/hadley/devtools" class="external-link"><code>devtools</code></a> package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"pbastide/PhylogeneticEM"</span>, ref <span class="op">=</span> <span class="st">"develop"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"pbastide/PhylogeneticEM"</span>, ref <span class="op">=</span> <span class="st">"develop"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div id="documentation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#documentation" class="anchor"></a>Documentation</h2>
-<p>See package documentation (references and vignettes) here: <a href="http://pbastide.github.io/PhylogeneticEM/" class="uri">http://pbastide.github.io/PhylogeneticEM/</a></p>
-<p>(Built with <a href="https://github.com/hadley/pkgdown"><code>pkgdown</code></a>).</p>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>See package documentation (references and vignettes) here: <a href="http://pbastide.github.io/PhylogeneticEM/" class="external-link uri">http://pbastide.github.io/PhylogeneticEM/</a></p>
+<p>(Built with <a href="https://github.com/hadley/pkgdown" class="external-link"><code>pkgdown</code></a>).</p>
 </div>
-<div id="references" class="section level2">
-<h2 class="hasAnchor">
-<a href="#references" class="anchor"></a>References:</h2>
-<p>Bastide, P., Mariadassou, M. and Robin, S. (2017), Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree. <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em>, 79(4):1067-1093, <a href="http://onlinelibrary.wiley.com/doi/10.1111/rssb.12206/abstract">doi:10.1111/rssb.12206</a>.</p>
-<p>Bastide, P., Ané, C., Robin, S. and Mariadassou, M. (2018), Inference of Adaptive Shifts for Multivariate Correlated Traits. <em>Systematic Biology</em>, 67(4), 662–680. <a href="https://academic.oup.com/sysbio/advance-article/doi/10.1093/sysbio/syy005/4827615?guestAccessKey=fba26a20-0579-4721-ad76-8e669489539a">doi:10.1093/sysbio/syy005</a>.</p>
+<div class="section level2">
+<h2 id="references">References:<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Bastide, P., Mariadassou, M. and Robin, S. (2017), Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree. <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em>, 79(4):1067-1093, <a href="http://onlinelibrary.wiley.com/doi/10.1111/rssb.12206/abstract" class="external-link">doi:10.1111/rssb.12206</a>.</p>
+<p>Bastide, P., Ané, C., Robin, S. and Mariadassou, M. (2018), Inference of Adaptive Shifts for Multivariate Correlated Traits. <em>Systematic Biology</em>, 67(4), 662–680. <a href="https://academic.oup.com/sysbio/advance-article/doi/10.1093/sysbio/syy005/4827615?guestAccessKey=fba26a20-0579-4721-ad76-8e669489539a" class="external-link">doi:10.1093/sysbio/syy005</a>.</p>
 </div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Download from CRAN at <br><a href="https://cloud.r-project.org/package=PhylogeneticEM">https://​cloud.r-project.org/​package=PhylogeneticEM</a>
-</li>
-<li>Browse source code at <br><a href="https://github.com/pbastide/PhylogeneticEM/">https://​github.com/​pbastide/​PhylogeneticEM/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/pbastide/PhylogeneticEM/issues">https://​github.com/​pbastide/​PhylogeneticEM/​issues</a>
-</li>
+<li><a href="https://cloud.r-project.org/package=PhylogeneticEM" class="external-link">View on CRAN</a></li>
+<li><a href="https://github.com/pbastide/PhylogeneticEM/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/pbastide/PhylogeneticEM/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>GPL (&gt;= 2) | file <a href="LICENSE-text.html">LICENSE</a>
 </li>
 </ul>
 </div>
+
+
 <div class="citation">
-<h2>Citation</h2>
+<h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="authors.html">Citing PhylogeneticEM</a></li>
-</ul>
-</div>
-<div class="developers">
-<h2>Developers</h2>
-<ul class="list-unstyled">
-<li>Paul Bastide <br><small class="roles"> Author, maintainer </small>  </li>
-<li><a href="authors.html">All authors...</a></li>
+<li><a href="authors.html#citation">Citing PhylogeneticEM</a></li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
+<div class="developers">
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/pbastide/PhylogeneticEM/actions"><img src="https://github.com/pbastide/PhylogeneticEM/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="http://pbastide.github.io/PhylogeneticEM/"><img src="https://img.shields.io/badge/docs-vignettes-blue.svg"></a></li>
-<li><a href="https://codecov.io/gh/pbastide/PhylogeneticEM"><img src="https://codecov.io/gh/pbastide/PhylogeneticEM/branch/master/graph/badge.svg" alt="codecov"></a></li>
-<li><a href="https://CRAN.R-project.org/package=PhylogeneticEM"><img src="https://www.r-pkg.org/badges/version/PhylogeneticEM" alt="CRAN_Status_Badge"></a></li>
+<li>Paul Bastide <br><small class="roles"> Author, maintainer </small>  </li>
+<li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
+
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/pbastide/PhylogeneticEM/actions" class="external-link"><img src="https://github.com/pbastide/PhylogeneticEM/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="http://pbastide.github.io/PhylogeneticEM/" class="external-link"><img src="https://img.shields.io/badge/docs-vignettes-blue.svg"></a></li>
+<li><a href="https://codecov.io/gh/pbastide/PhylogeneticEM" class="external-link"><img src="https://codecov.io/gh/pbastide/PhylogeneticEM/branch/master/graph/badge.svg" alt="codecov"></a></li>
+<li><a href="https://CRAN.R-project.org/package=PhylogeneticEM" class="external-link"><img src="https://www.r-pkg.org/badges/version/PhylogeneticEM" alt="CRAN_Status_Badge"></a></li>
+</ul>
 </div>
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Paul Bastide.</p>
+  <p></p>
+<p>Developed by Paul Bastide.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
@@ -159,6 +165,8 @@
 
   
 
+
+  
 
   </body>
 </html>
