@@ -15,12 +15,12 @@
 \item{struct}{structural matrix of size (ntaxa+Nnode)*p, result 
 of function \code{compute_variance_covariance}}
 
-\item{what:}{sub-matrix to be extracted:
+\item{what}{sub-matrix to be extracted:
 "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
 "YZ" : sub matrix tips x nodes (p*Nnode last rows and p*ntaxa first columns)
 "ZZ" : sub matrix of nodes (p*Nnode last rows and columns)}
 
-\item{miss;}{missing values of Y_data}
+\item{miss}{missing values of Y_data}
 }
 \value{
 sub-matrix of variance covariance.

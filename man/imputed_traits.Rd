@@ -58,9 +58,9 @@ state reconstruction) or at the tips (data imputation)
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{PhyloEM}: \code{\link{PhyloEM}} object
-}}
+\item \code{imputed_traits(PhyloEM)}: \code{\link{PhyloEM}} object
 
+}}
 \seealso{
 \code{\link{params_process.PhyloEM}}, \code{\link{PhyloEM}}
 }

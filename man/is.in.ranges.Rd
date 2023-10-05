@@ -7,11 +7,11 @@
 is.in.ranges(p, min, max)
 }
 \arguments{
+\item{p}{list of parameters with the correct structure}
+
 \item{min}{list of minimum values for the parameters}
 
 \item{max}{list of maximum values for the parameters}
-
-\item{params}{list of parameters with the correct structure}
 }
 \value{
 boolean

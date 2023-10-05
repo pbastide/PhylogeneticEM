@@ -7,7 +7,7 @@
 merge_params_independent(params_split)
 }
 \arguments{
-\item{params_split:}{a list of parameters}
+\item{params_split}{a list of parameters}
 }
 \value{
 A parameter object

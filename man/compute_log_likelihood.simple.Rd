@@ -19,13 +19,7 @@ compute_log_likelihood.simple(
 \arguments{
 \item{phylo}{Input tree.}
 
-\item{sim}{(list) : result of function \code{simulate}}
-
 \item{Sigma}{: variance-covariance matrix, result of function \code{compute_variance_covariance}}
-
-\item{Y_data}{: vector indicating the data at the tips}
-
-\item{Sigma_YY_inv}{: invert of the variance-covariance matrix of the data}
 }
 \value{
 log likelihood of the data

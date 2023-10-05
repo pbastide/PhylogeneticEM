@@ -12,14 +12,14 @@ go_back_to_original_process(
 )
 }
 \arguments{
-\item{phy_original:}{the original phylogenetic tree}
+\item{phy_original}{the original phylogenetic tree}
 
-\item{known.selection.strength:}{the known selection strength of the original
+\item{known.selection.strength}{the known selection strength of the original
 OU.}
 
-\item{sBM_variance:}{boolean. Is the root random ?}
+\item{sBM_variance}{boolean. Is the root random ?}
 
-\item{params:}{the inferred parameters of the BM on the re-scaled tree.}
+\item{params}{the inferred parameters of the BM on the re-scaled tree.}
 }
 \value{
 params_scOU the equivalent parameters of the OU on the original tree.

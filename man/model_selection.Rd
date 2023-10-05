@@ -50,9 +50,9 @@ object, and returns the same fitted object.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{PhyloEM}: \code{\link{PhyloEM}} object
-}}
+\item \code{model_selection(PhyloEM)}: \code{\link{PhyloEM}} object
 
+}}
 \seealso{
 \code{\link{PhyloEM}}, \code{\link{params_process.PhyloEM}},
 \code{\link{imputed_traits.PhyloEM}}

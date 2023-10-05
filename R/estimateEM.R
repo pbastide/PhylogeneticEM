@@ -2806,7 +2806,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param Y_data matrix of data at the tips (pxntaxa)
 #' @param check.tips.names (bool) whether to check the tips names or not
-#' @param trait_correlation_threshold threshold for trait correlation. Default to 0.9.
+# @param trait_correlation_threshold threshold for trait correlation. Default to 0.9.
 #' 
 #' @return Y_data a re-ordered matrix of data (if necessary)
 #' 
@@ -2963,11 +2963,11 @@ return_to_original_order <- function(X, phy_o, phy_r){
 #' on a rescaled tree, and gives back the equivalent parameters of the OU on 
 #' the original process.
 #'
-#' @param phy_original: the original phylogenetic tree
-#' @param known.selection.strength: the known selection strength of the original
+#' @param phy_original the original phylogenetic tree
+#' @param known.selection.strength the known selection strength of the original
 #' OU.
-#' @param sBM_variance: boolean. Is the root random ?
-#' @param params: the inferred parameters of the BM on the re-scaled tree.
+#' @param sBM_variance boolean. Is the root random ?
+#' @param params the inferred parameters of the BM on the re-scaled tree.
 #' 
 #' 
 #' @return params_scOU the equivalent parameters of the OU on the original tree.

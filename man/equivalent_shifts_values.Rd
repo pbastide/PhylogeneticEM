@@ -15,10 +15,6 @@ equivalent_shifts_values(phylo, eq_shifts_edges, T_tree_ac, vect_Y, p)
 \item{T_tree_ac}{matrix of incidence of the tree, result of function 
 \code{\link{incidence.matrix}}, actualized with coefficients computed by
 function \code{\link{incidence_matrix_actualization_factors}}.}
-
-\item{shifts}{a list of positions and values of original shifts.}
-
-\item{beta_0}{value of the original optimal value at the root.}
 }
 \value{
 Named list, with "shifts_values" a matrix of shifts values

@@ -294,8 +294,6 @@ model_selection_BGH_leastsquares_raw <- function(res, ntaxa, C.LINselect, ...){
 #' @param K the dimension of the model.
 #' @param model_complexity the complexity of the set of models with dimension K.
 #' @param ntaxa the number of tips.
-#' @param C a constant, C > 1. Default is C = 1.1
-#' (as suggested in Baraud Giraud Huet (2009))
 #' 
 #' @return value of the penalty.
 #' 

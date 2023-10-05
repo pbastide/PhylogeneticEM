@@ -66,11 +66,11 @@ An S3 object of class \code{simul_process}. This contains:
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{params_process}: \code{\link{params_process}} object
+\item \code{simul_process(params_process)}: \code{\link{params_process}} object
 
-\item \code{PhyloEM}: \code{\link{PhyloEM}} object
+\item \code{simul_process(PhyloEM)}: \code{\link{PhyloEM}} object
+
 }}
-
 \seealso{
 \code{\link{params_process}}, \code{\link{PhyloEM}}, \code{\link{extract.simul_process}}
 }

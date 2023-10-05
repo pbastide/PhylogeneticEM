@@ -11,8 +11,6 @@ find_shift_values(shifts_edges, T_tree_ac, vect_Y, p, ntaxa)
 
 \item{T_tree_ac}{matrix of incidence of the tree, result of function 
 \code{incidence.matrix}.}
-
-\item{m_Y}{the vector of values of the means at the tips.}
 }
 \value{
 vector, with first entry the values at the root, and other entries the

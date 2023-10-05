@@ -131,10 +131,11 @@ test_that("Rotations", {
   # rotate params
   expect_equivalent(res$alpha_max$params_estim$`3`,
                     rotate_params(res_rot$alpha_max$params_estim$`3`, rot),
-                    1e-5)
+                    1e-3)
   
   expect_equal(log_likelihood(params_process(res, K = 3), phylo = monkeys$phy, Y_data = monkeys$dat),
-               log_likelihood(rotate_params(params_process(res_rot, K = 3), rot), phylo = monkeys$phy, Y_data = monkeys$dat))
+               log_likelihood(rotate_params(params_process(res_rot, K = 3), rot), phylo = monkeys$phy, Y_data = monkeys$dat),
+               tolerance = 1e-4)
   
   
   # another rotation

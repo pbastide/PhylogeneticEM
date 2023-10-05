@@ -860,7 +860,7 @@ split_params_independent <- function(params){
 #' objects into one param object of dimension p
 #' The reverse operation is done by \code{split_params_independent}
 #'
-#' @param params_split: a list of parameters
+#' @param params_split a list of parameters
 #'     
 #' @return A parameter object
 #' 

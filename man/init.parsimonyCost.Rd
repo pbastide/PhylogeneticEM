@@ -7,9 +7,9 @@
 init.parsimonyCost(phy, clusters)
 }
 \arguments{
-\item{clusters}{the vector of the clusters of the tips.}
+\item{phy}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
+\item{clusters}{the vector of the clusters of the tips.}
 }
 \value{
 A (ntaxa + Nnode)x(nclus) matrix, with ntaxa first lines initialized as

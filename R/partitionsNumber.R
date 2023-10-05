@@ -305,6 +305,8 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 prod.index <- function(X,Id){
   if (0 %in% Id) return(0) # Indice hors limites
   return(prod(diag(X[,Id])))
+  # if (any(Id == 0)) return(0) # Indice hors limites
+  # return(prod(X[1:length(Id) + (Id - 1) * nrow(X)]))
 }
 
 ##

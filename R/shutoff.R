@@ -213,7 +213,7 @@ shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_o
 #' @details
 #' This function is used to test the convergence of the algorithm.
 #'
-#' @param params list of parameters with the correct structure
+#' @param p list of parameters with the correct structure
 #' @param min list of minimum values for the parameters
 #' @param max list of maximum values for the parameters
 #'

@@ -22,14 +22,6 @@ compute_E.simple(
 }
 \arguments{
 \item{phylo}{Input tree.}
-
-\item{Y_data}{: vector indicating the data at the tips}
-
-\item{sim}{(list) : result of function \code{simulate}}
-
-\item{Sigma}{: variance-covariance matrix, result of function \code{compute_variance_covariance}}
-
-\item{Sigma_YY_inv}{: invert of the variance-covariance matrix of the data}
 }
 \value{
 conditional_law_X (list) : list of conditional statistics :

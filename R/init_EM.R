@@ -1427,7 +1427,7 @@ find_independent_regression_vectors.gglasso <- function(Xkro, K, fit, root, p, g
 #' multiplication with a Cholesky decomposition of the variance) is included, rather
 #' than the intercept.
 #'
-#' @param Yp (transformed) data
+#' @param Ypt (transformed) data
 #' @param Xp (transformed) matrix of regression
 #' @param delta regression coefficients obtained with a lasso regression
 #' @param root the position of the root (intercept) in delta

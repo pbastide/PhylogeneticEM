@@ -33,10 +33,10 @@
 #'  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips
-#' @param sim (list) : result of function \code{simulate}
-#' @param Sigma : variance-covariance matrix, result of function \code{compute_variance_covariance}
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
+# @param Y_data vector indicating the data at the tips
+# @param sim (list) result of function \code{simulate}
+# @param Sigma variance-covariance matrix, result of function \code{compute_variance_covariance}
+# @param Sigma_YY_inv invert of the variance-covariance matrix of the data
 #' 
 #' @return conditional_law_X (list) : list of conditional statistics :
 #'                   "expectation" : matrix of size p x (ntaxa+Nnode), with ntaxa
@@ -314,11 +314,11 @@ compute_fixed_moments <- function(times_shared, ntaxa){
 #' 
 #' @param struct structural matrix of size (ntaxa+Nnode)*p, result 
 #' of function \code{compute_variance_covariance}
-#' @param what: sub-matrix to be extracted:
+#' @param what sub-matrix to be extracted:
 #'                "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
 #'                "YZ" : sub matrix tips x nodes (p*Nnode last rows and p*ntaxa first columns)
 #'                "ZZ" : sub matrix of nodes (p*Nnode last rows and columns)
-#' @param miss; missing values of Y_data
+#' @param miss missing values of Y_data
 #' 
 #' @return sub-matrix of variance covariance.
 #' 
@@ -902,9 +902,9 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
 #' to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips.
+#' @param Y_data_vec : vector indicating the data at the tips.
 #' @param sim (list) : result of function \code{simulate}.
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
+#' @param Sigma_YY_chol_inv : invert of the Cholesky variance-covariance matrix of the data.
 #' 
 #' @keywords internal
 #' 
@@ -933,9 +933,9 @@ compute_residuals.simple <- function(phylo, Y_data_vec, sim,
 #' to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips.
+#' @param Y_data_vec : vector indicating the data at the tips.
 #' @param sim (list) : result of function \code{simulate}.
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
+#' @param Sigma_YY_chol_inv : invert of the cholesky variance-covariance matrix of the data.
 #' 
 #' @return squared Mahalanobis distance between data and mean at the tips.
 #' 
@@ -979,10 +979,8 @@ compute_mahalanobis_distance.simple.nomissing.BM <- function(phylo, Y_data, sim,
 #'  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips
-#' @param sim (list) : result of function \code{simulate}
 #' @param Sigma : variance-covariance matrix, result of function \code{compute_variance_covariance}
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
+# @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
 #' 
 #' @return log likelihood of the data
 #' 

@@ -487,6 +487,9 @@ update.compute_betas_from_shifts <- function(edgeNbr, ancestral, shifts, ...){
 #' @return Vector of size (ntaxa + Nnode) of the optimal values at the tips
 #' of the tree.
 #' 
+#' @example
+#' 
+#' 
 #' @export
 #'
 #06/10/14 - Initial release
