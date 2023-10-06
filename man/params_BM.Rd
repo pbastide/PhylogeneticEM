@@ -17,6 +17,7 @@ params_BM(
   nbr_of_shifts = length(edges),
   phylo = NULL,
   sBM_variance = FALSE,
+  trait_names = NULL,
   ...
 )
 }
@@ -59,6 +60,8 @@ length (slot root.edge).}
 \item{sBM_variance}{if the root is random, does it depend on the length of the
 root edge ? (For equivalent purposes with a rescaled OU). Default to FALSE. If
 TRUE, a phylogenetic tree with root edge length must be provided.}
+
+\item{trait_names}{vector of trait names values. Must be of length p.}
 
 \item{...}{unused.}
 }

@@ -1425,12 +1425,44 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
                                     variance = res$variance,
                                     selection.strength = res$selection.strength,
                                     optimal.value = res$optimal.value)
+  if (!is.null(rownames(x$Y_data))) res <- name_params(res, rownames(x$Y_data))
   res$variance <- as(res$variance, "dpoMatrix")
   class(res) <- "params_process"
   if (attr(res, "Neq") > 1){
     warning("There are several equivalent solutions for this shift position.")
   }
   return(res)
+}
+
+name_params <- function(res, names) {
+  ## root state
+  if (isnonnullna(res$root.state$value.root)) names(res$root.state$value.root) <- names
+  if (isnonnullna(res$root.state$exp.root)) names(res$root.state$exp.root) <- names
+  res$root.state$var.root <- name_matrix(res$root.state$var.root, names)
+  ## shifts
+  if (isnonnullna(res$shifts$values)) rownames(res$shifts$values) <- names
+  ## variance
+  res$variance <- name_matrix(res$variance, names)
+  ## selection strength
+  res$selection.strength <- name_matrix(res$selection.strength, names)
+  ## optimal values
+  if (isnonnullna(res$optimal.value)) names(res$optimal.value) <- names
+  return(res)
+}
+
+isnonnullna <- function(x) {
+  return(!is.null(x) && !any(is.na(x)))
+}
+
+name_matrix <- function(M, names) {
+  if (isnonnullna(M)) {
+    if (!is.null(attr(class(M), "package")) && attr(class(M), "package") == "Matrix") {
+      dimnames(M) <- rep.int(list(names), 2L)
+    } else {
+      colnames(M) <- rownames(M) <- names
+    }
+  }
+  return(M)
 }
 
 extract_params <- function(x, method, alpha_str){
