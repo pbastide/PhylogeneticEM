@@ -1,4 +1,4 @@
-# PhylogeneticEM 1.6.0.9000
+# PhylogeneticEM 1.7.0
 * Bug fixes:
   * Fix documentation notes on CRAN checks.
 * New functions and features:
