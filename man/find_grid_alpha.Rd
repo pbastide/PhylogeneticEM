@@ -42,7 +42,8 @@ A grid of alpha values
 }
 \description{
 Grid so that 
-2*ln(2)*quantile(d_ij)/factor_up_alpha < t_{1/2} < factor_down_alpha * ln(2) * h_tree
+2*ln(2)*quantile(d_ij)/factor_up_alpha < t_1/2 < factor_down_alpha * ln(2) * h_tree,
+with t_1/2 the phylogenetic half life: t_1/2 = log(2)/alpha.
 Ensures that for alpha_min, it is almost a BM, and for alpha_max,
 almost all the tips are decorrelated.
 }

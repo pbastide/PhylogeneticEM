@@ -334,7 +334,7 @@ shifts.matrix_to_list <- function(delta){
 #'
 #' @description
 #' \code{incidence_matrix_actualization_factors} computes a ntaxa x Nedge matrix of the 
-#' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
+#' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_\{i tip, j node\}.
 #' This matrix is to be multiplied to the incidence matrix with an outer product.
 #'
 #' @param tree a phylogenetic tree.
@@ -375,7 +375,7 @@ incidence_matrix_actualization_factors <- function(tree,
 #'
 #' @description
 #' \code{compute_actualization_matrix_ultrametric} computes a squares  p*Nedge bloc diagonal
-#' matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
+#' matrix of the (I_p - exp(-A * (h - t_pa(j))))_\{j node\}.
 #'
 #' @details
 #' Careful: the root is not taken into account in this function.
@@ -419,7 +419,7 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #' tips, with the value at the root.
 #'
 #' @details
-#' This function is used in function \code{compute_betas_from_shifts_from_shifts} and is designed to 
+#' This function is used in function \code{compute_betas_from_shifts} and is designed to 
 #' furnish function \code{update.compute_betas_from_shifts} with the right structure of data.
 #'
 #' @param phy Input tree.

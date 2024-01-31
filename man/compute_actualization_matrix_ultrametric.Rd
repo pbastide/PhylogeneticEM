@@ -22,7 +22,7 @@ Matrix of size p*Nedge
 }
 \description{
 \code{compute_actualization_matrix_ultrametric} computes a squares  p*Nedge bloc diagonal
-matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
+matrix of the (I_p - exp(-A * (h - t_pa(j))))_\{j node\}.
 }
 \details{
 Careful: the root is not taken into account in this function.

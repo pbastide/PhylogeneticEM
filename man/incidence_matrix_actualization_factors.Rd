@@ -25,7 +25,7 @@ Matrix of size ntaxa x Nedge
 }
 \description{
 \code{incidence_matrix_actualization_factors} computes a ntaxa x Nedge matrix of the 
-(1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
+(1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_\{i tip, j node\}.
 This matrix is to be multiplied to the incidence matrix with an outer product.
 }
 \keyword{internal}

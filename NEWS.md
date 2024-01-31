@@ -1,4 +1,9 @@
 # PhylogeneticEM 1.6.0.9000
+* Bug fixes:
+  * Fix documentation notes on CRAN checks.
+* New functions and features:
+  * Function `node_optimal_values` for optimal values computation at each nodes.
+  * Trait names are now inherited by the `params_process` objects.
 
 # PhylogeneticEM 1.6.0
 * Deprecation fix:

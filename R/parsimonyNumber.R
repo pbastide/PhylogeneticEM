@@ -150,7 +150,7 @@ extract.parsimonyCost <- function(x,
 #' 
 #' @details
 #' At a tip i in state k, the line-vector is initialized as follow : 
-#' (1 - Ind(k=p)_{1<=p<=nclus})*Inf (where Inf * 0 = 0)
+#' (1 - Ind(k=p)_\{1<=p<=nclus\})*Inf (where Inf * 0 = 0)
 #'
 #' @param phy a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param clusters the vector of the clusters of the tips.
@@ -356,7 +356,7 @@ extract.parsimonyNumber <- function(x,
 #' NAs everywhere, except for the tips.
 #' 
 #' @details
-#' At a tip i in state k, the line-vector is initialized as follow : Ind(k=p)_{1<=p<=nclus}
+#' At a tip i in state k, the line-vector is initialized as follow : Ind(k=p)_\{1<=p<=nclus\}
 #'
 #' @param phy phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
