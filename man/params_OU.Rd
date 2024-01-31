@@ -19,6 +19,7 @@ params_OU(
   relativeTimes = NULL,
   nbr_of_shifts = length(edges),
   phylo = NULL,
+  trait_names = NULL,
   ...
 )
 }
@@ -68,6 +69,8 @@ provided (to allow a random sampling of its edges).}
 
 \item{phylo}{a phylogenetic tree of class \code{\link[ape]{phylo}}. Needed only if
 the shifts edges are not specified.}
+
+\item{trait_names}{vector of trait names values. Must be of length p.}
 
 \item{...}{unused.}
 }

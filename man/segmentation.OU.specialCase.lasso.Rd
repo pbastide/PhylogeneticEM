@@ -17,11 +17,6 @@ segmentation.OU.specialCase.lasso(
 \item{phylo}{a phylogenetic tree}
 
 \item{nbr_of_shifts}{Number of shifts on the phylogeny allowed}
-
-\item{conditional_law_X}{moments of the conditional law of X given Y, result
-of function \code{compute_M.OU.specialCase}}
-
-\item{selection.strength}{the selection strength}
 }
 \value{
 List containing : beta_0 : the optimal value at the root

@@ -120,86 +120,6 @@ shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_o
   }
 }
 
-#' ######################################################
-#' ## Finite parameters ?
-#' ######################################################
-# ##
-# # @title Check whether parameters are finite.
-# #
-# # @description
-# # \code{is.finite.params} checks whether calculated parameters in the EM are
-# # finite or not.
-# #
-# # @details
-# # This function is used to test the convergence of the algorithm.
-# #
-# # @param params list of parameters with the correct structure
-# #
-# # @return boolean
-# # 
-# # @keywords internal
-# #
-# #10/06/14 - Initial release
-# ##
-#' 
-#' is.finite.params.BM <- function(params) {
-#'   if (params$root.state$random) {
-#'     return(is.finite.params.BM.randroot(params))
-#'   } else {
-#'     return(is.finite.params.BM.fixedroot(params))
-#'   }
-#' }
-#' 
-#' is.finite.params.BM.randroot <- function(params) {
-#'   if (is.finite(params$variance) &&
-#'         is.finite(params$root.state$exp.root) &&
-#'         is.finite(params$root.state$var.root) ) {
-#'     return(TRUE)
-#'   } else {
-#'     return(FALSE)
-#'   }
-#' }
-#' 
-#' is.finite.params.BM.fixedroot <- function(params) {
-#'   if ( is.finite(params$variance) &&
-#'          is.finite(params$root.state$value.root) ) {
-#'     return(TRUE)
-#'   } else {
-#'     return(FALSE)
-#'   }
-#' }
-#' 
-#' is.finite.params.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
-#'   if (stationary.root && shifts_at_nodes && alpha_known) {
-#'     return(is.finite.params.OU.specialCase)
-#'   } else if (stationary.root && shifts_at_nodes) {
-#'     return(is.finite.params.OU.stationary.root_AND_shifts_at_nodes)
-#'   } else {
-#'     stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
-#'   }
-#' }
-#' 
-#' is.finite.params.OU.specialCase <- function(params) {
-#'   if (is.finite(params$variance) &&
-#'         is.finite(params$root.state$exp.root) &&
-#'         is.finite(params$root.state$var.root) ) {
-#'     return(TRUE)
-#'   } else {
-#'     return(FALSE)
-#'   }
-#' }
-#' 
-#' is.finite.params.OU.stationary.root_AND_shifts_at_nodes <- function(params) {
-#'   if (is.finite(params$variance) &&
-#'         is.finite(params$root.state$exp.root) &&
-#'         is.finite(params$root.state$var.root) &&
-#'         is.finite(params$selection.strength)) {
-#'     return(TRUE)
-#'   } else {
-#'     return(FALSE)
-#'   }
-#' }
-
 #################################################################
 ## Are parameters in ranges ?
 #################################################################
@@ -213,7 +133,7 @@ shutoff.EM.OU.stationary.root_AND_shifts_at_nodes.half_life <- function(params_o
 #' @details
 #' This function is used to test the convergence of the algorithm.
 #'
-#' @param params list of parameters with the correct structure
+#' @param p list of parameters with the correct structure
 #' @param min list of minimum values for the parameters
 #' @param max list of maximum values for the parameters
 #'

@@ -7,11 +7,11 @@
 allocate_subset_node.simulate(node, array, value)
 }
 \arguments{
-\item{node:}{node on which to slice}
+\item{node}{node on which to slice}
 
-\item{array:}{structure to be sliced}
+\item{array}{structure to be sliced}
 
-\item{value:}{value to be attributed to the slice}
+\item{value}{value to be attributed to the slice}
 }
 \value{
 array: array p x Nnode x 2 (BM), with slice corresponding to node filled with value

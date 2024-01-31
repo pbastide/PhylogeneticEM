@@ -334,7 +334,7 @@ shifts.matrix_to_list <- function(delta){
 #'
 #' @description
 #' \code{incidence_matrix_actualization_factors} computes a ntaxa x Nedge matrix of the 
-#' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_{i tip, j node}.
+#' (1 - exp(-alpha * (t_i - t_pa(j) - nu_j * l_j)))_\{i tip, j node\}.
 #' This matrix is to be multiplied to the incidence matrix with an outer product.
 #'
 #' @param tree a phylogenetic tree.
@@ -375,7 +375,7 @@ incidence_matrix_actualization_factors <- function(tree,
 #'
 #' @description
 #' \code{compute_actualization_matrix_ultrametric} computes a squares  p*Nedge bloc diagonal
-#' matrix of the (I_p - exp(-A * (h - t_pa(j))))_{j node}.
+#' matrix of the (I_p - exp(-A * (h - t_pa(j))))_\{j node\}.
 #'
 #' @details
 #' Careful: the root is not taken into account in this function.
@@ -419,7 +419,7 @@ compute_actualization_matrix_ultrametric <- function(tree,
 #' tips, with the value at the root.
 #'
 #' @details
-#' This function is used in function \code{compute_betas_from_shifts_from_shifts} and is designed to 
+#' This function is used in function \code{compute_betas_from_shifts} and is designed to 
 #' furnish function \code{update.compute_betas_from_shifts} with the right structure of data.
 #'
 #' @param phy Input tree.
@@ -474,6 +474,12 @@ update.compute_betas_from_shifts <- function(edgeNbr, ancestral, shifts, ...){
 #' \code{compute_betas_from_shifts} computes the optimal values at the nodes and tips of the
 #' tree, given the value at the root and the list of shifts occurring in the tree.
 #' It assumes an OU model.
+#' 
+#' @details
+#' Note that this is intended to be an internal function, and should not be used.
+#' In general, use \code{\link{node_optimal_values}} to get optimal values
+#' from a set of parameters.
+#' 
 #'
 # @details
 # This function uses function \code{recursionDown} for recursion on the tree, 
@@ -499,6 +505,60 @@ compute_betas_from_shifts <- function(phylo, optimal.value, shifts){
   betas <- init.compute_betas_from_shifts(phy, optimal.value)
   betas <- recursionDown(phy, betas, update.compute_betas_from_shifts, shifts_ordered)
   return(betas)
+}
+
+##
+#' @title Computation of the optimal values at nodes and tips.
+#'
+#' @description
+#' \code{compute_betas_from_shifts} computes the optimal values at the nodes and tips of the
+#' tree, given the value at the root and the list of shifts occurring in the tree.
+#' It assumes an OU model.
+#
+#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param param an object of class \code{\link{params_process}}.
+#' 
+#' @return Matrix of size ntraits  x (ntaxa + Nnode) of the optimal values at
+#' the node and tips of the tree.
+#' Column names correspond to the number of the node in the phylo object.
+#' 
+#' @examples
+#' set.seed(1792)
+#' ntaxa = 10
+#' tree <- rphylo(ntaxa, 1, 0.1)
+#' # parameters of the process
+#' par <- params_process("BM",                             ## Process
+#'                       p = 2,                            ## Dimension
+#'                       variance = diag(0.5, 2, 2) + 0.5, ## Rate matrix
+#'                       edges = c(4, 10, 15),             ## Positions of the shifts
+#'                       values = cbind(c(5, 4),           ## Values of the shifts
+#'                                      c(-4, -5),
+#'                                      c(5, -3)))
+#' plot(par, phylo = tree, traits = 1, value_in_box = TRUE,
+#'      shifts_bg = "white", root_bg = "white", ancestral_as_shift = TRUE, root_adj = 5)
+#' nodelabels()
+#' node_optimal_values(par, tree)
+#' 
+#' @export
+#'
+##
+node_optimal_values <- function(param, phylo){
+  if(param$root.state$random) {
+    opt_root <- param$root.state$exp.root
+  } else {
+    opt_root <- param$root.state$value.root
+  }
+  p <- ncol(param$variance)
+  if (is.null(p)) p <- 1
+  res <- matrix(NA, nrow = p, ncol = Nnode(phylo) + Ntip(phylo))
+  for (dim in 1:ncol(param$variance)) {
+    shifts <- param$shifts
+    shifts$values <- shifts$values[dim, ]
+    res[dim, ] <- compute_betas_from_shifts(phylo, opt_root[dim], shifts)
+  }
+  colnames(res) <- 1:ncol(res)
+  rownames(res) <- colnames(param$variance)
+  return(res)
 }
 
 ##

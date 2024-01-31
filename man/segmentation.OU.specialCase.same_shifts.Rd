@@ -11,11 +11,6 @@ segmentation.OU.specialCase.same_shifts(phylo, shifts_old, D, Xp, ...)
 \item{phylo}{a phylogenetic tree}
 
 \item{shifts_old}{the previous list of shifts (only position is used)}
-
-\item{conditional_law_X}{moments of the conditional law of X given Y, result
-of function \code{compute_M.OU.specialCase}}
-
-\item{selection.strength}{the selection strength}
 }
 \value{
 List containing : beta_0 : the optimal value at the root

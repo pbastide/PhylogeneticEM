@@ -666,7 +666,8 @@ check_dimensions.shifts <- function(p, shifts){
 #' @title Find a reasonable grid for alpha
 #' 
 #' @description Grid so that 
-#' 2*ln(2)*quantile(d_ij)/factor_up_alpha < t_{1/2} < factor_down_alpha * ln(2) * h_tree
+#' 2*ln(2)*quantile(d_ij)/factor_up_alpha < t_1/2 < factor_down_alpha * ln(2) * h_tree,
+#' with t_1/2 the phylogenetic half life: t_1/2 = log(2)/alpha.
 #' Ensures that for alpha_min, it is almost a BM, and for alpha_max,
 #' almost all the tips are decorrelated.
 #' 
@@ -860,7 +861,7 @@ split_params_independent <- function(params){
 #' objects into one param object of dimension p
 #' The reverse operation is done by \code{split_params_independent}
 #'
-#' @param params_split: a list of parameters
+#' @param params_split a list of parameters
 #'     
 #' @return A parameter object
 #' 

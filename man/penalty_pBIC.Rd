@@ -24,9 +24,6 @@ penalty_pBIC(
 \item{K}{the dimension of the model.}
 
 \item{ntaxa}{the number of tips.}
-
-\item{C}{a constant, C > 1. Default is C = 1.1
-(as suggested in Baraud Giraud Huet (2009))}
 }
 \value{
 value of the penalty.

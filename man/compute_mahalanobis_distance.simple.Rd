@@ -16,11 +16,11 @@ compute_mahalanobis_distance.simple(
 \arguments{
 \item{phylo}{Input tree.}
 
+\item{Y_data_vec}{: vector indicating the data at the tips.}
+
 \item{sim}{(list) : result of function \code{simulate}.}
 
-\item{Y_data}{: vector indicating the data at the tips.}
-
-\item{Sigma_YY_inv}{: invert of the variance-covariance matrix of the data.}
+\item{Sigma_YY_chol_inv}{: invert of the cholesky variance-covariance matrix of the data.}
 }
 \value{
 squared Mahalanobis distance between data and mean at the tips.

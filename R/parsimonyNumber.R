@@ -150,9 +150,9 @@ extract.parsimonyCost <- function(x,
 #' 
 #' @details
 #' At a tip i in state k, the line-vector is initialized as follow : 
-#' (1 - Ind(k=p)_{1<=p<=nclus})*Inf (where Inf * 0 = 0)
+#' (1 - Ind(k=p)_\{1<=p<=nclus\})*Inf (where Inf * 0 = 0)
 #'
-#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param phy a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param clusters the vector of the clusters of the tips.
 #' 
 #' @return A (ntaxa + Nnode)x(nclus) matrix, with ntaxa first lines initialized as
@@ -356,7 +356,7 @@ extract.parsimonyNumber <- function(x,
 #' NAs everywhere, except for the tips.
 #' 
 #' @details
-#' At a tip i in state k, the line-vector is initialized as follow : Ind(k=p)_{1<=p<=nclus}
+#' At a tip i in state k, the line-vector is initialized as follow : Ind(k=p)_\{1<=p<=nclus\}
 #'
 #' @param phy phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
@@ -1401,8 +1401,8 @@ equivalent_shifts_edges <- function(phylo,
 #' the tips. Careful, only works for ULTRAMETRIC trees.
 #' 
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
-#' @param shifts a list of positions and values of original shifts.
-#' @param beta_0 value of the original optimal value at the root.
+# @param shifts a list of positions and values of original shifts.
+# @param beta_0 value of the original optimal value at the root.
 #' @param eq_shifts_edges matrix (optional) result of function
 #' \code{\link{equivalent_shifts_edges}}.
 #' @param T_tree_ac matrix of incidence of the tree, result of function 
@@ -1447,7 +1447,7 @@ equivalent_shifts_values <- function(phylo,
 #' @param shifts_edges a vector of positions of shifts on the tree.
 #' @param T_tree_ac matrix of incidence of the tree, result of function 
 #' \code{incidence.matrix}.
-#' @param m_Y the vector of values of the means at the tips.
+# @param m_Y the vector of values of the means at the tips.
 #'
 #' @return vector, with first entry the values at the root, and other entries the
 #' values of the shifts.
@@ -1457,7 +1457,7 @@ equivalent_shifts_values <- function(phylo,
 find_shift_values <- function(shifts_edges, T_tree_ac, vect_Y, p, ntaxa){
   pos_shifts <- as.vector(sapply(shifts_edges, function(z) p * (z-1) + 1:p))
   mat <- cbind(t(matrix(rep(diag(1, p, p), ntaxa), nrow = p)), T_tree_ac[, pos_shifts]) # stationary case assumption used here
-  coefs <- try(qr.solve_exact(mat, vect_Y), silent = TRUE)
+  coefs <- try(qr_solve_exact(mat, vect_Y), silent = TRUE)
   if (inherits(coefs, "try-error")){
     warning("Had a problem solving exactly the linear system.")
     return(rep(NA, length(shifts_edges) + 1))
@@ -1482,7 +1482,7 @@ find_shift_values <- function(shifts_edges, T_tree_ac, vect_Y, p, ntaxa){
 #'
 #' @keywords internal
 ##
-qr.solve_exact <- function (a, b, tol = 1e-07) {
+qr_solve_exact <- function (a, b, tol = 1e-07) {
   if (!is.qr(a)) 
     a <- qr(a, tol = tol)
   nc <- ncol(a$qr)

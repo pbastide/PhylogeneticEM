@@ -543,7 +543,7 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
 #' @title Compute weighted sum of var_diff
 #'
 #' @description
-#' \code{compute_sum_var_diff} computes sum_{e edge} ell_j * Var[X_j - X_pa(j) | Y]
+#' \code{compute_sum_var_diff} computes sum_\{e edge\} ell_j * Var[X_j - X_pa(j) | Y]
 #'
 #' @param phylo a phylogenetic tree
 #' @param var_diff result of function \code{compute_var_diff.BM}
@@ -954,9 +954,9 @@ segmentation.BM <- function(nbr_of_shifts, costs0, diff_exp){
 #'  
 #' @param phylo a phylogenetic tree
 #' @param nbr_of_shifts Number of shifts on the phylogeny allowed
-#' @param conditional_law_X moments of the conditional law of X given Y, result
-#' of function \code{compute_M.OU.specialCase}
-#' @param selection.strength the selection strength
+# @param conditional_law_X moments of the conditional law of X given Y, result
+# of function \code{compute_M.OU.specialCase}
+# @param selection.strength the selection strength
 #' 
 #' @return List containing : beta_0 : the optimal value at the root
 #'                           shifts : list containing the computed tau and delta
@@ -1143,9 +1143,9 @@ compute_regression_matrices <- function(phylo, conditional_law_X, selection.stre
 #'  This is the best move if keeping the previous shifts positions.
 #'
 #' @param phylo a phylogenetic tree
-#' @param conditional_law_X moments of the conditional law of X given Y, result
-#' of function \code{compute_M.OU.specialCase}
-#' @param selection.strength the selection strength
+# @param conditional_law_X moments of the conditional law of X given Y, result
+# of function \code{compute_M.OU.specialCase}
+# @param selection.strength the selection strength
 #' @param shifts_old the previous list of shifts (only position is used)
 #' 
 #' @return List containing : beta_0 : the optimal value at the root

@@ -348,7 +348,7 @@ plot.PhyloEM <- function(x,
   if (missing(imposed_scale)) imposed_scale <- Y_state
   
   ## Plotting
-  plot.data.process.actual(Y.state = Y_state,
+  plot_data.process.actual(Y.state = Y_state,
                            phylo = x$phylo,
                            params = params,
                            process = x$process,
@@ -390,7 +390,7 @@ plot.PhyloEM <- function(x,
                            ...)
 }
 
-plot.data.process.actual <- function(Y.state, phylo, params,
+plot_data.process.actual <- function(Y.state, phylo, params,
                                      miss = is.na(Y.state),
                                      process = "BM",
                                      #norm = max(abs(Y.state)),

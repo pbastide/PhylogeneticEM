@@ -22,3 +22,8 @@ of the tree.
 tree, given the value at the root and the list of shifts occurring in the tree.
 It assumes an OU model.
 }
+\details{
+Note that this is intended to be an internal function, and should not be used.
+In general, use \code{\link{node_optimal_values}} to get optimal values
+from a set of parameters.
+}

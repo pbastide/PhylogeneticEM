@@ -34,11 +34,11 @@ The log likelihood of the data with the provided parameters on the tree.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{params_process}: \code{\link{params_process}} object
+\item \code{log_likelihood(params_process)}: \code{\link{params_process}} object
 
-\item \code{PhyloEM}: \code{\link{PhyloEM}} object
+\item \code{log_likelihood(PhyloEM)}: \code{\link{PhyloEM}} object
+
 }}
-
 \seealso{
 \code{\link{params_process}}, \code{\link{PhyloEM}}
 }

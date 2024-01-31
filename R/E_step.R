@@ -29,14 +29,14 @@
 #' @details
 #' This function takes parameters sim, Sigma and Sigma_YY_inv from  
 #' \code{compute_mean_variance.simple}. It uses functions 
-#' \code{extract.variance_covariance}, \code{extract.covariance_parents}, and
+#' \code{extract_variance_covariance}, \code{extract_covariance_parents}, and
 #'  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips
-#' @param sim (list) : result of function \code{simulate}
-#' @param Sigma : variance-covariance matrix, result of function \code{compute_variance_covariance}
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
+# @param Y_data vector indicating the data at the tips
+# @param sim (list) result of function \code{simulate}
+# @param Sigma variance-covariance matrix, result of function \code{compute_variance_covariance}
+# @param Sigma_YY_inv invert of the variance-covariance matrix of the data
 #' 
 #' @return conditional_law_X (list) : list of conditional statistics :
 #'                   "expectation" : matrix of size p x (ntaxa+Nnode), with ntaxa
@@ -126,8 +126,8 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
                                                              where="nodes",
                                                              what="optimal.values")) # NULL if BM
   ## Variance Covariance
-  Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ", masque_data)
-  Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ", masque_data)
+  Sigma_YZ <- extract_variance_covariance(Sigma, what="YZ", masque_data)
+  Sigma_ZZ <- extract_variance_covariance(Sigma, what="ZZ", masque_data)
 #  temp <- Sigma_YZ %*% Sigma_YY_inv
   temp <- Sigma_YZ %*% Sigma_YY_chol_inv
   # Y_data_vec <- as.vector(Y_data)
@@ -173,12 +173,12 @@ compute_cond_law.simple <- function (phylo, Y_data_vec, sim,
     }
   }
   # Nodes - varariances
-  var_nodes <- extract.variance_nodes(phylo,
+  var_nodes <- extract_variance_nodes(phylo,
                                       conditional_variance_covariance_nodes)
   conditional_law_X$variances <- array(c(var_tips,
                                          var_nodes), c(p, p, ntaxa + Nnode))
   # Nodes - covariances
-  cov_nodes <- extract.covariance_parents(phylo,
+  cov_nodes <- extract_covariance_parents(phylo,
                                           conditional_variance_covariance_nodes)
   conditional_law_X$covariances <- array(c(cov_tips,
                                            cov_nodes), c(p, p, ntaxa + Nnode))
@@ -290,9 +290,9 @@ compute_cond_law.simple.nomissing.BM <- function (phylo, Y_data, sim,
 ##
 compute_fixed_moments <- function(times_shared, ntaxa){
   masque_data <- c(rep(TRUE, ntaxa), rep(FALSE, dim(times_shared)[1] - ntaxa))
-  C_YZ <- extract.variance_covariance(times_shared, what="YZ", masque_data)
-  C_YY <- extract.variance_covariance(times_shared, what="YY", masque_data)
-  C_ZZ <- extract.variance_covariance(times_shared, what="ZZ", masque_data)
+  C_YZ <- extract_variance_covariance(times_shared, what="YZ", masque_data)
+  C_YY <- extract_variance_covariance(times_shared, what="YY", masque_data)
+  C_ZZ <- extract_variance_covariance(times_shared, what="ZZ", masque_data)
   C_YY_chol <- chol(C_YY)
   C_YY_chol_inv <- backsolve(C_YY_chol, diag(ncol(C_YY_chol)))
   temp <- C_YZ %*% C_YY_chol_inv
@@ -310,22 +310,22 @@ compute_fixed_moments <- function(times_shared, ntaxa){
 #' @title Extract sub-matrices of variance.
 #'
 #' @description
-#' \code{extract.variance_covariance} return the adequate sub-matrix.
+#' \code{extract_variance_covariance} return the adequate sub-matrix.
 #' 
 #' @param struct structural matrix of size (ntaxa+Nnode)*p, result 
 #' of function \code{compute_variance_covariance}
-#' @param what: sub-matrix to be extracted:
+#' @param what sub-matrix to be extracted:
 #'                "YY" : sub-matrix of tips (p*ntaxa first lines and columns)
 #'                "YZ" : sub matrix tips x nodes (p*Nnode last rows and p*ntaxa first columns)
 #'                "ZZ" : sub matrix of nodes (p*Nnode last rows and columns)
-#' @param miss; missing values of Y_data
+#' @param masque_data Mask of missing data
 #' 
 #' @return sub-matrix of variance covariance.
 #' 
 #' @keywords internal
 #' 
 ##
-extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
+extract_variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
                                         masque_data = c(rep(TRUE, attr(struct, "ntaxa") * attr(struct, "p_dim")),
                                                         rep(FALSE, (dim(struct)[1] - attr(struct, "ntaxa")) * attr(struct, "p_dim")))){
   # ntaxa <- attr(struct, "ntaxa")
@@ -343,7 +343,7 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
 }
 
 ##
-# extract.covariance_parents (phylo, struct)
+# extract_covariance_parents (phylo, struct)
 # PARAMETERS:
 #            @phylo (tree)
 #            @struct (matrix) structural matrix of size ntaxa+Nnode, result of function compute_times_ca, compute_dist_phy or compute_variance_covariance
@@ -358,7 +358,7 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
 # REVISIONS:
 #            22/05/14 - Initial release
 ##
-extract.covariance_parents <- function(phylo, struct){
+extract_covariance_parents <- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
   m <- dim(phylo$edge)[1] - ntaxa + 1
@@ -391,7 +391,7 @@ extract.covariance_parents <- function(phylo, struct){
   return(arr)
 }
 
-extract.variance_nodes <- function(phylo, struct){
+extract_variance_nodes <- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
   m <- dim(phylo$edge)[1] - ntaxa + 1
@@ -857,7 +857,7 @@ compute_mean_variance.simple <- function(phylo,
   Sigma <- compute_variance_covariance(times_shared = times_shared, 
                                        distances_phylo = distances_phylo,
                                        params_old = params_old)
-  Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data = masque_data)
+  Sigma_YY <- extract_variance_covariance(Sigma, what="YY", masque_data = masque_data)
   Sigma_YY_chol <- chol(Sigma_YY)
   Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, Matrix::diag(ncol(Sigma_YY_chol)))
   #Sigma_YY_inv <- chol2inv(Sigma_YY_chol)
@@ -902,9 +902,9 @@ compute_mean_variance.simple.nomissing.BM <- function (phylo,
 #' to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips.
+#' @param Y_data_vec : vector indicating the data at the tips.
 #' @param sim (list) : result of function \code{simulate}.
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
+#' @param Sigma_YY_chol_inv : invert of the Cholesky variance-covariance matrix of the data.
 #' 
 #' @keywords internal
 #' 
@@ -933,9 +933,9 @@ compute_residuals.simple <- function(phylo, Y_data_vec, sim,
 #' to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips.
+#' @param Y_data_vec : vector indicating the data at the tips.
 #' @param sim (list) : result of function \code{simulate}.
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data.
+#' @param Sigma_YY_chol_inv : invert of the cholesky variance-covariance matrix of the data.
 #' 
 #' @return squared Mahalanobis distance between data and mean at the tips.
 #' 
@@ -975,14 +975,12 @@ compute_mahalanobis_distance.simple.nomissing.BM <- function(phylo, Y_data, sim,
 #' @details
 #' This function takes parameters sim, Sigma and Sigma_YY_inv from  
 #' \code{compute_mean_variance.simple}. It uses functions 
-#' \code{extract.variance_covariance}, \code{extract.covariance_parents}, and
+#' \code{extract_variance_covariance}, \code{extract_covariance_parents}, and
 #'  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 #'
 #' @param phylo Input tree.
-#' @param Y_data : vector indicating the data at the tips
-#' @param sim (list) : result of function \code{simulate}
 #' @param Sigma : variance-covariance matrix, result of function \code{compute_variance_covariance}
-#' @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
+# @param Sigma_YY_inv : invert of the variance-covariance matrix of the data
 #' 
 #' @return log likelihood of the data
 #' 
@@ -996,7 +994,7 @@ compute_log_likelihood.simple <- function(phylo, Y_data_vec, sim,
                                           masque_data = c(rep(TRUE, dim(sim)[1] * length(phylo$tip.label)),
                                                           rep(FALSE, dim(sim)[1] * phylo$Nnode)), ...){
   # ntaxa <- length(phylo$tip.label)
-  Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
+  Sigma_YY <- extract_variance_covariance(Sigma, what="YY", masque_data)
   logdetSigma_YY <- Matrix::determinant(Sigma_YY, logarithm = TRUE)$modulus
   m_Y <- extract_simulate_internal(sim, where="tips", what="expectations")
   LL <- length(Y_data_vec) * log(2*pi) + logdetSigma_YY
@@ -1022,7 +1020,7 @@ compute_log_likelihood.simple.nomissing.BM <- function(phylo, Y_data, sim,
 #                                    Sigma, Sigma_YY_chol_inv,
 #                                    miss, masque_data){
 #   ntaxa <- length(phylo$tip.label)
-#   Sigma_YY <- extract.variance_covariance(Sigma, what="YY", masque_data)
+#   Sigma_YY <- extract_variance_covariance(Sigma, what="YY", masque_data)
 #   logdetSigma_YY <- determinant(Sigma_YY, logarithm = TRUE)$modulus
 #   return( - (ntaxa * log(2*pi) + logdetSigma_YY) / 2)
 # }
@@ -1038,8 +1036,8 @@ compute_log_likelihood.simple.nomissing.BM <- function(phylo, Y_data, sim,
 # }
 
 # compute_entropy.simple <- function(Sigma, Sigma_YY_inv){
-#   Sigma_YZ <- extract.variance_covariance(Sigma, what="YZ")
-#   Sigma_ZZ <- extract.variance_covariance(Sigma, what="ZZ")
+#   Sigma_YZ <- extract_variance_covariance(Sigma, what="YZ")
+#   Sigma_ZZ <- extract_variance_covariance(Sigma, what="ZZ")
 #   conditional_variance_covariance <- Sigma_ZZ - Sigma_YZ%*%Sigma_YY_inv%*%t(Sigma_YZ)
 #   N <- dim(Sigma_ZZ)[1]
 #   logdet_conditional_variance_covariance <- determinant(conditional_variance_covariance, logarithm = TRUE)$modulus

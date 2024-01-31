@@ -30,9 +30,9 @@ call of \code{\link{PhyloEM}}.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{PhyloEM}: \code{\link{PhyloEM}} object
-}}
+\item \code{enlight(PhyloEM)}: \code{\link{PhyloEM}} object
 
+}}
 \seealso{
 \code{\link{PhyloEM}}, \code{\link{imputed_traits.PhyloEM}},
 \code{\link{plot.PhyloEM}}

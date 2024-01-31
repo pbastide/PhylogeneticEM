@@ -148,7 +148,7 @@ datasetsim <- function(alpha, gamma, K, s_noise, ntaxa, n, grp) {
   Sigma <- compute_variance_covariance.scOU(times_shared = times_shared[[paste0(ntaxa)]], 
                                             distances_phylo = distances_phylo[[paste0(ntaxa)]],
                                             params_old = params)
-  Sigma_YY <- extract.variance_covariance(Sigma, what="YY")
+  Sigma_YY <- extract_variance_covariance(Sigma, what="YY")
   Sigma_YY_chol <- chol(Sigma_YY)
   Sigma_YY_chol_inv <- backsolve(Sigma_YY_chol, diag(ncol(Sigma_YY_chol)))
   Sigma_YY_inv <- Sigma_YY_chol_inv %*% t(Sigma_YY_chol_inv)

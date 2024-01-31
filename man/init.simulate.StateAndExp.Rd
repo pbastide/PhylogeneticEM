@@ -7,15 +7,15 @@
 init.simulate.StateAndExp(phy, p, root.state, simulate_random)
 }
 \arguments{
+\item{phy}{Input tree.}
+
+\item{p}{dimension of the trait simulated}
+
 \item{root.state}{(list): state of the root, with:
 random : random state (TRUE) or deterministic state (FALSE)
 value.root : if deterministic, value of the character at the root
 exp.root : if random, expectation of the character at the root
 var.root : if random, variance of the character at the root (pxp matrix)}
-
-\item{phy:}{Input tree.}
-
-\item{p:}{dimension of the trait simulated}
 }
 \value{
 paramSimu: array p x Nnode x 2 (BM), filled with NAs.
