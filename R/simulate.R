@@ -245,7 +245,7 @@ plot.params_process <- function(x,
   if (missing(imposed_scale)) imposed_scale <- Y_state
   
   ## Plotting
-  plot.data.process.actual(Y.state = Y_state[traits, , drop = FALSE],
+  plot_data.process.actual(Y.state = Y_state[traits, , drop = FALSE],
                            phylo = phylo,
                            params = params,
                            process = x$process,

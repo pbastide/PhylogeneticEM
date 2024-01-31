@@ -22,7 +22,7 @@ starting at the current node.
 Nk and Ak of a node given its daughters.
 }
 \details{
-Uses functions \code{sum.partitions} and \code{sum.simplex} to compute
+Uses functions \code{sum_partitions} and \code{sum_simplex} to compute
 the needed sums.
 }
 \keyword{internal}

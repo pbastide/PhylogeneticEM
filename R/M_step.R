@@ -543,7 +543,7 @@ compute_var_diff.OU <- function(phylo, conditional_law_X, selection.strength) {
 #' @title Compute weighted sum of var_diff
 #'
 #' @description
-#' \code{compute_sum_var_diff} computes \sum_\{e edge\} ell_j * Var[X_j - X_pa(j) | Y]
+#' \code{compute_sum_var_diff} computes sum_\{e edge\} ell_j * Var[X_j - X_pa(j) | Y]
 #'
 #' @param phylo a phylogenetic tree
 #' @param var_diff result of function \code{compute_var_diff.BM}

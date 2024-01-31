@@ -1664,7 +1664,7 @@ init.EM.lasso <- function(phylo,
       Fm <- compute_tree_correlations_matrix(times_shared = times_shared,
                                              distances_phylo = distances_phylo,
                                              params_old = params_sigma)
-      Fm_YY <- extract.variance_covariance(Fm, what="YY",
+      Fm_YY <- extract_variance_covariance(Fm, what="YY",
                                            masque_data = c(rep(TRUE, ntaxa),
                                                            rep(FALSE, dim(Fm)[1] - ntaxa)))
       # Cholesky of tree-correlations

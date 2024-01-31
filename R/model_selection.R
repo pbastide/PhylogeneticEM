@@ -348,7 +348,7 @@ penalty_pBIC_scalarOU <- function(params, tree, times_shared,
                                               OU = compute_tree_correlations_matrix.scOU,
                                               scOU = compute_tree_correlations_matrix.scOU)
   C <- compute_tree_correlations_matrix(times_shared, distances_phylo, params)
-  C <- extract.variance_covariance(C, what="YY",
+  C <- extract_variance_covariance(C, what="YY",
                                    masque_data = c(rep(TRUE, ntaxa),
                                                    rep(FALSE, dim(C)[1] - ntaxa)))
   C <- 1/(2*as.vector(params$selection.strength)) * C
@@ -382,7 +382,7 @@ penalty_pBIC_independent <- function(params, model_complexity, tree,
                                               OU = compute_tree_correlations_matrix.scOU,
                                               scOU = compute_tree_correlations_matrix.scOU)
   C <- compute_tree_correlations_matrix(times_shared, distances_phylo, params)
-  C <- extract.variance_covariance(C, what="YY",
+  C <- extract_variance_covariance(C, what="YY",
                                    masque_data = c(rep(TRUE, ntaxa),
                                                    rep(FALSE, dim(C)[1] - ntaxa)))
   C_inv <- solve(C)
@@ -453,7 +453,7 @@ penalty_pBIC_l1ou_unit <- function(params, tree, times_shared, distances_phylo,
                                               OU = compute_tree_correlations_matrix.scOU,
                                               scOU = compute_tree_correlations_matrix.scOU)
   C <- compute_tree_correlations_matrix(times_shared, distances_phylo, params)
-  C <- extract.variance_covariance(C, what="YY",
+  C <- extract_variance_covariance(C, what="YY",
                                    masque_data = c(rep(TRUE, ntaxa),
                                                    rep(FALSE, dim(C)[1] - ntaxa)))
   C <- 1/(2*as.vector(params$selection.strength)) * C
