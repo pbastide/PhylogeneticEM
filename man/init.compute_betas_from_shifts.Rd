@@ -20,7 +20,7 @@ Matrix of size (Nnode + ntaxa)x1 of NAs, with the optimal value
 tips, with the value at the root.
 }
 \details{
-This function is used in function \code{compute_betas_from_shifts_from_shifts} and is designed to 
+This function is used in function \code{compute_betas_from_shifts} and is designed to 
 furnish function \code{update.compute_betas_from_shifts} with the right structure of data.
 }
 \keyword{internal}

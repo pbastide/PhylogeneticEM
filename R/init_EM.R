@@ -351,6 +351,7 @@ params_process.character <- function(x, ...){
 #' @param sBM_variance if the root is random, does it depend on the length of the
 #' root edge ? (For equivalent purposes with a rescaled OU). Default to FALSE. If
 #' TRUE, a phylogenetic tree with root edge length must be provided.
+#' @param trait_names vector of trait names values. Must be of length p.
 #' @param ... unused.
 #' 
 #' @return an object of class \code{params_process}.
@@ -372,6 +373,7 @@ params_BM <- function(p = 1,
                       nbr_of_shifts = length(edges),
                       phylo = NULL,
                       sBM_variance = FALSE,
+                      trait_names = NULL,
                       ...) {
   if (random) {
     value.root <- NA
@@ -415,6 +417,10 @@ params_BM <- function(p = 1,
   params_init$root.state <- test.root.state(params_init$root.state, "BM")
   params_init$variance <- as(params_init$variance, "dpoMatrix")
   params_init$process <- "BM"
+  if (!is.null(trait_names)) {
+    if(length(trait_names) != p) stop("`trait_names` must be a vector of dimension p.")
+    params_init <- name_params(params_init, trait_names)
+  }
   class(params_init) <- "params_process"
   return(params_init)
 }
@@ -459,6 +465,7 @@ params_BM <- function(p = 1,
 #' provided (to allow a random sampling of its edges).
 #' @param phylo a phylogenetic tree of class \code{\link[ape]{phylo}}. Needed only if
 #' the shifts edges are not specified.
+#' @param trait_names vector of trait names values. Must be of length p.
 #' @param ... unused.
 #' 
 #' @return an object of class \code{params_process}.
@@ -482,6 +489,7 @@ params_OU <- function(p = 1,
                       relativeTimes = NULL,
                       nbr_of_shifts = length(edges),
                       phylo = NULL,
+                      trait_names = NULL,
                       ...) {
   if (random) {
     value.root <- NA
@@ -533,6 +541,10 @@ params_OU <- function(p = 1,
                                             selection.strength = params_init$selection.strength,
                                             optimal.value = optimal.value)
   params_init$variance <- as(params_init$variance, "dpoMatrix")
+  if (!is.null(trait_names)) {
+    if(length(trait_names) != p) stop("`trait_names` must be a vector of dimension p.")
+    params_init <- name_params(params_init, trait_names)
+  }
   params_init$process <- "OU"
   class(params_init) <- "params_process"
   return(params_init)
@@ -1427,7 +1439,7 @@ find_independent_regression_vectors.gglasso <- function(Xkro, K, fit, root, p, g
 #' multiplication with a Cholesky decomposition of the variance) is included, rather
 #' than the intercept.
 #'
-#' @param Yp (transformed) data
+#' @param Ypt (transformed) data
 #' @param Xp (transformed) matrix of regression
 #' @param delta regression coefficients obtained with a lasso regression
 #' @param root the position of the root (intercept) in delta
@@ -1652,7 +1664,7 @@ init.EM.lasso <- function(phylo,
       Fm <- compute_tree_correlations_matrix(times_shared = times_shared,
                                              distances_phylo = distances_phylo,
                                              params_old = params_sigma)
-      Fm_YY <- extract.variance_covariance(Fm, what="YY",
+      Fm_YY <- extract_variance_covariance(Fm, what="YY",
                                            masque_data = c(rep(TRUE, ntaxa),
                                                            rep(FALSE, dim(Fm)[1] - ntaxa)))
       # Cholesky of tree-correlations

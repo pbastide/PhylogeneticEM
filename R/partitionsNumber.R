@@ -222,7 +222,7 @@ update.partitionsNumber.bin <- function(daughtersParams, ...){
 #' Nk and Ak of a node given its daughters.
 #'
 #' @details
-#' Uses functions \code{sum.partitions} and \code{sum.simplex} to compute
+#' Uses functions \code{sum_partitions} and \code{sum_simplex} to compute
 #' the needed sums.
 #'
 #' @param daughtersParams : matrix with 2*npart columns. Each row contains
@@ -250,8 +250,8 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
   for (K in 2:npart){
     N <- N_daughters[,1:K]
     A <- A_daughters[,1:K]
-    nbrComp[K] <- sum.simplex(N, K, p) + sum.partitions(A, N, K, p, 2)
-    nbrMarkedComp[K] <- sum.partitions(A, N, K, p, 1)
+    nbrComp[K] <- sum_simplex(N, K, p) + sum_partitions(A, N, K, p, 2)
+    nbrMarkedComp[K] <- sum_partitions(A, N, K, p, 1)
   }
   nbrAdm <- c(nbrComp, nbrMarkedComp)
   return(nbrAdm)
@@ -284,10 +284,10 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 #' @title Product of elements of a matrix
 #'
 #' @description
-#' \code{prod.index} return the product of chosen elements of a matrix.
+#' \code{prod_index} return the product of chosen elements of a matrix.
 #'
 #' @details
-#' This function is to be used in \code{sum.simplex} to be applied to all the
+#' This function is to be used in \code{sum_simplex} to be applied to all the
 #' elements given by \code{xsimplex}.
 #' Performs the product : X[1,Id[1]]*X[2,Id[2]]*...*X[p,Id[p]] if all the
 #' elements of Id are positive. Otherwise, just return 0.
@@ -302,22 +302,24 @@ update.partitionsNumber.gen <- function(daughtersParams, ...){
 #'
 #05/06/14 - Initial release
 ##
-prod.index <- function(X,Id){
+prod_index <- function(X,Id){
   if (0 %in% Id) return(0) # Indice hors limites
   return(prod(diag(X[,Id])))
+  # if (any(Id == 0)) return(0) # Indice hors limites
+  # return(prod(X[1:length(Id) + (Id - 1) * nrow(X)]))
 }
 
 ##
 #' @title Sum on a simplex
 #'
 #' @description
-#' \code{sum.simplex} returns the sum on k_1+...+k_p=K, k_i>0 of the products
+#' \code{sum_simplex} returns the sum on k_1+...+k_p=K, k_i>0 of the products
 #' of NN[i,k_i].
 #'
 #' @details
 #' This function uses \code{xsimplex} to perform the product of NN[i,k_i] for
 #' all combination of k_i such that k_1+...+k_p=K, k_i>0, using function
-#' \code{prod.index}. Then sum all the products.
+#' \code{prod_index}. Then sum all the products.
 #'
 #' @param NN a matrix with p rows and K column. Each row contains the number of
 #' partition in 1<=k<=K groups for one of the p children of a given node
@@ -330,8 +332,8 @@ prod.index <- function(X,Id){
 #'
 #05/06/14 - Initial release
 ##
-sum.simplex <- function (NN, K, p) {
-  return(sum(combinat::xsimplex(p, K, fun = prod.index,
+sum_simplex <- function (NN, K, p) {
+  return(sum(combinat::xsimplex(p, K, fun = prod_index,
                                 simplify = TRUE,
                                 X = NN)))
 }
@@ -340,11 +342,11 @@ sum.simplex <- function (NN, K, p) {
 #' @title Sum on a simplex
 #'
 #' @description
-#' \code{sum.prod.comb} returns the sum on k_1+...+k_p=K+|I|-1, k_i>0 of the
+#' \code{sum_prod.comb} returns the sum on k_1+...+k_p=K+|I|-1, k_i>0 of the
 #' products of prod(A[i,k_i], i in I)*prod(N[i,k_i], i not in I).
 #'
 #' @details
-#' This function uses \code{sum.simplex} to perform the wanted sum on a ad-hoc
+#' This function uses \code{sum_simplex} to perform the wanted sum on a ad-hoc
 #' matrix, combination of rows of A and N.
 #'
 #' @param I a vector of integers representing a subset of [1,p]
@@ -362,20 +364,20 @@ sum.simplex <- function (NN, K, p) {
 #'
 #05/06/14 - Initial release
 ##
-sum.prod.comb <- function(I, A, N, K, p){
+sum_prod.comb <- function(I, A, N, K, p){
   KK <- K + length(I) - 1
   AN <- matrix(NA, nrow = p, ncol = K)
   AN[I, ] <- A[I, ]
   AN[-I, ] <- N[-I, ]
-  return(sum.simplex(AN, KK, p))
+  return(sum_simplex(AN, KK, p))
 }
 
 ##
 #' @title Sum on subsets of a given cardinal.
 #'
 #' @description
-#' \code{sum.partitions.cardFixed} returns the sum on I subset of [1,p], |I|
-#' fixed, of the sums computed by \code{sum.prod.comb}.
+#' \code{sum_partitions.cardFixed} returns the sum on I subset of [1,p], |I|
+#' fixed, of the sums computed by \code{sum_prod.comb}.
 #'
 #' @details
 #' This function uses \code{combn} to enumerate all the subsets I of [1,p] of
@@ -396,9 +398,9 @@ sum.prod.comb <- function(I, A, N, K, p){
 #'
 #05/06/14 - Initial release
 ##
-sum.partitions.cardFixed <- function(A, N, K, p, cardI){
+sum_partitions.cardFixed <- function(A, N, K, p, cardI){
   return(sum(combinat::combn(p, cardI,
-                             fun = sum.prod.comb,
+                             fun = sum_prod.comb,
                              simplify = TRUE,
                              A = A, N = N, K = K, p = p)))
 }
@@ -407,10 +409,10 @@ sum.partitions.cardFixed <- function(A, N, K, p, cardI){
 #' @title Sum on all subsets.
 #'
 #' @description
-#' \code{sum.partitions} returns the sum on all I subset of [1,p], with |I|>m.
+#' \code{sum_partitions} returns the sum on all I subset of [1,p], with |I|>m.
 #'
 #' @details
-#' This function applies \code{sum.partitions.cardFixed} to all integer between
+#' This function applies \code{sum_partitions.cardFixed} to all integer between
 #' m and p, and sum the results.
 #'
 #' @param A a matrix with p rows and K column. Each row contains the number of
@@ -428,8 +430,8 @@ sum.partitions.cardFixed <- function(A, N, K, p, cardI){
 #'
 #05/06/14 - Initial release
 ##
-sum.partitions <- function(A, N, K, p, m) {
-  return(sum(sapply(m:p, function(x) sum.partitions.cardFixed(A, N, K, p, x))))
+sum_partitions <- function(A, N, K, p, m) {
+  return(sum(sapply(m:p, function(x) sum_partitions.cardFixed(A, N, K, p, x))))
 }
 
 ###############################################################################

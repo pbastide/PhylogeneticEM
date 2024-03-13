@@ -19,13 +19,7 @@ compute_log_likelihood.simple(
 \arguments{
 \item{phylo}{Input tree.}
 
-\item{sim}{(list) : result of function \code{simulate}}
-
 \item{Sigma}{: variance-covariance matrix, result of function \code{compute_variance_covariance}}
-
-\item{Y_data}{: vector indicating the data at the tips}
-
-\item{Sigma_YY_inv}{: invert of the variance-covariance matrix of the data}
 }
 \value{
 log likelihood of the data
@@ -37,7 +31,7 @@ in the simple case where the inverse of the variance matrix is given.
 \details{
 This function takes parameters sim, Sigma and Sigma_YY_inv from  
 \code{compute_mean_variance.simple}. It uses functions 
-\code{extract.variance_covariance}, \code{extract.covariance_parents}, and
+\code{extract_variance_covariance}, \code{extract_covariance_parents}, and
  \code{extract_simulate_internal} to extract the needed quantities from these objects.
 }
 \keyword{internal}

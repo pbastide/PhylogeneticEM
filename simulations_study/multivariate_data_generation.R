@@ -169,7 +169,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["128"]], alpha_base * diag(
 vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 128) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["128"]], 
                          params = list(shifts = list(edges = shifts_grid[["128_3"]]$edges, values = shifts_grid[["128_3"]]$values[1, ])),
                          adj.root = 0,
@@ -199,7 +199,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 # vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 # X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 # unique(X1.tips.exp.mat[1, ])
-# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+# plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
 #                          phylo = trees[["128"]], 
 #                          params = list(shifts = list(edges = shifts_grid[["128_7"]]$edges, values = shifts_grid[["128_7"]]$values[1, ])),
 #                          adj.root = 0,
@@ -234,7 +234,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 # vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 # X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 # unique(X1.tips.exp.mat[1, ])
-# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+# plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
 #                          phylo = trees[["128"]], 
 #                          params = list(shifts = list(edges = shifts_grid[["128_11"]]$edges, values = shifts_grid[["128_11"]]$values[1, ])),
 #                          adj.root = 0,
@@ -274,7 +274,7 @@ extract.parsimonyNumber(parsimonyNumber(trees[["128"]], clusters_from_shifts(tre
 # vec_Y <- kronecker(T_tree[["128"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 # X1.tips.exp.mat <- matrix(vec_Y, p_base, ntaxa_base) + beta_0
 # unique(X1.tips.exp.mat[1, ])
-# plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+# plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
 #                          phylo = trees[["128"]], 
 #                          params = list(shifts = list(edges = shifts_grid[["128_15"]]$edges, values = shifts_grid[["128_15"]]$values[1, ])),
 #                          adj.root = 0,
@@ -300,7 +300,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["32"]], alpha_base * diag(1
 vec_Y <- kronecker(T_tree[["32"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 32) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["32"]], 
                          params = list(shifts = list(edges = shifts_grid[["32_3"]]$edges, values = shifts_grid[["32_3"]]$values[1, ])),
                          adj.root = 0,
@@ -326,7 +326,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["64"]], alpha_base * diag(1
 vec_Y <- kronecker(T_tree[["64"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 64) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["64"]], 
                          params = list(shifts = list(edges = shifts_grid[["64_3"]]$edges, values = shifts_grid[["64_3"]]$values[1, ])),
                          adj.root = 0,
@@ -352,7 +352,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["96"]], alpha_base * diag(1
 vec_Y <- kronecker(T_tree[["96"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 96) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["96"]], 
                          params = list(shifts = list(edges = shifts_grid[["96_3"]]$edges, values = shifts_grid[["96_3"]]$values[1, ])),
                          adj.root = 0,
@@ -378,7 +378,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["160"]], 
                          params = list(shifts = list(edges = shifts_grid[["160_3"]]$edges, values = shifts_grid[["160_3"]]$values[1, ])),
                          adj.root = 0,
@@ -408,7 +408,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["160"]], 
                          params = list(shifts = list(edges = shifts_grid[["160_7"]]$edges, values = shifts_grid[["160_7"]]$values[1, ])),
                          adj.root = 0,
@@ -443,7 +443,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["160"]], 
                          params = list(shifts = list(edges = shifts_grid[["160_11"]]$edges, values = shifts_grid[["160_11"]]$values[1, ])),
                          adj.root = 0,
@@ -483,7 +483,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["160"]], alpha_base * diag(
 vec_Y <- kronecker(T_tree[["160"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 160) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["160"]], 
                          params = list(shifts = list(edges = shifts_grid[["160_15"]]$edges, values = shifts_grid[["160_15"]]$values[1, ])),
                          adj.root = 0,
@@ -509,7 +509,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["192"]], alpha_base * diag(
 vec_Y <- kronecker(T_tree[["192"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 192) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["192"]], 
                          params = list(shifts = list(edges = shifts_grid[["192_3"]]$edges, values = shifts_grid[["192_3"]]$values[1, ])),
                          adj.root = 0,
@@ -535,7 +535,7 @@ W <- compute_actualization_matrix_ultrametric(trees[["215"]], alpha_base * diag(
 vec_Y <- kronecker(T_tree[["215"]], diag(1, p_base, p_base)) %*% W %*% as.vector(Delta)
 X1.tips.exp.mat <- matrix(vec_Y, p_base, 215) + beta_0
 unique(X1.tips.exp.mat[1, ])
-plot.data.process.actual(Y.state = X1.tips.exp.mat[1, ],
+plot_data.process.actual(Y.state = X1.tips.exp.mat[1, ],
                          phylo = trees[["215"]], 
                          params = list(shifts = list(edges = shifts_grid[["215_3"]]$edges, values = shifts_grid[["215_3"]]$values[1, ])),
                          adj.root = 0,

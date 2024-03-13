@@ -150,9 +150,9 @@ extract.parsimonyCost <- function(x,
 #' 
 #' @details
 #' At a tip i in state k, the line-vector is initialized as follow : 
-#' (1 - Ind(k=p)_{1<=p<=nclus})*Inf (where Inf * 0 = 0)
+#' (1 - Ind(k=p)_\{1<=p<=nclus\})*Inf (where Inf * 0 = 0)
 #'
-#' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
+#' @param phy a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param clusters the vector of the clusters of the tips.
 #' 
 #' @return A (ntaxa + Nnode)x(nclus) matrix, with ntaxa first lines initialized as
@@ -356,7 +356,7 @@ extract.parsimonyNumber <- function(x,
 #' NAs everywhere, except for the tips.
 #' 
 #' @details
-#' At a tip i in state k, the line-vector is initialized as follow : Ind(k=p)_{1<=p<=nclus}
+#' At a tip i in state k, the line-vector is initialized as follow : Ind(k=p)_\{1<=p<=nclus\}
 #'
 #' @param phy phylogenetic tree.
 #' @param clusters the vector of the clusters of the tips.
@@ -1401,8 +1401,8 @@ equivalent_shifts_edges <- function(phylo,
 #' the tips. Careful, only works for ULTRAMETRIC trees.
 #' 
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
-#' @param shifts a list of positions and values of original shifts.
-#' @param beta_0 value of the original optimal value at the root.
+# @param shifts a list of positions and values of original shifts.
+# @param beta_0 value of the original optimal value at the root.
 #' @param eq_shifts_edges matrix (optional) result of function
 #' \code{\link{equivalent_shifts_edges}}.
 #' @param T_tree_ac matrix of incidence of the tree, result of function 
@@ -1447,7 +1447,7 @@ equivalent_shifts_values <- function(phylo,
 #' @param shifts_edges a vector of positions of shifts on the tree.
 #' @param T_tree_ac matrix of incidence of the tree, result of function 
 #' \code{incidence.matrix}.
-#' @param m_Y the vector of values of the means at the tips.
+# @param m_Y the vector of values of the means at the tips.
 #'
 #' @return vector, with first entry the values at the root, and other entries the
 #' values of the shifts.

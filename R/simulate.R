@@ -245,7 +245,7 @@ plot.params_process <- function(x,
   if (missing(imposed_scale)) imposed_scale <- Y_state
   
   ## Plotting
-  plot.data.process.actual(Y.state = Y_state[traits, , drop = FALSE],
+  plot_data.process.actual(Y.state = Y_state[traits, , drop = FALSE],
                            phylo = phylo,
                            params = params,
                            process = x$process,
@@ -550,9 +550,9 @@ extract_simulate_internal <- function(paramSimu,
 #' \code{allocate_subset_node.simulate} slice the data correctly and allocate the right part.
 #' To be used in function UpdateDown.
 #'
-#' @param node: node on which to slice
-#' @param array: structure to be sliced
-#' @param value: value to be attributed to the slice
+#' @param node node on which to slice
+#' @param array structure to be sliced
+#' @param value value to be attributed to the slice
 #'     
 #' @return array: array p x Nnode x 2 (BM), with slice corresponding to node filled with value
 #'  
@@ -575,8 +575,8 @@ subset_node.simulate <- function(node, array){
 #'
 #' @description Function used in \code{\link{simulate}} for BM/OU initializations.
 #'
-#' @param phy: Input tree.
-#' @param p: dimension of the trait simulated
+#' @param phy Input tree.
+#' @param p dimension of the trait simulated
 #' @param root.state (list): state of the root, with:
 #'     random : random state (TRUE) or deterministic state (FALSE)
 #'     value.root : if deterministic, value of the character at the root
@@ -642,8 +642,8 @@ init.simulate.BM <- function(phy, p, root.state, simulate_random, ...){
 #' 
 #' @description Function used in \code{\link{simulate}} for OU initialization.
 #'
-#' @param phy: Input tree.
-#' @param p: dimension of the trait simulated
+#' @param phy Input tree.
+#' @param p dimension of the trait simulated
 #' @param root.state (list): state of the root, with:
 #'     random : random state (TRUE) or deterministic state (FALSE)
 #'     value.root : if deterministic, value of the character at the root
@@ -853,7 +853,7 @@ update.simulate.OUBM <- function(edgeNbr, ancestral,
 #' \code{compute_expectations.BM} use the matrix formulation to compute the 
 #' expected values at all the nodes.
 #'
-#' @param phylo: Input tree.
+#' @param phylo Input tree.
 #' @param root.state (list): state of the root, with:
 #'     random : random state (TRUE) or deterministic state (FALSE)
 #'     value.root : if deterministic, value of the character at the root
@@ -893,7 +893,7 @@ compute_expectations.BM <- function(phylo, root.state, shifts, U_tree = NULL){
 #' \code{compute_expectations.scOU} use the matrix formulation to compute the 
 #' expected values at all the nodes. Assumes a stationary root.
 #'
-#' @param phylo: Input tree.
+#' @param phylo Input tree.
 #' @param root.state (list): state of the root, with:
 #'     random : random state (TRUE) or deterministic state (FALSE)
 #'     value.root : if deterministic, value of the character at the root

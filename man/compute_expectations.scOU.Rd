@@ -14,6 +14,8 @@ compute_expectations.scOU(
 )
 }
 \arguments{
+\item{phylo}{Input tree.}
+
 \item{root.state}{(list): state of the root, with:
 random : random state (TRUE) or deterministic state (FALSE)
 value.root : if deterministic, value of the character at the root
@@ -25,8 +27,6 @@ edges : vector of the K id of edges where the shifts are
 values : matrix p x K of values of the shifts on the edges (one column = one shift)
 relativeTimes : vector of dimension K of relative time of the shift from the
 parent node of edges}
-
-\item{phylo:}{Input tree.}
 }
 \value{
 paramSimu: array p x Nnode x 2 (BM). For each trait t, 1 <= t <= p,

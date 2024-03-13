@@ -7,9 +7,9 @@
 init.parsimonyCost(phy, clusters)
 }
 \arguments{
-\item{clusters}{the vector of the clusters of the tips.}
+\item{phy}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
 
-\item{phylo}{a phylogenetic tree, class \code{\link[ape]{phylo}}.}
+\item{clusters}{the vector of the clusters of the tips.}
 }
 \value{
 A (ntaxa + Nnode)x(nclus) matrix, with ntaxa first lines initialized as
@@ -21,6 +21,6 @@ NAs everywhere, except for the tips.
 }
 \details{
 At a tip i in state k, the line-vector is initialized as follow : 
-(1 - Ind(k=p)_{1<=p<=nclus})*Inf (where Inf * 0 = 0)
+(1 - Ind(k=p)_\{1<=p<=nclus\})*Inf (where Inf * 0 = 0)
 }
 \keyword{internal}

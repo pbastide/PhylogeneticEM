@@ -1,3 +1,6 @@
+template:
+  bootstrap: 5
+
 navbar:
   left:
   - text: Tutorial
@@ -78,6 +81,7 @@ reference:
       - clusters_from_shifts
       - compute_betas_from_shifts
       - compute_shifts_from_betas
+      - node_optimal_values
       - correspondenceEdges
       - enumerate_tips_under_edges
   - title: "Tree Matrices"

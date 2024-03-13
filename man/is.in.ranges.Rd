@@ -7,11 +7,11 @@
 is.in.ranges(p, min, max)
 }
 \arguments{
+\item{p}{list of parameters with the correct structure}
+
 \item{min}{list of minimum values for the parameters}
 
 \item{max}{list of maximum values for the parameters}
-
-\item{params}{list of parameters with the correct structure}
 }
 \value{
 boolean
@@ -21,69 +21,6 @@ boolean
 in the defined ranges.
 }
 \details{
-######################################################
-## Finite parameters ?
-######################################################
-
-is.finite.params.BM <- function(params) {
-  if (params$root.state$random) {
-    return(is.finite.params.BM.randroot(params))
-  } else {
-    return(is.finite.params.BM.fixedroot(params))
-  }
-}
-
-is.finite.params.BM.randroot <- function(params) {
-  if (is.finite(params$variance) &&
-        is.finite(params$root.state$exp.root) &&
-        is.finite(params$root.state$var.root) ) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
-is.finite.params.BM.fixedroot <- function(params) {
-  if ( is.finite(params$variance) &&
-         is.finite(params$root.state$value.root) ) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
-is.finite.params.OU <- function(stationary.root, shifts_at_nodes, alpha_known){
-  if (stationary.root && shifts_at_nodes && alpha_known) {
-    return(is.finite.params.OU.specialCase)
-  } else if (stationary.root && shifts_at_nodes) {
-    return(is.finite.params.OU.stationary.root_AND_shifts_at_nodes)
-  } else {
-    stop("The EM algorithm for the OU is only defined (for the moment) for a stationary root and shifts at nodes !")
-  }
-}
-
-is.finite.params.OU.specialCase <- function(params) {
-  if (is.finite(params$variance) &&
-        is.finite(params$root.state$exp.root) &&
-        is.finite(params$root.state$var.root) ) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
-is.finite.params.OU.stationary.root_AND_shifts_at_nodes <- function(params) {
-  if (is.finite(params$variance) &&
-        is.finite(params$root.state$exp.root) &&
-        is.finite(params$root.state$var.root) &&
-        is.finite(params$selection.strength)) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
-
 This function is used to test the convergence of the algorithm.
 }
 \keyword{internal}

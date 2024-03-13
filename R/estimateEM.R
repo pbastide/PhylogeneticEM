@@ -1425,12 +1425,44 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
                                     variance = res$variance,
                                     selection.strength = res$selection.strength,
                                     optimal.value = res$optimal.value)
+  if (!is.null(rownames(x$Y_data))) res <- name_params(res, rownames(x$Y_data))
   res$variance <- as(res$variance, "dpoMatrix")
   class(res) <- "params_process"
   if (attr(res, "Neq") > 1){
     warning("There are several equivalent solutions for this shift position.")
   }
   return(res)
+}
+
+name_params <- function(res, names) {
+  ## root state
+  if (isnonnullna(res$root.state$value.root)) names(res$root.state$value.root) <- names
+  if (isnonnullna(res$root.state$exp.root)) names(res$root.state$exp.root) <- names
+  res$root.state$var.root <- name_matrix(res$root.state$var.root, names)
+  ## shifts
+  if (isnonnullna(res$shifts$values)) rownames(res$shifts$values) <- names
+  ## variance
+  res$variance <- name_matrix(res$variance, names)
+  ## selection strength
+  res$selection.strength <- name_matrix(res$selection.strength, names)
+  ## optimal values
+  if (isnonnullna(res$optimal.value)) names(res$optimal.value) <- names
+  return(res)
+}
+
+isnonnullna <- function(x) {
+  return(!is.null(x) && !any(is.na(x)))
+}
+
+name_matrix <- function(M, names) {
+  if (isnonnullna(M)) {
+    if (!is.null(attr(class(M), "package")) && attr(class(M), "package") == "Matrix") {
+      dimnames(M) <- rep.int(list(names), 2L)
+    } else {
+      colnames(M) <- rownames(M) <- names
+    }
+  }
+  return(M)
 }
 
 extract_params <- function(x, method, alpha_str){
@@ -2806,7 +2838,7 @@ estimateEM_wrapper_scratch <- function(phylo, Y_data,
 #' @param phylo a phylogenetic tree, class \code{\link[ape]{phylo}}.
 #' @param Y_data matrix of data at the tips (pxntaxa)
 #' @param check.tips.names (bool) whether to check the tips names or not
-#' @param trait_correlation_threshold threshold for trait correlation. Default to 0.9.
+# @param trait_correlation_threshold threshold for trait correlation. Default to 0.9.
 #' 
 #' @return Y_data a re-ordered matrix of data (if necessary)
 #' 
@@ -2963,11 +2995,11 @@ return_to_original_order <- function(X, phy_o, phy_r){
 #' on a rescaled tree, and gives back the equivalent parameters of the OU on 
 #' the original process.
 #'
-#' @param phy_original: the original phylogenetic tree
-#' @param known.selection.strength: the known selection strength of the original
+#' @param phy_original the original phylogenetic tree
+#' @param known.selection.strength the known selection strength of the original
 #' OU.
-#' @param sBM_variance: boolean. Is the root random ?
-#' @param params: the inferred parameters of the BM on the re-scaled tree.
+#' @param sBM_variance boolean. Is the root random ?
+#' @param params the inferred parameters of the BM on the re-scaled tree.
 #' 
 #' 
 #' @return params_scOU the equivalent parameters of the OU on the original tree.

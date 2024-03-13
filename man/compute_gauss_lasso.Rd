@@ -13,13 +13,13 @@ compute_gauss_lasso(
 )
 }
 \arguments{
+\item{Ypt}{(transformed) data}
+
 \item{Xp}{(transformed) matrix of regression}
 
 \item{delta}{regression coefficients obtained with a lasso regression}
 
 \item{root}{the position of the root (intercept) in delta}
-
-\item{Yp}{(transformed) data}
 }
 \value{
 Named list, with "E0.gauss" the intercept (value at the root);

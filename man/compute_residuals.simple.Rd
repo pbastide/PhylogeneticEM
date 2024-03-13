@@ -9,11 +9,11 @@ compute_residuals.simple(phylo, Y_data_vec, sim, Sigma_YY_chol_inv, miss)
 \arguments{
 \item{phylo}{Input tree.}
 
+\item{Y_data_vec}{: vector indicating the data at the tips.}
+
 \item{sim}{(list) : result of function \code{simulate}.}
 
-\item{Y_data}{: vector indicating the data at the tips.}
-
-\item{Sigma_YY_inv}{: invert of the variance-covariance matrix of the data.}
+\item{Sigma_YY_chol_inv}{: invert of the Cholesky variance-covariance matrix of the data.}
 }
 \description{
 \code{compute_residuals.simple} computes the residuals after the fit of the

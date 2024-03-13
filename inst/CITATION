@@ -1,8 +1,8 @@
 citHeader("To cite PhylogeneticEM in publications use:")
 
-citEntry(entry  = "Article",
+bibentry(bibtype  = "Article",
     title       = "{Detection of adaptive shifts on phylogenies by using shifted stochastic processes on a tree}",
-    author      = personList(as.person("Paul Bastide"),
+    author      = c(as.person("Paul Bastide"),
                    as.person("Mahendra Mariadassou"),
                    as.person("Stephane Robin")),
     journal     = "Journal of the Royal Statistical Society: Series B (Statistical Methodology)",
