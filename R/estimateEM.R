@@ -1631,7 +1631,7 @@ find_rotation <- function(res1, res2, tol = NULL) {
   if (!testQR) stop("The datasets are not linearly mapped.")
   # Rotation ?
   rot <- fit_12$coefficients
-  testRot <- isTRUE(all.equal(as.vector(t(rot) %*% rot), c(1, 0, 0, 1)))
+  testRot <- isTRUE(all.equal(unname(t(rot) %*% rot), diag(rep(1.0, ncol(rot)))))
   if (!testRot) stop("The datasets are not linked by a rotation.")
   return(unname(rot))
 }
