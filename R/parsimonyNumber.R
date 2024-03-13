@@ -1457,7 +1457,7 @@ equivalent_shifts_values <- function(phylo,
 find_shift_values <- function(shifts_edges, T_tree_ac, vect_Y, p, ntaxa){
   pos_shifts <- as.vector(sapply(shifts_edges, function(z) p * (z-1) + 1:p))
   mat <- cbind(t(matrix(rep(diag(1, p, p), ntaxa), nrow = p)), T_tree_ac[, pos_shifts]) # stationary case assumption used here
-  coefs <- try(qr.solve_exact(mat, vect_Y), silent = TRUE)
+  coefs <- try(qr_solve_exact(mat, vect_Y), silent = TRUE)
   if (inherits(coefs, "try-error")){
     warning("Had a problem solving exactly the linear system.")
     return(rep(NA, length(shifts_edges) + 1))
@@ -1482,7 +1482,7 @@ find_shift_values <- function(shifts_edges, T_tree_ac, vect_Y, p, ntaxa){
 #'
 #' @keywords internal
 ##
-qr.solve_exact <- function (a, b, tol = 1e-07) {
+qr_solve_exact <- function (a, b, tol = 1e-07) {
   if (!is.qr(a)) 
     a <- qr(a, tol = tol)
   nc <- ncol(a$qr)

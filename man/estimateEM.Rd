@@ -10,9 +10,9 @@ estimateEM(
   Y_data_imp = Y_data,
   process = c("BM", "OU", "scOU", "rBM"),
   independent = FALSE,
-  tol_EM = list(variance = 10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root
-    = 10^(-2), selection.strength = 10^(-2), normalized_half_life = 10^(-2),
-    log_likelihood = 10^(-2)),
+  tol_EM = list(variance = 10^(-2), value.root = 10^(-2), exp.root = 10^(-2), var.root =
+    10^(-2), selection.strength = 10^(-2), normalized_half_life = 10^(-2), log_likelihood
+    = 10^(-2)),
   Nbr_It_Max = 500,
   method.variance = c("simple", "upward_downward"),
   method.init = c("default", "lasso"),
@@ -28,10 +28,10 @@ estimateEM(
   max_selection.strength = 100,
   use_sigma_for_lasso = TRUE,
   max_triplet_number = 10000,
-  min_params = list(variance = 0, value.root = -10^(5), exp.root = -10^(5), var.root =
-    0, selection.strength = 0),
-  max_params = list(variance = 10^(5), value.root = 10^(5), exp.root = 10^(5), var.root
-    = 10^(5), selection.strength = 10^(5)),
+  min_params = list(variance = 0, value.root = -10^(5), exp.root = -10^(5), var.root = 0,
+    selection.strength = 0),
+  max_params = list(variance = 10^(5), value.root = 10^(5), exp.root = 10^(5), var.root =
+    10^(5), selection.strength = 10^(5)),
   var.init.root = diag(1, nrow(Y_data)),
   variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
   methods.segmentation = c("lasso", "same_shifts", "best_single_move"),

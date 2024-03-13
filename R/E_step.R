@@ -358,6 +358,7 @@ extract.variance_covariance <- function(struct, what=c("YY","YZ","ZZ"),
 # REVISIONS:
 #            22/05/14 - Initial release
 ##
+#' @keywords internal
 extract.covariance_parents <- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")
@@ -391,6 +392,7 @@ extract.covariance_parents <- function(phylo, struct){
   return(arr)
 }
 
+#' @keywords internal
 extract.variance_nodes <- function(phylo, struct){
   ntaxa <- length(phylo$tip.label)
   p <- attr(struct, "p_dim")

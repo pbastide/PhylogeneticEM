@@ -158,6 +158,7 @@ compute_dist_phy <- function(phy) {
   return(as(dist_phy, "symmetricMatrix"))
 }
 
+#' @keywords internal
 scale.tree <- function(phylo){
   if (!is.ultrametric(phylo)) stop("The tree is not ultrametric")
   ntaxa <- length(phylo$tip.label)

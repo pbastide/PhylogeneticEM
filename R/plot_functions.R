@@ -390,6 +390,7 @@ plot.PhyloEM <- function(x,
                            ...)
 }
 
+#' @keywords internal
 plot.data.process.actual <- function(Y.state, phylo, params,
                                      miss = is.na(Y.state),
                                      process = "BM",
