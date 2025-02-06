@@ -2,73 +2,21 @@
 % Please edit documentation in R/estimateEM.R
 \name{merge_alpha_grids}
 \alias{merge_alpha_grids}
-\title{Run the EM for several values of K}
+\title{Merge PhyloEM fits on various grids of alpha values}
 \usage{
 merge_alpha_grids(...)
 }
 \arguments{
 \item{...}{objects of class \code{\link{PhyloEM}} fitted on the same dataset 
 with the same parameters, but different grids of alpha values.}
-
-\item{results_estim_EM}{output of function \code{estimateEM}}
-
-\item{time}{to run the function}
 }
 \value{
-summary a data frame with K_max lines, and columns:
-   - alpha_estim the estimated selection strength
-   - gamma_estim the estimated root variance
-   - beta_0_estim the estimated value of root optimum
-   - EM_steps number of iterations needed before convergence
-   - DV_estim has the EM diverged ?
-   - CV_estim has the EM converged ?
-   - log_likelihood log likelihood of the data using the estimated parameters
-   - mahalanobis_distance_data_mean the Mahalanobis distance between the data
-and the estimated means at the tips
-   - least_squares the Mahalanobis distance, renormalized by gamma^2: 
-mahalanobis_distance_data_mean * gamma_estim.
-   - mean_number_new_shifts the mean number of shifts that changed over the 
-iterations of the EM
-   - number_equivalent_solutions the number of equivalent solutions to 
-the solution found.
-   - K_try the number of shifts allowed.
-   - complexity the complexity for K_try
-   - time the CPU time needed.
-
-params a list of inferred parameters
-
-params_init a list of initial parameters
-
-alpha_0 initial values of alpha
-
-gamma_0 initial values of gamma
-
-Zhat reconstructed node states
-
-m_Y_estim reconstructed tip states
-
-edge.quality for each edge, relative number of iterations in which they
- were present.
-
 An object of class \code{\link{PhyloEM}}, result of the merge.
 }
 \description{
-\code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
-for all values of K between 0 and K_max.
-
 \code{merge_alpha_grids} takes several fits from \code{\link{PhyloEM}}, and
 merge them so as to take into account all alpha values.
 This can be used to break down computations into smaller chunks to be run independently.
-}
-\details{
-The EM is first launched for K=0, with alpha and gamma estimated. The
-estimated values of alpha, gamma and beta_0 found by this first EM are then
-used as initialization parameters for all the other runs of the EM for other
-K.
-The EMs are parallelized thanks to packages \code{foreach} and 
-\code{doParallel}.
-WARNING : this code only work of OU with stationary root, on an ultrametric
-tree.
 }
 \examples{
 \dontrun{
@@ -114,4 +62,3 @@ plot_criterion(res_merge)
 }
 
 }
-\keyword{internal}

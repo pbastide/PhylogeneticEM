@@ -3279,60 +3279,6 @@ add_method_selection <- function(meth, method.selection){
   return(method.selection)
 }
 
-
-##
-#' @title Run the EM for several values of K
-#'
-#' @description
-#' \code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
-#' for all values of K between 0 and K_max.
-#'
-#' @details
-#' The EM is first launched for K=0, with alpha and gamma estimated. The
-#' estimated values of alpha, gamma and beta_0 found by this first EM are then
-#' used as initialization parameters for all the other runs of the EM for other
-#' K.
-#' The EMs are parallelized thanks to packages \code{foreach} and 
-#' \code{doParallel}.
-#' WARNING : this code only work of OU with stationary root, on an ultrametric
-#' tree.
-#' 
-#'
-#' @param results_estim_EM output of function \code{estimateEM}
-#' @param time to run the function
-#' 
-#' @return summary a data frame with K_max lines, and columns:
-#'    - alpha_estim the estimated selection strength
-#'    - gamma_estim the estimated root variance
-#'    - beta_0_estim the estimated value of root optimum
-#'    - EM_steps number of iterations needed before convergence
-#'    - DV_estim has the EM diverged ?
-#'    - CV_estim has the EM converged ?
-#'    - log_likelihood log likelihood of the data using the estimated parameters
-#'    - mahalanobis_distance_data_mean the Mahalanobis distance between the data
-#' and the estimated means at the tips
-#'    - least_squares the Mahalanobis distance, renormalized by gamma^2: 
-#' mahalanobis_distance_data_mean * gamma_estim.
-#'    - mean_number_new_shifts the mean number of shifts that changed over the 
-#' iterations of the EM
-#'    - number_equivalent_solutions the number of equivalent solutions to 
-#' the solution found.
-#'    - K_try the number of shifts allowed.
-#'    - complexity the complexity for K_try
-#'    - time the CPU time needed.
-#' @return params a list of inferred parameters
-#' @return params_init a list of initial parameters
-#' @return alpha_0 initial values of alpha
-#' @return gamma_0 initial values of gamma
-#' @return Zhat reconstructed node states
-#' @return m_Y_estim reconstructed tip states
-#' @return edge.quality for each edge, relative number of iterations in which they
-#'  were present.
-#'  
-#' @keywords internal
-#'
-##
-
 ##
 #' @title Merge PhyloEM fits on various grids of alpha values
 #'
