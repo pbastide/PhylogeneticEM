@@ -1365,12 +1365,12 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
     if (!(K %in% x$K_try)){
       stop(paste0("The value of K: ", K, " was not found in the fitted object."))
     }
-  ## Select a given alpha
+    ## Select a given alpha
     if (!is.null(alpha)){
       if (alpha == 0){
         tmp <- which("alpha_0" == names(x))
       } else {
-        tmp <- grep(alpha, names(x))
+        tmp <- which(grepl(alpha, names(x)) & grepl("alpha", names(x)))
       }
       if (length(tmp) == 0){
         stop(paste0("The value of alpha: ", alpha, " was not found in the fitted object."))
