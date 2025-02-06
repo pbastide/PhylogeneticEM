@@ -1301,6 +1301,13 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     X <- model_selection(meth.sel)
   }
   
+  X$method.selection <- method.selection
+  X$C.BM1 <- C.BM1
+  X$C.BM2 <- C.BM2
+  X$C.LINselect <- C.LINselect
+  X$independent <- independent
+  X$alpha_grid <- alpha_grid
+  
   ## Class and return
   class(X) <- "PhyloEM"
   return(X)
@@ -3270,4 +3277,164 @@ add_method_selection <- function(meth, method.selection){
     method.selection <- c(method.selection, meth)
   }
   return(method.selection)
+}
+
+
+##
+#' @title Run the EM for several values of K
+#'
+#' @description
+#' \code{estimateEM_several_K.OUsr} uses function \code{estimateEM} on the data, 
+#' for all values of K between 0 and K_max.
+#'
+#' @details
+#' The EM is first launched for K=0, with alpha and gamma estimated. The
+#' estimated values of alpha, gamma and beta_0 found by this first EM are then
+#' used as initialization parameters for all the other runs of the EM for other
+#' K.
+#' The EMs are parallelized thanks to packages \code{foreach} and 
+#' \code{doParallel}.
+#' WARNING : this code only work of OU with stationary root, on an ultrametric
+#' tree.
+#' 
+#'
+#' @param results_estim_EM output of function \code{estimateEM}
+#' @param time to run the function
+#' 
+#' @return summary a data frame with K_max lines, and columns:
+#'    - alpha_estim the estimated selection strength
+#'    - gamma_estim the estimated root variance
+#'    - beta_0_estim the estimated value of root optimum
+#'    - EM_steps number of iterations needed before convergence
+#'    - DV_estim has the EM diverged ?
+#'    - CV_estim has the EM converged ?
+#'    - log_likelihood log likelihood of the data using the estimated parameters
+#'    - mahalanobis_distance_data_mean the Mahalanobis distance between the data
+#' and the estimated means at the tips
+#'    - least_squares the Mahalanobis distance, renormalized by gamma^2: 
+#' mahalanobis_distance_data_mean * gamma_estim.
+#'    - mean_number_new_shifts the mean number of shifts that changed over the 
+#' iterations of the EM
+#'    - number_equivalent_solutions the number of equivalent solutions to 
+#' the solution found.
+#'    - K_try the number of shifts allowed.
+#'    - complexity the complexity for K_try
+#'    - time the CPU time needed.
+#' @return params a list of inferred parameters
+#' @return params_init a list of initial parameters
+#' @return alpha_0 initial values of alpha
+#' @return gamma_0 initial values of gamma
+#' @return Zhat reconstructed node states
+#' @return m_Y_estim reconstructed tip states
+#' @return edge.quality for each edge, relative number of iterations in which they
+#'  were present.
+#'  
+#' @keywords internal
+#'
+##
+
+##
+#' @title Merge PhyloEM fits on various grids of alpha values
+#'
+#' @description
+#' \code{merge_alpha_grids} takes several fits from \code{\link{PhyloEM}}, and
+#' merge them so as to take into account all alpha values.
+#' This can be used to break down computations into smaller chunks to be run independently.
+#'
+#' @param ... objects of class \code{\link{PhyloEM}} fitted on the same dataset 
+#' with the same parameters, but different grids of alpha values.
+#' 
+#' @examples
+#' \dontrun{
+#' ## Load Data
+#' data(monkeys)
+#' ## First fit with coarse grid
+#' res1 <- PhyloEM(Y_data = monkeys$dat,
+#'                 phylo = monkeys$phy,
+#'                 process = "scOU",
+#'                 random.root = TRUE,
+#'                 stationary.root = TRUE,
+#'                 K_max = 10,
+#'                 alpha = c(0.2, 0.3),
+#'                 parallel_alpha = TRUE,
+#'                 Ncores = 2)
+#' ## Second fit with finer grid
+#' res2 <- PhyloEM(Y_data = monkeys$dat,
+#'                 phylo = monkeys$phy,
+#'                 process = "scOU",
+#'                 random.root = TRUE,
+#'                 stationary.root = TRUE,
+#'                 K_max = 10,
+#'                 alpha = c(0.22, 0.24),
+#'                 parallel_alpha = TRUE,
+#'                 Ncores = 2)
+#' ## Thrid fit with redundancies
+#' res3 <- PhyloEM(Y_data = monkeys$dat,
+#'                 phylo = monkeys$phy,
+#'                 process = "scOU",
+#'                 random.root = TRUE,
+#'                 stationary.root = TRUE,
+#'                 K_max = 10,
+#'                 alpha = c(0.26, 0.3),
+#'                 parallel_alpha = TRUE,
+#'                 Ncores = 2)
+#'
+#' ## Merge the three
+#' res_merge <- merge_alpha_grid(res1, res2, res3)
+#' ## Plot the selected result
+#' plot(res_merge)
+#' ## Plot the model selection criterion
+#' plot_criterion(res_merge)
+#' }
+#' 
+#' @return
+#' An object of class \code{\link{PhyloEM}}, result of the merge.
+#' 
+#' @export
+#'
+##
+merge_alpha_grids <- function(...) {
+  ress <- list(...)
+  ## Basic tests
+  nres <- length(ress)
+  if (nres == 0) stop("There should be at least 2 results to merge.")
+  if (nres == 1) return(ress[[1]])
+  resmerge <- ress[[1]]
+  if (!resmerge$alpha_grid) stop("Fits must be performed on a grid of alpha values.")
+  ## same fits ?
+  names_identical <- names(resmerge)[!grepl("alpha_*", names(resmerge))]
+  for (rr in 2:nres) {
+    for (nn in names_identical) {
+      if (!isTRUE(all.equal(resmerge[[nn]], ress[[rr]][[nn]]))) {
+        stop(paste0("Component ", nn, " of PhyloEM results number 1 and number ", rr, " are different."))
+      }
+    }
+  }
+  ## merge alpha results
+  for (rr in 2:nres) {
+    alpha_results <- grep("alpha_-?[[:digit:]]", names(ress[[rr]]))
+    for (aa in alpha_results) {
+      resmerge[[names(ress[[rr]])[aa]]] <- ress[[rr]][[names(ress[[rr]])[aa]]]
+    }
+  }
+  get_alpha_values <- function(res) {
+    alpha_names <- names(res)[grep("alpha_-?[[:digit:]]", names(res))]
+    alpha_names <- sub("alpha_", "", alpha_names)
+    alpha_values <- as.numeric(alpha_names)
+    return(sort(alpha_values))
+  }
+  alpha_merge <- get_alpha_values(resmerge)
+  
+  ## alpha max and min
+  resmerge <- merge_max_grid_alpha(resmerge, alpha_merge, resmerge$light_result)
+  resmerge <- merge_min_grid_alpha(resmerge, resmerge$light_result) 
+  resmerge <- merge_min_grid_alpha(resmerge, resmerge$light_result, raw = TRUE) 
+  
+  ## Model selection
+  resmerge <- model_selection(resmerge,
+                              method.selection = resmerge$method.selection,
+                              C.BM1 = resmerge$C.BM1, C.BM2 = resmerge$C.BM2, C.LINselect = resmerge$C.LINselect,
+                              independent = resmerge$independent)
+  
+  return(resmerge)
 }

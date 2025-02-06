@@ -33,6 +33,7 @@ reference:
       - merge_rotations
       - get_criterion
       - plot_criterion
+      - merge_alpha_grids
   - title: "Parameters and Simulations"
     desc: >
       Functions to simulate various processes on the tree, and deal with their parameters.
