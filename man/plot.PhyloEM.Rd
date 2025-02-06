@@ -142,7 +142,7 @@ Default to FALSE.}
 
 \item{root.edge}{a logical indicating whether to draw the root edge (defaults to TRUE)}
 
-\item{...}{further arguments to be passed to \code{\link{plot.phylo}}.}
+\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
 }
 \description{
 This function takes an object of class \code{PhyloEM}, result of function

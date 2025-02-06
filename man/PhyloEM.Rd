@@ -45,7 +45,7 @@ PhyloEM(
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
-(from package \code{\link{ape}}).}
+(from package \code{\link[ape]{ape}}).}
 
 \item{Y_data}{Matrix of data at the tips, size p x ntaxa. Each line is a
 trait, and each column is a tip. The column names are checked against the
@@ -163,12 +163,12 @@ its subsequent manipulations can be faster (especially for plotting).}
 
 \item{tol_tree}{tolerance to consider a branch length significantly greater than zero, or
 two lineages lengths to be different, when checking for ultrametry. 
-(Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.}
+(Default to .Machine$double.eps^0.5). See \code{\link[ape]{is.ultrametric}} and \code{\link[ape]{di2multi}}.}
 
 \item{allow_negative}{whether to allow negative values for alpha (Early Burst).
 See details. Default to FALSE.}
 
-\item{option_is.ultrametric}{option for \code{\link{is.ultrametric}} check. Default to 1.}
+\item{option_is.ultrametric}{option for \code{\link[ape]{is.ultrametric}} check. Default to 1.}
 
 \item{trait_correlation_threshold}{the trait correlation threshold to stop the analysis. Default to 0.9.}
 

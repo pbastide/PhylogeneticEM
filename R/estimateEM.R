@@ -895,7 +895,7 @@ estimateEM <- function(phylo,
 #' }
 #'
 #' @param phylo A phylogenetic tree of class \code{phylo} 
-#' (from package \code{\link{ape}}).
+#' (from package \code{\link[ape]{ape}}).
 #' @param Y_data Matrix of data at the tips, size p x ntaxa. Each line is a
 #' trait, and each column is a tip. The column names are checked against the
 #' tip names of the tree.
@@ -988,10 +988,10 @@ estimateEM <- function(phylo,
 #' its subsequent manipulations can be faster (especially for plotting).
 #' @param tol_tree tolerance to consider a branch length significantly greater than zero, or
 #' two lineages lengths to be different, when checking for ultrametry. 
-#' (Default to .Machine$double.eps^0.5). See \code{\link{is.ultrametric}} and \code{\link{di2multi}}.
+#' (Default to .Machine$double.eps^0.5). See \code{\link[ape]{is.ultrametric}} and \code{\link[ape]{di2multi}}.
 #' @param allow_negative whether to allow negative values for alpha (Early Burst).
 #' See details. Default to FALSE.
-#' @param option_is.ultrametric option for \code{\link{is.ultrametric}} check. Default to 1.
+#' @param option_is.ultrametric option for \code{\link[ape]{is.ultrametric}} check. Default to 1.
 #' @param trait_correlation_threshold the trait correlation threshold to stop the analysis. Default to 0.9.
 #' @param ... Further arguments to be passed to \code{\link{estimateEM}}, including
 #' tolerance parameters for stopping criteria, maximal number of iterations, etc.

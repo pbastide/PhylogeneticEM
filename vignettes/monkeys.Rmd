@@ -4,7 +4,7 @@ author: "Paul Bastide"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{New World Monkeys}
+  %\VignetteIndexEntry{Analysis of the New World Monkeys dataset}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

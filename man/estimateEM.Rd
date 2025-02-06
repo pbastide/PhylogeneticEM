@@ -57,7 +57,7 @@ estimateEM(
 }
 \arguments{
 \item{phylo}{A phylogenetic tree of class \code{phylo} 
-(from package \code{\link{ape}}).}
+(from package \code{\link[ape]{ape}}).}
 
 \item{Y_data}{Matrix of data at the tips, size p x ntaxa. Each line is a
 trait, and each column is a tip. The column names are checked against the

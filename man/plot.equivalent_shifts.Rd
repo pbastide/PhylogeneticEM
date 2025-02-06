@@ -43,7 +43,7 @@ Default to FALSE.}
 \item{shifts_cex}{if \code{value_in_box=TRUE}, the size of the text in the boxes.
 Default to 0.8.}
 
-\item{...}{further arguments to be passed to \code{\link{plot.phylo}}.}
+\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
 }
 \value{
 A plot of the equivalent shifts allocations.

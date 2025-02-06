@@ -254,7 +254,7 @@ edgelabels_home <- function (text, edge, adj = c(0.5, 0.5), frame = "rect",
 #' @param gray_scale if TRUE, the colors are replaced by a gray scale.
 #' Default to FALSE.
 #' @param root.edge a logical indicating whether to draw the root edge (defaults to TRUE)
-#' @param ... further arguments to be passed to \code{\link{plot.phylo}}.
+#' @param ... further arguments to be passed to \code{\link[ape]{plot.phylo}}.
 #' 
 #' 
 #' @return

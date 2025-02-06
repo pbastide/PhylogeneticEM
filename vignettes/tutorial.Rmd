@@ -4,7 +4,7 @@ author: "Paul Bastide"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Tutorial}
+  %\VignetteIndexEntry{An Introduction to the PhylogeneticEM Package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{TreeSim}

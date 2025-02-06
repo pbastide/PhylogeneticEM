@@ -128,7 +128,7 @@ Default to \code{c(0, 0, 0, 0)}.}
 \item{gray_scale}{if TRUE, the colors are replaced by a gray scale.
 Default to FALSE.}
 
-\item{...}{further arguments to be passed to \code{\link{plot.phylo}}.}
+\item{...}{further arguments to be passed to \code{\link[ape]{plot.phylo}}.}
 }
 \description{
 This function takes an object of class \code{params_process}, and plots them along
