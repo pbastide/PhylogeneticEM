@@ -96,27 +96,32 @@ test_that("Merge alpha grids - errors", {
   testthat::skip_on_cran()
   data(monkeys)
   ## First fit with coarse grid
-  res1 <- PhyloEM(Y_data = monkeys$dat,
-                  phylo = monkeys$phy,
-                  process = "scOU",
-                  random.root = TRUE,
-                  stationary.root = TRUE,
-                  K_max = 10,
-                  alpha = c(0.2, 0.3),
-                  parallel_alpha = TRUE,
-                  Ncores = 2)
+  expect_message(expect_warning(
+    res1 <- PhyloEM(Y_data = monkeys$dat,
+                    phylo = monkeys$phy,
+                    process = "scOU",
+                    random.root = TRUE,
+                    stationary.root = TRUE,
+                    K_max = 10,
+                    alpha = c(0.2, 0.3),
+                    parallel_alpha = FALSE,
+                    progress.bar = FALSE),
+    "Models selected by DDSE and Djump are different"),
+    "There are some equivalent solutions")
   
   ## Second fit with finner grid
   monkeys$dat[1, 10] <- 0.2
-  res2 <- PhyloEM(Y_data = monkeys$dat,
-                  phylo = monkeys$phy,
-                  process = "scOU",
-                  random.root = TRUE,
-                  stationary.root = TRUE,
-                  K_max = 10,
-                  alpha = c(0.22, 0.24),
-                  parallel_alpha = TRUE,
-                  Ncores = 2)
+  expect_message(
+    res2 <- PhyloEM(Y_data = monkeys$dat,
+                    phylo = monkeys$phy,
+                    process = "scOU",
+                    random.root = TRUE,
+                    stationary.root = TRUE,
+                    K_max = 10,
+                    alpha = c(0.22, 0.24),
+                    parallel_alpha = FALSE,
+                    progress.bar = FALSE),
+    "There are some equivalent solutions")
   
   expect_error(merge_alpha_grids(), "There should be at least")
   expect_equal(merge_alpha_grids(res1), res1)
