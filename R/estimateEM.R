@@ -220,11 +220,11 @@ estimateEM <- function(phylo,
                        var.init.root = diag(1, nrow(Y_data)),
                        variance.init = diag(1, nrow(Y_data), nrow(Y_data)),
                        methods.segmentation = c(#"max_costs_0", 
-                                                "lasso", 
-                                                "same_shifts", 
-                                                #"same_shifts_same_values",
-                                                "best_single_move"),
-                                                #"lasso_one_move"),
+                         "lasso", 
+                         "same_shifts", 
+                         #"same_shifts_same_values",
+                         "best_single_move"),
+                       #"lasso_one_move"),
                        check.tips.names = FALSE,
                        times_shared = NULL, # These can be specified to save time
                        distances_phylo = NULL, 
@@ -442,7 +442,7 @@ estimateEM <- function(phylo,
   known.selection.strength <-  known.selection.strength / factor_rescale
   init.selection.strength <- init.selection.strength / factor_rescale
   variance.init <- variance.init / factor_rescale
-
+  
   ########## Initialization of alpha and Variance #############################
   init.a.g <- init.alpha.gamma(method.init.alpha)(phylo = phylo,
                                                   Y_data = Y_data,
@@ -716,11 +716,11 @@ estimateEM <- function(phylo,
     # compute_log_likelihood  <- compute_log_likelihood.simple
     # compute_mahalanobis_distance  <- compute_mahalanobis_distance.simple
   }
-
+  
   if (independent){
     params_scOU <- split_params_independent(params_scOU)
   }
-
+  
   temp <- wrapper_E_step(phylo = phylo,
                          times_shared = times_shared,
                          distances_phylo = distances_phylo,
@@ -1390,14 +1390,14 @@ params_process.PhyloEM <- function(x, method.selection = NULL,
       res <- x[[alpha_name]]$params_estim[[paste0(K)]] 
     }
   } else {
-  ## Take the selected parameters (default)
+    ## Take the selected parameters (default)
     m_sel <- get_method_selection(x, method.selection = method.selection)
     res <- extract_params(x, m_sel[1], m_sel[2])
   }
   ## Case scOU with negative value
   if ((length(as.vector(res$selection.strength)) == 1)
-        && (res$selection.strength < 0)
-        && !rBM) {
+      && (res$selection.strength < 0)
+      && !rBM) {
     warning("The 'selection strength' is negative. One should only look at the un-normalized values of the shifts. To do so, please call this function using 'rBM = TRUE'.")
   }
   ## Return to rBM parameters if needed
@@ -1839,7 +1839,7 @@ compute_ancestral_traits <- function(x,
     )
     return(res)
   }
-
+  
   ## Needed quatities
   ntaxa <- length(x$phylo$tip.label)
   miss <- as.vector(is.na(x$Y_data))
@@ -2276,82 +2276,82 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
            call. = FALSE)
     }
     cl <- parallel::makeCluster(Ncores, outfile = "")
-                                # outfile = tempfile(pattern = "log_file_dopar_"))
+    # outfile = tempfile(pattern = "log_file_dopar_"))
     doParallel::registerDoParallel(cl)
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %dopar%
-    {
-      estimate_alpha_several_K(alp = a_greek,
-                               original_phy = original_phy, Y_data = Y_data,
-                               process_original = process_original,
-                               process = process,
-                               independent = independent,
-                               K_max = K_max, 
-                               use_previous = use_previous,
-                               order = order,
-                               method.variance = method.variance,
-                               method.init = method.init,
-                               method.init.alpha = method.init.alpha,
-                               method.init.alpha.estimation = method.init.alpha.estimation, 
-                               methods.segmentation = methods.segmentation,
-                               alpha_known = alpha_known,
-                               random.root = random.root,
-                               stationary.root = stationary.root,
-                               sBM_variance = sBM_variance,
-                               method.OUsun = method.OUsun,
-                               # impute_init_Rphylopars = impute_init_Rphylopars,
-                               p = p,
-                               ntaxa = ntaxa,
-                               progress.bar = progress.bar,
-                               times_shared_original = times_shared_original,
-                               distances_phylo_original = distances_phylo_original,
-                               subtree.list_original = subtree.list_original,
-                               h_tree_original = h_tree_original,
-                               T_tree = T_tree,
-                               U_tree = U_tree,
-                               K_lag_init = K_lag_init,
-                               light_result = light_result,
-                               allow_negative = allow_negative,
-                               trait_correlation_threshold = trait_correlation_threshold,
-                               ...)
-    }
+      {
+        estimate_alpha_several_K(alp = a_greek,
+                                 original_phy = original_phy, Y_data = Y_data,
+                                 process_original = process_original,
+                                 process = process,
+                                 independent = independent,
+                                 K_max = K_max, 
+                                 use_previous = use_previous,
+                                 order = order,
+                                 method.variance = method.variance,
+                                 method.init = method.init,
+                                 method.init.alpha = method.init.alpha,
+                                 method.init.alpha.estimation = method.init.alpha.estimation, 
+                                 methods.segmentation = methods.segmentation,
+                                 alpha_known = alpha_known,
+                                 random.root = random.root,
+                                 stationary.root = stationary.root,
+                                 sBM_variance = sBM_variance,
+                                 method.OUsun = method.OUsun,
+                                 # impute_init_Rphylopars = impute_init_Rphylopars,
+                                 p = p,
+                                 ntaxa = ntaxa,
+                                 progress.bar = progress.bar,
+                                 times_shared_original = times_shared_original,
+                                 distances_phylo_original = distances_phylo_original,
+                                 subtree.list_original = subtree.list_original,
+                                 h_tree_original = h_tree_original,
+                                 T_tree = T_tree,
+                                 U_tree = U_tree,
+                                 K_lag_init = K_lag_init,
+                                 light_result = light_result,
+                                 allow_negative = allow_negative,
+                                 trait_correlation_threshold = trait_correlation_threshold,
+                                 ...)
+      }
     parallel::stopCluster(cl)
   } else {
     X <- foreach::foreach(a_greek = alpha, .packages = reqpckg) %do%
-    {
-      estimate_alpha_several_K(alp = a_greek,
-                               original_phy = original_phy, Y_data = Y_data,
-                               process_original = process_original,
-                               process = process,
-                               independent = independent,
-                               K_max = K_max, 
-                               use_previous = use_previous,
-                               order = order,
-                               method.variance = method.variance,
-                               method.init = method.init,
-                               method.init.alpha = method.init.alpha,
-                               method.init.alpha.estimation = method.init.alpha.estimation, 
-                               methods.segmentation = methods.segmentation,
-                               alpha_known = alpha_known,
-                               random.root = random.root,
-                               stationary.root = stationary.root,
-                               sBM_variance = sBM_variance,
-                               method.OUsun = method.OUsun,
-                               # impute_init_Rphylopars = impute_init_Rphylopars,
-                               p = p,
-                               ntaxa = ntaxa,
-                               progress.bar = progress.bar,
-                               times_shared_original = times_shared_original,
-                               distances_phylo_original = distances_phylo_original,
-                               subtree.list_original = subtree.list_original,
-                               h_tree_original = h_tree_original,
-                               T_tree = T_tree,
-                               U_tree = U_tree,
-                               K_lag_init = K_lag_init,
-                               light_result = light_result,
-                               allow_negative = allow_negative,
-                               trait_correlation_threshold = trait_correlation_threshold,
-                               ...)
-    }
+      {
+        estimate_alpha_several_K(alp = a_greek,
+                                 original_phy = original_phy, Y_data = Y_data,
+                                 process_original = process_original,
+                                 process = process,
+                                 independent = independent,
+                                 K_max = K_max, 
+                                 use_previous = use_previous,
+                                 order = order,
+                                 method.variance = method.variance,
+                                 method.init = method.init,
+                                 method.init.alpha = method.init.alpha,
+                                 method.init.alpha.estimation = method.init.alpha.estimation, 
+                                 methods.segmentation = methods.segmentation,
+                                 alpha_known = alpha_known,
+                                 random.root = random.root,
+                                 stationary.root = stationary.root,
+                                 sBM_variance = sBM_variance,
+                                 method.OUsun = method.OUsun,
+                                 # impute_init_Rphylopars = impute_init_Rphylopars,
+                                 p = p,
+                                 ntaxa = ntaxa,
+                                 progress.bar = progress.bar,
+                                 times_shared_original = times_shared_original,
+                                 distances_phylo_original = distances_phylo_original,
+                                 subtree.list_original = subtree.list_original,
+                                 h_tree_original = h_tree_original,
+                                 T_tree = T_tree,
+                                 U_tree = U_tree,
+                                 K_lag_init = K_lag_init,
+                                 light_result = light_result,
+                                 allow_negative = allow_negative,
+                                 trait_correlation_threshold = trait_correlation_threshold,
+                                 ...)
+      }
   }
   
   ## Format Output
@@ -2359,7 +2359,7 @@ PhyloEM_grid_alpha <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "r
   X$Y_data <- Y_data
   X$K_try <- 0:K_max
   X$ntaxa <- ntaxa
-
+  
   ## Select max solution for each K
   X <- merge_max_grid_alpha(X, alpha, light_result)
   # if ("BGHlsq" %in% method.selection){
@@ -2659,7 +2659,7 @@ merge_max_grid_alpha <- function(X, alpha, light_result = TRUE){
   for (K_t in X$K_try){
     max_sum <- summary_all[summary_all$K_try == K_t, ]
     max_sum <- max_sum[max_sum$log_likelihood == max(max_sum$log_likelihood), ]
-# subset(subset(summary_all, K_try == K_t), log_likelihood == max(log_likelihood))
+    # subset(subset(summary_all, K_try == K_t), log_likelihood == max(log_likelihood))
     res_max <- X[[paste0("alpha_", max_sum$alpha_name)]]
     params <- res_max$params_estim[[paste(K_t)]]
     X$alpha_max$results_summary[K_t + 1, ] <- as.vector(unname(as.matrix(max_sum)))
@@ -2706,7 +2706,7 @@ merge_min_grid_alpha <- function(X, light_result = TRUE, raw = FALSE){
     alpha_min_str <- "alpha_min"
   }
   X[[alpha_min_str]]$results_summary <- matrix(NA, nrow = length(X$K_try),
-                                        ncol = ncol(summary_all))
+                                               ncol = ncol(summary_all))
   colnames(X[[alpha_min_str]]$results_summary) <- colnames(summary_all)
   X[[alpha_min_str]]$edge.quality <- vector(length = length(X$K_try), mode = "list")
   for (K_t in X$K_try){
