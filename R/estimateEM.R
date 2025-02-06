@@ -1171,6 +1171,8 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
     method.selection <- method.selection[method.selection != "BGHlsqraw"]
   }
   if (length(method.selection) == 0) stop("No selection method were selected or suited to the problem (see relevant warnings). Please fix before carying on.")
+  ## sort methods for reproducibility
+  method.selection <- sort(method.selection)
   
   ## Inference per se
   if (!is.null(estimates)){ # If the user already has the estimates
@@ -1306,7 +1308,7 @@ PhyloEM <- function(phylo, Y_data, process = c("BM", "OU", "scOU", "rBM"),
   X$C.BM2 <- C.BM2
   X$C.LINselect <- C.LINselect
   X$independent <- independent
-  X$alpha_grid <- alpha_grid
+  X$grid_alpha <- alpha_grid
   
   ## Class and return
   class(X) <- "PhyloEM"
@@ -3346,7 +3348,7 @@ merge_alpha_grids <- function(...) {
   if (nres == 0) stop("There should be at least 2 results to merge.")
   if (nres == 1) return(ress[[1]])
   resmerge <- ress[[1]]
-  if (!resmerge$alpha_grid) stop("Fits must be performed on a grid of alpha values.")
+  if (!resmerge$grid_alpha) stop("Fits must be performed on a grid of alpha values.")
   ## same fits ?
   names_identical <- names(resmerge)[!grepl("alpha_*", names(resmerge))]
   for (rr in 2:nres) {

@@ -7,51 +7,64 @@ test_that("Merge alpha grids", {
   data(monkeys)
   
   ## First fit with coarse grid
-  res1 <- PhyloEM(Y_data = monkeys$dat,
-                  phylo = monkeys$phy,
-                  process = "scOU",
-                  random.root = TRUE,
-                  stationary.root = TRUE,
-                  K_max = 10,
-                  alpha = c(0.2, 0.3),
-                  parallel_alpha = TRUE,
-                  Ncores = 2)
-  
-  ## Second fit with finner grid
-  res2 <- PhyloEM(Y_data = monkeys$dat,
-                  phylo = monkeys$phy,
-                  process = "scOU",
-                  random.root = TRUE,
-                  stationary.root = TRUE,
-                  K_max = 10,
-                  alpha = c(0.22, 0.24),
-                  parallel_alpha = TRUE,
-                  Ncores = 2)
-  
-  ## Third fit with redundancies
-  res3 <- PhyloEM(Y_data = monkeys$dat,
-                  phylo = monkeys$phy,
-                  process = "scOU",
-                  random.root = TRUE,
-                  stationary.root = TRUE,
-                  K_max = 10,
-                  alpha = c(0.26, 0.3),
-                  parallel_alpha = TRUE,
-                  Ncores = 2)
-  
-  ## merge results
-  res_merge <- merge_alpha_grids(res1, res2, res3)
-  
-  ## large fit all alpha
-  resall <- PhyloEM(Y_data = monkeys$dat,
+  expect_message(expect_warning(
+    res1 <- PhyloEM(Y_data = monkeys$dat,
                     phylo = monkeys$phy,
                     process = "scOU",
                     random.root = TRUE,
                     stationary.root = TRUE,
                     K_max = 10,
-                    alpha = c(0.2, 0.22, 0.24, 0.26, 0.3),
-                    parallel_alpha = TRUE,
-                    Ncores = 2)
+                    alpha = c(0.2, 0.3),
+                    parallel_alpha = FALSE,
+                    progress.bar = FALSE),
+    "Models selected by DDSE and Djump are different"),
+    "There are some equivalent solutions")
+  
+  ## Second fit with finner grid
+  expect_message(
+    res2 <- PhyloEM(Y_data = monkeys$dat,
+                    phylo = monkeys$phy,
+                    process = "scOU",
+                    random.root = TRUE,
+                    stationary.root = TRUE,
+                    K_max = 10,
+                    alpha = c(0.22, 0.24),
+                    parallel_alpha = FALSE,
+                    progress.bar = FALSE),
+    "There are some equivalent solutions")
+  
+  ## Third fit with redundancies
+  expect_message(
+    res3 <- PhyloEM(Y_data = monkeys$dat,
+                    phylo = monkeys$phy,
+                    process = "scOU",
+                    random.root = TRUE,
+                    stationary.root = TRUE,
+                    K_max = 10,
+                    alpha = c(0.26, 0.3),
+                    parallel_alpha = FALSE,
+                    progress.bar = FALSE),
+    "There are some equivalent solutions")
+  
+  ## merge results
+  expect_message(expect_warning(
+    res_merge <- merge_alpha_grids(res1, res2, res3),
+    "Models selected by DDSE and Djump are different"),
+    "There are some equivalent solutions")
+  
+  ## large fit all alpha
+  expect_message(expect_warning(
+    resall <- PhyloEM(Y_data = monkeys$dat,
+                      phylo = monkeys$phy,
+                      process = "scOU",
+                      random.root = TRUE,
+                      stationary.root = TRUE,
+                      K_max = 10,
+                      alpha = c(0.2, 0.22, 0.24, 0.26, 0.3),
+                      parallel_alpha = FALSE,
+                      progress.bar = FALSE),
+    "Models selected by DDSE and Djump are different"),
+    "There are some equivalent solutions")
   
   ## compare
   compare_ignore_time <- function(a, b) {

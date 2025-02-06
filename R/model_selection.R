@@ -608,5 +608,6 @@ model_selection.PhyloEM <- function(x,
   for (meth.sel in method.selection){
     x <- mod_sel_unit(meth.sel)
   }
+  x$method.selection <- sort(unique(c(x$method.selection, method.selection)))
   return(x)
 }
