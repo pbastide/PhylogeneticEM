@@ -3328,7 +3328,7 @@ add_method_selection <- function(meth, method.selection){
 #'                 Ncores = 2)
 #'
 #' ## Merge the three
-#' res_merge <- merge_alpha_grid(res1, res2, res3)
+#' res_merge <- merge_alpha_grids(res1, res2, res3)
 #' ## Plot the selected result
 #' plot(res_merge)
 #' ## Plot the model selection criterion
