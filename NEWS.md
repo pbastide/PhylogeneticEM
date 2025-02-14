@@ -1,6 +1,7 @@
-# PhylogeneticEM 1.7.0.9000
+# PhylogeneticEM 1.8.0
 * Bug fix:
   * `merge_rotation` now works for trait with more than 2 dimensions.
+  * Fix documentation notes on CRAN checks.
 * New functions and features:
   * Function `merge_alpha_grids` to merge `PhyloEM` runs on the same data set 
   but with separate grids of alpha values.
