@@ -1,3 +1,5 @@
+# PhylogeneticEM 1.8.0.9000
+
 # PhylogeneticEM 1.8.0
 * Bug fix:
   * `merge_rotation` now works for trait with more than 2 dimensions.
