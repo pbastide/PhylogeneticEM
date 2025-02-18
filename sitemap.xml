@@ -1,453 +1,155 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/monkeys.html</loc>
-  </url>
-  <url>
-    <loc>/articles/tutorial.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/news/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/PhyloEM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/add_complementary.html</loc>
-  </url>
-  <url>
-    <loc>/reference/allocate_regimes_from_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/allocate_shifts_from_regimes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/allocate_subset_node.simulate.html</loc>
-  </url>
-  <url>
-    <loc>/reference/check.selection.strength.html</loc>
-  </url>
-  <url>
-    <loc>/reference/check_data.html</loc>
-  </url>
-  <url>
-    <loc>/reference/check_dimensions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/check_parsimony.html</loc>
-  </url>
-  <url>
-    <loc>/reference/check_parsimony_clusters.html</loc>
-  </url>
-  <url>
-    <loc>/reference/check_range_alpha.html</loc>
-  </url>
-  <url>
-    <loc>/reference/clusters_from_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_E.simple.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_actualization_matrix_ultrametric.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_betas_from_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_diff_exp.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_dist_phy.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_expectations.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_expectations.scOU.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_fixed_moments.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_gauss_lasso.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_log_likelihood.simple.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_mahalanobis_distance.simple.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_mean_variance.simple.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_residuals.simple.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_shifts_from_betas.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_state_filter.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_stationary_variance.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_sum_var_diff.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_times_ca.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_tree_correlations_matrix.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_tree_correlations_matrix.scOU.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_var_M.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_var_diff.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_variance_block_diagonal.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_variance_block_diagonal.OU.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_variance_covariance.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_variance_covariance.OU.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_variance_covariance.OU.nonsym.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_variance_covariance.scOU.html</loc>
-  </url>
-  <url>
-    <loc>/reference/correspondenceEdges.html</loc>
-  </url>
-  <url>
-    <loc>/reference/enlight.html</loc>
-  </url>
-  <url>
-    <loc>/reference/enumerate_parsimony.html</loc>
-  </url>
-  <url>
-    <loc>/reference/enumerate_tips_under_edges.html</loc>
-  </url>
-  <url>
-    <loc>/reference/equivalent_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/equivalent_shifts_edges.html</loc>
-  </url>
-  <url>
-    <loc>/reference/equivalent_shifts_values.html</loc>
-  </url>
-  <url>
-    <loc>/reference/estimate.alpha.html</loc>
-  </url>
-  <url>
-    <loc>/reference/estimateEM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.enumerate_parsimony.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.equivalent_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.parsimonyCost.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.parsimonyNumber.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.partitionsNumber.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.simul_process.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extract.variance_covariance.html</loc>
-  </url>
-  <url>
-    <loc>/reference/find_grid_alpha.html</loc>
-  </url>
-  <url>
-    <loc>/reference/find_independent_regression_vectors.glmnet_multivariate.html</loc>
-  </url>
-  <url>
-    <loc>/reference/find_rotation.html</loc>
-  </url>
-  <url>
-    <loc>/reference/find_shift_values.html</loc>
-  </url>
-  <url>
-    <loc>/reference/format_output.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_criterion.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_variance_node.html</loc>
-  </url>
-  <url>
-    <loc>/reference/go_back_to_original_process.html</loc>
-  </url>
-  <url>
-    <loc>/reference/imputed_traits.html</loc>
-  </url>
-  <url>
-    <loc>/reference/incidence.matrix.full.html</loc>
-  </url>
-  <url>
-    <loc>/reference/incidence.matrix.html</loc>
-  </url>
-  <url>
-    <loc>/reference/incidence_matrix_actualization_factors.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.EM.lasso.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.allocate_regimes_from_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.alpha.gamma.estimation.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.compute_betas_from_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.enumerate_parsimony.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.incidence.matrix.full.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.incidence.matrix.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.parsimonyCost.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.parsimonyNumber.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.simulate.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.simulate.OU.html</loc>
-  </url>
-  <url>
-    <loc>/reference/init.simulate.StateAndExp.html</loc>
-  </url>
-  <url>
-    <loc>/reference/is.in.ranges.html</loc>
-  </url>
-  <url>
-    <loc>/reference/lasso_regression_K_fixed.glmnet_multivariate.html</loc>
-  </url>
-  <url>
-    <loc>/reference/log_likelihood.html</loc>
-  </url>
-  <url>
-    <loc>/reference/matrix_of_possibles.html</loc>
-  </url>
-  <url>
-    <loc>/reference/merge_complementary_vectors.html</loc>
-  </url>
-  <url>
-    <loc>/reference/merge_params_independent.html</loc>
-  </url>
-  <url>
-    <loc>/reference/merge_rotations.html</loc>
-  </url>
-  <url>
-    <loc>/reference/model_selection.html</loc>
-  </url>
-  <url>
-    <loc>/reference/monkeys.html</loc>
-  </url>
-  <url>
-    <loc>/reference/params_BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/params_OU.html</loc>
-  </url>
-  <url>
-    <loc>/reference/params_process.PhyloEM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/params_process.character.html</loc>
-  </url>
-  <url>
-    <loc>/reference/params_process.html</loc>
-  </url>
-  <url>
-    <loc>/reference/parsimonyCost.html</loc>
-  </url>
-  <url>
-    <loc>/reference/parsimonyNumber.html</loc>
-  </url>
-  <url>
-    <loc>/reference/partitionsNumber.html</loc>
-  </url>
-  <url>
-    <loc>/reference/penalty_BaraudGiraudHuet_likelihood.html</loc>
-  </url>
-  <url>
-    <loc>/reference/penalty_BirgeMassart_shape1.html</loc>
-  </url>
-  <url>
-    <loc>/reference/penalty_BirgeMassart_shape2.html</loc>
-  </url>
-  <url>
-    <loc>/reference/penalty_pBIC.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.PhyloEM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.enumerate_parsimony.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.equivalent_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.params_process.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_criterion.html</loc>
-  </url>
-  <url>
-    <loc>/reference/prod.index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/qr.solve_exact.html</loc>
-  </url>
-  <url>
-    <loc>/reference/recursionDown.html</loc>
-  </url>
-  <url>
-    <loc>/reference/residuals.PhyloEM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sample_edges_intervals.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sample_shifts_edges.html</loc>
-  </url>
-  <url>
-    <loc>/reference/scale_params.html</loc>
-  </url>
-  <url>
-    <loc>/reference/segmentation.BM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/segmentation.OU.specialCase.lasso.html</loc>
-  </url>
-  <url>
-    <loc>/reference/segmentation.OU.specialCase.same_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/shifts.list_to_matrix.html</loc>
-  </url>
-  <url>
-    <loc>/reference/shifts.list_to_vector.html</loc>
-  </url>
-  <url>
-    <loc>/reference/shifts.matrix_to_list.html</loc>
-  </url>
-  <url>
-    <loc>/reference/shifts.vector_to_list.html</loc>
-  </url>
-  <url>
-    <loc>/reference/shifts_to_simmap.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simul_process.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simulate_internal.html</loc>
-  </url>
-  <url>
-    <loc>/reference/split_params_independent.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sum.partitions.cardFixed.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sum.partitions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sum.prod.comb.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sum.simplex.html</loc>
-  </url>
-  <url>
-    <loc>/reference/test.root.state.html</loc>
-  </url>
-  <url>
-    <loc>/reference/transform_branch_length.html</loc>
-  </url>
-  <url>
-    <loc>/reference/transform_shifts_values.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.allocate_regimes_from_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.compute_betas_from_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.enumerate_parsimony.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.incidence.matrix.full.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.incidence.matrix.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.parsimonyCost.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.parsimonyNumber.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update.partitionsNumber.gen.html</loc>
-  </url>
-  <url>
-    <loc>/reference/wrapper_E_step.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/monkeys.html</loc></url>
+<url><loc>/articles/tutorial.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/PhyloEM.html</loc></url>
+<url><loc>/reference/add_complementary.html</loc></url>
+<url><loc>/reference/allocate_regimes_from_shifts.html</loc></url>
+<url><loc>/reference/allocate_shifts_from_regimes.html</loc></url>
+<url><loc>/reference/allocate_subset_node.simulate.html</loc></url>
+<url><loc>/reference/check.selection.strength.html</loc></url>
+<url><loc>/reference/check_data.html</loc></url>
+<url><loc>/reference/check_dimensions.html</loc></url>
+<url><loc>/reference/check_parsimony.html</loc></url>
+<url><loc>/reference/check_parsimony_clusters.html</loc></url>
+<url><loc>/reference/check_range_alpha.html</loc></url>
+<url><loc>/reference/clusters_from_shifts.html</loc></url>
+<url><loc>/reference/compute_E.simple.html</loc></url>
+<url><loc>/reference/compute_actualization_matrix_ultrametric.html</loc></url>
+<url><loc>/reference/compute_betas_from_shifts.html</loc></url>
+<url><loc>/reference/compute_diff_exp.BM.html</loc></url>
+<url><loc>/reference/compute_dist_phy.html</loc></url>
+<url><loc>/reference/compute_expectations.BM.html</loc></url>
+<url><loc>/reference/compute_expectations.scOU.html</loc></url>
+<url><loc>/reference/compute_fixed_moments.html</loc></url>
+<url><loc>/reference/compute_gauss_lasso.html</loc></url>
+<url><loc>/reference/compute_log_likelihood.simple.html</loc></url>
+<url><loc>/reference/compute_mahalanobis_distance.simple.html</loc></url>
+<url><loc>/reference/compute_mean_variance.simple.html</loc></url>
+<url><loc>/reference/compute_residuals.simple.html</loc></url>
+<url><loc>/reference/compute_shifts_from_betas.html</loc></url>
+<url><loc>/reference/compute_state_filter.html</loc></url>
+<url><loc>/reference/compute_stationary_variance.html</loc></url>
+<url><loc>/reference/compute_sum_var_diff.html</loc></url>
+<url><loc>/reference/compute_times_ca.html</loc></url>
+<url><loc>/reference/compute_tree_correlations_matrix.BM.html</loc></url>
+<url><loc>/reference/compute_tree_correlations_matrix.scOU.html</loc></url>
+<url><loc>/reference/compute_var_M.BM.html</loc></url>
+<url><loc>/reference/compute_var_diff.BM.html</loc></url>
+<url><loc>/reference/compute_variance_block_diagonal.BM.html</loc></url>
+<url><loc>/reference/compute_variance_block_diagonal.OU.html</loc></url>
+<url><loc>/reference/compute_variance_covariance.BM.html</loc></url>
+<url><loc>/reference/compute_variance_covariance.OU.html</loc></url>
+<url><loc>/reference/compute_variance_covariance.OU.nonsym.html</loc></url>
+<url><loc>/reference/compute_variance_covariance.scOU.html</loc></url>
+<url><loc>/reference/correspondenceEdges.html</loc></url>
+<url><loc>/reference/enlight.html</loc></url>
+<url><loc>/reference/enumerate_parsimony.html</loc></url>
+<url><loc>/reference/enumerate_tips_under_edges.html</loc></url>
+<url><loc>/reference/equivalent_shifts.html</loc></url>
+<url><loc>/reference/equivalent_shifts_edges.html</loc></url>
+<url><loc>/reference/equivalent_shifts_values.html</loc></url>
+<url><loc>/reference/estimate.alpha.html</loc></url>
+<url><loc>/reference/estimateEM.html</loc></url>
+<url><loc>/reference/extract.enumerate_parsimony.html</loc></url>
+<url><loc>/reference/extract.equivalent_shifts.html</loc></url>
+<url><loc>/reference/extract.html</loc></url>
+<url><loc>/reference/extract.parsimonyCost.html</loc></url>
+<url><loc>/reference/extract.parsimonyNumber.html</loc></url>
+<url><loc>/reference/extract.partitionsNumber.html</loc></url>
+<url><loc>/reference/extract.simul_process.html</loc></url>
+<url><loc>/reference/extract_variance_covariance.html</loc></url>
+<url><loc>/reference/find_grid_alpha.html</loc></url>
+<url><loc>/reference/find_independent_regression_vectors.glmnet_multivariate.html</loc></url>
+<url><loc>/reference/find_rotation.html</loc></url>
+<url><loc>/reference/find_shift_values.html</loc></url>
+<url><loc>/reference/format_output.html</loc></url>
+<url><loc>/reference/get_criterion.html</loc></url>
+<url><loc>/reference/get_variance_node.html</loc></url>
+<url><loc>/reference/go_back_to_original_process.html</loc></url>
+<url><loc>/reference/imputed_traits.html</loc></url>
+<url><loc>/reference/incidence.matrix.full.html</loc></url>
+<url><loc>/reference/incidence.matrix.html</loc></url>
+<url><loc>/reference/incidence_matrix_actualization_factors.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/init.EM.lasso.html</loc></url>
+<url><loc>/reference/init.allocate_regimes_from_shifts.html</loc></url>
+<url><loc>/reference/init.alpha.gamma.estimation.html</loc></url>
+<url><loc>/reference/init.compute_betas_from_shifts.html</loc></url>
+<url><loc>/reference/init.enumerate_parsimony.html</loc></url>
+<url><loc>/reference/init.incidence.matrix.full.html</loc></url>
+<url><loc>/reference/init.incidence.matrix.html</loc></url>
+<url><loc>/reference/init.parsimonyCost.html</loc></url>
+<url><loc>/reference/init.parsimonyNumber.html</loc></url>
+<url><loc>/reference/init.simulate.BM.html</loc></url>
+<url><loc>/reference/init.simulate.OU.html</loc></url>
+<url><loc>/reference/init.simulate.StateAndExp.html</loc></url>
+<url><loc>/reference/is.in.ranges.html</loc></url>
+<url><loc>/reference/lasso_regression_K_fixed.glmnet_multivariate.html</loc></url>
+<url><loc>/reference/log_likelihood.html</loc></url>
+<url><loc>/reference/matrix_of_possibles.html</loc></url>
+<url><loc>/reference/merge_alpha_grids.html</loc></url>
+<url><loc>/reference/merge_complementary_vectors.html</loc></url>
+<url><loc>/reference/merge_params_independent.html</loc></url>
+<url><loc>/reference/merge_rotations.html</loc></url>
+<url><loc>/reference/model_selection.html</loc></url>
+<url><loc>/reference/monkeys.html</loc></url>
+<url><loc>/reference/node_optimal_values.html</loc></url>
+<url><loc>/reference/params_BM.html</loc></url>
+<url><loc>/reference/params_OU.html</loc></url>
+<url><loc>/reference/params_process.PhyloEM.html</loc></url>
+<url><loc>/reference/params_process.character.html</loc></url>
+<url><loc>/reference/params_process.html</loc></url>
+<url><loc>/reference/parsimonyCost.html</loc></url>
+<url><loc>/reference/parsimonyNumber.html</loc></url>
+<url><loc>/reference/partitionsNumber.html</loc></url>
+<url><loc>/reference/penalty_BaraudGiraudHuet_likelihood.html</loc></url>
+<url><loc>/reference/penalty_BirgeMassart_shape1.html</loc></url>
+<url><loc>/reference/penalty_BirgeMassart_shape2.html</loc></url>
+<url><loc>/reference/penalty_pBIC.html</loc></url>
+<url><loc>/reference/plot.PhyloEM.html</loc></url>
+<url><loc>/reference/plot.enumerate_parsimony.html</loc></url>
+<url><loc>/reference/plot.equivalent_shifts.html</loc></url>
+<url><loc>/reference/plot.params_process.html</loc></url>
+<url><loc>/reference/plot_criterion.html</loc></url>
+<url><loc>/reference/prod_index.html</loc></url>
+<url><loc>/reference/qr_solve_exact.html</loc></url>
+<url><loc>/reference/recursionDown.html</loc></url>
+<url><loc>/reference/residuals.PhyloEM.html</loc></url>
+<url><loc>/reference/sample_edges_intervals.html</loc></url>
+<url><loc>/reference/sample_shifts_edges.html</loc></url>
+<url><loc>/reference/scale_params.html</loc></url>
+<url><loc>/reference/segmentation.BM.html</loc></url>
+<url><loc>/reference/segmentation.OU.specialCase.lasso.html</loc></url>
+<url><loc>/reference/segmentation.OU.specialCase.same_shifts.html</loc></url>
+<url><loc>/reference/shifts.list_to_matrix.html</loc></url>
+<url><loc>/reference/shifts.list_to_vector.html</loc></url>
+<url><loc>/reference/shifts.matrix_to_list.html</loc></url>
+<url><loc>/reference/shifts.vector_to_list.html</loc></url>
+<url><loc>/reference/shifts_to_simmap.html</loc></url>
+<url><loc>/reference/simul_process.html</loc></url>
+<url><loc>/reference/simulate_internal.html</loc></url>
+<url><loc>/reference/split_params_independent.html</loc></url>
+<url><loc>/reference/sum_partitions.cardFixed.html</loc></url>
+<url><loc>/reference/sum_partitions.html</loc></url>
+<url><loc>/reference/sum_prod.comb.html</loc></url>
+<url><loc>/reference/sum_simplex.html</loc></url>
+<url><loc>/reference/test.root.state.html</loc></url>
+<url><loc>/reference/transform_branch_length.html</loc></url>
+<url><loc>/reference/transform_shifts_values.html</loc></url>
+<url><loc>/reference/update.allocate_regimes_from_shifts.html</loc></url>
+<url><loc>/reference/update.compute_betas_from_shifts.html</loc></url>
+<url><loc>/reference/update.enumerate_parsimony.html</loc></url>
+<url><loc>/reference/update.incidence.matrix.full.html</loc></url>
+<url><loc>/reference/update.incidence.matrix.html</loc></url>
+<url><loc>/reference/update.parsimonyCost.html</loc></url>
+<url><loc>/reference/update.parsimonyNumber.html</loc></url>
+<url><loc>/reference/update.partitionsNumber.gen.html</loc></url>
+<url><loc>/reference/wrapper_E_step.html</loc></url>
 </urlset>
+
