@@ -1,4 +1,6 @@
 # PhylogeneticEM 1.8.0.9000
+* Deprecation fix:
+  * change `arma::is_finite(val)` to `std::isfinite(val)`
 
 # PhylogeneticEM 1.8.0
 * Bug fix:

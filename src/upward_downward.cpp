@@ -242,7 +242,7 @@ void Upward::recursion(Model const & mod, arma::umat const & ed,
   int nEdges = ed.n_rows;
   for (int i = 0; i < nEdges; i++){ // Loop on the edges (rows of ed)
     int father = ed(i, 0) - 1;
-    if (! arma::is_finite(csts(father))){// This node has not already been visited.
+    if (! std::isfinite(csts(father))){// This node has not already been visited.
       // Find children of the node
       arma::uvec child_nodes = findChildren(father, ed) - 1;
       int nChild = child_nodes.n_rows;
