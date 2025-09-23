@@ -1,5 +1,5 @@
 ## Test environments
-* local: macOS 14.7.2, R 4.4.2
+* local: macOS 14.7.8, R 4.5.1
 * GitHub Actions:
   * macOS-latest: release
   * windows-latest: release
